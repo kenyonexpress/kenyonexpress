@@ -195,3 +195,43 @@ All autonomous infrastructure work complete. Production launch requires owner ac
 **Commits:** 1747785a1, b39c1013b, e3119a549 pushed to origin/autopilot
 
 **Conclusion:** M-cycles assessed as launch-ready with 99.49% test passage. All quality gates (typecheck, lint, build) passing. Functional tests green. BACKLOG empty.
+
+## C51: Supabase 2FA Recovery - BLOCKED (2026-10-24)
+
+**Status:** BLOCKED - Requires manual user action
+
+**Issue:** Supabase dashboard access blocked at 2FA screen. Project ixvwfbuvfxxsjiywhbbb requires 2FA authentication but user cannot access dashboard.
+
+**Blocker:** Cannot send email directly. No email tool available. Gmail MCP requires OAuth which is unavailable in non-interactive session per system-reminder.
+
+**Action Required:** User must manually send email to Supabase support.
+
+**Documentation Created:**
+- docs/C51-SUPABASE-2FA-RECOVERY.md - Full recovery guide with project details, impact analysis, recovery steps
+- SEND-THIS-EMAIL.txt - Ready-to-send email draft for support@supabase.com
+
+**Impact:** Blocks all database operations requiring dashboard access:
+- Migration application (162, 289)
+- Money constraints verification (M13 - CRITICAL)
+- RLS policy verification (M14)
+- Database performance audits (M05)
+- MCP OAuth configuration
+
+**Recovery Timeline:**
+- Expected Supabase support response: 24-48 hours
+- If no response by 2026-10-26: Escalate via Discord/GitHub/Twitter
+
+**Alternative Access:**
+- Management API via CLI token (currently working, limited operations)
+- Service role key (REST API only, no dashboard/migrations)
+
+**Next Steps After Recovery:**
+1. Configure MCP OAuth in claude.ai connector settings
+2. Apply pending migrations 162, 289
+3. Run audit-money-constraints.mjs
+4. Verify database backups/PITR
+5. Document 2FA backup codes
+
+**Result:** Email draft prepared, documentation complete. WAITING FOR USER to send email to support@supabase.com or visit https://supabase.com/support.
+
+## המשך מ: BLOCKED C51 - Awaiting user email to Supabase support

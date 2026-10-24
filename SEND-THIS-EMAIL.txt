@@ -1,0 +1,72 @@
+============================================================
+URGENT: SEND THIS EMAIL TO SUPABASE SUPPORT
+============================================================
+
+TO: support@supabase.com
+
+SUBJECT: 2FA Recovery Request - Project ixvwfbuvfxxsjiywhbbb
+
+BODY:
+
+Hello Supabase Support Team,
+
+I need help recovering access to my Supabase project due to 2FA issues.
+
+Project Details:
+- Project ID: ixvwfbuvfxxsjiywhbbb
+- Project URL: https://ixvwfbuvfxxsjiywhbbb.supabase.co
+- Organization: Kenyon Express
+- Account Email: kenyonexpress@gmail.com
+
+Issue:
+I am unable to access the Supabase dashboard due to 2FA authentication screen. I need to regain access to manage migrations and database operations for our production e-commerce platform.
+
+Verification:
+I can provide verification via:
+- Account email: kenyonexpress@gmail.com
+- Project service role key (available)
+- GitHub repository: kenyonexpress/kenyonexpress
+
+Urgency:
+This is blocking critical production database migrations including payment constraint verification and cron job setup.
+
+Please advise on the 2FA recovery process or reset the 2FA for this account.
+
+Thank you,
+Ofir
+Kenyon Express
+kenyonexpress@gmail.com
+
+============================================================
+ALTERNATIVE: USE SUPPORT FORM
+============================================================
+
+Visit: https://supabase.com/support
+
+Fill in:
+- Email: kenyonexpress@gmail.com
+- Subject: 2FA Recovery Request - Project ixvwfbuvfxxsjiywhbbb
+- Description: (copy email body above)
+- Priority: High
+- Category: Account/Authentication
+
+============================================================
+WHAT TO DO NEXT
+============================================================
+
+1. Send the email above to support@supabase.com
+   OR fill out the support form at https://supabase.com/support
+
+2. Wait 24-48 hours for response (Supabase support SLA)
+
+3. If no response by 2026-10-26, escalate:
+   - Supabase Discord: https://discord.supabase.com
+   - GitHub: https://github.com/supabase/supabase/issues
+   - Twitter: @supabase
+
+4. Once access restored:
+   - Run: claude /goal continue
+   - Document 2FA backup codes
+   - Configure MCP OAuth in claude.ai
+
+============================================================
