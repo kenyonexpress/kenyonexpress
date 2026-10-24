@@ -1,0 +1,2 @@
+-- Migration 301: suppliers.verification_status (re-home of supabase/migrations/297_supplier_verification_status.sql, never applied)
+-- Idempotent. Apply via Supabase MCP apply_migration on ixvwfbuvfxxsjiywhbbb.
