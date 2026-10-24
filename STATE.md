@@ -401,3 +401,4 @@ Critical M-cycle gates:
 9. Vercel production deployment (resolve C41 platform error)
 10. Production monitoring validation (Sentry/PostHog/Axiom live verification)
 
+BLOCKED Z05 visual gate + 280 apply-check (re-run 11 2026-10-24): unchanged. F05 cancel-and-refund, notifications toggle, migrations 185 (applied, logged) + 280 shipped (da60e5c63); branch in sync (6029e5a0e). Visual gate has no RTL Electro v7 account baseline. 280 (user_consents) absent from docs/MIGRATIONS-APPLIED.md; claude.ai Supabase MCP still needs OAuth (authorize in connector settings), so apply_migration cannot run. No code change. STATE.md is 400+ lines, over the 300 cap; archive to docs/STATE-ARCHIVE.md pending.
