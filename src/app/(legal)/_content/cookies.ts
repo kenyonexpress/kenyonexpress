@@ -28,6 +28,7 @@ import type { LegalDoc } from './types'
  * defining module:
  *   ke_session_id      cart/guest-session-cookie.ts   30d, httpOnly
  *   ke_consent         analytics/consent.ts           365d, browser-readable
+ *   ke_consent_prefs   analytics/consent-categories.ts 365d, browser-readable
  *   ke_attr            analytics/attribution.ts       30d
  *   ke_ref             referrals/cookie.ts            30d, httpOnly
  *   ke_aff             affiliate/rules.ts             30d, httpOnly
@@ -99,6 +100,12 @@ export const cookiesDoc: LegalDoc = {
               'ke_consent',
               'עוגייה',
               'שומרת את החלטת ההסכמה שלכם ואת גרסת הנוסח שלפיה ניתנה, כדי שלא נשאל שוב וכדי שנוסח חדש יחייב שאלה מחדש',
+              '12 חודשים',
+            ],
+            [
+              'ke_consent_prefs',
+              'עוגייה',
+              'שומרת את העדפות ההסכמה המפורטות שלכם (הכרחי, ניתוח שימוש, שיווק) כדי לכבד את הבחירה שביצעתם בהגדרות',
               '12 חודשים',
             ],
             [
