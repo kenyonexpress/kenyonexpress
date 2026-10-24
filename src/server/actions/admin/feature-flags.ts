@@ -12,12 +12,21 @@ import { redirect } from 'next/navigation'
  * 286). Admin only: it takes every customer-facing page offline. The proxy
  * picks the change up within 30 seconds on each instance.
  */
+const MAINTENANCE_RETURN_PATHS = ['/admin/feature-flags', '/admin/settings']
+
 async function runSetMaintenance(formData: FormData): Promise<void> {
+  // Both /admin/settings and /admin/feature-flags host the toggle; send the
+  // admin back to the one they used (allowlisted, never an open redirect).
+  const requested = formData.get('return_to')
+  const back =
+    typeof requested === 'string' && MAINTENANCE_RETURN_PATHS.includes(requested)
+      ? requested
+      : '/admin/feature-flags'
   let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
     session = await requireAdminSession()
   } catch {
-    redirect('/admin/feature-flags?error=forbidden')
+    redirect(`${back}?error=forbidden`)
   }
   const on = formData.get('maintenance_mode') === 'on'
   const { error } = await createAdminClient()
@@ -27,7 +36,7 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
       bool_value: on,
       updated_at: new Date().toISOString(),
     } as never)
-  if (error) redirect('/admin/feature-flags?error=save_failed')
+  if (error) redirect(`${back}?error=save_failed`)
 
   await writeAuditLog({
     actorId: session.userId,
@@ -37,8 +46,8 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
     entityId: 'maintenance_mode',
     changes: { old: null, new: { maintenance_mode: on } },
   })
-  revalidatePath('/admin/feature-flags')
-  redirect(`/admin/feature-flags?maintenance=${on ? 'on' : 'off'}`)
+  revalidatePath(back)
+  redirect(`${back}?maintenance=${on ? 'on' : 'off'}`)
 }
 
 export async function setMaintenanceMode(formData: FormData): Promise<void> {
