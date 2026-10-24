@@ -233,3 +233,4 @@ Continue from Z06 DONE-AS-SHIPPED (re-run 9 2026-10-24): unchanged. CSV import a
 Continue from Z07 DONE-AS-SHIPPED (re-run 7 2026-10-24): unchanged. verify-card-stub on origin (3735bb4c2), 4 tests green, branch in sync (d9d2f050a). No code change.
 Continue from Z07 DONE-AS-SHIPPED (re-run 8 2026-10-24): unchanged. verify-card-stub (flag CARD_VERIFY_STUB_ENABLED) on origin, 4 tests green. No code change.
 Continue from Z07 DONE-AS-SHIPPED (re-run 9 2026-10-24): unchanged. verify-card-stub (flag CARD_VERIFY_STUB_ENABLED) on origin, 4 tests green, HEAD f7eb30484. No code change.
+Continue from Z08 DONE-AS-SHIPPED (re-run 8 2026-10-24): unchanged. F11 club tiers on origin/closeout/v1-final (714b01d7f editor + migration 282, 2a252fd53 /admin/clubs redirect), 6 club tests green, branch in sync (9d48c451e). 282 not in docs/MIGRATIONS-APPLIED.md; Supabase MCP needs OAuth so prod state unverified. No code change.
