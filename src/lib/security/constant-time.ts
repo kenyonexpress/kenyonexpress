@@ -43,3 +43,12 @@ export function bearerMatches(header: string | null | undefined, expected: strin
   if (!header.startsWith(prefix)) return false
   return secretEquals(header.slice(prefix.length), expected)
 }
+
+/**
+ * Check if the x-cron-secret header matches the expected secret.
+ * Used as an alternative to Authorization: Bearer for cron endpoints.
+ */
+export function cronSecretMatches(header: string | null | undefined, expected: string): boolean {
+  if (!header || !expected) return false
+  return secretEquals(header, expected)
+}
