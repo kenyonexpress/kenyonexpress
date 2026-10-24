@@ -44,9 +44,9 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // CSP, X-Frame-Options, and Permissions-Policy are now set dynamically in src/proxy.ts
 // with nonces and path-dependent values, so they're omitted here to avoid overwriting.
 const headersWithPolicy = (
-  csp: string,
-  frameOptions: 'DENY' | 'SAMEORIGIN',
-  permissions: string,
+  _csp: string,
+  _frameOptions: 'DENY' | 'SAMEORIGIN',
+  _permissions: string,
 ) => [
   // CSP, X-Frame-Options, and Permissions-Policy are set in src/proxy.ts with nonces
   // and are NOT included here to avoid overwriting the dynamic middleware headers.
@@ -195,6 +195,17 @@ const nextConfig: NextConfig = {
           { key: 'X-Cache-Status', value: 'dynamic' },
         ],
       })),
+      // Last on purpose: later entries override earlier Cache-Control, and the
+      // catch-all above would otherwise win. The service worker must always
+      // revalidate: its version string is the kill switch, and a worker cached
+      // for an hour delays that by an hour.
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
     ]
   },
   async redirects() {

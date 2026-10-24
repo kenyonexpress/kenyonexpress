@@ -48,6 +48,14 @@ describe('the service worker precaches only things that exist', () => {
     expect(existsSync(resolve(process.cwd(), 'src/app/offline/page.tsx'))).toBe(true)
   })
 
+  it('keeps offline caching AND push in the one file', () => {
+    // A push-only rewrite of this file once shipped and silently removed offline
+    // support; nothing failed. Pin both halves.
+    expect(sw).toContain("addEventListener('fetch'")
+    expect(sw).toContain("addEventListener('push'")
+    expect(sw).toContain("addEventListener('notificationclick'")
+  })
+
   it('precaches an icon that is on disk', () => {
     expect(inPublic('/icons/icon-192.png')).toBe(true)
   })
