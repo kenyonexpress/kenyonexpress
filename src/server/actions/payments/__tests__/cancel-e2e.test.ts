@@ -208,7 +208,7 @@ describe('C61: End-to-end Cancellation Flow', () => {
         {
           orderItemId: 'item-1',
           productType: 'physical',
-          settlementStatus: 'unsettled',
+          settlementStatus: 'paid',
           supplierId: 'supplier-1',
           supplierReleasedAgorot: 0,
         },
@@ -237,7 +237,7 @@ describe('C61: End-to-end Cancellation Flow', () => {
         {
           orderItemId: 'item-1',
           productType: 'physical',
-          settlementStatus: 'unsettled',
+          settlementStatus: 'paid',
           supplierId: 'supplier-1',
           supplierReleasedAgorot: 0,
         },
