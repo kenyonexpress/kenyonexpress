@@ -211,7 +211,7 @@ describe('audit log trigger coverage', () => {
     // Should list expected tables
     expect(preflight).toContain('orders')
     expect(preflight).toContain('vouchers')
-    expect(preflight).toContain('refunds')
+    expect(preflight).toContain('invoices')
   })
 })
 

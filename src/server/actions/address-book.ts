@@ -21,7 +21,9 @@ const addressBookSchema = z.object({
   city: z.string().trim().min(1, 'יש להזין עיר').max(100, 'העיר ארוכה מדי'),
   postal_code: z.string().trim().max(20).optional().nullable(),
   country: z.string().length(2).default('IL'),
-  is_default: z.coerce.boolean().default(false),
+  is_default: z
+    .union([z.boolean(), z.enum(['true', 'false']).transform((v) => v === 'true')])
+    .default(false),
 })
 
 export type AddressBookInput = z.infer<typeof addressBookSchema>

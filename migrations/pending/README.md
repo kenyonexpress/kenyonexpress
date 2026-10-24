@@ -1,5 +1,11 @@
 # `migrations/pending/`
 
+## 2026-10-25: 301, 302 and 304 added (G13, C66, C67)
+
+- `301_push_subscriptions.sql` - PENDING (G13). Creates push_subscriptions for browser push, written by /api/push/subscribe with the service role; users read and delete their own rows. Requires MCP apply_migration.
+- `302_address_book.sql` - PENDING (C66). Creates address_book for saved shipping addresses, one default per user. Requires MCP apply_migration.
+- `304_soft_delete_consolidation.sql` - PENDING (C67). Adds deleted_at to vouchers and profiles and filters deleted rows in their RLS policies. Written as 131 under supabase/migrations/, renumbered because 131 is taken by 131_refunds.sql. Requires MCP apply_migration.
+
 ## 2026-10-25: 303 added (C68)
 
 - `303_comprehensive_audit_triggers.sql` - PENDING (C68). Adds audit triggers for 20 verified existing tables (orders, vouchers, payments, invoices, settlements, carts, etc.). All triggers use existing audit_log_trigger_fn() to capture who/what/before/after/at. Requires MCP apply_migration.

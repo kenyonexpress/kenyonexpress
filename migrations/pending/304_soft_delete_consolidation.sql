@@ -1,4 +1,4 @@
--- 131_soft_delete_consolidation.sql
+-- 304_soft_delete_consolidation.sql
 --
 -- Consolidates soft delete (deleted_at) across core tables and updates RLS
 -- policies to filter out deleted rows. This migration:

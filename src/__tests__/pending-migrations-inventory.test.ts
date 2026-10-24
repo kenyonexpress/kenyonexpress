@@ -240,6 +240,10 @@ describe('the pending migration inventory', () => {
       '293_phase2_feature_flags.sql',
       '295_notification_preferences.sql',
       '300_c16_payment_refund_infrastructure.sql',
+      '301_push_subscriptions.sql',
+      '302_address_book.sql',
+      '303_comprehensive_audit_triggers.sql',
+      '304_soft_delete_consolidation.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -269,6 +273,10 @@ describe('the pending migration inventory', () => {
       'preflight_293.sql',
       'preflight_295.sql',
       'preflight_300.sql',
+      'preflight_301.sql',
+      'preflight_302.sql',
+      'preflight_303.sql',
+      'preflight_304.sql',
     ])
   })
 

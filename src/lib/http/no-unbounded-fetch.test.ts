@@ -60,6 +60,8 @@ const ALLOWED: Record<string, string> = {
 
   'app/error.tsx':
     'Browser error boundary: probes our own /api/health to tell the visitor whether the site is down, and a hung probe costs the page nothing.',
+  'components/account/PushToggle.tsx':
+    'Browser, to our own /api/push/subscribe route, after a permission prompt the browser itself bounds; a hung request leaves the toggle pending and costs nothing else.',
   'components/auth/PasskeyBanner.tsx':
     'Browser, to our own passkey routes, inside a WebAuthn ceremony the browser already bounds with its own prompt timeout.',
   'components/auth/PasskeyManager.tsx':

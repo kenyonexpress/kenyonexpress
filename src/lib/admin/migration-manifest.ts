@@ -542,4 +542,16 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: false,
   },
+  {
+    number: '303',
+    file: '303_comprehensive_audit_triggers.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '304',
+    file: '304_soft_delete_consolidation.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
 ] as const
