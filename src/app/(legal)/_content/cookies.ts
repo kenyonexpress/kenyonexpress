@@ -38,6 +38,7 @@ import type { LegalDoc } from './types'
  *   ke_cart_mirror_v1  cart/store.ts                  localStorage
  *   ke_ph_distinct_id  observability/posthog.ts       localStorage
  *   ke_a_session       analytics/session.ts           sessionStorage, 30min idle
+ *   ke_ph_identified   observability/posthog.ts       sessionStorage
  *   ke_theme           lib/theme.ts                   localStorage
  *   ke_push_prompt_dismissed  components/push/PushPrompt.tsx  localStorage
  *   ke_passkey_banner_dismissed  components/auth/PasskeyBanner.tsx  localStorage
@@ -202,6 +203,12 @@ export const cookiesDoc: LegalDoc = {
               'אחסון להפעלה',
               'מזהה ביקור יחיד לצורך מדידת ביצועים וחוויית שימוש. נמחק בסגירת הלשונית',
               'ביקור אחד, ומתחדש אחרי 30 דקות של חוסר פעילות',
+            ],
+            [
+              'ke_ph_identified',
+              'אחסון להפעלה',
+              'סימון שמונע שליחה חוזרת של אותו חיבור בין המזהה האנונימי לבין חשבונכם באותה לשונית. נשמר רק אם נתתם הסכמה למדידה, ונמחק בסגירת הלשונית',
+              'עד סגירת הלשונית',
             ],
             [
               'Google Analytics 4',

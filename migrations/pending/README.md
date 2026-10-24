@@ -1077,3 +1077,12 @@ site. The two have to change together.
 - `294_group_deals.sql` - Group deals / bulk purchase discounts (C47 Item 1). Creates `group_deals` and `group_deal_participants` tables for tiered volume pricing.
 - `295_subscriptions.sql` - Course subscriptions (C47 Item 6). Creates `subscriptions` and `subscription_invoices` tables for recurring billing. Gated by courses-monthly flag (migration 293).
 - `296_bookings.sql` - Tzimmer bookings (C47 Item 7). Creates `bookings` table for vacation rental calendar. Gated by tzimmer-calendar flag (migration 293).
+- `190_maintenance.sql` - Maintenance switch (G16). Idempotently guarantees `feature_flags` and its `maintenance_mode` row exist so `/admin/settings` can flip the switch; never overwrites an existing value. Shares number 190 with `190_partner_api_infrastructure.sql`; preflight_190 covers both.
+- `297_order_items_purchase_count_rls.sql` - C58 purchase count RLS on `order_items`. NOT REVIEWED FOR CORRECTNESS: the anon policy is `USING (false)`, which makes an anonymous `COUNT(*)` return 0 rather than the count, so it does not deliver what its header says. Settle that before applying. Shares number 297 with the next row; preflight_297 covers both.
+- `297_user_verification_milestones.sql` - C65 verification milestones (`milestone_type` enum and `user_verification_milestones` table) for phone verification after 5 orders.
+- `298_voucher_8digit_redemption_codes.sql` - C59 `vouchers.redemption_code` and `redemption_code_signature` with format, pairing and partial unique-index constraints. The identical copy that sat in `supabase/migrations/` was removed so the number means one thing.
+- `299_cookie_consent.sql` - C63 `cookie_consent` table for granular consent preferences. Applied; lives in `migrations/applied/`.
+- `300_profiles_orders_physical_count.sql` - G20 `profiles.orders_physical_count` counter, backfill and `bump_orders_physical_count` function for the F42 checkout gate. Integer counter, no money.
+- `301_supplier_verification_status.sql` - `suppliers.verification_status` enum and column. Re-home of a never-applied copy that sat in `supabase/migrations/` under number 297; that copy was removed so the number means one thing.
+- `298_admin_users_rls.sql` - C72 enables RLS on `admin_users`. Shares number 298 with `298_voucher_8digit_redemption_codes.sql`; preflight_298 covers both.
+- `299_payment_card_verifications_rls.sql` - C72 enables RLS on `payment_card_verifications`. Shares number 299 with the applied `299_cookie_consent.sql`.

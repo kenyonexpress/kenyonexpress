@@ -19,7 +19,7 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 vi.mock('@/lib/supabase/server', () => ({
-  createServerClient: vi.fn(async () => ({
+  createClient: vi.fn(async () => ({
     auth: {
       getUser: vi.fn(async () => ({
         data: { user: { id: 'test-user-id', email: 'test@example.com' } },

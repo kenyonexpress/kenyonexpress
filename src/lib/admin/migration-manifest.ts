@@ -382,6 +382,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '190',
+    file: '190_maintenance.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '190',
     file: '190_partner_api_infrastructure.sql',
     state: 'pending',
     hasPreflight: true,
@@ -569,6 +575,54 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
     number: '296',
     file: '296_bookings.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '297',
+    file: '297_order_items_purchase_count_rls.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '297',
+    file: '297_user_verification_milestones.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '298',
+    file: '298_admin_users_rls.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '298',
+    file: '298_voucher_8digit_redemption_codes.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '299',
+    file: '299_payment_card_verifications_rls.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '299',
+    file: '299_cookie_consent.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '300',
+    file: '300_profiles_orders_physical_count.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '301',
+    file: '301_supplier_verification_status.sql',
     state: 'pending',
     hasPreflight: true,
   },

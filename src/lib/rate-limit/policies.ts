@@ -199,6 +199,8 @@ export const RATE_LIMIT_POLICIES = {
   // duplicates through. `refunds_one_open_per_order` already makes the duplicate
   // harmless; this only bounds a script.
   'refund-request': { limit: 5, windowSeconds: 3600, reason: 'cancellation notice, per user' },
+  // The HTTP door in front of it: bounds an anonymous script before the session lookup.
+  'refund-request-ip': { limit: 30, windowSeconds: 3600, reason: 'cancellation endpoint, per IP' },
 
   // rc5 F12. Keyed on the user: both act only on the caller's own affiliate row.
   'affiliate-join': { limit: 5, windowSeconds: 3600, reason: 'affiliate application, per user' },

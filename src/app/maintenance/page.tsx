@@ -1,6 +1,10 @@
-'use client'
-
 import Link from 'next/link'
+import { ReloadButton } from './ReloadButton'
+
+export const metadata = {
+  title: 'האתר בתחזוקה',
+  robots: { index: false, follow: true },
+}
 
 /**
  * Where page visits go while maintenance mode is on (the proxy redirects
@@ -12,8 +16,8 @@ import Link from 'next/link'
  * page. The visual language is consistent: brand yellow numeral, Hebrew RTL,
  * design tokens for text and spacing.
  *
- * Client component for the refresh button interactivity. Metadata is set via
- * layout or fallback to defaults.
+ * A server component: only the refresh button is a client component, so the
+ * page can declare its own (noindex) metadata.
  */
 export default function MaintenancePage() {
   return (
@@ -76,13 +80,7 @@ export default function MaintenancePage() {
 
           {/* Actions */}
           <div className="mt-8 flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="inline-block rounded-lg bg-brand-dark px-8 py-3 text-base font-bold text-white transition-transform hover:scale-105"
-            >
-              נסו לרענן את הדף
-            </button>
+            <ReloadButton />
             <Link
               href="/"
               className="inline-block rounded-lg border-2 border-brand-dark px-8 py-3 text-base font-bold text-brand-dark transition-colors hover:bg-brand-dark hover:text-white"

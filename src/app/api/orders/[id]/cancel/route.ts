@@ -1,4 +1,5 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { requestOrderRefund } from '@/server/actions/payments/request-refund'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
@@ -49,6 +50,10 @@ async function handlePOST(
 ): Promise<NextResponse> {
   const { id } = await context.params
   if (!UUID.test(id)) return fail(404, 'NOT_FOUND', 'הזמנה לא נמצאה.')
+
+  if (!(await checkRateLimit(`refund-request-ip:${await getClientIp()}`, 30, 3600))) {
+    return fail(429, 'RATE_LIMITED', 'יותר מדי בקשות ביטול. נסה שוב בעוד שעה.')
+  }
 
   if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
     return fail(415, 'BAD_REQUEST', 'סוג הבקשה לא נתמך.')
