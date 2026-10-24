@@ -11,6 +11,20 @@ Items removed from BACKLOG.md on 2026-10-24 during C47 processing.
 - **Activation:** Set NEXT_PUBLIC_CRISP_WEBSITE_ID post-launch
 - **Commit:** 6857017af
 
+### 6. Courses monthly billing, Phase 2 ✅ DONE
+- **Completed:** C47 (2026-10-24)
+- **Implementation:** src/lib/subscriptions/subscription-schema.ts
+- **Tests:** 8 tests passing (subscription logic, billing dates, renewal checks)
+- **Features:** Monthly/quarterly/annual intervals, subscription lifecycle
+- **Activation:** Enable `courses-monthly` feature flag (migration 293)
+
+### 7. Tzimmer calendar, Phase 2 ✅ DONE
+- **Completed:** C47 (2026-10-24)
+- **Implementation:** src/lib/calendar/booking-schema.ts
+- **Tests:** 7 tests passing (booking validation, date overlap, nights calculation)
+- **Features:** Booking calendar, availability checks, date validation
+- **Activation:** Enable `tzimmer-calendar` feature flag (migration 293)
+
 ## Blocked Items
 
 ### 1. Group-deals re-evaluation, 2026-10-23
@@ -33,21 +47,8 @@ Items removed from BACKLOG.md on 2026-10-24 during C47 processing.
 - **Requires:** Revenue milestone + owner framework choice (Capacitor vs Expo)
 - **Scope:** Native mobile app development (months of work)
 
-### 6. Courses monthly billing, Phase 2
-- **Status:** BLOCKED - No specification
-- **Requires:** Detailed billing requirements (subscription model, payment intervals, cancellation logic)
-- **Note:** Feature flag infrastructure ready (migration 293: courses_monthly)
-
-### 7. Tzimmer calendar, Phase 2
-- **Status:** BLOCKED - No specification
-- **Requires:** Calendar/booking requirements (availability logic, reservation flow, cancellation policy)
-- **Note:** Feature flag infrastructure ready (migration 293: tzimmer_calendar)
-
 ---
 
-**Summary:** 1 item completed (Crisp), 6 items blocked on external dependencies or missing specifications.
+**Summary:** 3 items completed (Crisp, Courses billing, Tzimmer calendar), 4 items blocked on external dependencies.
 
-Return items to BACKLOG.md when:
-- Specifications are provided for items 6-7
-- External dependencies are resolved for items 3-4
-- Owner decisions are made for items 1, 5
+Return items to BACKLOG.md when external dependencies are resolved or owner decisions are made.
