@@ -14,6 +14,7 @@ Working directory: /Users/ofir/kenyonexpress-autopilot (worktree)
 ✅ C29: Supplier click-wrap agreement tracking
 ✅ C30: Legal pages Israeli law verification
 ⚠️ C33: Lighthouse benchmarking - INCOMPLETE
+✅ C37: Feature flags + maintenance_mode via Supabase config, Phase 2 flags OFF
 
 ## C33 Final Status (2026-10-24)
 
@@ -100,10 +101,16 @@ C33 marked INCOMPLETE. Localhost testing environment cannot satisfy Perf > 90 re
 
 ## המשך מ:
 
-C33 incomplete. Awaiting:
-- Production deployment for real performance measurement
-- OR goal redefinition to accept localhost limitations
-- OR C34 definition
+C37 COMPLETE (eb7ebf3d8)
+
+Feature flags system implemented:
+- Migration 293: Phase 2 flags seeded in feature_flags table (all OFF)
+- Supabase config integration with 30s cache, fails open to env vars  
+- Admin UI with toggle functionality + audit logging
+- 25 tests passing (supabase-flags, integration, server actions)
+- Quality gates: type-check clean, lint clean, build success
+
+Pending migration application via Supabase MCP (OAuth required)
 
 ## Next Steps
 
