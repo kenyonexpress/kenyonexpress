@@ -2,6 +2,7 @@ import { formatIls } from '@/lib/commerce/money'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { listPublicTiers } from '@/server/queries/club'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'מועדון לקוחות',
@@ -9,9 +10,7 @@ export const metadata: Metadata = {
   alternates: alternatesFor('/club'),
 }
 
-export default async function ClubPage() {
-  const tiers = await listPublicTiers()
-
+export default function ClubPage() {
   return (
     <section dir="rtl" className="space-y-4">
       <div>
@@ -20,6 +19,18 @@ export default async function ClubPage() {
           הדרגה נקבעת לפי סך הרכישות ששולמו ב-12 החודשים האחרונים. ההטבות בכל דרגה מפורטות כאן.
         </p>
       </div>
+      <Suspense fallback={<p className="text-sm text-gray-500">טוען דרגות…</p>}>
+        <ClubTiers />
+      </Suspense>
+    </section>
+  )
+}
+
+async function ClubTiers() {
+  const tiers = await listPublicTiers()
+
+  return (
+    <>
       {tiers === null ? (
         <p className="text-sm text-gray-500">
           לא הצלחנו לטעון את דרגות המועדון. נסו שוב מאוחר יותר.
@@ -49,6 +60,6 @@ export default async function ClubPage() {
           ))}
         </ul>
       )}
-    </section>
+    </>
   )
 }
