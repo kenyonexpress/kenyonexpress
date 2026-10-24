@@ -4,6 +4,7 @@ import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import LocationPin from '@/components/product/LocationPin'
+import SupplierVerificationBadge from '@/components/supplier/SupplierVerificationBadge'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -32,6 +33,11 @@ export type Product = {
   assets?: Record<string, GalleryAsset>
   weekend_only?: boolean | null
   free_shipping?: boolean | null
+  /** Supplier verification status and name, joined from suppliers table */
+  supplier?: {
+    name: string
+    verification_status: 'unverified' | 'pending' | 'verified'
+  } | null
 }
 
 /**
@@ -209,8 +215,16 @@ function DealsProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {(product.weekend_only || product.free_shipping) && (
+        {(product.weekend_only ||
+          product.free_shipping ||
+          product.supplier?.verification_status === 'verified') && (
           <div className="absolute top-2 end-2 flex flex-col gap-1">
+            {product.supplier?.verification_status === 'verified' && (
+              <SupplierVerificationBadge
+                status={product.supplier.verification_status}
+                supplierName={product.supplier.name}
+              />
+            )}
             {product.weekend_only && (
               <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">
                 סוף ש
