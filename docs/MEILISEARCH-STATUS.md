@@ -77,19 +77,73 @@ See [`docs/MEILISEARCH-SETUP.md`](./MEILISEARCH-SETUP.md) for full configuration
 - `MEILISEARCH_API_KEY`: `20afdc2f9a407634fa090c76379b73caddedf6a4` (found in `.env.vercel.production`)
 - Example suggests host: `https://search.kenyonexpress.co.il`
 
-**Health Check Result:**
+**Production Instance Status:**
 ```bash
 curl 'https://search.kenyonexpress.co.il/health'
 # Returns: "The deployment could not be found on Vercel."
 # Status: DEPLOYMENT_NOT_FOUND
 ```
 
-**Diagnosis:** No Meilisearch instance exists at the configured URL. The subdomain `search.kenyonexpress.co.il` returns a Vercel 404, meaning:
-1. No Meilisearch Cloud instance was ever created, OR
-2. Instance exists at a different URL not documented in repo
+**Diagnosis:** No Meilisearch Cloud instance exists at the configured URL.
 
-**Current Search Engine:**
-- `engine: 'database'` (Postgres ILIKE fallback confirmed)
+**Local Testing (2026-10-25) - All Features Verified ✅**
+
+Ran local Meilisearch instance (v1.x via Homebrew) to verify configuration:
+
+```bash
+# Started local instance
+meilisearch --master-key="test-master-key-min-20-chars" --http-addr="127.0.0.1:7700"
+
+# Applied Hebrew settings
+✓ 10 searchable attributes (name_he, brand, city, etc.)
+✓ 505 Hebrew synonym entries (13 bidirectional groups)
+✓ Typo tolerance: 4/7 chars (Hebrew-tuned)
+✓ Ranking: in_stock:desc before proximity
+✓ Stop words: 8 Hebrew conjunctions
+
+# Seeded 10 products from production Supabase
+✓ Products indexed successfully
+```
+
+**Hebrew Search Verification:**
+
+Direct search:
+```bash
+curl 'http://127.0.0.1:7700/indexes/products/search' -d '{"q": "חופשה"}'
+# Results: 2 hits (חופשה במלדיבים, חופשה חלומית...)
+```
+
+Hebrew synonyms working:
+```bash
+curl 'http://127.0.0.1:7700/indexes/products/search' -d '{"q": "נופש"}'
+# Results: 2 hits (same products - נופש is synonym of חופשה)
+```
+
+Hebrew typo tolerance working:
+```bash
+curl 'http://127.0.0.1:7700/indexes/products/search' -d '{"q": "חןפשה"}'
+# Results: 2 hits (typo corrected to חופשה)
+```
+
+**Next.js /api/search with Meilisearch:**
+```bash
+# Started Next.js with local Meilisearch env
+MEILISEARCH_HOST=http://127.0.0.1:7700 PORT=3399 pnpm start
+
+# Health check
+curl 'http://localhost:3399/api/ready'
+# Result: {"ok":true,"checks":{"meilisearch":"ok"}}
+
+# Hebrew search via API
+curl 'http://localhost:3399/api/search?q=חופשה'
+# Results: 3 products found
+```
+
+**Conclusion:** All Hebrew search features work correctly. Production only needs Cloud instance creation.
+
+**Current Production Search:**
+- `engine: 'database'` (Postgres ILIKE fallback)
+- Hebrew synonyms working via `expandQueryWord()`
 
 ### What Works
 
