@@ -47,7 +47,7 @@ type OrderItemRow = {
   supplier_id: string | null
   quantity: number
   unit_price_agorot: number | null
-  platform_percent: number | null
+  platform_percent_snapshot: number | null
   upfront_percent: number | null
   commission_percent_snapshot: number | null
   paid_on_site_agorot: number | null
@@ -101,9 +101,9 @@ async function issueVouchersForItem(
       `coupon order item ${item.id}: product has no coupon_expiry_days; refusing to issue a voucher with an invented expiry`,
     )
   }
-  if (item.platform_percent === null || item.platform_percent === undefined) {
+  if (item.platform_percent_snapshot === null || item.platform_percent_snapshot === undefined) {
     throw new Error(
-      `coupon order item ${item.id} has no platform_percent snapshot; refusing to issue`,
+      `coupon order item ${item.id} has no platform_percent_snapshot; refusing to issue`,
     )
   }
 
@@ -149,7 +149,7 @@ async function issueVouchersForItem(
       userId,
       priceIls: agorotToIls(agorot(faceUnits[unit] ?? 0)),
       couponPriceIls: agorotToIls(agorot(paidUnits[unit] ?? 0)),
-      platformPercent: item.platform_percent,
+      platformPercent: item.platform_percent_snapshot,
       couponExpiryDays: expiryDays,
       offerValidUntil,
       rateColumn,
@@ -464,7 +464,7 @@ export async function finalizeOrder(input: {
       await admin
         .from('order_items')
         .select(
-          `id, order_id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status`,
+          `id, order_id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, platform_percent_snapshot, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status`,
         )
         .eq('order_id', order.id),
       'finalize.order_items_read_failed',
@@ -751,6 +751,87 @@ export async function finalizeOrder(input: {
           // saved card is useless without knowing which account that was.
           cardcom_account_id: cardcomAccountId,
         })
+        .select('id')
+        .maybeSingle()
+      if (tokenInsertError) {
+        // Not fatal to the order -- the charge is already verified -- but a
+        // recurring line below cannot become a subscription without this row,
+        // and the shopper asked for the card to be saved. Loud, not silent.
+        log.error('finalize.token_not_saved', {
+          orderId: order.id,
+          reason: tokenInsertError.message,
+        })
+      }
+      savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
+    }
+
+    // THE SUBSCRIPTION IS BORN HERE, and only here. Renewal
+    // (api/cron/subscriptions) and cancellation existed while nothing anywhere
+    // inserted a subscriptions row -- the tables from 135b were applied and
+    // writerless, the same shape as payment_events and refunds before them.
+    //
+    // A recurring line reaching this point means the customer has already been
+    // charged for the first cycle, so a refusal to create the row is LOUD: a
+    // silent skip would take the money once and never renew or deliver.
+    {
+      // product_id is nullable on the row type (a deleted product leaves the
+      // line); a recurring line with no product cannot be planned and is
+      // filtered here so the planner's refusal names a real product id.
+      const recurringLines = (items as OrderItemRow[])
+        .filter((i) => i.product_type === 'recurring' && i.product_id != null)
+        .map((i) => ({
+          productId: i.product_id as string,
+          supplierId: i.supplier_id ?? null,
+          platformPercent: i.platform_percent_snapshot ?? null,
+        }))
+      if (recurringLines.length > 0) {
+        const { data: billing, error: billingReadError } = await admin
+          .from('products')
+          .select('id, recurring_amount_agorot, billing_interval, billing_interval_count')
+          .in(
+            'id',
+            recurringLines.map((l) => l.productId),
+          )
+        if (billingReadError) {
+          // The empty product list below makes the planner refuse with
+          // product_not_billable, which alarms -- but with the WRONG diagnosis.
+          // Name the real one.
+          log.error('finalize.billing_read_failed', {
+            orderId: order.id,
+            reason: billingReadError.message,
+          })
+        }
+        const plan = planSubscriptions({
+          userId: order.user_id,
+          paymentTokenId: savedTokenId,
+          lines: recurringLines,
+          products: (billing ?? []) as RecurringProductBilling[],
+          now,
+        })
+        if (!plan.ok) {
+          capturePaymentError(new Error('recurring line paid but no subscription plannable'), {
+            stage: 'finalize_order',
+            orderId: order.id,
+            paymentId: input.paymentId,
+            detail: { reason: plan.reason, product_id: plan.productId ?? null },
+          })
+        } else if (order.user_id && savedTokenId) {
+          const created = await createSubscriptionsForOrder(admin as unknown as SubscriptionAdmin, {
+            orderId: order.id,
+            userId: order.user_id,
+            paymentTokenId: savedTokenId,
+            rows: plan.rows,
+            now,
+          })
+          if (created.error) {
+            capturePaymentError(new Error('subscription insert failed after charge'), {
+              stage: 'finalize_order',
+              orderId: order.id,
+              paymentId: input.paymentId,
+              detail: { error: created.error },
+            })
+          }
+        }
       }
     }
 

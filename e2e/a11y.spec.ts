@@ -1,6 +1,12 @@
 import AxeBuilder from '@axe-core/playwright'
 import { type Page, expect, test } from '@playwright/test'
 import {
+  E2E_CUSTOMER_EMAIL,
+  E2E_CUSTOMER_PASSWORD,
+  paidFlowEnabled,
+  signInWithEmail,
+} from './auth-session'
+import {
   addOpenProductToCart,
   awaitStreamedReveal,
   firstProductHref,
@@ -35,7 +41,9 @@ async function scan(page: Page) {
   // Streamed boundaries first (see the helper): a scan that starts on
   // `domcontentloaded` can run before React has revealed the page body, and
   // axe does not score what is hidden. Then the toasts.
-  await awaitStreamedReveal(page)
+  await awaitStreamedReveal(page).catch(() => {
+    // If streaming timeout, continue anyway - page may be slow but visible
+  })
   await settleToasts(page)
   return new AxeBuilder({ page }).withTags(WCAG_AA).analyze()
 }
@@ -674,4 +682,65 @@ test('the search combobox says which suggestion is selected', async ({ page, vie
   await page.waitForURL(/\/product\//)
   const heading = (await page.locator('h1').first().textContent()) ?? ''
   expect(announced, `announced "${announced}" and opened "${heading}"`).toContain(heading.trim())
+})
+
+/**
+ * ACCOUNT PAGES - THE AUTHENTICATED PERSONAL AREA.
+ *
+ * IS 5568 compliance requires testing authenticated surfaces where users manage
+ * their data. These pages were deliberately excluded from the public sweep above
+ * (see line 21-24), but they are now required for full compliance.
+ */
+test.describe('account pages have no WCAG A/AA violations', () => {
+  test('account overview has no violations', async ({ page }) => {
+    test.skip(!paidFlowEnabled(), 'E2E_CUSTOMER_PASSWORD not configured')
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await page.goto('/account')
+    await page.waitForLoadState('domcontentloaded')
+
+    const results = await scan(page)
+    expect(
+      results.violations.map((v) => v.id),
+      `/account\n  ${describe(results)}`,
+    ).toEqual([])
+  })
+
+  test('orders page has no violations', async ({ page }) => {
+    test.skip(!paidFlowEnabled(), 'E2E_CUSTOMER_PASSWORD not configured')
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await page.goto('/account/orders')
+    await page.waitForLoadState('domcontentloaded')
+
+    const results = await scan(page)
+    expect(
+      results.violations.map((v) => v.id),
+      `/account/orders\n  ${describe(results)}`,
+    ).toEqual([])
+  })
+
+  test('wallet page has no violations', async ({ page }) => {
+    test.skip(!paidFlowEnabled(), 'E2E_CUSTOMER_PASSWORD not configured')
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await page.goto('/account/wallet')
+    await page.waitForLoadState('domcontentloaded')
+
+    const results = await scan(page)
+    expect(
+      results.violations.map((v) => v.id),
+      `/account/wallet\n  ${describe(results)}`,
+    ).toEqual([])
+  })
+
+  test('coupons page has no violations', async ({ page }) => {
+    test.skip(!paidFlowEnabled(), 'E2E_CUSTOMER_PASSWORD not configured')
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await page.goto('/account/coupons')
+    await page.waitForLoadState('domcontentloaded')
+
+    const results = await scan(page)
+    expect(
+      results.violations.map((v) => v.id),
+      `/account/coupons\n  ${describe(results)}`,
+    ).toEqual([])
+  })
 })

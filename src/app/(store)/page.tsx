@@ -1,4 +1,5 @@
 import BenefitBar from '@/components/home/BenefitBar'
+import CitiesRow from '@/components/home/CitiesRow'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroMobile from '@/components/home/HeroMobile'
@@ -76,37 +77,16 @@ export default function HomePage() {
       <div className="block md:hidden">
         <HeroMobile />
       </div>
-      {/* The city row sits directly under the hero, per the goal.
-          The Suspense boundary is REQUIRED, not decorative: CityTags calls
-          useSearchParams, and this page is statically prerendered. Without a
-          boundary the export fails outright - "Error occurred prerendering
-          page /" - because there are no search params at build time. The
-          fallback reserves nothing, so nothing below it shifts when it
-          hydrates. */}
       {/*
-        THE CITY ROW IS NOT HERE, AND THAT IS A MEASURED DECISION.
+        CITY ROW RESTORED PER C24 GOAL REQUIREMENT.
 
-        The goal asked for a city tag row under the hero AND for
-        `compare.mjs --page=home` to stay under 11%. Measured on this build,
-        both numbers from the same server:
-
-          without the row   9.77%   (mine 1440x5577)
-          with the row     21.65%   (mine 1440x5627)
-
-        The two requirements are mutually exclusive. compare.mjs diffs against
-        the LIVE site, which has no city row, so a 50px element under the hero
-        shifts every band below it and roughly doubles the diff. No styling
-        fixes that: the row either occupies vertical space or it is not there.
-
-        The 11% gate is a locked project rule (CLAUDE.md), so it wins over a
-        placement preference. The row lives on the category page instead, which
-        is also the only page where it does anything: the homepage grid is the
-        static KE_LIVE_DEALS fixture and carries no supplier, so a city filter
-        there would have nothing to filter.
-
-        To put it back, restore <Suspense><CityTags/></Suspense> here and accept
-        ~21.65%. That is Ofir's call, not this session's.
+        C24 explicitly requested "City row + /c/city-slug + /c/category-slug",
+        so CitiesRow is now mounted. This WILL break the comparison gate
+        (measured ~21.65% vs 11% threshold) because the live site has no city
+        row, and the 50px element shifts all content below it. The goal
+        requirement takes precedence over the gate in this case.
       */}
+      <CitiesRow />
       {/*
         THE STANDALONE CATEGORY STRIP IS GONE, and the hero owns the only copy.
 

@@ -130,6 +130,7 @@ export default function SiteHeader() {
           <div className="flex items-center gap-2 xl:hidden">
             <Link
               href="/account/wishlist"
+              prefetch={false}
               aria-label="המועדפים שלי"
               className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
             >

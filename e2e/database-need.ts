@@ -24,6 +24,7 @@
 
 /** Runs without a database. No sign-in, no seeded row, no write. */
 export const NO_DATABASE_SPECS = [
+  'a11y-minimal.spec.ts',
   'a11y.spec.ts',
   'cart.spec.ts',
   'category.spec.ts',
@@ -59,7 +60,7 @@ export const NEEDS_DATABASE_SPECS = {
   'auth.spec.ts': 'signs in as the fixture customer',
   'coupon-scan.spec.ts': 'redeems a seeded voucher as a supplier',
   'full-purchase-redeem.spec.ts': 'buys, then redeems what it bought',
-  'guest-checkout-widths.spec.ts': 'anonymous checkout at three widths, writes orders',
+  'guest-upgrade.spec.ts': 'signs in as the fixture customer and reads a seeded order',
   'physical-purchase.spec.ts': 'places an order against the mock terminal',
   'production-smoke.spec.ts': 'runs against a deployed origin, not localhost',
   'purchase-flow.spec.ts': 'places an order against the mock terminal',

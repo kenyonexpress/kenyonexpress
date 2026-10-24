@@ -53,6 +53,10 @@ const FILE_ALLOWLIST = new Set([
   // Partner API documentation: technical reference for developers, not customer-facing
   // marketing copy. English is required for API documentation and code examples.
   'src/app/(store)/developers/page.tsx',
+  // Admin helpers for external integrations: Meta verification and lawyer review.
+  // English required for Meta Business Manager API and professional legal services.
+  'src/lib/admin/meta-verification-helper.ts',
+  'src/lib/admin/legal-docs-verifier.ts',
 ])
 
 /**
@@ -72,6 +76,9 @@ const PHRASE_ALLOWLIST = [
   'Air Port City',
   'Tel Aviv',
   'Service Worker',
+  'Meta WhatsApp',
+  'Meta Business',
+  'Meta Business Manager',
 ]
 
 const COPY_KEYS =

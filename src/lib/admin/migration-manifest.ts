@@ -21,6 +21,12 @@ export interface MigrationEntry {
 
 export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
+    number: '000',
+    file: '000_infrastructure_dependencies.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
     number: '122',
     file: '122_deny_all_on_server_only_tables.sql',
     state: 'applied',
@@ -513,14 +519,56 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     hasPreflight: true,
   },
   {
+    number: '289',
+    file: '289_cron_revenue_daily.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '290',
+    file: '290_push_subscriptions_ensure.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '291',
+    file: '291_pg_cron_scheduled_gifts.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '291',
+    file: '291_platform_percent_snapshot.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '292',
+    file: '292_supplier_agreements.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
     number: '293',
     file: '293_phase2_feature_flags.sql',
     state: 'pending',
     hasPreflight: true,
   },
   {
-    number: '300',
-    file: '300_c16_payment_refund_infrastructure.sql',
+    number: '294',
+    file: '294_group_deals.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '295',
+    file: '295_subscriptions.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '296',
+    file: '296_bookings.sql',
     state: 'pending',
     hasPreflight: true,
   },

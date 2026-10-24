@@ -9,7 +9,7 @@ const line = (over: Partial<SettledLine> = {}): SettledLine => ({
   paid_on_site_agorot: 4000,
   commission_agorot: 1200,
   supplier_immediate_agorot: 2800,
-  platform_percent: 30,
+  platform_percent_snapshot: 30,
   ...over,
 })
 
@@ -32,7 +32,11 @@ describe('buildChargeSettledEvents', () => {
   it('derives the supplier half so 094 CHECK is satisfiable by construction', () => {
     // The line stores one half; the table requires the pair to sum to 100.
     for (const percent of [0, 5, 33.33, 100]) {
-      const [event] = buildChargeSettledEvents('o', [line({ platform_percent: percent })], AT)
+      const [event] = buildChargeSettledEvents(
+        'o',
+        [line({ platform_percent_snapshot: percent })],
+        AT,
+      )
       expect(
         (event?.platform_percent_snapshot ?? 0) + (event?.supplier_split_percent_snapshot ?? 0),
       ).toBeCloseTo(100, 5)
@@ -40,14 +44,18 @@ describe('buildChargeSettledEvents', () => {
   })
 
   it('leaves both halves null rather than inventing a split', () => {
-    const [event] = buildChargeSettledEvents('o', [line({ platform_percent: null })], AT)
+    const [event] = buildChargeSettledEvents('o', [line({ platform_percent_snapshot: null })], AT)
     expect(event?.platform_percent_snapshot).toBeNull()
     expect(event?.supplier_split_percent_snapshot).toBeNull()
   })
 
   it('refuses an out-of-range percent instead of writing one 094 would reject', () => {
     for (const percent of [-1, 101, Number.NaN]) {
-      const [event] = buildChargeSettledEvents('o', [line({ platform_percent: percent })], AT)
+      const [event] = buildChargeSettledEvents(
+        'o',
+        [line({ platform_percent_snapshot: percent })],
+        AT,
+      )
       expect(event?.platform_percent_snapshot).toBeNull()
     }
   })

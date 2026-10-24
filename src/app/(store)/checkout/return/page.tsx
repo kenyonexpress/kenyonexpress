@@ -13,6 +13,7 @@ import { agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { WALLET_AMOUNT_CANDIDATES, readFirstAvailableColumn } from '@/lib/supabase/optional-columns'
+import { createClient } from '@/lib/supabase/server'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import {
   buildCouponShareText,
@@ -29,6 +30,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import AutoRefresh from './AutoRefresh'
+import SaveWithGoogle from './SaveWithGoogle'
 import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
@@ -151,13 +153,22 @@ async function CheckoutReturnBody({ searchParams }: Props) {
 
   const cashbackAmount = agorot(cashbackAgorot ?? 0)
 
+  const {
+    data: { user: viewer },
+  } = await (await createClient()).auth.getUser()
+  const isGuestBuyer = viewer?.is_anonymous === true
+
   return (
     <div className="checkout-page">
       <div className="checkout-success">
         <PurchaseMarker />
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <PushPrompt />
-        <PasskeyBanner />
+        {isGuestBuyer ? (
+          <SaveWithGoogle next={`/checkout/return?order_id=${encodeURIComponent(orderId)}`} />
+        ) : (
+          <PasskeyBanner />
+        )}
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
           {shekels(agorot(orderMoney.totalAgorot))}

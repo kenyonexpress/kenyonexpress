@@ -26,6 +26,7 @@ Every file below is **not applied** and now has a row and a preflight. Run the
 `preflight_<n>.sql` through `execute_sql` first; apply through MCP
 `apply_migration`, one at a time, never `db push`.
 
+- `000_infrastructure_dependencies.sql` - `admin_users`, the `observability` schema and a stub `has_permission`, the dependencies 190-196 assume. Applies before them.
 - `191_saved_payment_method.sql` - `payment_card_verifications` (the 1 agora card check) and `profiles.saved_payment_method`.
 - `192_notification_history.sql` - `notification_deliveries`, the per-recipient delivery and interaction record.
 - `192_observability_schema.sql` - the `observability` schema and its three helper functions. Shares 192 with the file above; `preflight_192.sql` covers both.
@@ -36,7 +37,19 @@ Every file below is **not applied** and now has a row and a preflight. Run the
 - `277_fraud_monitoring.sql` - fraud signals, flags and the chargeback history table.
 - `287_sms_marketing.sql` - SMS broadcasts, recipients, delivery events, unsubscribes and consent. **Renumbered from 132**, which is `132_search_index_outbox.sql` in `applied/`. The shorter earlier draft draft in `supabase/migrations/` numbered 131 was removed in favour of this one, which is the version `src/lib/sms/` is written against.
 - `288_customer_rfm_segmentation.sql` - RFM scores, segments and `fn_calculate_rfm_scores` / `fn_segment_users`. **Moved from `supabase/migrations/` as number 130**, where 130 collided with `130_payment_events.sql` in `applied/`.
+- `289_cron_revenue_daily.sql` - `revenue_daily` (integer agorot, deny-all RLS), `aggregate_daily_revenue(date)` and the pg_cron job `ke-revenue-daily` (22:30 UTC). Pure SQL, no HTTP. Does not re-schedule `ke-expire-vouchers` (162) and adds no search job: the outbox drain rides `ke-health` (162).
+- `290_push_subscriptions_ensure.sql` - idempotent `push_subscriptions` (rc5 F14 browser push): a no-op wherever 179 already ran, creates the table anywhere it did not. Service role writes only.
+- `291_platform_percent_snapshot.sql` - renames `order_items.platform_percent` to `platform_percent_snapshot` and extends `fn_order_items_snapshot_lock()` to freeze it on paid orders. **Moved from `supabase/migrations/` as number 130**, where 130 collided with `130_payment_events.sql` in `applied/`. `finalize.ts` already reads the new name, so code needs this applied.
+- `291_pg_cron_scheduled_gifts.sql` - pg_cron job that drains scheduled gift sends (C27 `notification_outbox` rows with `next_attempt_at`). Preflight: `preflight_291.sql`.
 - `193_weekend_and_free_shipping.sql` - **CANCELLED**, moved to `migrations/cancelled/`. The weekend chip shipped as 284 and the free-shipping chip reads `shipping_price_agorot = 0` (278), so this would only add a duplicate `weekend_only` and a redundant `free_shipping` column.
+
+## 2026-10-24: 293 PENDING - Phase 2 feature flags (C37)
+
+`293_phase2_feature_flags.sql` seeds Phase 2 flags in `feature_flags` table (from migration 286): `physical_products`, `courses_monthly`, `tzimmer_calendar`, `monthly_billing`, all `false`. Admin toggle at `/admin/feature-flags` with audit logging. Code reads via `getSupabaseFlags()` (30s cache, fails open to env vars). **NOT YET APPLIED** - awaiting Supabase MCP OAuth.
+
+## 2026-10-24: 292 APPLIED - supplier_agreements (C29)
+
+`292_supplier_agreements.sql` creates `supplier_agreements` table for click-wrap terms acceptance tracking: version_hash (SHA-256), version_date, IP address, user_agent, links to supplier_lead/verification/supplier. Service role writes only (RLS enabled, no public policies). Applied via Supabase MCP (version 20261023202611), verified in schema_migrations and confirmed anon has no access.
 
 ## 2026-10-18: 286 APPLIED - feature_flags (rc5 F19)
 
@@ -1060,3 +1073,7 @@ order_items.supplier_payout_ils  order_items.cashback_earned_ils
 
 `src/lib/commerce/order-money-columns.ts` carries the same list at the call
 site. The two have to change together.
+
+- `294_group_deals.sql` - Group deals / bulk purchase discounts (C47 Item 1). Creates `group_deals` and `group_deal_participants` tables for tiered volume pricing.
+- `295_subscriptions.sql` - Course subscriptions (C47 Item 6). Creates `subscriptions` and `subscription_invoices` tables for recurring billing. Gated by courses-monthly flag (migration 293).
+- `296_bookings.sql` - Tzimmer bookings (C47 Item 7). Creates `bookings` table for vacation rental calendar. Gated by tzimmer-calendar flag (migration 293).

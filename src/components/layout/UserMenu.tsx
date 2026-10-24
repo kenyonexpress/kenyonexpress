@@ -52,7 +52,7 @@ export default function UserMenu({ email }: { email: string }) {
         <div className="px-2 py-1.5 text-sm text-muted-foreground">{email}</div>
         <DropdownMenuSeparator />
 
-        <Link href="/account" className="block">
+        <Link href="/account" prefetch={false} className="block">
           <DropdownMenuItem>סקירה</DropdownMenuItem>
         </Link>
         <Link href="/account/details" className="block">

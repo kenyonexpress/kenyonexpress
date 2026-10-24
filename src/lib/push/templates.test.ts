@@ -174,3 +174,33 @@ describe('product_restocked', () => {
     expect(buildPushContent('product_restocked', { product_name: 'test' }, SITE)).toBeNull()
   })
 })
+
+describe('cancel-confirm, invoice-ready, security-alert', () => {
+  it('cancel-confirm shows the refund in shekels from integer agorot', () => {
+    const c = buildPushContent(
+      'order_cancel_confirmed',
+      { order_id: 'o1', refund_agorot: 4750 },
+      SITE,
+    )
+    expect(c?.body).toContain('₪47.50')
+    expect(c?.data.url).toBe(`${SITE}/account/orders/o1`)
+  })
+
+  it('cancel-confirm and invoice-ready owe nothing without an order id', () => {
+    expect(buildPushContent('order_cancel_confirmed', {}, SITE)).toBeNull()
+    expect(buildPushContent('invoice_ready', {}, SITE)).toBeNull()
+  })
+
+  it('invoice-ready deep-links to the order', () => {
+    expect(buildPushContent('invoice_ready', { order_id: 'o2' }, SITE)?.data.path).toBe(
+      '/orders/o2',
+    )
+  })
+
+  it('security-alert falls back to generic copy and never echoes the payload', () => {
+    const c = buildPushContent('security_alert', { event: 'x', ip: '1.2.3.4' }, SITE)
+    expect(c?.title).toBe('התראת אבטחה בחשבון שלך')
+    expect(JSON.stringify(c)).not.toContain('1.2.3.4')
+    expect(c?.data.url).toBe(`${SITE}/account/security`)
+  })
+})

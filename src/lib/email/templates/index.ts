@@ -35,6 +35,15 @@ export {
   type RefundCompletedInput,
 } from './refund-completed'
 export { buildWelcomeEmail, type WelcomeInput } from './welcome'
+export { buildGiftEmail, type GiftInput } from './gift'
+export { buildVoucherExpiryEmail, type VoucherExpiryInput } from './voucher-expiry'
+export {
+  buildPasswordResetEmail,
+  buildSecurityAlertEmail,
+  type PasswordResetInput,
+  type SecurityAlertInput,
+  type SecurityEventKind,
+} from './auth-mail'
 
 export { sendEmail, mailFrom } from '@/lib/email/resend'
 export type { SendEmailInput, SendEmailResult } from '@/lib/email/resend'

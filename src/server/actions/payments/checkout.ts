@@ -3,6 +3,7 @@
 import { AFFILIATE_COOKIE } from '@/lib/affiliate/rules'
 import { appReturnUrl } from '@/lib/app/deep-links'
 import { toE164Israeli } from '@/lib/auth/phone-otp'
+import { getGuestSessionId } from '@/lib/cart/guest-session'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import {
@@ -35,7 +36,7 @@ import {
   loadCardcomEnv,
 } from '@/lib/payments'
 import { selectAccountForSuppliers } from '@/lib/payments/accounts'
-import { ensureGuestIdentity } from '@/lib/payments/guest-identity'
+import { ensureCheckoutUser } from '@/lib/payments/guest-identity'
 import {
   paymentMoneyWrite,
   readAmountAgorot,
@@ -53,7 +54,7 @@ import {
   type CheckoutActionResult,
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
-import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
+import { getCart, mergeGuestCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
 import { attributeOrder } from '@/server/affiliate/attribution'
 import { attributeOrderToAffiliate } from '@/server/affiliate/attribution-clicks'
 import {
@@ -1277,10 +1278,15 @@ async function runSubmitCheckout(
   formData: FormData,
 ): Promise<CheckoutFormState> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { error: 'יש להתחבר לפני התשלום' }
+  // Guest-first: no sign-in before paying. A shopper without a session gets an
+  // anonymous one here, and Google is offered AFTER payment on the return page
+  // to keep the details and the saved card on this same user.
+  const identity = await ensureCheckoutUser(supabase, async (userId) => {
+    const sessionId = await getGuestSessionId()
+    return sessionId ? mergeGuestCart(supabase, userId, sessionId) : true
+  })
+  if (!identity.ok) return { error: identity.message, code: identity.code }
+  const user = { id: identity.userId }
 
   // rc5 F19: Turnstile, a no-op until TURNSTILE_SECRET_KEY is set.
   const forwarded = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim()

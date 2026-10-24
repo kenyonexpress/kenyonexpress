@@ -50,7 +50,6 @@ interface AccountPageContentProps {
   profile: AccountProfile | null
   addresses: AccountAddress[]
   isStaff: boolean
-  isCouponPresentable: (coupon: CustomerVoucher) => boolean
 }
 
 function firstImage(images: unknown): string | null {
@@ -68,12 +67,12 @@ export default function AccountPageContent({
   profile,
   addresses,
   isStaff,
-  isCouponPresentable,
 }: AccountPageContentProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
 
   const lastOrder = orders[0] ?? null
-  const activeCoupons = coupons.filter((c) => isCouponPresentable(c))
+  // Coupons are already filtered on the server side
+  const activeCoupons = coupons
 
   const renderTabContent = () => {
     switch (activeTab) {

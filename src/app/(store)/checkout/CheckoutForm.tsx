@@ -359,86 +359,11 @@ export default function CheckoutForm({
     return !check || check.ok
   }
 
-  /**
-   * Postal-code autofill, both ways, and never over a typed value.
-   *
-   * `zipHint` is advice, not an error: it names the field that was filled in
-   * for the shopper, or the region a typed code belongs to when that is not
-   * the typed city. Neither blocks the step; `zipError` alone does that.
-   */
-  const [zipHint, setZipHint] = useState<string | null>(null)
-  const lookupRef = useRef<AbortController | null>(null)
-
-  const fieldByName = (name: string): HTMLInputElement | null => {
-    const field = formRef.current?.elements.namedItem(name)
-    return field instanceof HTMLInputElement ? field : null
-  }
-
-  /** Code -> city, on leaving the zip field. Fills an empty city, hints on a mismatch. */
-  const handleZipBlur = (value: string) => {
-    if (!validateZip(value)) {
-      setZipHint(null)
-      return
-    }
-    const region = cityFromPostalCode(value)
-    const city = fieldByName('city')
-    if (!region || !city) {
-      setZipHint(null)
-      return
-    }
-    if (city.value.trim() === '') {
-      city.value = region
-      setZipHint(`העיר הושלמה לפי המיקוד: ${region}. אפשר לערוך.`)
-      return
-    }
-    setZipHint(
-      postalCodeMatchesCity(value, city.value)
-        ? null
-        : `המיקוד שהוזן שייך לאזור ${region}. כדאי לבדוק.`,
-    )
-  }
-
-  /**
-   * City + street + house -> code, on leaving any of the three. Asks the
-   * server only when the zip is still empty, and drops a stale answer if the
-   * shopper moved on to another address before it arrived. Every failure is
-   * silence: the field is optional, and a lookup that did not work must not
-   * read as a checkout that did not.
-   */
-  const suggestZip = () => {
-    const zip = fieldByName('zip')
-    if (!zip || zip.value.trim() !== '') return
-    const city = fieldByName('city')?.value.trim() ?? ''
-    const street = fieldByName('street')?.value.trim() ?? ''
-    const house = fieldByName('street_number')?.value.trim() ?? ''
-    if (!city || !street || !house) return
-
-    lookupRef.current?.abort()
-    const controller = new AbortController()
-    lookupRef.current = controller
-    const params = new URLSearchParams({ city, street, house })
-    fetch(`/api/checkout/postal-code?${params.toString()}`, { signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload: { zip?: string | null } | null) => {
-        if (controller.signal.aborted) return
-        const suggested = payload?.zip
-        if (typeof suggested !== 'string' || !suggested) return
-        // Re-read at arrival time, not at request time: the shopper may have
-        // typed the code themselves while the lookup was in flight.
-        const target = fieldByName('zip')
-        if (!target || target.value.trim() !== '') return
-        target.value = suggested
-        validateZip(suggested)
-        setZipHint('המיקוד הושלם אוטומטית לפי הכתובת. אפשר לערוך.')
-      })
-      .catch(() => {
-        // Aborted, offline, or a non-JSON answer. Nothing to fill.
-      })
-  }
-
-  // The single gate that makes this a guest checkout: the form is filled, and
-  // only the press of "pay" needs an identity. A guest is stashed and sent to
-  // Google here instead of being turned away at the door.
+  // Guest-first: pressing "pay" never asks for Google. The server gives a
+  // shopper without a session an anonymous one, and the return page offers
+  // Google afterwards to keep the details and the saved card. Only when the
+  // server answers GUEST_UNAVAILABLE does `loginThenResume` stash the form and
+  // fall back to signing in first.
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget
     const zip = (form.elements.namedItem('zip') as HTMLInputElement | null)?.value ?? ''
@@ -461,25 +386,25 @@ export default function CheckoutForm({
       }
     }
 
-    if (!isAuthenticated) {
-      event.preventDefault()
-      const data = new FormData(form)
-      const stash: Record<string, string> = {}
-      for (const name of RESUME_FIELDS) {
-        const value = data.get(name)
-        if (typeof value === 'string' && value !== '') stash[name] = value
-      }
-      try {
-        window.sessionStorage.setItem(RESUME_KEY, JSON.stringify(stash))
-      } catch {
-        // A blocked sessionStorage costs the refill, not the checkout.
-      }
-      track('checkout_step', { step: 'guest_login' })
-      googleFormRef.current?.requestSubmit()
-      return
-    }
-
     track('checkout_step', { step: 'payment_redirect' })
+  }
+
+  const loginThenResume = () => {
+    const form = formRef.current
+    if (!form) return
+    const data = new FormData(form)
+    const stash: Record<string, string> = {}
+    for (const name of RESUME_FIELDS) {
+      const value = data.get(name)
+      if (typeof value === 'string' && value !== '') stash[name] = value
+    }
+    try {
+      window.sessionStorage.setItem(RESUME_KEY, JSON.stringify(stash))
+    } catch {
+      // A blocked sessionStorage costs the refill, not the checkout.
+    }
+    track('checkout_step', { step: 'guest_login' })
+    googleFormRef.current?.requestSubmit()
   }
 
   const authError = googleState && 'error' in googleState ? googleState.error : null
@@ -1110,7 +1035,11 @@ export default function CheckoutForm({
                 {!usingSavedCard && (
                   <label className="checkout-terms">
                     <input type="checkbox" name="save_card" defaultChecked />
-                    <span>שמירת כרטיס לתשלום מהיר בפעם הבאה</span>
+                    <span>
+                      {isAuthenticated
+                        ? 'שמירת כרטיס לתשלום מהיר בפעם הבאה'
+                        : 'שמירת הכרטיס לתשלום בלחיצה אחת בפעם הבאה (לאחר התשלום תוכלו לשמור את החשבון עם Google)'}
+                    </span>
                   </label>
                 )}
 
@@ -1134,6 +1063,16 @@ export default function CheckoutForm({
                       </button>
                     )}
                   </div>
+                )}
+                {failureCode === 'GUEST_UNAVAILABLE' && (
+                  <button
+                    type="button"
+                    className="checkout-error__retry"
+                    onClick={loginThenResume}
+                    disabled={busy}
+                  >
+                    התחברות עם Google והמשך
+                  </button>
                 )}
                 {authError && (
                   <div className="checkout-error" role="alert">

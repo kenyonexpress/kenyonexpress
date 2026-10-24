@@ -22,8 +22,8 @@ export default function PasskeyBanner() {
       try {
         if (!browserSupportsWebAuthn() || localStorage.getItem(DISMISS_KEY) === '1') return
         const supabase = createClient()
-        const { data: auth } = await supabase.auth.getUser()
-        if (!auth.user) return
+        const { data: auth, error: authError } = await supabase.auth.getUser()
+        if (authError || !auth.user) return
         const { count, error } = await supabase
           .from('webauthn_credentials')
           .select('id', { count: 'exact', head: true })

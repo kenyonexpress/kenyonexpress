@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   buildCashbackCreditedEmail,
   buildCouponDeliveryEmail,
+  buildGiftEmail,
   buildOrderConfirmationEmail,
+  buildPasswordResetEmail,
   buildRefundCompletedEmail,
+  buildSecurityAlertEmail,
+  buildVoucherExpiryEmail,
   buildWelcomeEmail,
 } from './index'
 
@@ -173,5 +177,55 @@ describe('coupon delivery template', () => {
     })
     expect(email.html).toContain('עיסוי שוודי')
     expect(email.html).toContain('dir="rtl"')
+  })
+})
+
+describe('gift, expiry and account-security templates', () => {
+  it('gift maps the claim token into the link and keeps it out of the subject', () => {
+    const e = buildGiftEmail({
+      productName: 'ארוחה זוגית',
+      senderName: 'דנה',
+      claimToken: 'tok123',
+      siteUrl: SITE,
+    })
+    expect(e.html).toContain(`${SITE}/gift/tok123`)
+    expect(e.text).toContain('ארוחה זוגית')
+    expect(e.subject).not.toContain('tok123')
+  })
+
+  it('expiry renders the day count and refuses to render without a deadline', () => {
+    const e = buildVoucherExpiryEmail({ daysRemaining: 7, productName: 'ספא', siteUrl: SITE })
+    expect(e?.subject).toContain('7')
+    expect(buildVoucherExpiryEmail({ daysRemaining: 0, siteUrl: SITE })).toBeNull()
+  })
+
+  it('password reset carries the link and rejects a non-https link', () => {
+    const url = 'https://kenyonexpress.co.il/auth/reset?t=abc'
+    const e = buildPasswordResetEmail({ resetUrl: url, validMinutes: 30 })
+    expect(e?.text).toContain(url)
+    expect(e?.html).toContain('dir="rtl"')
+    expect(e?.text).toContain('30')
+    expect(buildPasswordResetEmail({ resetUrl: 'http://x.test/r' })).toBeNull()
+    expect(buildPasswordResetEmail({ resetUrl: 'javascript:alert(1)' })).toBeNull()
+  })
+
+  it('security alert names the event and carries no IP or token', () => {
+    const e = buildSecurityAlertEmail({
+      event: 'password_changed',
+      occurredAt: '2026-10-01T10:00:00Z',
+      siteUrl: SITE,
+    })
+    expect(e.subject).toMatch(/[א-ת]/)
+    expect(e.html).toContain('dir="rtl"')
+    expect(e.text).toContain(`${SITE}/account/security`)
+    expect(e.text).not.toMatch(/\d+\.\d+\.\d+\.\d+/)
+  })
+
+  it('escapes user-supplied names', () => {
+    const e = buildPasswordResetEmail({
+      fullName: '<script>x</script>',
+      resetUrl: 'https://kenyonexpress.co.il/r',
+    })
+    expect(e?.html).not.toContain('<script>')
   })
 })

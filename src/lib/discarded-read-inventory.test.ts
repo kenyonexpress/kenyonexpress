@@ -89,10 +89,13 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/gifts.ts': 2,
   'src/server/actions/newsletter.ts': 2,
   'src/server/actions/orders.ts': 1,
+  // Fails closed: an unreadable saved address is answered ADDRESS_REQUIRED.
   'src/server/actions/payments/checkout.ts': 1,
   'src/server/actions/payments/refund.ts': 6,
   'src/server/checkout/verified-shipping.ts': 2,
   'src/server/domain/vouchers/issue.ts': 1,
+  // Fails closed: an unreadable OTP row, or a failed consume, is 'expired'.
+  'src/server/checkout/verified-shipping.ts': 2,
   'src/server/payments/finalize.ts': 6,
   // The buyer-profile read on issuance: a discarded failure leaves the email
   // null and the issuer THROWS on that with its own sentence, so the failure

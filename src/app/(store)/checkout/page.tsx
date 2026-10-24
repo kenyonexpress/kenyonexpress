@@ -192,7 +192,7 @@ async function CheckoutPageBody({
         verification={verification}
         walletBalance={walletBalance}
         savedCards={savedCards}
-        isAuthenticated={Boolean(user)}
+        isAuthenticated={Boolean(user) && user?.is_anonymous !== true}
         resuming={resume === '1'}
         channel={channel === 'app' ? 'app' : 'web'}
       />

@@ -125,6 +125,7 @@ type Row = {
   low_profile_code: string | null
   amount_agorot: number
   ip_address: string | null
+  user_agent: string | null
 }
 
 export async function completeSupplierCardVerification(
@@ -138,7 +139,7 @@ export async function completeSupplierCardVerification(
     .update({ status: 'processing' } as never)
     .eq('id', id)
     .eq('status', 'started')
-    .select('id, status, payload, low_profile_code, amount_agorot, ip_address')
+    .select('id, status, payload, low_profile_code, amount_agorot, ip_address, user_agent')
     .maybeSingle()
   if (claimError) {
     log.error('supplier_card.claim_failed', { verification_id: id, reason: claimError.message })
@@ -232,7 +233,10 @@ export async function completeSupplierCardVerification(
     if (!voided) log.warn('supplier_card.void_failed', { verification_id: id })
   }
 
-  const lead = await createSupplierLead(row.payload, row.ip_address)
+  const lead = await createSupplierLead(row.payload, row.ip_address, {
+    verificationId: id,
+    userAgent: row.user_agent,
+  })
   if (lead.ok) {
     await admin
       .from('supplier_card_tokens' as never)

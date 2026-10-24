@@ -1,105 +1,64 @@
 /**
- * Guest checkout via Supabase anonymous sessions.
+ * Guest-first checkout identity.
  *
- * Creates anonymous sessions for unauthenticated shoppers, allowing them to
- * complete checkout without signing up. The order and payment token are tied
- * to the anonymous user_id, and can be claimed later via linkIdentity.
+ * Orders, addresses and saved-card tokens are all keyed to `auth.users.id`
+ * (`orders.user_id` is NOT NULL). Rather than loosen that, a shopper who is not
+ * signed in is given an anonymous Supabase session at the moment they pay. The
+ * order, the address and the Cardcom token then belong to that user id, and
+ * signing in with Google AFTER payment links the identity onto the SAME user
+ * (`linkIdentity`) so nothing has to be moved.
  *
- * REQUIRES Supabase project configuration:
- * - Enable Anonymous sign-ins in project settings
- * - Enable Manual linking in project settings
- *
- * Without these settings enabled, signInAnonymously will fail and checkout
- * will fall back to requiring authentication.
+ * Requires "Allow anonymous sign-ins" and "Manual linking" on the Supabase
+ * project (supabase/config.toml: enable_anonymous_sign_ins, enable_manual_linking).
+ * When anonymous sign-ins are off, `ensureCheckoutUser` answers
+ * `GUEST_UNAVAILABLE` and the caller falls back to the old Google-first path.
  */
 
-import { log } from '@/lib/observability/log'
-import { createClient } from '@/lib/supabase/server'
-
-export type GuestIdentityResult =
-  | { ok: true; userId: string; isAnonymous: boolean }
-  | { ok: false; error: string; code: 'UNAUTHENTICATED' | 'INTERNAL' }
-
-/**
- * Ensures the current request has a valid user session (authenticated or anonymous).
- *
- * For authenticated users: returns their existing user_id.
- * For unauthenticated users: creates an anonymous session if Supabase allows it.
- *
- * Anonymous sessions are marked with is_anonymous: true and can be upgraded
- * to full accounts via auth.linkIdentity after payment.
- */
-export async function ensureGuestIdentity(): Promise<GuestIdentityResult> {
-  const supabase = await createClient()
-
-  // Check if already authenticated
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (user) {
-    return {
-      ok: true,
-      userId: user.id,
-      isAnonymous: user.is_anonymous ?? false,
-    }
-  }
-
-  // Not authenticated - try to create anonymous session
-  try {
-    const { data, error } = await supabase.auth.signInAnonymously()
-
-    if (error) {
-      log.warn('guest_identity.anonymous_signin_failed', {
-        error: error.message,
-        code: error.code,
-      })
-
-      return {
-        ok: false,
-        error: 'לא ניתן ליצור חשבון אורח. יש להתחבר עם Google או אימייל.',
-        code: 'UNAUTHENTICATED',
-      }
-    }
-
-    if (!data.user) {
-      return {
-        ok: false,
-        error: 'נכשל ביצירת חשבון אורח',
-        code: 'INTERNAL',
-      }
-    }
-
-    log.info('guest_identity.anonymous_session_created', {
-      user_id: data.user.id,
-    })
-
-    return {
-      ok: true,
-      userId: data.user.id,
-      isAnonymous: true,
-    }
-  } catch (err) {
-    log.error('guest_identity.create_failed', {
-      err,
-    })
-
-    return {
-      ok: false,
-      error: 'שגיאה ביצירת חשבון אורח',
-      code: 'INTERNAL',
-    }
+export type CheckoutIdentityClient = {
+  auth: {
+    getUser(): Promise<{ data: { user: { id: string; is_anonymous?: boolean } | null } }>
+    signInAnonymously(): Promise<{
+      data: { user: { id: string; is_anonymous?: boolean } | null }
+      error: { message: string } | null
+    }>
   }
 }
 
-/**
- * Checks if the current user is an anonymous guest.
- */
-export async function isAnonymousGuest(): Promise<boolean> {
-  const supabase = await createClient()
+export type CheckoutIdentity =
+  | { ok: true; userId: string; guest: boolean; created: boolean }
+  | { ok: false; code: 'GUEST_UNAVAILABLE'; message: string }
+
+export async function ensureCheckoutUser(
+  supabase: CheckoutIdentityClient,
+  /** Moves the cookie cart onto the new user. Returns false when it could not. */
+  mergeGuestCart: (userId: string) => Promise<boolean>,
+): Promise<CheckoutIdentity> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  if (user) {
+    return { ok: true, userId: user.id, guest: user.is_anonymous === true, created: false }
+  }
 
-  return user?.is_anonymous ?? false
+  const { data, error } = await supabase.auth.signInAnonymously()
+  if (error || !data.user) {
+    return {
+      ok: false,
+      code: 'GUEST_UNAVAILABLE',
+      message: 'לא ניתן להמשיך כאורח כרגע, יש להתחבר כדי לשלם',
+    }
+  }
+
+  // The cart is read by profile once a user exists, so a cart that stays on the
+  // cookie would look empty to the very next call. Refuse to go on if it did
+  // not move: charging for an empty cart is worse than asking to retry.
+  const merged = await mergeGuestCart(data.user.id)
+  if (!merged) {
+    return {
+      ok: false,
+      code: 'GUEST_UNAVAILABLE',
+      message: 'לא הצלחנו להעביר את העגלה, נסו שוב',
+    }
+  }
+  return { ok: true, userId: data.user.id, guest: true, created: true }
 }

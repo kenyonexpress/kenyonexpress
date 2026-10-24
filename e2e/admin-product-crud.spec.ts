@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test'
-import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, signInWithEmail } from './auth-session'
+import {
+  E2E_ADMIN_EMAIL,
+  E2E_ADMIN_PASSWORD,
+  adminTestsEnabled,
+  signInWithEmail,
+} from './auth-session'
 import { expectHebrewRtl } from './helpers'
 
 /**
@@ -27,6 +32,7 @@ test.describe('admin product CRUD @admin @money', () => {
   test.describe.configure({ timeout: 90_000 })
 
   test('the catalogue editor is reachable and speaks Hebrew', async ({ page }) => {
+    test.skip(!adminTestsEnabled(), 'E2E_ADMIN_PASSWORD not configured')
     await signInWithEmail(page, E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, '/admin/products')
     await page.goto('/admin/products')
 
@@ -40,6 +46,7 @@ test.describe('admin product CRUD @admin @money', () => {
   test('publishing without percentages is refused, and no default fills them in', async ({
     page,
   }) => {
+    test.skip(!adminTestsEnabled(), 'E2E_ADMIN_PASSWORD not configured')
     await signInWithEmail(page, E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, '/admin/products/new')
     await page.goto('/admin/products/new')
 

@@ -70,7 +70,7 @@ export type SettledLine = {
   paid_on_site_agorot: number | string | null
   commission_agorot: number | string | null
   supplier_immediate_agorot: number | string | null
-  platform_percent: number | string | null
+  platform_percent_snapshot: number | string | null
 }
 
 function toAgorot(value: number | string | null | undefined): number {
@@ -104,7 +104,7 @@ export function buildChargeSettledEvents(
   extra: { paymentId?: string | null; cardcomAccountId?: string | null } = {},
 ): SettlementEventRow[] {
   return lines.map((line) => {
-    const platformPercent = toPercent(line.platform_percent)
+    const platformPercent = toPercent(line.platform_percent_snapshot)
     return {
       order_id: orderId,
       order_item_id: line.id,

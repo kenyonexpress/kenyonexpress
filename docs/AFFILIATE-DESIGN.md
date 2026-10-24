@@ -1,9 +1,13 @@
 # Affiliate campaigns: design for F12
 
-Status: not built. Measured 2026-10-16: `affiliates` has `status`, `total_clicks`,
-`total_conversions` and `total_earnings_ils_agorot`, and the admin page lists and
-approves them. Nothing in the storefront records a click, attributes an order, or
-pays anyone. Reading `affiliates.affiliate_code` appears only in admin code.
+Status: built (commit 10a784e9c, migration 283 affiliate_campaigns). Tables are
+`affiliate_campaigns` (admin sets `commission_bp`), `affiliate_links`,
+`affiliate_attributions` (rate snapshotted at order creation from the 30-day
+`ke_aff` cookie), `affiliate_payouts`. Daily cron `/api/cron/affiliate-payouts`
+pays via `fn_wallet_transfer`, key `affiliate:<order_id>`, after a 14-day hold,
+reversed on cancel or refund, never on own order. Share links and stats live at
+`/account/affiliate`; campaigns at `/admin/affiliates/campaigns`. Open: 283 is not
+yet listed in `MIGRATIONS-APPLIED.md` (prod state unverified, Supabase MCP needs OAuth).
 
 ## Needed
 

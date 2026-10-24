@@ -43,7 +43,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <div className="hidden lg:block">
                 <RightSidebar />
               </div>
-              <main className="order-first min-w-0 space-y-4 lg:order-none">{children}</main>
+              <main
+                id="main-content"
+                tabIndex={-1}
+                className="order-first min-w-0 space-y-4 lg:order-none focus:outline-none"
+              >
+                {children}
+              </main>
               <div className="hidden lg:block">
                 <LeftSidebar />
               </div>

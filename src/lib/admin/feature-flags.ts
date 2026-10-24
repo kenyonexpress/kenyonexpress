@@ -84,6 +84,12 @@ const OPERATIONAL: { envName: string; labelHe: string; effectHe: string; money: 
     money: true,
   },
   {
+    envName: 'CARD_VERIFY_STUB_ENABLED',
+    labelHe: 'אימות כרטיס מדומה',
+    effectHe: 'כשדולק: אימות הכרטיס באגורה אחת עונה מדומה ולא פונה לספק. לא מחייב כרטיס.',
+    money: false,
+  },
+  {
     envName: 'PHONE_AUTH_ENABLED',
     labelHe: 'כניסה בטלפון',
     effectHe: 'כשכבוי: הכניסה מציגה אימייל בלבד. פעולת השרת מסרבת גם היא.',

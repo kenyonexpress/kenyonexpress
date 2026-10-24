@@ -105,7 +105,7 @@
 
 .account-nav__email {
   font-size: 13px;
-  color: var(--account-muted);
+  color: var(--account-ink);
   margin: 2px 0 0;
   word-break: break-all;
 }
@@ -246,7 +246,7 @@
 .wallet-balance__note {
   font-size: 13px;
   margin: 8px 0 0;
-  opacity: 0.75;
+  color: var(--account-ink);
 }
 
 .wallet-ledger {
@@ -434,7 +434,7 @@
 
 .account-chip--dead {
   background: var(--util-f1f1f1);
-  color: var(--account-muted);
+  color: var(--account-ink);
 }
 
 .account-chip--default {
@@ -740,8 +740,9 @@
 }
 
 .account-tabs__button.is-active {
-  color: var(--account-yellow);
+  color: var(--account-ink);
   border-bottom-color: var(--account-yellow);
+  font-weight: var(--weight-bold);
 }
 
 .account-tabs__content {

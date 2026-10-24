@@ -1,3 +1,5 @@
+import ProductLocation from '@/components/product-card/ProductLocation'
+import LocationPin from '@/components/product/LocationPin'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 
@@ -9,6 +11,12 @@ type Product = {
   images: unknown
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** products.city; NULL renders as nationwide. */
+  city?: string | null
+  /** products.latitude for Waze navigation */
+  latitude?: number | null
+  /** products.longitude for Waze navigation */
+  longitude?: number | null
 }
 
 /**
@@ -23,6 +31,16 @@ export default function ProductDealCardMobile({ product }: { product: Product })
 
   const price = Number(product.kenyon_price ?? 0)
   const old = product.full_price != null ? Number(product.full_price) : null
+
+  const locationPin = (
+    <LocationPin
+      location={{
+        city: product.city,
+        latitude: product.latitude,
+        longitude: product.longitude,
+      }}
+    />
+  )
 
   return (
     <div
@@ -41,6 +59,9 @@ export default function ProductDealCardMobile({ product }: { product: Product })
           style={{ width: '100%', height: 'auto', marginBottom: '12px' }}
         />
       )}
+      <div style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--color-muted)' }}>
+        {locationPin || <ProductLocation city={product.city} />}
+      </div>
       <h2 style={{ fontSize: '16px', fontWeight: 500, margin: '0 0 8px 0', lineHeight: 1.4 }}>
         {product.name_he}
       </h2>

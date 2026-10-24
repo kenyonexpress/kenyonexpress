@@ -138,6 +138,7 @@ describe('the pending migration inventory', () => {
       '284_products_weekend_only.sql',
       '285_auth_wa_otps.sql',
       '286_feature_flags.sql',
+      '292_supplier_agreements.sql',
     ])
   })
 
@@ -353,6 +354,7 @@ describe('the pending migration inventory', () => {
     // issue dedupe, the RLS policy and the widened kind check all present,
     // zero rows) and filed here as the record like 217/223/224/226-233.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
+      '000_infrastructure_dependencies.sql',
       '162_cron_schedule.sql',
       '169_analytics_server_event_names.sql',
       '170_composite_indexes_top_queries.sql',
@@ -379,8 +381,15 @@ describe('the pending migration inventory', () => {
       '277_fraud_monitoring.sql',
       '287_sms_marketing.sql',
       '288_customer_rfm_segmentation.sql',
+      '289_cron_revenue_daily.sql',
+      '290_push_subscriptions_ensure.sql',
+      '291_pg_cron_scheduled_gifts.sql',
+      '291_platform_percent_snapshot.sql',
       '293_phase2_feature_flags.sql',
-      '300_c16_payment_refund_infrastructure.sql',
+      '294_group_deals.sql',
+      '295_subscriptions.sql',
+      '296_bookings.sql',
+      'preflight_000.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -407,8 +416,12 @@ describe('the pending migration inventory', () => {
       'preflight_287.sql',
       'preflight_288.sql',
       'preflight_289.sql',
+      'preflight_290.sql',
+      'preflight_291.sql',
       'preflight_293.sql',
-      'preflight_300.sql',
+      'preflight_294.sql',
+      'preflight_295.sql',
+      'preflight_296.sql',
     ])
   })
 

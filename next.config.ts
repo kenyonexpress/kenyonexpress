@@ -399,9 +399,15 @@ const nextConfig: NextConfig = {
 const withMDX = createMDX({})
 
 export default withSentryConfig(withMDX(withNextIntl(nextConfig)), {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  // Hardcoded defaults prevent "No org provided" silent upload skip when env vars
+  // are not set. Measured 05.10.2026: production had SENTRY_AUTH_TOKEN but not
+  // SENTRY_ORG/PROJECT, so every build since 21.08 uploaded nothing.
+  org: process.env.SENTRY_ORG ?? 'kenyonexpress',
+  project: process.env.SENTRY_PROJECT ?? 'kenyonexpress-web',
   authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // EU organization (de.sentry.io); US host returns 404 like a bad token.
+  sentryUrl: 'https://de.sentry.io',
 
   // Absent auth token means no upload attempt at all, so a local build and a
   // fork's CI both work with no credential rather than failing at the last step.
@@ -425,6 +431,12 @@ export default withSentryConfig(withMDX(withNextIntl(nextConfig)), {
   // (which most Israeli shoppers run) cannot silently drop error reports. The
   // cost is that this path must stay out of the proxy's auth matcher.
   tunnelRoute: '/monitoring',
+
+  // Failed upload warns instead of failing the build: a token issue should not
+  // block deployment, and the build log is the place to notice it.
+  errorHandler: (err: Error) => {
+    console.warn('[Sentry] Source map upload failed:', err.message)
+  },
 
   webpack: {
     // `treeshake.removeDebugLogging` used to sit here, and it never removed a

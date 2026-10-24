@@ -22,8 +22,11 @@ CREATE INDEX IF NOT EXISTS idx_p95_samples_time
 ALTER TABLE observability.p95_latency_samples ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Allow service role to insert/read/delete
-CREATE POLICY IF NOT EXISTS p95_samples_service_role_all
+DROP POLICY IF EXISTS p95_samples_service_role_all ON observability.p95_latency_samples;
+CREATE POLICY p95_samples_service_role_all
   ON observability.p95_latency_samples
+  FOR ALL
+  TO service_role
   USING (true)
   WITH CHECK (true);
 

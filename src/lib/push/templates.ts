@@ -192,6 +192,62 @@ function productRestocked(payload: Record<string, unknown>, siteUrl: string): Pu
   }
 }
 
+function orderCancelConfirmed(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): PushContent | null {
+  const orderId = text(payload, 'order_id')
+  if (!orderId) return null
+  const refund = integer(payload, 'refund_agorot')
+  return {
+    title: 'ביטול ההזמנה אושר',
+    body:
+      refund !== null && refund > 0
+        ? `ההזמנה בוטלה. החזר של ${shekelsCompact(refund)} בדרך אליך.`
+        : 'ההזמנה בוטלה. הפרטים בחשבון שלך.',
+    data: {
+      kind: 'order_cancel_confirmed',
+      path: APP_PATHS.order(orderId),
+      url: universalLink(siteUrl, `/account/orders/${orderId}`),
+      order_id: orderId,
+    },
+  }
+}
+
+function invoiceReady(payload: Record<string, unknown>, siteUrl: string): PushContent | null {
+  const orderId = text(payload, 'order_id')
+  if (!orderId) return null
+  return {
+    title: 'החשבונית שלך מוכנה',
+    body: 'אפשר להוריד אותה מפרטי ההזמנה בחשבון שלך.',
+    data: {
+      kind: 'invoice_ready',
+      path: APP_PATHS.order(orderId),
+      url: universalLink(siteUrl, `/account/orders/${orderId}`),
+      order_id: orderId,
+    },
+  }
+}
+
+/** The event is the only variable part; the copy never carries an IP, code or link token. */
+function securityAlert(payload: Record<string, unknown>, siteUrl: string): PushContent {
+  const event = text(payload, 'event')
+  const body: Record<string, string> = {
+    new_sign_in: 'זוהתה כניסה חדשה לחשבון שלך. אם זה לא אתה, מומלץ לאבטח את החשבון.',
+    password_changed: 'הסיסמה בחשבון שלך שונתה. אם זה לא אתה, מומלץ לאבטח את החשבון.',
+    passkey_added: 'נוסף מפתח גישה חדש לחשבון שלך. אם זה לא אתה, מומלץ לאבטח את החשבון.',
+  }
+  return {
+    title: 'התראת אבטחה בחשבון שלך',
+    body: (event && body[event]) || 'זוהתה פעילות חריגה בחשבון שלך. כדאי לבדוק אותה.',
+    data: {
+      kind: 'security_alert',
+      path: APP_PATHS.home,
+      url: universalLink(siteUrl, '/account/security'),
+    },
+  }
+}
+
 /**
  * The parcel is moving.
  *
@@ -280,6 +336,12 @@ export function buildPushContent(
       return orderStatusChanged(payload, siteUrl)
     case 'product_restocked':
       return productRestocked(payload, siteUrl)
+    case 'order_cancel_confirmed':
+      return orderCancelConfirmed(payload, siteUrl)
+    case 'invoice_ready':
+      return invoiceReady(payload, siteUrl)
+    case 'security_alert':
+      return securityAlert(payload, siteUrl)
     default:
       return null
   }
@@ -292,4 +354,7 @@ export const PUSHABLE_KINDS = [
   'cashback_credited',
   'order_status_changed',
   'product_restocked',
+  'order_cancel_confirmed',
+  'invoice_ready',
+  'security_alert',
 ] as const

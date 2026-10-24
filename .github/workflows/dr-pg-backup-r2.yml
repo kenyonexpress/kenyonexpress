@@ -1,0 +1,90 @@
+name: DR - PostgreSQL Backup to R2
+
+on:
+  schedule:
+    # Run daily at 03:00 UTC (10:00 UTC+7)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      manual_run:
+        description: 'Manual backup trigger'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Backup PostgreSQL to R2
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install PostgreSQL client and tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client awscli
+
+          # Verify installations
+          pg_dump --version
+          aws --version
+
+      - name: Install age (optional encryption)
+        run: |
+          wget -q https://github.com/FiloSottile/age/releases/download/v1.1.1/age-v1.1.1-linux-amd64.tar.gz
+          tar xzf age-v1.1.1-linux-amd64.tar.gz
+          sudo mv age/age /usr/local/bin/
+          sudo mv age/age-keygen /usr/local/bin/
+          age --version || echo "age not installed, skipping encryption"
+
+      - name: Make backup script executable
+        run: chmod +x scripts/dr/pg-dump-to-r2.sh
+
+      - name: Run backup
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BACKUP_BUCKET || 'kenyonexpress-backups' }}
+          AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT || '' }}
+        run: |
+          ./scripts/dr/pg-dump-to-r2.sh
+
+      - name: Verify backup uploaded
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BACKUP_BUCKET || 'kenyonexpress-backups' }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          DAY=$(date -u +%Y-%m-%d)
+          R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+          echo "Verifying backup for ${DAY}..."
+          aws s3 ls "s3://${R2_BUCKET}/postgres/${DAY}/" \
+            --endpoint-url "${R2_ENDPOINT}"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -sS -H "Title: KenyonExpress PostgreSQL Backup FAILED" \
+            -H "Priority: urgent" \
+            -H "Tags: warning,backup,database" \
+            -d "Daily PostgreSQL backup to R2 failed. Run ID: ${{ github.run_id }}" \
+            "https://ntfy.sh/${{ secrets.NTFY_TOPIC || 'kenyon-ofir-limit' }}" || true
+
+      - name: Notify on success
+        if: success()
+        run: |
+          DAY=$(date -u +%Y-%m-%d)
+          curl -sS -H "Title: PostgreSQL Backup Complete" \
+            -H "Tags: white_check_mark,backup,database" \
+            -d "Daily backup to R2 completed successfully for ${DAY}" \
+            "https://ntfy.sh/${{ secrets.NTFY_TOPIC || 'kenyon-ofir-limit' }}" || true

@@ -2,6 +2,17 @@
 -- Provides read-only API access for approved partners with key-based authentication,
 -- scope-based authorization, and rate limiting tracking.
 
+-- Partners table (organizations with API access)
+CREATE TABLE IF NOT EXISTS partners (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Partner API key scopes
 CREATE TYPE partner_api_scope AS ENUM (
   'products:read',      -- Read product catalogue
@@ -17,7 +28,7 @@ CREATE TABLE partner_api_keys (
   partner_id UUID NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   key_hash VARCHAR(64) NOT NULL UNIQUE,
-  scopes partner_api_scope[] NOT NULL DEFAULT ARRAY['products:read', 'categories:read'],
+  scopes partner_api_scope[] NOT NULL DEFAULT ARRAY['products:read', 'categories:read']::partner_api_scope[],
   rate_limit_per_hour INT NOT NULL DEFAULT 1000,
   last_used_at TIMESTAMPTZ,
   expires_at TIMESTAMPTZ,

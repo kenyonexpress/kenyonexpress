@@ -120,7 +120,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
           source: 'server',
           source_app: 'shop',
           anonymous_id: anonymousId,
-          session_id: anonymousId ?? `server:${eventId}`,
+          session_id: anonymousId ?? crypto.randomUUID(),
           path: input.path ?? null,
           utm: attribution?.last ?? null,
           props: input.props,

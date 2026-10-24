@@ -3,6 +3,7 @@ import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import { MobileNavBar } from '@/components/mobile'
+import CrispChat from '@/components/shared/CrispChat'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 import MobileContentWrapper from '@/components/store/MobileContentWrapper'
@@ -59,6 +60,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         <MobileNavBar />
       </Suspense>
       <WhatsAppFloat />
+      <CrispChat />
       <DeferredStoreChrome />
     </CartProvider>
   )

@@ -47,6 +47,16 @@ export async function signInWithEmail(
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
 }
 
+/**
+ * True when admin tests can run. Admin fixture requires seeded credentials
+ * that work in the target database. When E2E_ADMIN_PASSWORD is unset or the
+ * password doesn't work (refused or lands on MFA enrollment), admin tests skip.
+ */
+export function adminTestsEnabled(): boolean {
+  // If no explicit E2E_ADMIN_PASSWORD is set, admin tests should skip
+  return Boolean(process.env.E2E_ADMIN_PASSWORD && E2E_ADMIN_PASSWORD)
+}
+
 /** Clears the browser storage so the next sign-in is a fresh guest session. */
 export async function clearBrowserSession(page: Page): Promise<void> {
   await page.context().clearCookies()

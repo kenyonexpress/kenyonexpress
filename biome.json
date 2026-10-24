@@ -21,7 +21,8 @@
       "playwright-report",
       "test-results",
       "blob-report",
-      ".image-staging"
+      "ios/**",
+      "android/**"
     ]
   },
   "formatter": {

@@ -47,9 +47,9 @@ BEGIN
     ROUND((v_no_result::numeric / NULLIF(v_total, 0)) * 100, 2),
     v_clicks,
     ROUND((v_clicks::numeric / NULLIF(v_total, 0)) * 100, 2),
-    COALESCE(json_agg(json_build_object('term', term, 'searches', searches, 'empty_results', empty_results, 'clicks', (SELECT COUNT(*) FROM public.search_clicks sc WHERE sc.term = search_events.term AND sc.clicked_at >= v_start))) ORDER BY searches DESC, '[]'::jsonb) FILTER (WHERE term IS NOT NULL),
-    COALESCE(json_agg(json_build_object('term', term, 'searches', searches, 'empty_results', empty_results) ORDER BY empty_results DESC, '[]'::jsonb) FILTER (WHERE empty_results > 0),
-    COALESCE(json_agg(json_build_object('position', position, 'clicks', clicks) ORDER BY position, '[]'::jsonb) FILTER (WHERE position IS NOT NULL)
+    COALESCE(json_agg(json_build_object('term', term, 'searches', searches, 'empty_results', empty_results, 'clicks', (SELECT COUNT(*) FROM public.search_clicks sc WHERE sc.term = search_events.term AND sc.clicked_at >= v_start)) ORDER BY searches DESC) FILTER (WHERE term IS NOT NULL), '[]'::jsonb),
+    COALESCE(json_agg(json_build_object('term', term, 'searches', searches, 'empty_results', empty_results) ORDER BY empty_results DESC) FILTER (WHERE empty_results > 0), '[]'::jsonb),
+    COALESCE(json_agg(json_build_object('position', position, 'clicks', clicks) ORDER BY position) FILTER (WHERE position IS NOT NULL), '[]'::jsonb)
   FROM public.search_events se, LATERAL(SELECT position, COUNT(*) clicks FROM public.search_clicks WHERE term = se.term AND clicked_at >= v_start GROUP BY position) ctr
   WHERE se.last_seen_at >= v_start LIMIT 10;
 END;

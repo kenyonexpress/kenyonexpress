@@ -3,6 +3,7 @@
 import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
+import LocationPin from '@/components/product/LocationPin'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -23,6 +24,10 @@ export type Product = {
   category?: { name_he: string; slug: string } | null
   /** products.city; NULL renders as nationwide. */
   city?: string | null
+  /** products.latitude for Waze navigation */
+  latitude?: number | null
+  /** products.longitude for Waze navigation */
+  longitude?: number | null
   /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
   assets?: Record<string, GalleryAsset>
   weekend_only?: boolean | null
@@ -133,9 +138,19 @@ function DealsProductCard({ product }: { product: Product }) {
   const outOfStock = product.stock_quantity === 0
   const canAdd = product.kenyon_price != null && !outOfStock
 
+  const locationPin = (
+    <LocationPin
+      location={{
+        city: product.city,
+        latitude: product.latitude,
+        longitude: product.longitude,
+      }}
+    />
+  )
+
   return (
     <article className="p_con">
-      <ProductLocation city={product.city} className="p_con__category" />
+      {locationPin || <ProductLocation city={product.city} className="p_con__category" />}
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">

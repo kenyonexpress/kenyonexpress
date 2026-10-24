@@ -90,7 +90,8 @@ describe('against the real manifest', () => {
     const latest = latestMigrationNumber()
     expect(latest).toBeGreaterThan(0)
     const plan = planSchemaMigration(0, latest)
-    expect(plan.steps.length).toBe(MIGRATION_MANIFEST.length)
+    // 000 is the bootstrap that precedes version 1, so a plan from 0 starts after it.
+    expect(plan.steps.length).toBe(MIGRATION_MANIFEST.filter((e) => e.number !== '000').length)
   })
 
   it('reports the pending files as blockers, never as runnable', () => {

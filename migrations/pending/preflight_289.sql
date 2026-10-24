@@ -1,73 +1,53 @@
--- Passkeys (WebAuthn) credentials storage
--- Stores user authentication credentials for passwordless login via biometrics/security keys
+-- Preflight for migration 289: ke-revenue-daily cron + public.revenue_daily
+--
+-- READ-ONLY. Run it through execute_sql BEFORE the migration; every row must
+-- start with OK (or SKIP/NOTE, which say why the migration is partly a no-op).
+-- Any row starting with STOP means do not apply.
 
-CREATE TABLE IF NOT EXISTS passkey_credentials (
-  id TEXT PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  credential_public_key BYTEA NOT NULL,
-  counter BIGINT NOT NULL DEFAULT 0,
-  credential_device_type TEXT NOT NULL, -- "singleDevice" | "multiDevice"
-  credential_backed_up BOOLEAN NOT NULL DEFAULT false,
-  transports TEXT[] NOT NULL DEFAULT '{}', -- ["usb", "nfc", "ble", "internal"]
-  friendly_name TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  last_used_at TIMESTAMPTZ,
-  CONSTRAINT passkey_credentials_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX passkey_credentials_user_id_idx ON passkey_credentials(user_id);
-
--- RLS policies for passkey_credentials
-ALTER TABLE passkey_credentials ENABLE ROW LEVEL SECURITY;
-
--- Users can only read their own credentials
-CREATE POLICY "Users can read own passkey credentials"
-  ON passkey_credentials FOR SELECT
-  USING (auth.uid() = user_id);
-
--- Service role can manage all credentials (for server-side verification)
--- No direct INSERT/UPDATE/DELETE for users - managed via server actions only
-
--- Auth attempt tracking for fallback logic
-CREATE TABLE IF NOT EXISTS auth_attempts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT,
-  phone TEXT,
-  attempt_type TEXT NOT NULL, -- "passkey" | "whatsapp_otp" | "email_otp" | "password"
-  success BOOLEAN NOT NULL,
-  ip_address TEXT,
-  user_agent TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX auth_attempts_user_id_idx ON auth_attempts(user_id);
-CREATE INDEX auth_attempts_email_idx ON auth_attempts(email);
-CREATE INDEX auth_attempts_phone_idx ON auth_attempts(phone);
-CREATE INDEX auth_attempts_created_at_idx ON auth_attempts(created_at);
-
-ALTER TABLE auth_attempts ENABLE ROW LEVEL SECURITY;
-
--- Users can only read their own auth attempts
-CREATE POLICY "Users can read own auth attempts"
-  ON auth_attempts FOR SELECT
-  USING (auth.uid() = user_id);
-
--- OTP code storage for WhatsApp/Email/SMS verification
-CREATE TABLE IF NOT EXISTS otp_codes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  identifier TEXT NOT NULL, -- email or phone number
-  code TEXT NOT NULL,
-  channel TEXT NOT NULL, -- "whatsapp" | "email" | "sms"
-  expires_at TIMESTAMPTZ NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX otp_codes_identifier_idx ON otp_codes(identifier);
-CREATE INDEX otp_codes_expires_at_idx ON otp_codes(expires_at);
-
--- No RLS needed - accessed via service role only
-
-COMMENT ON TABLE passkey_credentials IS 'WebAuthn passkey credentials for passwordless authentication';
-COMMENT ON TABLE auth_attempts IS 'Authentication attempt tracking for fallback logic and security monitoring';
-COMMENT ON TABLE otp_codes IS 'Temporary OTP code storage for WhatsApp/Email/SMS verification with expiration';
+SELECT CASE
+  WHEN EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron')
+  THEN 'OK: pg_cron installed (161)'
+  ELSE 'STOP: pg_cron is not installed, apply 161 first'
+END AS requires_pg_cron;
+SELECT CASE
+  WHEN EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'orders')
+  THEN 'OK: public.orders exists (required)'
+  ELSE 'STOP: public.orders is missing, this migration cannot apply'
+END AS requires_orders;
+SELECT CASE
+  WHEN (SELECT count(*) FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'orders'
+           AND column_name IN ('paid_at', 'deleted_at', 'status', 'total_ils_agorot',
+                               'subtotal_ils_agorot', 'discount_ils_agorot',
+                               'cashback_applied_ils_agorot')) = 7
+  THEN 'OK: orders has paid_at, deleted_at, status and the four *_ils_agorot columns'
+  ELSE 'STOP: orders is missing one of paid_at, deleted_at, status or the *_ils_agorot twins (138/147)'
+END AS orders_columns_check;
+SELECT CASE
+  WHEN EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
+                WHERE t.typname = 'order_status' AND e.enumlabel = 'refunded')
+   AND EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
+                WHERE t.typname = 'order_status' AND e.enumlabel = 'cancelled')
+  THEN 'OK: order_status has refunded and cancelled'
+  ELSE 'STOP: order_status lacks refunded or cancelled; the function filter would fail'
+END AS order_status_labels_check;
+SELECT CASE
+  WHEN EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'revenue_daily')
+  THEN 'SKIP: public.revenue_daily already exists; CREATE IF NOT EXISTS will keep it, compare its columns to the file'
+  ELSE 'OK: can create public.revenue_daily'
+END AS revenue_daily_check;
+SELECT CASE
+  WHEN EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public' AND p.proname = 'aggregate_daily_revenue')
+  THEN 'NOTE: public.aggregate_daily_revenue already exists; CREATE OR REPLACE will overwrite it, read the live body first'
+  ELSE 'OK: can create public.aggregate_daily_revenue'
+END AS aggregate_daily_revenue_check;
+SELECT CASE
+  WHEN EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'ke-revenue-daily')
+  THEN 'NOTE: ke-revenue-daily already scheduled; cron.schedule will replace it by name'
+  ELSE 'OK: ke-revenue-daily not yet scheduled'
+END AS cron_job_check;
+SELECT CASE
+  WHEN (SELECT count(*) FROM public.orders WHERE paid_at IS NOT NULL AND total_ils_agorot IS NULL) = 0
+  THEN 'OK: every paid order has total_ils_agorot'
+  ELSE 'NOTE: some paid orders have NULL total_ils_agorot; they will show in revenue_daily.missing_agorot_count'
+END AS agorot_backfill_check;

@@ -77,6 +77,7 @@ beforeEach(() => {
     low_profile_code: 'lp-1',
     amount_agorot: 100,
     ip_address: null,
+    user_agent: 'Mozilla/5.0',
   }
 })
 
@@ -98,6 +99,11 @@ describe('completeSupplierCardVerification', () => {
       expect.objectContaining({ transactionId: 'txn-1', cancelOnly: true, amountAgorot: 100 }),
     )
     expect(createSupplierLead).toHaveBeenCalledOnce()
+    expect(createSupplierLead).toHaveBeenCalledWith(
+      payload,
+      null,
+      expect.objectContaining({ verificationId: 'v-1', userAgent: 'Mozilla/5.0' }),
+    )
   })
 
   it('creates no lead when the terminal reports a different amount', async () => {

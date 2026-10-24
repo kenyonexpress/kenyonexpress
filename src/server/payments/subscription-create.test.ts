@@ -128,7 +128,7 @@ describe('creation: idempotent on the order', () => {
         payment_token_id: 'tok-1',
         status: 'active',
         amount_agorot: 4_900,
-        platform_percent: 12,
+        platform_percent_snapshot: 12,
         billing_interval: 'monthly',
         billing_interval_count: 1,
         next_charge_at: '2026-10-02T10:00:00.000Z',
