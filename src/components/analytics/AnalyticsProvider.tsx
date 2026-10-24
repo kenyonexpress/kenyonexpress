@@ -3,8 +3,8 @@
 import { trackingAllowed } from '@/lib/analytics/commerce-client'
 import { WEB_VITAL_METRICS, type WebVitalMetric } from '@/lib/analytics/events'
 import { getTracker, track } from '@/lib/analytics/tracker'
-import { isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
-import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
+import { identifyUser } from '@/lib/observability/posthog'
+import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
 import { useReportWebVitals } from 'next/web-vitals'
 import { useEffect } from 'react'
@@ -92,6 +92,19 @@ export default function AnalyticsProvider() {
 
     reportReferralLanding(window.location.search)
   }, [pathname])
+
+  // Login -> PostHog identify. INITIAL_SESSION covers a returning visitor whose
+  // session is already in the cookie; SIGNED_IN covers a login in this tab.
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = createClient().auth.onAuthStateChange((event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+        identifyUser(session.user.id)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   useReportWebVitals((metric) => {
     if (!isWebVitalMetric(metric.name)) return

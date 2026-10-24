@@ -1,11 +1,20 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { requestIp } from '@/lib/rate-limit/request-ip'
 import { isSmsStopKeyword, verifyTwilioWebhook } from '@/lib/sms/twilio-webhook'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 
 // Webhook uses timingSafeEqual (imported for type checking the constant-time comparison)
 
 async function handlePOST(request: Request): Promise<Response> {
+  const ip = requestIp(request)
+  if (!(await checkRateLimit(`webhook-twilio:${ip}`, 300, 60))) {
+    return Response.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': '60' } },
+    )
+  }
   try {
     const signature = request.headers.get('x-twilio-signature') || ''
     const url = new URL(request.url).toString().split('?')[0] // Remove query params

@@ -15,7 +15,7 @@
     "status": 200,
     "finalPath": "/products",
     "overflow": 0,
-    "tooSmall": 14
+    "tooSmall": 1
   },
   {
     "name": "category",
@@ -24,7 +24,7 @@
     "status": 200,
     "finalPath": "/category/hot-deals",
     "overflow": 0,
-    "tooSmall": 14
+    "tooSmall": 1
   },
   {
     "name": "product",
@@ -33,7 +33,7 @@
     "status": 200,
     "finalPath": "/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90",
     "overflow": 0,
-    "tooSmall": 21
+    "tooSmall": 22
   },
   {
     "name": "cart",
@@ -69,7 +69,7 @@
     "status": 200,
     "finalPath": "/c/tel-aviv",
     "overflow": 0,
-    "tooSmall": 15
+    "tooSmall": 20
   },
   {
     "name": "suppliers",
@@ -141,7 +141,7 @@
     "status": 200,
     "finalPath": "/products",
     "overflow": 0,
-    "tooSmall": 14
+    "tooSmall": 1
   },
   {
     "name": "category",
@@ -150,7 +150,7 @@
     "status": 200,
     "finalPath": "/category/hot-deals",
     "overflow": 0,
-    "tooSmall": 14
+    "tooSmall": 1
   },
   {
     "name": "product",
@@ -159,7 +159,7 @@
     "status": 200,
     "finalPath": "/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90",
     "overflow": 0,
-    "tooSmall": 21
+    "tooSmall": 22
   },
   {
     "name": "cart",
@@ -175,7 +175,7 @@
     "path": "/checkout",
     "width": 390,
     "status": 200,
-    "finalPath": "/checkout",
+    "finalPath": "/cart",
     "overflow": 0,
     "tooSmall": 14
   },
@@ -195,7 +195,7 @@
     "status": 200,
     "finalPath": "/c/tel-aviv",
     "overflow": 0,
-    "tooSmall": 15
+    "tooSmall": 20
   },
   {
     "name": "suppliers",
@@ -267,7 +267,7 @@
     "status": 200,
     "finalPath": "/products",
     "overflow": 0,
-    "tooSmall": 14
+    "tooSmall": 1
   },
   {
     "name": "category",
@@ -276,7 +276,7 @@
     "status": 200,
     "finalPath": "/category/hot-deals",
     "overflow": 0,
-    "tooSmall": 14
+    "tooSmall": 1
   },
   {
     "name": "product",
@@ -285,7 +285,7 @@
     "status": 200,
     "finalPath": "/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90",
     "overflow": 0,
-    "tooSmall": 23
+    "tooSmall": 24
   },
   {
     "name": "cart",
@@ -301,7 +301,7 @@
     "path": "/checkout",
     "width": 430,
     "status": 200,
-    "finalPath": "/checkout",
+    "finalPath": "/cart",
     "overflow": 0,
     "tooSmall": 14
   },
@@ -321,7 +321,7 @@
     "status": 200,
     "finalPath": "/c/tel-aviv",
     "overflow": 0,
-    "tooSmall": 15
+    "tooSmall": 20
   },
   {
     "name": "suppliers",

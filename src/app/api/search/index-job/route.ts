@@ -1,9 +1,11 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { requestIp } from '@/lib/rate-limit/request-ip'
 import { runSearchIndexJob } from '@/lib/search/indexer'
 import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
 import { bearerMatches } from '@/lib/security/constant-time'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -27,6 +29,13 @@ function callerAuthorized(request: NextRequest, rawBody: string): boolean {
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  const ip = requestIp(request)
+  if (!(await checkRateLimit(`search-index-job:${ip}`, 600, 60))) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': '60' } },
+    )
+  }
   const rawBody = await request.text()
 
   if (!callerAuthorized(request, rawBody)) {

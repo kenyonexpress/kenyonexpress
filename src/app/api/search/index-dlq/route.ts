@@ -1,8 +1,10 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { requestIp } from '@/lib/rate-limit/request-ip'
 import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import type { Json } from '@/types/database'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -37,6 +39,13 @@ function decodeJob(sourceBody: string | undefined): Json | null {
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  const ip = requestIp(request)
+  if (!(await checkRateLimit(`search-index-dlq:${ip}`, 300, 60))) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': '60' } },
+    )
+  }
   const rawBody = await request.text()
 
   const target = `${(process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')}/api/search/index-dlq`

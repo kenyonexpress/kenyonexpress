@@ -16,6 +16,8 @@
  * the caller has to handle, let alone one the customer sees.
  */
 
+import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
+
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 const HOST = (process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com').replace(
   /\/+$/,
@@ -229,5 +231,32 @@ export function trackEvent(
     })
   } catch {
     // Same: a failure to report must never surface to the caller.
+  }
+}
+
+/** sessionStorage key: the user id last sent to PostHog in this tab. */
+const IDENTIFIED_KEY = 'ke_ph_identified'
+
+/**
+ * Links this browser's anonymous id to a signed-in user, so the funnel before
+ * login and the purchases after it are one person in PostHog.
+ *
+ * Sends `$identify` with the Supabase user id and nothing else: no email, no
+ * phone, no name. The id selects an analytics bucket and authorises nothing.
+ * Behind the same consent gate as every other browser event; a shopper who has
+ * not granted consent is not identified. Once per user per tab, so the auth
+ * listener firing on every token refresh costs nothing. Never throws.
+ */
+export function identifyUser(userId: string): void {
+  if (!KEY || typeof window === 'undefined' || !userId) return
+  try {
+    const consent = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
+    if (!isTrackingAllowed(consent ? decodeURIComponent(consent[1] ?? '') : null)) return
+    if (window.sessionStorage.getItem(IDENTIFIED_KEY) === userId) return
+    const anonId = distinctId()
+    window.sessionStorage.setItem(IDENTIFIED_KEY, userId)
+    trackEvent('$identify', { $anon_distinct_id: anonId }, { distinctId: userId })
+  } catch {
+    // Storage blocked or cookies unreadable: stay anonymous.
   }
 }

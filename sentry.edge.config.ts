@@ -30,8 +30,8 @@ Sentry.init({
     allowLocal: process.env.SENTRY_ALLOW_LOCAL,
   }),
   release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
-  // Matches the Node runtime. See sentry.server.config.ts for why 0.1.
-  tracesSampleRate: 0.1,
+  // Matches the Node runtime. Rate is 1.0 (G25); see sentry.server.config.ts.
+  tracesSampleRate: 1.0,
   sendDefaultPii: false,
   beforeSend(event) {
     // A CLIENT THAT WENT AWAY IS NOT AN ERROR AT THIS END.

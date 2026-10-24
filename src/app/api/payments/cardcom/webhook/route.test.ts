@@ -60,6 +60,7 @@ const verifyLowProfile = vi.fn()
 const finalizeOrder = vi.fn()
 
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient }))
+vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: async () => true }))
 vi.mock('@/lib/observability/sentry', () => ({
   capturePaymentAlarm: (...args: unknown[]) => capturePaymentAlarm(...args),
   capturePaymentError: vi.fn(),

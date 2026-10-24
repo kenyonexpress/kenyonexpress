@@ -5,8 +5,10 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { acceptedWebhookSecrets } from '@/lib/payments/env'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
+import { requestIp } from '@/lib/rate-limit/request-ip'
 import { secretEquals } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
 import type { Json } from '@/types/database'
@@ -42,6 +44,13 @@ const UNIQUE_VIOLATION = '23505'
  * are 200 no-ops.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  const ip = requestIp(request)
+  if (!(await checkRateLimit(`webhook-cardcom:${ip}`, 600, 60))) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': '60' } },
+    )
+  }
   const rawBody = await request.text()
   const env = loadCardcomEnv()
   const admin = createAdminClient()

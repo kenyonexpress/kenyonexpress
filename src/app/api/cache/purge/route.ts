@@ -1,10 +1,19 @@
 import { buildCachePaths, buildCacheTags, sendCachePurgeRequest } from '@/lib/cache'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { requestIp } from '@/lib/rate-limit/request-ip'
 import { bearerMatches } from '@/lib/security/constant-time'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  const ip = requestIp(request)
+  if (!(await checkRateLimit(`cache-purge:${ip}`, 30, 60))) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': '60' } },
+    )
+  }
   const auth = request.headers.get('authorization')
   if (!bearerMatches(auth, process.env.CRON_SECRET || '')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
