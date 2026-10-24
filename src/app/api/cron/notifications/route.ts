@@ -3,7 +3,7 @@ import { sendEmail } from '@/lib/email/resend'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { pushOutboxRow } from '@/lib/push/dispatch'
-import { bearerMatches } from '@/lib/security/constant-time'
+import { bearerMatches, cronSecretMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendOutboxWhatsapp } from '@/lib/whatsapp/outbox'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -77,7 +77,13 @@ type OutboxRow = {
 
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
-  if (!bearerMatches(request.headers.get('authorization'), secret ?? '')) {
+  const authHeader = request.headers.get('authorization')
+  const cronHeader = request.headers.get('x-cron-secret')
+
+  const isAuthorized =
+    bearerMatches(authHeader, secret ?? '') || cronSecretMatches(cronHeader, secret ?? '')
+
+  if (!isAuthorized) {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 
