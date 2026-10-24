@@ -4,7 +4,11 @@ The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
 
-**המשך מ: F43 DONE mobile 8.53%**
+**המשך מ: G13 DONE**
+
+G13: `PushToggle` on /account/notifications, migration `301_push_subscriptions.sql` in pending (not yet applied: Supabase MCP unauthorized in this session). Install banner, subscribe API, VAPID sender, T-7/T-1 and order-status push already existed.
+
+Previous: F43 DONE mobile 8.53%
 
 Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 `pnpm run compare` command and by a fresh archive shot: 380px 8.53% PASS,

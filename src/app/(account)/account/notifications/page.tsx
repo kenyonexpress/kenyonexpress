@@ -1,5 +1,6 @@
 import AllInAppToggle from '@/components/account/AllInAppToggle'
 import EmailToggle from '@/components/account/EmailToggle'
+import PushToggle from '@/components/account/PushToggle'
 import { createClient } from '@/lib/supabase/server'
 import {
   setCouponExpiryEmail,
@@ -49,6 +50,7 @@ export default async function NotificationsPage() {
       <section className="account-card">
         <h2 className="text-lg font-semibold mb-4">התראות באפליקציה</h2>
         <AllInAppToggle initial={allInApp} />
+        <PushToggle />
       </section>
 
       <section className="account-card mt-6">
