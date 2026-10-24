@@ -1,9 +1,11 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { requestIp } from '@/lib/rate-limit/request-ip'
 import { runSearchIndexJob } from '@/lib/search/indexer'
 import { dbChangePayloadSchema, jobForChange } from '@/lib/search/pipeline-contracts'
 import { enqueueSearchIndexJob } from '@/lib/search/qstash'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -40,6 +42,13 @@ function senderAuthorized(request: NextRequest, rawBody: string): boolean {
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  const ip = requestIp(request)
+  if (!(await checkRateLimit(`webhook-products:${ip}`, 300, 60))) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': '60' } },
+    )
+  }
   const rawBody = await request.text()
 
   if (!senderAuthorized(request, rawBody)) {

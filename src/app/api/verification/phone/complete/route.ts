@@ -6,6 +6,7 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { markMilestoneVerified } from '@/server/verification/user-milestones'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -19,6 +20,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
     if (!user) {
       return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+    }
+
+    if (!(await checkRateLimit(`phone-verify-complete:${user.id}`, 20, 3600))) {
+      return NextResponse.json(
+        { ok: false, error: 'rate_limited' },
+        { status: 429, headers: { 'retry-after': '3600' } },
+      )
     }
 
     // Parse request body for optional metadata

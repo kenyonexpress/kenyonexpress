@@ -1,5 +1,6 @@
 import { getSessionWithRole, isAdminRole } from '@/lib/admin/rbac'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { importProductsCsv } from '@/server/actions/admin/product-import'
 import type { NextRequest } from 'next/server'
 
@@ -19,6 +20,12 @@ async function handlePOST(request: NextRequest) {
   const session = await getSessionWithRole()
   if (!session || !isAdminRole(session.role)) {
     return Response.json({ error: 'forbidden' }, { status: 403 })
+  }
+  if (!(await checkRateLimit(`admin-product-import:${session.userId}`, 10, 3600))) {
+    return Response.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': '3600' } },
+    )
   }
   const formData = await request.formData().catch(() => null)
   if (!formData) return Response.json({ error: 'multipart form required' }, { status: 400 })

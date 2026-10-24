@@ -176,6 +176,25 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'SMS unsubscribe requests, per user',
   },
+  // -- Machine-to-machine and operator mutations (G25). Webhooks are signed, so
+  // these are ceilings against a flood of garbage that costs a signature check
+  // and a database read, set well above any real provider's retry burst.
+  'webhook-cardcom': { limit: 600, windowSeconds: 60, reason: 'Cardcom webhook flood, per IP' },
+  'webhook-twilio': { limit: 300, windowSeconds: 60, reason: 'Twilio webhook flood, per IP' },
+  'webhook-products': {
+    limit: 300,
+    windowSeconds: 60,
+    reason: 'search sync webhook flood, per IP',
+  },
+  'search-index-job': { limit: 600, windowSeconds: 60, reason: 'QStash index job flood, per IP' },
+  'search-index-dlq': { limit: 300, windowSeconds: 60, reason: 'QStash dead-letter flood, per IP' },
+  'cache-purge': { limit: 30, windowSeconds: 60, reason: 'CDN purge hook, per IP' },
+  'admin-product-import': { limit: 10, windowSeconds: 3600, reason: 'CSV import, per admin' },
+  'phone-verify-complete': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'phone milestone completion, per user',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES

@@ -22,7 +22,7 @@ Sentry.init({
 
   // Matches the server, so one page view and the request it makes land in the
   // same trace rather than two unrelated halves. See sentry.server.config.ts.
-  tracesSampleRate: 0.1,
+  tracesSampleRate: 1.0,
 
   // Session replay is off. It records the DOM, and this DOM contains addresses,
   // order contents and a voucher QR; shipping that to a third party is a
