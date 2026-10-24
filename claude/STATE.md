@@ -86,3 +86,7 @@ RESULT: DONE
 C10: BIG-SITE-GAP audit written, docs/BIG-SITE-GAP.md (EXISTS/PARTIAL/MISSING matrix, P0 none, 13 P1, 8 P2). Static audit only.
 RESULT: DONE
 המשך מ: C10 DONE
+
+C11: no P0 items in docs/BIG-SITE-GAP.md (C10 matrix: P0 none), nothing to build. No code changes.
+RESULT: DONE
+המשך מ: C11 DONE
