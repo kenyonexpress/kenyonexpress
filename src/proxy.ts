@@ -7,7 +7,13 @@ import { graduatedRateLimit } from '@/lib/rate-limit/graduated'
 import { tooManyRequests } from '@/lib/rate-limit/headers'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
-import { isPaymentFramePath } from '@/lib/security/frame-policy'
+import { CSP_NONCE_HEADER, generateNonce } from '@/lib/security/csp-nonce'
+import {
+  contentSecurityPolicyFor,
+  frameOptionsFor,
+  isPaymentFramePath,
+  permissionsPolicyFor,
+} from '@/lib/security/frame-policy'
 import {
   MAINTENANCE_HTML,
   MAINTENANCE_RETRY_AFTER_SECONDS,
@@ -25,25 +31,57 @@ import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server
 // The exported function must be named `proxy` (not `middleware`).
 
 /**
- * Continue routing, with the correlation id attached in both directions.
+ * Continue routing, with the correlation id and CSP nonce attached in both directions.
  *
  * The header set is read back off the request by `withRequestLog`, which is how
  * a route handler four hops downstream logs the same id. `request.headers` is
  * re-read on every call rather than captured once, because `request.cookies.set`
  * below rewrites the cookie header in place and a snapshot taken before the
  * Supabase session refresh would forward the pre-refresh cookies upstream.
+ *
+ * The CSP nonce is generated per request and injected into both the request
+ * (so components can read it via getNonce()) and the response (as part of the
+ * Content-Security-Policy header). The path-dependent CSP with nonce replaces
+ * the static 'unsafe-inline' fallback from next.config.ts.
  */
-function forward(request: NextRequest, requestId: string): NextResponse {
+function forward(
+  request: NextRequest,
+  requestId: string,
+  nonce: string,
+  pathname: string,
+): NextResponse {
   const headers = new Headers(request.headers)
   headers.set(REQUEST_ID_HEADER, requestId)
+  headers.set(CSP_NONCE_HEADER, nonce)
+
   const response = NextResponse.next({ request: { headers } })
   response.headers.set(REQUEST_ID_HEADER, requestId)
+
+  // Set strict nonce-based CSP header, overriding the static config
+  response.headers.set('Content-Security-Policy', contentSecurityPolicyFor(pathname, nonce))
+  response.headers.set('X-Frame-Options', frameOptionsFor(pathname))
+  response.headers.set('Permissions-Policy', permissionsPolicyFor(pathname))
+
   return response
 }
 
-/** The id on a response this file produces itself: a redirect, a 410. */
-function withRequestId<T extends Response>(response: T, requestId: string): T {
+/**
+ * The id and security headers on a response this file produces itself: a redirect, a 410.
+ *
+ * These responses are produced before the main forward() call, so they need to set
+ * their own CSP headers. The nonce is unused on these paths (they serve no inline
+ * scripts), but the CSP header must still be present to avoid a missing-header downgrade.
+ */
+function withRequestId<T extends Response>(
+  response: T,
+  requestId: string,
+  pathname: string,
+  nonce: string,
+): T {
   response.headers.set(REQUEST_ID_HEADER, requestId)
+  response.headers.set('Content-Security-Policy', contentSecurityPolicyFor(pathname, nonce))
+  response.headers.set('X-Frame-Options', frameOptionsFor(pathname))
+  response.headers.set('Permissions-Policy', permissionsPolicyFor(pathname))
   return response
 }
 
@@ -58,6 +96,12 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   // below depends on.
   const requestId = resolveRequestId(request.headers)
 
+  // Generate CSP nonce for this request. Used to build strict nonce-based CSP
+  // headers that replace 'unsafe-inline', achieving A+ on securityheaders.com.
+  // The nonce is injected into both request headers (so components can read it
+  // via getNonce()) and response CSP headers.
+  const nonce = generateNonce()
+
   // The Sentry tunnel. First, before the redirect lookup and before the session
   // refresh: it carries no session, it is posted to by the browser SDK on a page
   // that may already be broken, and it is never a legacy WordPress path.
@@ -67,7 +111,7 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   // stopped describing it: every error report was paying for a token refresh.
   // Neither branch was wrong on its own, which is how the two of them produced
   // it.
-  if (pathname.startsWith('/monitoring')) return forward(request, requestId)
+  if (pathname.startsWith('/monitoring')) return forward(request, requestId, nonce, pathname)
 
   // Maintenance mode (MAINTENANCE_MODE=1). Payments, webhooks, crons, admin and
   // login are exempt; see lib/security/maintenance.ts for why.
@@ -84,6 +128,8 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
       return withRequestId(
         NextResponse.redirect(new URL('/maintenance', request.url), 307),
         requestId,
+        pathname,
+        nonce,
       )
     }
     return withRequestId(
@@ -96,6 +142,8 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
         },
       }),
       requestId,
+      pathname,
+      nonce,
     )
   }
 
@@ -122,7 +170,7 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
       if (hit.status === 410) {
         // Gone, not missing. A 410 is a decision we made; a 404 is an
         // oversight, and Search Console treats the two differently.
-        return withRequestId(new NextResponse(null, { status: 410 }), requestId)
+        return withRequestId(new NextResponse(null, { status: 410 }), requestId, pathname, nonce)
       }
       const url = request.nextUrl.clone()
       const [targetPath, targetQuery] = hit.target.split('?', 2)
@@ -131,11 +179,11 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
       // paths, and carrying `?ref=` or a stale WooCommerce `?product=` through
       // would produce duplicate URLs for one page.
       url.search = targetQuery ? `?${targetQuery}` : ''
-      return withRequestId(NextResponse.redirect(url, 301), requestId)
+      return withRequestId(NextResponse.redirect(url, 301), requestId, pathname, nonce)
     }
   }
 
-  let supabaseResponse = forward(request, requestId)
+  let supabaseResponse = forward(request, requestId, nonce, pathname)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -159,7 +207,7 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
         // builds a client per request.
         setAll(cookiesToSet, headers) {
           for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
-          supabaseResponse = forward(request, requestId)
+          supabaseResponse = forward(request, requestId, nonce, pathname)
           for (const { name, value, options } of cookiesToSet)
             supabaseResponse.cookies.set(name, value, options)
           for (const [key, value] of Object.entries(headers ?? {}))
@@ -224,12 +272,22 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
     (isPortalPath && !supplierPublic)
 
   if (needsAuth && !user) {
-    return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
+    return withRequestId(
+      NextResponse.redirect(loginRedirectUrl(request.nextUrl)),
+      requestId,
+      pathname,
+      nonce,
+    )
   }
 
   if (pathname.startsWith('/admin')) {
     if (!user) {
-      return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
+      return withRequestId(
+        NextResponse.redirect(loginRedirectUrl(request.nextUrl)),
+        requestId,
+        pathname,
+        nonce,
+      )
     }
     // Role is authoritative in the profiles table, not app_metadata (which may be stale).
     const { data: profile } = await supabase
@@ -248,7 +306,12 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
       profile?.role === 'support' ||
       profile?.role === 'read_only'
     if (!isPanel) {
-      return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
+      return withRequestId(
+        NextResponse.redirect(new URL('/', request.url)),
+        requestId,
+        pathname,
+        nonce,
+      )
     }
   }
 
