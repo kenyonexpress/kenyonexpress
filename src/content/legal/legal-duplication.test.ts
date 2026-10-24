@@ -31,10 +31,10 @@ import { describe, expect, it } from 'vitest'
 
 const CANONICAL = [
   'src/app/(legal)/accessibility/page.tsx',
+  'src/app/(legal)/cookie-policy/page.tsx',
   'src/app/(legal)/privacy/page.tsx',
   'src/app/(legal)/returns/page.tsx',
   'src/app/(legal)/terms/page.tsx',
-  'src/app/(store)/cookie-policy/page.tsx',
 ]
 
 /** Redirect stubs only: each 308s onto the canonical path of the same document. */
