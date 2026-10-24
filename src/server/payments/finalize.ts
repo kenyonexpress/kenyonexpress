@@ -835,13 +835,36 @@ export async function finalizeOrder(input: {
       }
     }
 
-    const { error: orderError } = await admin
+    const { data: paidRows, error: orderError } = await admin
       .from('orders')
       .update({ status: 'paid', paid_at: now.toISOString() })
       .eq('id', order.id)
       .is('paid_at', null)
+      .select('id')
     if (orderError) {
       return { ok: false, error: `order update failed: ${orderError.message}`, code: 'INTERNAL' }
+    }
+
+    // G20: count this order toward the customer's physical-order total, once,
+    // on the pending->paid transition only (a replayed finalize matches no
+    // row). Best effort: the card is charged, and the gate itself recounts
+    // from paid history, so a failed bump never blocks or misgates anyone.
+    // The RPC arrives with migration 300, hence the cast.
+    if (paidRows && paidRows.length > 0 && items.some((i) => i.product_type === 'physical')) {
+      const { error: bumpError } = await (
+        admin as unknown as {
+          rpc: (
+            fn: string,
+            args: Record<string, unknown>,
+          ) => Promise<{ error: { message: string } | null }>
+        }
+      ).rpc('bump_orders_physical_count', { p_user_id: order.user_id })
+      if (bumpError) {
+        log.warn('finalize.physical_count_bump_failed', {
+          order_id: order.id,
+          reason: bumpError.message,
+        })
+      }
     }
 
     // BEST EFFORT, BUT NOT SILENT. The card is already charged by this point,
