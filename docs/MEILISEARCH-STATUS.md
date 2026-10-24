@@ -1,7 +1,7 @@
 # Meilisearch Production Status
 
 **Last Updated:** 2026-10-25  
-**Status:** ✅ CODE COMPLETE, ⛔ PRODUCTION INSTANCE REQUIRED
+**Status:** ⛔ BLOCKED - Production seeding requires manual credential access
 
 ## Current State
 
@@ -184,13 +184,13 @@ curl 'http://localhost:3399/api/search?q=חופשה'
 
 ## Actions Needed
 
-### ⚠️ Production Status: Instance Healthy But Unseeded
+### ⛔ Production Status: Not Verified
 
 **Evidence (2026-10-25):**
-- `/api/ready` → `"meilisearch": "ok"` (instance is reachable and healthy)
-- `/api/search/suggest?q=חופשה` → `"engine": "database"` (searches fall back)
-- Health check passes (confirms instance exists and responds)
-- Searches return database engine (indicates empty or unreachable index)
+- `/api/ready` → `"meilisearch": "ok"` (health check passes)
+- `/api/search/suggest?q=test` → `"engine": "database"` (searches fall back to database)
+- Production Hebrew search NOT using Meilisearch (verification failed)
+- Cannot seed without decrypted credentials
 
 **Why Autonomous Seeding Is Blocked:**
 - MEILISEARCH_HOST env var exists but is encrypted by Vercel
@@ -198,16 +198,22 @@ curl 'http://localhost:3399/api/search?q=חופשה'
 - `vercel env pull` returns "[SENSITIVE]" placeholders
 - Seeding requires the actual instance URL + API key
 
-**What Is Complete:**
-✅ Production instance exists and is healthy (health check: "ok")
+**What Was Completed:**
 ✅ All code written and tested  
 ✅ Hebrew synonyms (64 entries from 13 groups)  
 ✅ Index configuration with Hebrew tuning  
-✅ Seed script tested and working (46 products)  
-✅ Hebrew search verified locally  
+✅ Seed script tested locally (46 products from production Supabase → local Meilisearch)  
+✅ Hebrew search verified locally (חופשה → 10 results)  
 ✅ All validation passing (type-check, lint, build)  
+✅ All files committed and pushed
 
-**Required Manual Action:** Seed production Meilisearch index
+**What Was NOT Verified:**
+❌ Production Meilisearch NOT seeded (searches return `"engine": "database"`)
+❌ Production Hebrew search NOT using Meilisearch  
+❌ Cannot decrypt MEILISEARCH_HOST/API_KEY (blocked by Vercel encryption)
+❌ Cannot seed production without manual credential access
+
+**Required Manual Action:** Access Vercel dashboard to decrypt credentials and seed production index
 
 Two options:
 1. **Via local script** (requires decrypted credentials):
