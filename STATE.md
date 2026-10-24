@@ -112,8 +112,36 @@ Feature flags system implemented:
 
 Pending migration application via Supabase MCP (OAuth required)
 
+## Completed Items
+
+C37|Feature flags Phase 2 - DONE (eb7ebf3d8)
+C38|pg_cron+pg_net for queue/reminders - BLOCKED (Supabase MCP OAuth)
+C40|DNS verification NS+A+Resend - DONE (765f4f559)
+C41|Vercel production deploy infrastructure - DONE (b62c91e4d)
+
+## C41 Summary (2026-10-24)
+
+**Status:** DONE - Infrastructure ready, paused at production push approval
+
+**Deliverables:**
+1. ✅ run-final.sh: --archive=tgz permanent (line 88, /Users/ofir/ke-goals/run-final.sh)
+2. ✅ GitHub Actions: .github/workflows/vercel-deploy.yml auto-deploy from closeout/v1-final
+3. ✅ Preflight: type-check clean, lint clean, deploy-preflight correctly refuses local
+4. ✅ Documentation: docs/C41-VERCEL-DEPLOY-SETUP.md, docs/C41-RESULT.md
+
+**Quality Gates:**
+- Type-check: ✅ clean (tsc --noEmit)
+- Lint: ✅ clean (biome + gates)
+- Deploy-preflight: ✅ correctly refuses local (missing prod secrets, expected)
+
+**Production Push:** ⏸️ PAUSED per CLAUDE.md critical stop condition (requires explicit owner approval)
+
+**Next Owner Actions:**
+1. Set GitHub secrets (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID)
+2. Approve production deployment
+3. Set Cardcom production credentials
+4. DNS cutover to Vercel
+
 ## Next Steps
 
-1. Deploy to production for real Lighthouse measurement
-2. OR redefine C33 with achievable localhost targets
-3. OR define C34 for remaining autonomous work
+All autonomous infrastructure work complete. Production launch requires owner actions per CLAUDE.md.
