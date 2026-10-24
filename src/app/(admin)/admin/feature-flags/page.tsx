@@ -1,7 +1,7 @@
 import { listCapabilities, listFeatureFlags, listOperationalFlags } from '@/lib/admin/feature-flags'
 import { requireSection } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { setMaintenanceMode } from '@/server/actions/admin/feature-flags'
+import { setMaintenanceMode, togglePhase2Flag } from '@/server/actions/admin/feature-flags'
 
 export const metadata = { title: 'דגלי מערכת' }
 
@@ -44,6 +44,122 @@ async function MaintenanceToggle() {
   )
 }
 
+type Phase2Flag = {
+  key: string
+  name: string
+  labelHe: string
+  descriptionHe: string
+  enabled: boolean
+}
+
+async function Phase2FlagsSection() {
+  const { data, error } = await createAdminClient()
+    .from('feature_flags' as never)
+    .select('key, bool_value')
+    .in('key', ['physical_products', 'courses_monthly', 'tzimmer_calendar', 'monthly_billing'])
+
+  if (error) throw new Error(`Phase 2 flags read failed: ${error.message}`)
+
+  const rawFlags = (data as { key: string; bool_value: boolean }[] | null) ?? []
+
+  const flagMeta: Record<string, { name: string; labelHe: string; descriptionHe: string }> = {
+    physical_products: {
+      name: 'physical-products',
+      labelHe: 'מוצרים פיזיים',
+      descriptionHe: 'מוצרים פיזיים עם משלוח. כולל מלאי, כתובות ושער תשלום מלא.',
+    },
+    courses_monthly: {
+      name: 'courses-monthly',
+      labelHe: 'מנוי חודשי לקורסים',
+      descriptionHe: 'מנוי חוזר לקורסים דיגיטליים. הזמנה חד-פעמית בדף פרטי הקורס.',
+    },
+    tzimmer_calendar: {
+      name: 'tzimmer-calendar',
+      labelHe: 'לוח צימרים',
+      descriptionHe: 'הזמנת לילות צימר עם לוח תפוסה ובחירת טווח תאריכים.',
+    },
+    monthly_billing: {
+      name: 'monthly-billing',
+      labelHe: 'חיוב חודשי',
+      descriptionHe: 'חיוב חוזר למנויים. דורש מסלול תשלום מנוי בספק.',
+    },
+  }
+
+  const flags: Phase2Flag[] = Object.keys(flagMeta).map((key) => {
+    const meta = flagMeta[key]!
+    return {
+      key,
+      name: meta.name,
+      labelHe: meta.labelHe,
+      descriptionHe: meta.descriptionHe,
+      enabled: rawFlags.find((r) => r.key === key)?.bool_value ?? false,
+    }
+  })
+
+  return (
+    <div className="space-y-4">
+      <header>
+        <h2 className="text-xl font-bold text-gray-900">דגלי תכונות שלב 2</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          תכונות בהשקה מדורגת. ניתן להפעיל/להשבית מכאן. השינוי חל תוך 30 שניות על כל המופעים. ברירת
+          המחדל: <strong>כבוי</strong> (מיגרציה 293).
+        </p>
+      </header>
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <table className="w-full text-start text-sm">
+          <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+            <tr>
+              <th className="px-4 py-3 font-medium">תכונה</th>
+              <th className="px-4 py-3 font-medium">תיאור</th>
+              <th className="px-4 py-3 font-medium">מצב</th>
+              <th className="px-4 py-3 font-medium">פעולה</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {flags.map((flag) => (
+              <tr key={flag.key}>
+                <td className="px-4 py-3 font-medium text-gray-900">{flag.labelHe}</td>
+                <td className="px-4 py-3 text-gray-600">{flag.descriptionHe}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`rounded-lg border px-2 py-0.5 text-xs font-medium ${
+                      flag.enabled
+                        ? 'border-green-200 bg-green-50 text-green-800'
+                        : 'border-gray-200 bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    {flag.enabled ? 'פעיל' : 'כבוי'}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <form action={togglePhase2Flag} className="inline">
+                    <input type="hidden" name="flag_key" value={flag.key} />
+                    <input
+                      type="hidden"
+                      name="current_value"
+                      value={flag.enabled ? 'true' : 'false'}
+                    />
+                    <button
+                      type="submit"
+                      className={`rounded-lg px-3 py-1 text-xs font-medium ${
+                        flag.enabled
+                          ? 'bg-gray-600 text-white hover:bg-gray-700'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      {flag.enabled ? 'כיבוי' : 'הפעלה'}
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export default async function AdminFeatureFlagsPage() {
   await requireSection('analytics')
   const flags = listFeatureFlags()
@@ -63,6 +179,8 @@ export default async function AdminFeatureFlagsPage() {
       </header>
 
       <MaintenanceToggle />
+
+      <Phase2FlagsSection />
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-start text-sm">

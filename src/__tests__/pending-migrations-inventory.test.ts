@@ -243,6 +243,7 @@ describe('the pending migration inventory', () => {
       '290_push_subscriptions_ensure.sql',
       '291_pg_cron_scheduled_gifts.sql',
       '291_platform_percent_snapshot.sql',
+      '293_phase2_feature_flags.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_169.sql',
@@ -272,6 +273,7 @@ describe('the pending migration inventory', () => {
       'preflight_289.sql',
       'preflight_290.sql',
       'preflight_291.sql',
+      'preflight_293.sql',
     ])
   })
 

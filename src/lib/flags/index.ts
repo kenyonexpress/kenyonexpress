@@ -1,9 +1,10 @@
 /**
- * Phase 2 feature flags. Every flag is OFF unless its env variable is exactly
- * "1" or "true", so a missing, empty or mistyped value never turns a feature on.
+ * Phase 2 feature flags. Migration 293 seeds them in the database (all OFF).
+ * The async `getFlagsFromSupabase()` reads from DB with 30s cache, falling back
+ * to env vars on error. The sync `isFlagOn()` reads env-only for build-time use.
  *
- * These are build/boot-time env switches, the same model as the kill switches in
- * lib/resilience/kill-switches.ts. They do not touch the database.
+ * PREFER the async version in request handlers. Use the sync version only where
+ * async is not possible (middleware, config).
  */
 export const FLAGS = {
   'physical-products': 'FLAG_PHYSICAL_PRODUCTS',
@@ -19,14 +20,26 @@ export type FlagEnv = Record<string, string | undefined>
 
 export const FLAG_NAMES = Object.keys(FLAGS) as FlagName[]
 
+/**
+ * Sync version: reads env vars only. Use for build-time or sync contexts.
+ */
 export function isFlagOn(name: FlagName, env: FlagEnv = process.env): boolean {
   const raw = env[FLAGS[name]]?.trim().toLowerCase()
   return raw === '1' || raw === 'true'
 }
 
+/**
+ * Sync version: env-only report for all flags.
+ */
 export function flagReport(env: FlagEnv = process.env): Record<FlagName, boolean> {
   return Object.fromEntries(FLAG_NAMES.map((n) => [n, isFlagOn(n, env)])) as Record<
     FlagName,
     boolean
   >
 }
+
+/**
+ * Async version: reads from Supabase feature_flags table (migration 293) with
+ * 30s cache, falling back to env vars on error. PREFER this in request handlers.
+ */
+export { getSupabaseFlags } from './supabase-flags'
