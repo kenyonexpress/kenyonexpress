@@ -1,5 +1,24 @@
 import '@testing-library/jest-dom'
 import 'fake-indexeddb/auto'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+// Load .env.local for tests that need Supabase connection
+try {
+  const envPath = resolve(process.cwd(), '.env.local')
+  const envContent = readFileSync(envPath, 'utf-8')
+  for (const line of envContent.split('\n')) {
+    const match = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/)
+    if (match) {
+      const [, key, value] = match
+      // Remove quotes if present
+      const cleanValue = value?.replace(/^["']|["']$/g, '') ?? ''
+      process.env[key!] = cleanValue
+    }
+  }
+} catch (_err) {
+  // .env.local not found, tests requiring it will skip or fail
+}
 
 /**
  * A working `localStorage` for the jsdom environment.
