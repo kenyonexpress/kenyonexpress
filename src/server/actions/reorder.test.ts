@@ -31,6 +31,7 @@ describe('reorderFromOrder', () => {
   it('adds all order items to cart', async () => {
     vi.mocked(getOrderDetail).mockResolvedValue({
       id: 'order-123',
+      orderNumber: 'KE-20261025-00001',
       status: 'paid',
       settlementStatus: 'split_executed',
       createdAt: '2026-10-15T10:00:00Z',
@@ -95,6 +96,7 @@ describe('reorderFromOrder', () => {
   it('handles missing product IDs gracefully', async () => {
     vi.mocked(getOrderDetail).mockResolvedValue({
       id: 'order-123',
+      orderNumber: 'KE-20261025-00002',
       status: 'paid',
       settlementStatus: 'split_executed',
       createdAt: '2026-10-15T10:00:00Z',
@@ -136,6 +138,7 @@ describe('reorderFromOrder', () => {
   it('continues adding items even if one fails', async () => {
     vi.mocked(getOrderDetail).mockResolvedValue({
       id: 'order-123',
+      orderNumber: 'KE-20261025-00003',
       status: 'paid',
       settlementStatus: 'split_executed',
       createdAt: '2026-10-15T10:00:00Z',
@@ -199,6 +202,7 @@ describe('reorderFromOrder', () => {
   it('limits error messages to 3', async () => {
     vi.mocked(getOrderDetail).mockResolvedValue({
       id: 'order-123',
+      orderNumber: 'KE-20261025-00004',
       status: 'paid',
       settlementStatus: 'split_executed',
       createdAt: '2026-10-15T10:00:00Z',

@@ -396,7 +396,10 @@ export default function ProductInfo({
             and this line used to send a friend "₪200" for a deal the page
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex items-center gap-4">
-          <WhatsAppShareButton productId={productId} message="ראה דיל:" appendCurrentUrl />
+          <WhatsAppShareButton
+            productId={productId}
+            message={`ראה דיל: ${typeof window !== 'undefined' ? window.location.href : ''}`}
+          />
           <FacebookShareButton />
         </span>
       </div>

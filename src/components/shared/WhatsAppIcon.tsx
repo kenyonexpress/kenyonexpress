@@ -1,11 +1,11 @@
-import { MessageCircle } from 'lucide-react'
+import { FaWhatsapp } from '@/components/icons/electro-icons'
 
 type Props = {
   size?: number
   className?: string
 }
 
-/** WhatsApp icon from lucide-react (MessageCircle used as WhatsApp representation). */
+/** WhatsApp glyph: Font Awesome as shipped by Electro v7 (fa-whatsapp). */
 export default function WhatsAppIcon({ size = 24, className }: Props) {
-  return <MessageCircle size={size} className={className} />
+  return <FaWhatsapp size={size} className={className} />
 }

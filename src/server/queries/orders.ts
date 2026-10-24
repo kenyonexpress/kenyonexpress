@@ -68,6 +68,7 @@ export interface OrderLine {
 
 export interface OrderDetail {
   id: string
+  orderNumber: string
   status: string
   settlementStatus: SettlementState
   createdAt: string
@@ -187,7 +188,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     await admin
       .from('orders')
       .select(
-        `id, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`,
+        `id, order_number, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`,
       )
       .eq('id', orderId)
       .eq('user_id', userId)
@@ -199,6 +200,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   const order = orderRow as unknown as
     | (Record<string, unknown> & {
         id: string
+        order_number: string
         status: OrderDetail['status']
         created_at: string
         paid_at: string | null
@@ -373,6 +375,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
 
   return {
     id: order.id,
+    orderNumber: order.order_number,
     status: order.status,
     settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
     createdAt: order.created_at,

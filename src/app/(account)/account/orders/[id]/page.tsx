@@ -102,8 +102,8 @@ export default async function OrderDetailPage({ params }: Props) {
                     <div className="mt-2">
                       <WhatsAppButton
                         href={
-                          waChatLink(line.supplier.phone, `הזמנה ${order.id}`) ??
-                          `mailto:support@kenyonexpress.co.il?subject=${encodeURIComponent(`שאלה על הזמנה ${order.id}`)}`
+                          waChatLink(line.supplier.phone, `הזמנה ${order.orderNumber}`) ??
+                          `mailto:support@kenyonexpress.co.il?subject=${encodeURIComponent(`שאלה על הזמנה ${order.orderNumber}`)}`
                         }
                         size="sm"
                       >
