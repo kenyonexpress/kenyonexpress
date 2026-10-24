@@ -1,0 +1,24 @@
+{
+  "Rules": [
+    {
+      "Id": "DeleteOldBackups",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "postgres/"
+      },
+      "Expiration": {
+        "Days": 30
+      }
+    },
+    {
+      "Id": "DeleteOldSchemaBackups",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "schema/"
+      },
+      "Expiration": {
+        "Days": 90
+      }
+    }
+  ]
+}
