@@ -23,24 +23,40 @@ async function verifyFontRendering() {
   const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`
   await page.goto(dataUrl)
 
-  // Wait for font to load
-  await page.waitForTimeout(1000)
+  // Wait for fonts to load
+  await page.waitForLoadState('networkidle')
 
-  // Get the actual computed font from the rendered text
-  const fontInfo = await page.evaluate(() => {
+  // Check if Heebo font actually loaded (not just declared in CSS)
+  const fontInfo = await page.evaluate(async () => {
     const textElement = document.querySelector('text')
     if (!textElement) return null
 
+    // Wait for all fonts to load
+    await document.fonts.ready
+
+    // Check if Heebo actually loaded
+    const heeboLoaded = document.fonts.check('700 48px Heebo')
+
     const computedStyle = window.getComputedStyle(textElement)
     const bbox = textElement.getBBox()
+
+    // Get the actual font being used (browser may report this)
+    const actualFont = document.fonts.check('700 48px Heebo')
+      ? 'Heebo (loaded)'
+      : 'Heebo (NOT loaded, using fallback)'
+
     return {
       fontFamily: computedStyle.fontFamily,
       fontWeight: computedStyle.fontWeight,
       fontSize: computedStyle.fontSize,
       fill: computedStyle.fill || textElement.getAttribute('fill'),
       textContent: textElement.textContent,
-      // Check if the element has actual rendered dimensions
       bbox: bbox ? { width: bbox.width, height: bbox.height } : null,
+      heeboLoaded,
+      actualFont,
+      fontsAvailable: Array.from(document.fonts.values()).map(
+        (f) => `${f.family} ${f.weight} ${f.style} - ${f.status}`,
+      ),
     }
   })
 
@@ -52,7 +68,9 @@ async function verifyFontRendering() {
   }
 
   console.log('Rendered font properties:')
-  console.log(`  Font Family: ${fontInfo.fontFamily}`)
+  console.log(`  Font Family (CSS): ${fontInfo.fontFamily}`)
+  console.log(`  Heebo Loaded: ${fontInfo.heeboLoaded ? 'YES' : 'NO'}`)
+  console.log(`  Actual Font: ${fontInfo.actualFont}`)
   console.log(`  Font Weight: ${fontInfo.fontWeight}`)
   console.log(`  Font Size: ${fontInfo.fontSize}`)
   console.log(`  Fill Color: ${fontInfo.fill}`)
@@ -61,6 +79,10 @@ async function verifyFontRendering() {
     console.log(
       `  Bounding Box: ${fontInfo.bbox.width.toFixed(2)}×${fontInfo.bbox.height.toFixed(2)}`,
     )
+  }
+  console.log('\nLoaded fonts:')
+  for (const font of fontInfo.fontsAvailable || []) {
+    console.log(`  - ${font}`)
   }
 
   // Verify requirements
@@ -72,10 +94,10 @@ async function verifyFontRendering() {
       expected: 'קניון EXPRESS',
     },
     {
-      name: 'Heebo font family',
-      pass: fontInfo.fontFamily.toLowerCase().includes('heebo'),
-      actual: fontInfo.fontFamily,
-      expected: 'Heebo (or fallback)',
+      name: 'Heebo font actually loaded',
+      pass: fontInfo.heeboLoaded === true,
+      actual: fontInfo.heeboLoaded ? 'Heebo loaded' : 'Heebo NOT loaded (using fallback)',
+      expected: 'Heebo loaded',
     },
     {
       name: 'Bold font weight',
