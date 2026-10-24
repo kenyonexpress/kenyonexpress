@@ -1,0 +1,134 @@
+name: Vercel Production Deployment
+
+on:
+  push:
+    branches:
+      - closeout/v1-final
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: false  # Never cancel in-progress production deploys
+
+env:
+  NODE_VERSION: '22'
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy-production:
+    name: Deploy to Vercel Production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run type checks
+        run: pnpm type-check
+
+      - name: Run lint
+        run: pnpm lint
+
+      - name: Build Project
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          # Production environment variables are pulled from Vercel
+          # The deploy-preflight.mjs script runs as part of the build
+          VERCEL_ENV: production
+
+      - name: Deploy to Vercel Production
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "deployment-url=$url" >> $GITHUB_OUTPUT
+          echo "Deployed to: $url"
+
+      - name: Comment on Commit
+        if: success()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const deploymentUrl = '${{ steps.deploy.outputs.deployment-url }}';
+            const sha = context.sha.substring(0, 7);
+            const message = `✅ **Production Deployment Successful**\n\n` +
+                          `**URL:** ${deploymentUrl}\n` +
+                          `**Commit:** ${sha}\n` +
+                          `**Branch:** closeout/v1-final\n` +
+                          `**Triggered by:** ${context.actor}`;
+
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: message
+            });
+
+      - name: Notify on Failure
+        if: failure()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const sha = context.sha.substring(0, 7);
+            const message = `❌ **Production Deployment Failed**\n\n` +
+                          `**Commit:** ${sha}\n` +
+                          `**Branch:** closeout/v1-final\n` +
+                          `**Run:** ${context.runId}`;
+
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: message
+            });
+
+  verify-deployment:
+    name: Verify Production Deployment
+    needs: deploy-production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify /api/ready endpoint
+        run: |
+          sleep 30  # Allow deployment to fully propagate
+          curl -f -s https://kenyonexpress.vercel.app/api/ready || exit 1
+          echo "✅ Health check passed"
+
+      - name: Verify homepage loads
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://kenyonexpress.vercel.app)
+          if [ "$status" -eq 200 ]; then
+            echo "✅ Homepage returns 200"
+          else
+            echo "❌ Homepage returns $status"
+            exit 1
+          fi
