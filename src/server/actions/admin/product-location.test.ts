@@ -203,4 +203,35 @@ describe('batchLocationSchema', () => {
       expect(result.data.full_address).toBe('כיכר השעון 5')
     }
   })
+
+  it('accepts exactly 100 IDs', () => {
+    const ids = Array.from(
+      { length: 100 },
+      (_, i) =>
+        `${i.toString().padStart(8, '0')}-e29b-41d4-a716-${(i + 1000).toString().padStart(12, '0')}`,
+    ).join(',')
+    const result = batchLocationSchema.safeParse({
+      ids,
+      city: 'אילת',
+      full_address: '',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.ids).toHaveLength(100)
+    }
+  })
+
+  it('handles nationwide label city name', () => {
+    // The action should reject "כל הארץ" but the schema itself allows it
+    // (validation happens in the action to provide better error messaging)
+    const result = batchLocationSchema.safeParse({
+      ids: '550e8400-e29b-41d4-a716-446655440000',
+      city: 'כל הארץ',
+      full_address: '',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.city).toBe('כל הארץ')
+    }
+  })
 })

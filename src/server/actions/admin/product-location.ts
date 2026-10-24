@@ -108,18 +108,21 @@ async function runSetBatchProductLocation(formData: FormData): Promise<void> {
 
   const supabase = await createClient()
 
-  // Update all products in one query
-  const { error, count } = await supabase
+  // Update all products in one query and get count
+  const { error, data } = await supabase
     .from('products')
     .update({ city, full_address } as never)
     .in('id', ids)
     .eq('city', NATIONWIDE_LABEL) // Only update products that still have the default
     .is('deleted_at', null)
+    .select('id')
 
   if (error) redirect(`${PAGE}?error=batch_failed`)
-  if ((count ?? 0) !== ids.length) {
+
+  const count = data?.length ?? 0
+  if (count !== ids.length) {
     // Some products weren't updated (maybe already updated by another admin)
-    redirect(`${PAGE}?error=batch_partial&count=${count ?? 0}`)
+    redirect(`${PAGE}?error=batch_partial&count=${count}`)
   }
 
   // Log each product update
