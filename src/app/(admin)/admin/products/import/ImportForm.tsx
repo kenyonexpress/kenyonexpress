@@ -21,41 +21,52 @@ const PREVIEW_COLUMNS = [
  * mode=commit. Picking a different file resets to the preview step.
  */
 export default function ImportForm() {
+  // React clears an uncontrolled form (the file input included) once a form
+  // action settles, so the chosen file is kept here and re-attached to every
+  // submit. Without it the commit step arrives with no file.
+  const fileRef = useRef<File | null>(null)
   const [state, action, pending] = useActionState<ProductImportState, FormData>(
-    importProductsCsv,
+    (prev, formData) => {
+      if (fileRef.current) formData.set('file', fileRef.current)
+      return importProductsCsv(prev, formData)
+    },
     null,
   )
-  const [mode, setMode] = useState<'preview' | 'commit'>('preview')
-  const formRef = useRef<HTMLFormElement>(null)
+  const [submitted, setSubmitted] = useState<'preview' | 'commit'>('preview')
   const canCommit = state?.dryRun === true && (state.preview?.length ?? 0) > 0
 
   return (
-    <form ref={formRef} action={action} className="space-y-3">
-      <input type="hidden" name="mode" value={mode} />
+    <form action={action} className="space-y-3">
       <input
         type="file"
         name="file"
         accept=".csv,text/csv"
-        required
-        onChange={() => setMode('preview')}
+        onChange={(e) => {
+          fileRef.current = e.target.files?.[0] ?? null
+          setSubmitted('preview')
+        }}
       />
       <div className="flex gap-2">
         <button
           type="submit"
+          name="mode"
+          value="preview"
           disabled={pending}
-          onClick={() => setMode('preview')}
+          onClick={() => setSubmitted('preview')}
           className="rounded border border-gray-900 px-4 py-2"
         >
-          {pending && mode === 'preview' ? 'בודק...' : 'בדיקה (בלי לשמור)'}
+          {pending && submitted === 'preview' ? 'בודק...' : 'בדיקה (בלי לשמור)'}
         </button>
         {canCommit && (
           <button
             type="submit"
+            name="mode"
+            value="commit"
             disabled={pending}
-            onClick={() => setMode('commit')}
+            onClick={() => setSubmitted('commit')}
             className="rounded bg-gray-900 px-4 py-2 text-white"
           >
-            {pending && mode === 'commit'
+            {pending && submitted === 'commit'
               ? 'מייבא...'
               : `אישור ייבוא של ${state?.preview?.length} שורות`}
           </button>

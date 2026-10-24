@@ -7,11 +7,11 @@ const HEADER =
 
 const FIVE_ROWS = [
   HEADER,
-  'p-one,מוצר א,product,100.00,14,7,2500,חיפה,הרצל 1,32.79,34.98',
-  'p-two,מוצר ב,product,50,0,14,0,תל אביב,"דיזנגוף 10, קומה 2",32.08,34.78',
+  'p-one,מוצר א,physical,100.00,14,7,2500,חיפה,הרצל 1,32.79,34.98',
+  'p-two,מוצר ב,physical,50,0,14,0,תל אביב,"דיזנגוף 10, קומה 2",32.08,34.78',
   'p-three,מוצר ג,coupon,30.50,365,30,,ירושלים,,31.77,35.21',
-  'p-four,מוצר ד,product,10,,,990,,,,',
-  'p-five,מוצר ה,product,20,7,7,1500,באר שבע,רגר 5,,',
+  'p-four,מוצר ד,physical,10,,,990,,,,',
+  'p-five,מוצר ה,physical,20,7,7,1500,באר שבע,רגר 5,,',
 ].join('\n')
 
 describe('F06 CSV import with migration 185/187/278 columns (5 rows)', () => {
@@ -70,10 +70,10 @@ describe('F06 CSV import with migration 185/187/278 columns (5 rows)', () => {
       parseCsv(
         [
           HEADER,
-          'a,א,product,1,400,7,100,,,,',
-          'b,ב,product,1,5,9,100,,,,',
-          'c,ג,product,1,5,7,12.5,,,,',
-          'd,ד,product,1,5,7,100,,,32,',
+          'a,א,physical,1,400,7,100,,,,',
+          'b,ב,physical,1,5,9,100,,,,',
+          'c,ג,physical,1,5,7,12.5,,,,',
+          'd,ד,physical,1,5,7,100,,,32,',
         ].join('\n'),
       ),
     )

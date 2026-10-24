@@ -11,6 +11,9 @@ import { cadenceFromDays, parseLogisticsFields } from './product-logistics-field
 
 export const PRODUCT_CSV_MAX_ROWS = 200
 
+/** Mirrors the `type` enum of the product form schema. */
+const PRODUCT_CSV_TYPES: readonly string[] = ['physical', 'coupon', 'recurring']
+
 /** Header name -> form field. Anything else is reported, not silently dropped. */
 export const PRODUCT_CSV_COLUMNS = [
   'slug',
@@ -158,6 +161,14 @@ export function validateRow(form: FormData): string | null {
   }
   const city = form.get('city')
   if (typeof city === 'string' && city.length > 60) return 'שם עיר עד 60 תווים'
+  const type = form.get('type')
+  if (typeof type === 'string' && !PRODUCT_CSV_TYPES.includes(type)) {
+    return `type חייב להיות אחד מ: ${PRODUCT_CSV_TYPES.join(', ')}`
+  }
+  const price = form.get('kenyon_price')
+  if (typeof price === 'string' && !/^\d+(\.\d{1,2})?$/.test(price)) {
+    return 'kenyon_price חייב להיות מספר חיובי עם עד שתי ספרות אחרי הנקודה'
+  }
   const percent = form.get('platform_percent')
   if (percent != null) {
     const p = Number(percent)

@@ -202,13 +202,18 @@ async function runUpsertProduct(
     discount_percent,
     coupon_price_ils,
     status: submittedStatus,
+    // No `free_shipping` column exists (193 was cancelled; "free" is
+    // shipping_price_agorot = 0, migration 278), so it must never reach the
+    // write: PostgREST rejects the whole insert on an unknown column.
+    free_shipping: _freeShipping,
     ...contentFields
   } = fields
+  const { free_shipping: _unusedFreeShipping, ...fieldsWithoutFreeShipping } = fields
   const writeFields = hidePricing
     ? id
       ? contentFields
       : { ...contentFields, status: 'draft' as const }
-    : fields
+    : fieldsWithoutFreeShipping
 
   /**
    * The row always carries `whatsapp_enabled`; the WRITE drops it if the column

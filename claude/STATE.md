@@ -71,3 +71,7 @@ C05: BLOCKED, migration 301 unapplied (Supabase MCP unauthenticated), e2e guest 
 
 C06: BLOCKED, supabase-anon-key-401, account pages need a session (guest gets 307 to /login). See docs/L5-ACCOUNT-REPORT.md
 המשך מ: C06 BLOCKED
+
+C07: DONE, admin product upload verified end to end (manual + CSV): create, publish, /product/<slug> 200, delete, cleanup. Fixed free_shipping insert failure, unreachable CSV commit, weak dry-run validation. See docs/L6-ADMIN-REPORT.md
+RESULT: DONE
+המשך מ: C07 DONE

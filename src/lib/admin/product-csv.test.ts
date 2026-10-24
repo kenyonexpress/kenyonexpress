@@ -24,6 +24,15 @@ describe('mapCsvToForms', () => {
     expect(row.form.get('kenyon_price')).toBe('19.90')
     expect(r.unknownColumns).toEqual(['status'])
   })
+  it('rejects an unknown type and a non-numeric price in the dry run', () => {
+    const r = mapCsvToForms(
+      parseCsv(`${head}s1,שם,bogus,10,\ns2,שם,physical,abc,\ns3,שם,physical,80.50,\n`),
+    )
+    if (!r.ok) throw new Error(r.error)
+    expect(r.rows[0]).toMatchObject({ ok: false, line: 2 })
+    expect(r.rows[1]).toMatchObject({ ok: false, line: 3 })
+    expect(r.rows[2]).toMatchObject({ ok: true, line: 4 })
+  })
   it('refuses a file without a required column', () => {
     expect(mapCsvToForms(parseCsv('slug,name_he\na,b\n')).ok).toBe(false)
   })
