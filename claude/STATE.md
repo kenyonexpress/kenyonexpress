@@ -14,4 +14,6 @@ Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 `--widths`, `--baseline`, `--live-url` in `scripts/compare-args.mjs`. Rows in
 `docs/UI-PARITY-REPORT.md`, 2026-10-21.
 
-המשך מ: G09 DONE
+המשך מ: G10 DONE
+
+G10 (F11 club tiers): schema already applied as migrations/applied/282_club_tiers.sql (189 is taken by 189_affiliate_program), so no duplicate migration was written to pending. Editor at /admin/club-tiers (/admin/clubs redirects). Added public /club (src/app/(main)/club/page.tsx) listing active tiers + benefits, listPublicTiers() in src/server/queries/club.ts, sitemap entry.

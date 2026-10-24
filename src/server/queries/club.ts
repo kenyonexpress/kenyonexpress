@@ -2,6 +2,7 @@ import 'server-only'
 
 import { type Agorot, agorot } from '@/lib/commerce/money'
 import { log } from '@/lib/observability/log'
+import { createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 
 export interface ClubTierRow {
@@ -89,4 +90,37 @@ export async function getMyTier(): Promise<MyTier | null> {
     nextTierNameHe: next?.name_he ?? null,
     toNextAgorot: agorot(next ? Number(next.min_spend_agorot) : 0),
   }
+}
+
+export interface PublicTier {
+  key: string
+  nameHe: string
+  minSpendAgorot: Agorot
+  benefits: string[]
+}
+
+/**
+ * Active tiers for the public /club page, lowest threshold first. Read as
+ * anon: club_tiers_read_active (migration 282) already limits rows to active
+ * ones, so the page shows exactly what the admin editor has published.
+ * Null on a failed read, so the page can say so instead of claiming no tiers.
+ */
+export async function listPublicTiers(): Promise<PublicTier[] | null> {
+  const { data, error } = await createPublicClient()
+    .from('club_tiers' as never)
+    .select('key, name_he, min_spend_agorot, benefits_json')
+    .eq('active', true)
+    .order('min_spend_agorot', { ascending: true })
+  if (error) {
+    log.warn('club.public_tiers_read_failed', { reason: error.message })
+    return null
+  }
+  return (
+    (data ?? []) as Pick<ClubTierRow, 'key' | 'name_he' | 'min_spend_agorot' | 'benefits_json'>[]
+  ).map((t) => ({
+    key: t.key,
+    nameHe: t.name_he,
+    minSpendAgorot: agorot(Number(t.min_spend_agorot)),
+    benefits: benefitList(t.benefits_json),
+  }))
 }
