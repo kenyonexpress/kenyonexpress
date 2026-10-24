@@ -42,26 +42,16 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
 // not adds: two Content-Security-Policy headers are both enforced and the
 // strictest wins, which would undo the exception without saying so.
-// CSP violation reports go to Sentry when a DSN is configured at build time.
-// The header is static, so the DSN has to be present when `next build` runs;
-// Vercel injects the project's environment there, a laptop usually has none,
-// and in that case the policy simply carries no reporting directive.
-// `sentrySecurityEndpoint` in frame-policy.ts derives the endpoint from the
-// DSN and explains why a nonce is not the answer here.
-const CSP_REPORT_URI = sentrySecurityEndpoint(
-  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
-  process.env.SENTRY_ENVIRONMENT ||
-    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
-    process.env.VERCEL_ENV,
-)
-const REPORTING_ENDPOINTS = reportingEndpointsHeader(CSP_REPORT_URI)
-
+// Static headers that don't need per-request dynamic values.
+// CSP, X-Frame-Options, and Permissions-Policy are now set dynamically in src/proxy.ts
+// with nonces and path-dependent values, so they're omitted here to avoid overwriting.
 const headersWithPolicy = (
   csp: string,
   frameOptions: 'DENY' | 'SAMEORIGIN',
   permissions: string,
 ) => [
-  { key: 'Content-Security-Policy', value: csp },
+  // CSP, X-Frame-Options, and Permissions-Policy are set in src/proxy.ts with nonces
+  // and are NOT included here to avoid overwriting the dynamic middleware headers.
   /*
    * `preload` REMOVED 2026-09-08, and this is not a downgrade of the policy.
    *
@@ -84,14 +74,8 @@ const headersWithPolicy = (
    * See docs/incidents/2026-09-08-production-tls-down.md section 5.1.
    */
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
-  // Moves in step with frame-ancestors. Browsers that honour both enforce both,
-  // so a DENY left behind on a framable path blocks the frame anyway.
-  { key: 'X-Frame-Options', value: frameOptions },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  // Path-dependent for the same reason as the CSP: camera=() on the scanner
-  // route is a scanner that cannot see (frame-policy.ts, CAMERA_PATHS).
-  { key: 'Permissions-Policy', value: permissions },
 ]
 
 const nextConfig: NextConfig = {
