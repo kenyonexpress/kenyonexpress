@@ -100,8 +100,8 @@ rehearsal. First consumer: the toggle on `/account/notifications`.
 products with `city` NULL now read `כל הארץ`; 16 coupons keep NULL. Applied
 through MCP `apply_migration` (ledger name
 `products_nationwide_city_default_279`) after a rolled-back rehearsal that
-touched exactly 66 rows. The admin page `/admin/products/missing-location`
-lists those rows for a real city.
+touched exactly 66 rows. The admin page `/admin/products/pending-location`
+lists those rows for batch editing to assign real cities.
 
 ## 2026-10-18: 185, 186, 187 and 278 APPLIED to production (rc5 F01)
 

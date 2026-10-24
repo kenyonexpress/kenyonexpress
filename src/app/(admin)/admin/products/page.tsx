@@ -90,7 +90,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         <h1 className="text-xl font-bold text-ink">מוצרים</h1>
         <div className="flex items-center gap-3">
           <Link
-            href="/admin/products/missing-location"
+            href="/admin/products/pending-location"
             className="text-sm text-link hover:underline"
           >
             מוצרים בלי מיקום
