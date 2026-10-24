@@ -24,6 +24,7 @@
 
 /** Runs without a database. No sign-in, no seeded row, no write. */
 export const NO_DATABASE_SPECS = [
+  'a11y-minimal.spec.ts',
   'a11y.spec.ts',
   'cart.spec.ts',
   'category.spec.ts',
