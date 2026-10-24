@@ -5,12 +5,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { mintSessionFor } from '@/server/auth/mint-session'
 import { WA_OTP_MAX_ATTEMPTS, otpMatches } from '@/server/auth/wa-otp'
+import { markMilestoneVerified } from '@/server/verification/user-milestones'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Checks a WhatsApp sign-in code and signs the account in (rc5 F15). Only the
  * newest live code for the number counts; three wrong guesses burn it. The
  * emailed fallback code is the same code, so it is checked here too.
+ *
+ * C65: Also marks phone verification milestone as verified when successful.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const body = (await request.json().catch(() => null)) as {
@@ -81,6 +84,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       { status: session.reason === 'no_email' ? 409 : 500 },
     )
   }
+
+  // C65: Mark milestone as verified after successful phone sign-in
+  // This is non-blocking: if it fails, the sign-in still succeeded
+  await markMilestoneVerified(row.user_id, 'phone_verification_after_5_orders', {
+    phone,
+    method: 'auth_whatsapp_otp',
+    verified_via: 'sign_in',
+  })
+
   return NextResponse.json({ ok: true })
 }
 
