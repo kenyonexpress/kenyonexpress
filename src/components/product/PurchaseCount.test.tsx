@@ -55,8 +55,8 @@ describe('PurchaseCount', () => {
     expect(element.className).toContain('custom-class')
   })
 
-  it('subscribes to realtime updates via hook', () => {
-    const { useProductPurchaseCount } = require('@/hooks/useProductPurchaseCount')
+  it('subscribes to realtime updates via hook', async () => {
+    const { useProductPurchaseCount } = await import('@/hooks/useProductPurchaseCount')
 
     render(<PurchaseCount productId="product-123" initialCount={7} variant="full" />)
 
