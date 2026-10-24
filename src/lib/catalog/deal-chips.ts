@@ -27,10 +27,6 @@ export function parseDealChips(params: Params): DealChips {
   }
 }
 
-export function anyChip(chips: DealChips): boolean {
-  return chips.weekend || chips.freeShipping
-}
-
 export interface ChipFilterable {
   weekend_only?: boolean | null
   free_shipping?: boolean | null
