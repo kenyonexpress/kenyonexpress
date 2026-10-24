@@ -57,12 +57,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     hasPreflight: false,
   },
   {
-    number: '130',
-    file: '130_payment_events.sql',
-    state: 'applied',
-    hasPreflight: false,
-  },
-  {
     number: '131',
     file: '131_refunds.sql',
     state: 'applied',
@@ -515,6 +509,18 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
     number: '293',
     file: '293_phase2_feature_flags.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '294',
+    file: '294_payment_events.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '295',
+    file: '295_notification_preferences.sql',
     state: 'pending',
     hasPreflight: true,
   },
