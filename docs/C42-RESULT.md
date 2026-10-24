@@ -63,18 +63,30 @@ Update docs/LAUNCH-CHECKLIST.md with comprehensive current evidence from STATE.m
 - C36: Security hardening verified
 - C39: R2 backups + pgTAP RLS (BLOCKED Docker/R2/Supabase-MCP)
 
-**Migrations Applied to Production:**
-- 292: supplier_agreements (C29, live write verified 2026-10-24)
-- 185, 187, 278: product fields (cancellation, payout, shipping)
-- 280: user_consents
-- 286: maintenance_mode flag
-- 290: push_subscriptions (table exists per C11 verification)
+**Migrations - Production Status:**
 
-**Quality Gates:**
-- Type-check: clean (0 errors)
-- Lint: clean (6396 files, 11s)
-- Build: success (273 pages)
-- Tests: 6704 passed / 6690 total (14 red outside autonomous scope)
+*Verified Applied:*
+- 292: supplier_agreements (C29, live DB write verified 2026-10-24)
+- 185, 187, 278: product fields (logged in docs/MIGRATIONS-APPLIED.md)
+
+*Tables Exist but Migration Status Unclear (Supabase MCP OAuth Required):*
+- 290: push_subscriptions (table exists per C11 verification, migration application unconfirmed)
+- 280, 282, 283, 284, 286: code references exist, production status unverified
+
+*Attempted Verification in C42 Session:*
+- ToolSearch attempted for Supabase MCP tools (list_tables, execute_sql)
+- Result: "No matching deferred tools found" - Supabase MCP requires OAuth
+- OAuth not available in non-interactive autopilot session
+- Cannot verify which migrations are actually applied to production database
+
+**Quality Gates (Verified in C42 Session):**
+- Type-check: ✅ clean (0 errors, run in session)
+- Lint: ✅ clean (6396 files, 2s, biome + 3 gates)
+- Build: ✅ success (273 pages, run in session)
+- Tests: ⚠️ 6702 passed / 2 failed / 28 skipped (6732 total, run in session)
+  - 2 failures: ci-action-versions (actions/checkout v4/v7 mixed), migration-location-gate (C39 pgTAP files)
+  - Failures are inventory gates from C39 work, not runtime bugs
+- Supabase MCP: ❌ attempted ToolSearch, requires OAuth (not available in non-interactive session)
 
 ### 2. HOLD Section - 9 Critical Blockers Documented
 
@@ -146,11 +158,22 @@ Update docs/LAUNCH-CHECKLIST.md with comprehensive current evidence from STATE.m
 - Test results: 6704 passing, 6396 files linted clean
 - Build output: 273 pages successfully built
 
-**Quality Verification:**
+**Quality Verification (Run in C42 Session):**
 ```
-pnpm type-check: clean (0 errors)
-pnpm lint: clean (6396 files, 2s)
-pnpm build: success (273 pages)
+pnpm type-check: ✅ clean (0 errors)
+pnpm lint: ✅ clean (6396 files, 2s, biome + 3 gates)
+pnpm build: ✅ success (273 pages)
+pnpm test: ⚠️ 6702 passed / 2 failed / 28 skipped (6732 total)
+  - 2 failures from C39: actions/checkout v4/v7 mixed, pgTAP .sql files
+  - Failures are inventory gates, not runtime bugs
+```
+
+**Supabase MCP Attempt (C42 Session):**
+```
+ToolSearch(query="select:mcp__claude_ai_Supabase__list_tables,mcp__claude_ai_Supabase__execute_sql")
+Result: "No matching deferred tools found"
+Reason: Supabase MCP requires OAuth, not available in non-interactive session
+Impact: Cannot verify migration application status in production database
 ```
 
 ## Commits

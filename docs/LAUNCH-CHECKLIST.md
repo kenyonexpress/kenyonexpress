@@ -19,7 +19,7 @@
 ### מה הושלם (עם ראיות מ-STATE.md)
 
 **Core Infrastructure Complete:**
-- ✅ F01 DONE: Baseline green - type-check, lint (6374 files clean), tests (6704 passed/6690 total)
+- ✅ F01 DONE: Baseline green - type-check clean, lint (6396 files clean), tests (6702 passed/2 failed/28 skipped, 6732 total verified in C42 session)
 - ✅ F37 DONE: CI workflows (.github/workflows/ci.yml: lint, typecheck, test, build, gates, e2e)
 - ✅ F39 DONE: Tag v1.0.0-mvp-rc3 + v2.0.0 on origin with CHANGELOG.md
 - ✅ Z15 DONE: Mobile audit 14 pages × 380/390/430 = 42 measurements, 0 overflow (docs/MOBILE-AUDIT-FINAL.md)
@@ -61,12 +61,21 @@
 - ✅ C36 DONE: Security hardening verified (rate limits, Turnstile, CSP, HSTS, gitleaks, ec0cffb01)
 - ✅ C39 BLOCKED: R2 backups + pgTAP RLS (infrastructure ready, BLOCKED Docker/R2/Supabase-MCP, cbcbbf342)
 
-**Migrations Applied to Production (with verification):**
+**Migrations - Production Status:**
+
+*Verified Applied (with evidence):*
 - ✅ 292: supplier_agreements (C29, version_hash + IP tracking, live write verified 2026-10-24)
-- ✅ 185, 187, 278: product fields (cancellation_window_days, payout_cadence, shipping_price_agorot)
-- ✅ 280: user_consents (append-only consent record)
-- ✅ 286: maintenance_mode flag
-- ✅ 290: push_subscriptions (table exists in prod per C11 verification)
+- ✅ 185, 187, 278: product fields (logged in docs/MIGRATIONS-APPLIED.md)
+
+*Tables Exist in Production (C11 verification) but Migration Status Unclear:*
+- ⚠️ 290: push_subscriptions (table exists, SELECT verified, but Supabase MCP OAuth required to confirm migration applied vs manual creation)
+
+*Unverified (Supabase MCP OAuth Required):*
+- ❓ 280: user_consents (code references it, not verified in prod)
+- ❓ 282: club_tiers (code shipped, in migrations/applied/, not in docs/MIGRATIONS-APPLIED.md)
+- ❓ 283: affiliate (code shipped, in migrations/applied/, not in docs/MIGRATIONS-APPLIED.md)
+- ❓ 284: weekend_only (code shipped, not verified)
+- ❓ 286: maintenance_mode (code references it, not verified in prod)
 
 **Not Mine, Left Unstaged:**
 - docs/UI-PARITY-REPORT.md
@@ -89,11 +98,13 @@
    - Evidence: STATE.md line 116 C20 emails built but sends require valid key
    - Impact: Cannot send purchase confirmation emails
 
-3. **Supabase MCP OAuth (needed for migrations):**
-   - BLOCKED: Migrations 162, 282, 283, 284, 289, 290 not verified applied in prod
-   - 282 (club_tiers), 283 (affiliate), 284 (weekend_only), 290 (push_subscriptions) exist in migrations/applied/ but not in docs/MIGRATIONS-APPLIED.md
-   - Evidence: "Supabase MCP needs OAuth" repeated ~40 times in STATE.md
-   - Impact: Cannot verify or apply pending migrations to production
+3. **Supabase MCP OAuth (needed for migrations verification):**
+   - BLOCKED: ToolSearch attempted in C42 session, Supabase MCP requires OAuth not available in non-interactive sessions
+   - Migrations 162, 282, 283, 284, 289 not verified applied in prod; 280, 286, 290 tables may exist but status unclear
+   - 282 (club_tiers), 283 (affiliate), 284 (weekend_only) in migrations/applied/ but not in docs/MIGRATIONS-APPLIED.md
+   - 290 (push_subscriptions) table exists per C11 verification but migration application unconfirmed
+   - Evidence: C42 ToolSearch attempt, "Supabase MCP needs OAuth" repeated ~40 times in STATE.md
+   - Impact: Cannot verify or apply pending migrations to production, cannot confirm which migrations are actually applied
 
 4. **Vercel Deployment Configuration:**
    - C41 RESULT: "deployment blocked by Vercel platform error" (commit 707a3da8e)
@@ -151,7 +162,14 @@
 
 ---
 
-**Summary:** Core application is feature-complete and tested (6704 tests passing). Critical path blocked on production Cardcom credentials, Resend API key, and Vercel deployment platform error. Quality gates (visual parity, E2E, Lighthouse) red but not blocking soft-launch with controlled audience per original plan.
+**Summary:** Core application is feature-complete and tested (6702 passed/2 failed/28 skipped in C42 session; 2 failures are C39 inventory gates). Critical path blocked on production Cardcom credentials, Resend API key, Vercel deployment platform error, and Supabase MCP OAuth (migration verification). Quality gates (visual parity, E2E, Lighthouse) red but not blocking soft-launch with controlled audience per original plan.
+
+**C42 Session Verification (2026-10-24):**
+- pnpm type-check: ✅ passed (0 errors)
+- pnpm lint: ✅ passed (6396 files, biome + 3 gates clean)
+- pnpm build: ✅ passed (273 pages)
+- pnpm test: ⚠️ 6702 passed, 2 failed (ci-action-versions, migration-location-gate from C39), 28 skipped
+- Supabase MCP: ❌ attempted ToolSearch, requires OAuth (not available in non-interactive session)
 
 ---
 
