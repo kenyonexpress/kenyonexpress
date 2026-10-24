@@ -1,5 +1,6 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -35,7 +36,7 @@ export type RedeemResult =
       details?: string
     }
 
-export async function redeemVoucherFromQr(qrPayload: string): Promise<RedeemResult> {
+async function runRedeemVoucherFromQr(qrPayload: string): Promise<RedeemResult> {
   // 1. Validate signature before touching database
   const verified = verifyVoucherQrPayload(qrPayload)
 
@@ -178,4 +179,8 @@ export async function redeemVoucherFromQr(qrPayload: string): Promise<RedeemResu
     success: false,
     ...message,
   }
+}
+
+export async function redeemVoucherFromQr(qrPayload: string): Promise<RedeemResult> {
+  return withActionContext('partner.scan.redeem_voucher', () => runRedeemVoucherFromQr(qrPayload))
 }

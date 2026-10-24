@@ -27,6 +27,8 @@ async function captureAndCompare(page, url, name, width) {
     // First screenshot
     await browserPage.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
     await browserPage.waitForTimeout(1000)
+    // Prove where we landed (checkout bounces to cart when empty)
+    const finalUrl1 = browserPage.url()
     const shot1 = await browserPage.screenshot({
       fullPage: false,
       clip: { x: 0, y: 0, width, height: HEIGHT },
@@ -38,6 +40,8 @@ async function captureAndCompare(page, url, name, width) {
     // Second screenshot
     await browserPage.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
     await browserPage.waitForTimeout(1000)
+    const finalUrl2 = browserPage.url()
+    console.log(`  Requested: ${url}, landed: ${finalUrl1} / ${finalUrl2}`)
     const shot2 = await browserPage.screenshot({
       fullPage: false,
       clip: { x: 0, y: 0, width, height: HEIGHT },

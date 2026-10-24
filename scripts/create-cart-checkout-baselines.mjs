@@ -23,6 +23,10 @@ async function captureBaseline(page, url, name, width, setupFn) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
   await page.waitForTimeout(2000) // Let any animations settle
 
+  // Prove where we landed
+  const finalUrl = page.url()
+  console.log(`  Requested: ${url}, landed: ${finalUrl}`)
+
   const screenshot = await page.screenshot({
     fullPage: false,
     clip: { x: 0, y: 0, width, height: HEIGHT },

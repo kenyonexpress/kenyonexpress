@@ -12,10 +12,10 @@ vi.mock('@/lib/observability/log', () => ({
 }))
 
 const MIGRATION_CANDIDATES = [
-  // Applied through MCP on 2026-09-03 and moved out of `pending/`; the file is
-  // still the only written description of the guards, so the search follows it.
-  'migrations/applied/130_payment_events.sql',
-  'migrations/pending/130_payment_events.sql',
+  // Applied as 294 (renumbered from 130 due to number collision).
+  // The file is the only written description of the guards.
+  'migrations/applied/294_payment_events.sql',
+  'migrations/pending/294_payment_events.sql',
   'supabase/migrations/130_payment_events.sql',
 ]
 
@@ -24,7 +24,7 @@ const MIGRATION = (() => {
     const full = resolve(process.cwd(), candidate)
     if (existsSync(full)) return full
   }
-  throw new Error(`130_payment_events.sql is in neither ${MIGRATION_CANDIDATES.join(' nor ')}.`)
+  throw new Error(`payment_events.sql is in neither ${MIGRATION_CANDIDATES.join(' nor ')}.`)
 })()
 
 /**

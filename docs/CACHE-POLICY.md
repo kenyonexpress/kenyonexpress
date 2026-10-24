@@ -76,9 +76,9 @@ server/actions/admin/suppliers.ts       4
 server/actions/admin/approvals.ts       2
 server/actions/admin/coupon-deals.ts    2
 server/actions/admin/reviews.ts         1
-server/actions/admin/product-location.ts 1
+server/actions/admin/product-location.ts 2
 server/actions/supplier/profile.ts      1
-                                       21
+                                       22
 ```
 
 **Corrected 2026-09-08.** This list said "four modules, all admin" and totalled
