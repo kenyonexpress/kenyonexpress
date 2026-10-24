@@ -49,7 +49,7 @@
     "path": "/checkout",
     "width": 380,
     "status": 200,
-    "finalPath": "/checkout",
+    "finalPath": "/cart",
     "overflow": 0,
     "tooSmall": 14
   },
