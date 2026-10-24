@@ -1158,3 +1158,7 @@ order_items.supplier_payout_ils  order_items.cashback_earned_ils
 
 `src/lib/commerce/order-money-columns.ts` carries the same list at the call
 site. The two have to change together.
+
+- `294_group_deals.sql` - Group deals / bulk purchase discounts (C47 Item 1). Creates `group_deals` and `group_deal_participants` tables for tiered volume pricing.
+- `295_subscriptions.sql` - Course subscriptions (C47 Item 6). Creates `subscriptions` and `subscription_invoices` tables for recurring billing. Gated by courses-monthly flag (migration 293).
+- `296_bookings.sql` - Tzimmer bookings (C47 Item 7). Creates `bookings` table for vacation rental calendar. Gated by tzimmer-calendar flag (migration 293).

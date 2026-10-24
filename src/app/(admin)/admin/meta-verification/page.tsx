@@ -8,13 +8,17 @@ import {
   formatForMetaApplication,
   generateVerificationChecklist,
 } from '@/lib/admin/meta-verification-helper'
+import { requireAdminPage } from '@/lib/admin/rbac'
+import { log } from '@/lib/observability/log'
 
 export const metadata = {
   title: 'אימות Meta WhatsApp Business',
   description: 'טופס הגשה לאימות חשבון עסקי',
 }
 
-export default function MetaVerificationPage() {
+export default async function MetaVerificationPage() {
+  await requireAdminPage()
+
   return (
     <div className="container mx-auto px-4 py-8" dir="rtl">
       <h1 className="mb-6 text-3xl font-bold">אימות Meta WhatsApp Business</h1>
@@ -39,6 +43,7 @@ export default function MetaVerificationPage() {
             id="businessName"
             name="businessName"
             required
+            dir="rtl"
             className="w-full rounded-md border px-3 py-2"
             placeholder="קניון אקספרס בע״מ"
           />
@@ -86,6 +91,7 @@ export default function MetaVerificationPage() {
             id="websiteUrl"
             name="websiteUrl"
             required
+            dir="ltr"
             className="w-full rounded-md border px-3 py-2"
             placeholder="https://kenyonexpress.co.il"
           />
@@ -100,6 +106,7 @@ export default function MetaVerificationPage() {
             id="businessEmail"
             name="businessEmail"
             required
+            dir="ltr"
             className="w-full rounded-md border px-3 py-2"
             placeholder="info@kenyonexpress.co.il"
           />
@@ -114,6 +121,7 @@ export default function MetaVerificationPage() {
             id="businessPhone"
             name="businessPhone"
             required
+            dir="ltr"
             className="w-full rounded-md border px-3 py-2"
             placeholder="+972-50-1234567"
           />
@@ -190,7 +198,7 @@ async function submitVerification(formData: FormData) {
   const application = formatForMetaApplication(data)
 
   // Log application (in production, save to database or send notification)
-  console.log('Meta verification application generated:', application)
+  log.info('Meta verification application generated', { application })
 
   // Server actions return void - download handled client-side
 }

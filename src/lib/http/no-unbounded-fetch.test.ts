@@ -47,6 +47,8 @@ const ALLOWED: Record<string, string> = {
     'AbortController driven by its own timeoutMs argument, because the caller decides how long a preflight may take.',
   'lib/cache.ts':
     'AbortController with 5000ms timeout to Vercel cache API. Purge failure is non-blocking and silent.',
+  'lib/admin/legal-docs-verifier.ts':
+    'AbortSignal.timeout(5000). HEAD requests to verify legal document presence for compliance audit.',
   'app/api/cron/health/route.ts':
     'AbortSignal.timeout(5000) on the ntfy push. A cron that hangs on its own notification never reports the health it measured.',
 

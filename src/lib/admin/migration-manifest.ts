@@ -554,4 +554,22 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '294',
+    file: '294_group_deals.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '295',
+    file: '295_subscriptions.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
+  {
+    number: '296',
+    file: '296_bookings.sql',
+    state: 'pending',
+    hasPreflight: false,
+  },
 ] as const
