@@ -98,3 +98,4 @@ RESULT: DONE
 C13: hardening audited and verified (Upstash limits, Turnstile, CSP/HSTS, gitleaks, flags, maintenance all present, 135 tests pass). Sentry extra alert rules DONE-DEFERRED (no SENTRY_AUTH_TOKEN). See docs/L12-HARDEN-REPORT.md
 RESULT: DONE
 המשך מ: C13 DONE
+המשך מ: C15 DONE (2026-10-25): docs/LAUNCH-CHECKLIST.md rewritten (PUSH NOW green/automatic + decided items; HOLD 7 human-only blockers: Cardcom prod creds, DNS, Resend, Supabase OAuth/migrations, Turnstile, business details, Sentry token) and docs/MANUAL.md created (7 owner-only steps, no secret values). Docs only.
