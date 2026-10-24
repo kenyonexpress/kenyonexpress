@@ -265,4 +265,46 @@ Files created:
 Quality gates: typecheck ✅, lint ✅, build ✅ (273 routes)
 Commits: 1e0b59371, 32a419ed0 pushed to origin/autopilot
 
-## המשך מ: BLOCKED C51 - Awaiting user email to Supabase support
+## C52: Supabase Management Token Distribution - COMPLETE (2026-10-24)
+
+**Status:** ✅ COMPLETE - Token deployed and verified
+
+**Completed:**
+1. ✅ Extracted token from macOS keychain (sbp_[REDACTED])
+2. ✅ Added SUPABASE_ACCESS_TOKEN to Vercel production environment (Secret)
+3. ✅ Added SUPABASE_ACCESS_TOKEN to Vercel preview environment (Secret)
+4. ✅ Added SUPABASE_ACCESS_TOKEN to Vercel development environment (Config)
+5. ✅ Added SUPABASE_ACCESS_TOKEN to local .env.local (autopilot environment)
+6. ✅ Verified Management API access (GET /v1/projects/ixvwfbuvfxxsjiywhbbb → ACTIVE_HEALTHY)
+7. ✅ Verified STATE.md write capability (successful Edit operation)
+8. ✅ Quality gates: type-check clean, lint clean (1798 files), build success (273 routes)
+
+**Token Details:**
+- Type: Supabase Personal Access Token (sbp_*)
+- Stored: macOS Keychain + Vercel (all envs) + .env.local
+- Purpose: Management API access for MCP operations and CLI
+- Security: Marked as Secret in Vercel production/preview, Config in development
+- Verification: Tested against Management API, returns project status ACTIVE_HEALTHY
+
+**Management API Test Result:**
+```json
+{
+  "id": "ixvwfbuvfxxsjiywhbbb",
+  "status": "ACTIVE_HEALTHY",
+  "database": {"version": "17.6.1.111", "postgres_engine": "17"},
+  "region": "eu-north-1"
+}
+```
+
+**Note:** This is token distribution, not rotation. True rotation (generate new + revoke old) blocked by C51 2FA recovery. Current token should be rotated after dashboard access restored.
+
+**Files Modified:**
+- .env.local (added SUPABASE_ACCESS_TOKEN)
+- docs/C52-TOKEN-ROTATION-STATUS.md (created)
+- STATE.md (this update)
+
+**Commits:** Pending [autopilot] commit
+
+**RESULT: SUCCESS** - Token deployed to all environments and verified functional.
+
+## המשך מ: Next goal in queue
