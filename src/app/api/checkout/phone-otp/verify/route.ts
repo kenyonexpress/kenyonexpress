@@ -4,12 +4,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { verifyCheckoutPhoneOtp } from '@/server/checkout/verified-shipping'
+import { markMilestoneVerified } from '@/server/verification/user-milestones'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Checks the checkout phone-verification code (F42). A right answer consumes
  * the row, and that consumed row is what `submitCheckout` later reads as the
  * proof, so this endpoint sets no cookie and no flag the form could forge.
+ *
+ * C65: Also marks the phone verification milestone as verified when successful.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createClient()
@@ -35,6 +38,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const result = await verifyCheckoutPhoneOtp(createAdminClient(), user.id, phone, code)
   if (result !== 'ok') return NextResponse.json({ ok: false, error: result }, { status: 400 })
+
+  // C65: Mark milestone as verified after successful phone verification
+  // This is non-blocking: if it fails, the verification still succeeded
+  await markMilestoneVerified(user.id, 'phone_verification_after_5_orders', {
+    phone,
+    method: 'checkout_whatsapp_otp',
+    verified_via: 'checkout',
+  })
+
   return NextResponse.json({ ok: true, phone })
 }
 
