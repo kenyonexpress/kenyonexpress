@@ -46,6 +46,11 @@ interface Props {
    * page - out of the cache.
    */
   scarcitySlot?: ReactNode
+  /**
+   * Purchase count display with realtime updates. Passed as a node to avoid
+   * dragging the page out of cache with a live read.
+   */
+  purchaseCountSlot?: ReactNode
   sku: string | null
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
@@ -97,6 +102,7 @@ export default function ProductInfo({
   oldPrice,
   baseStock,
   scarcitySlot = null,
+  purchaseCountSlot = null,
   sku,
   categoryName,
   city,
@@ -251,6 +257,9 @@ export default function ProductInfo({
         catalogue.
       */}
       {!outOfStock && scarcitySlot}
+
+      {/* Social proof: how many people purchased this product recently */}
+      {purchaseCountSlot}
 
       {/* A subscription is priced per cycle; quoting the one-off price here
           would promise the wrong number. The renewal terms sit next to the

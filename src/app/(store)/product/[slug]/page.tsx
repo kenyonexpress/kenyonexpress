@@ -1,5 +1,6 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import LocationPin from '@/components/product/LocationPin'
+import PurchaseCountWrapper from '@/components/product/PurchaseCountWrapper'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductGalleryMobile from '@/components/storefront/ProductGalleryMobile'
@@ -286,6 +287,11 @@ export default async function ProductPage({ params }: Props) {
                   trackedLevel={product.stock_quantity}
                   isCoupon={isCoupon}
                 />
+              </Suspense>
+            }
+            purchaseCountSlot={
+              <Suspense fallback={null}>
+                <PurchaseCountWrapper productId={product.id} variant="full" />
               </Suspense>
             }
             sku={product.sku}
