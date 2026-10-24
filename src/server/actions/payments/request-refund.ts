@@ -102,7 +102,7 @@ async function runRequestOrderRefund(input: {
   // file to remember to compare `user_id`.
   const { data: order, error: orderError } = await supabase
     .from('orders')
-    .select('id, status, paid_at, order_number')
+    .select('id, status, paid_at')
     .eq('id', input.orderId)
     .maybeSingle()
   if (orderError) {
@@ -376,7 +376,9 @@ async function runRequestOrderRefund(input: {
   if (user.email) {
     const mail = buildCancellationRequestedEmail({
       refundId: inserted.id,
-      orderRef: String((order as { order_number?: string | null }).order_number ?? order.id),
+      // `orders` has no order_number column (no migration adds one), so the
+      // customer's reference is the id's first block.
+      orderRef: order.id.slice(0, 8),
       requestedAtIso: now.toISOString(),
       requestedAgorot: decision.requestedAgorot,
       cancellationFeeAgorot: decision.cancellationFeeAgorot,
