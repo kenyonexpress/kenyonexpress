@@ -1,5 +1,10 @@
 # `migrations/pending/`
 
+## 2026-10-24: 293 and 300 added (C37 + C16)
+
+- `293_phase2_feature_flags.sql` - PENDING. Seeds Phase 2 feature flags (physical_products, courses_monthly, tzimmer_calendar, monthly_billing) all OFF. Extends 286's feature_flags table. Requires MCP apply_migration.
+- `300_c16_payment_refund_infrastructure.sql` - PENDING. Consolidated migration: payment_events (130), refunds (131), search_index_outbox (132), state guards on orders.status/payments.status (137). All with IF NOT EXISTS guards for idempotency. Requires MCP apply_migration.
+
 ## 2026-09-08: READ docs/MIGRATION-NUMBER-COLLISIONS.md BEFORE APPLYING ANYTHING
 
 `origin/main` has been numbering migrations from the same counter as this
