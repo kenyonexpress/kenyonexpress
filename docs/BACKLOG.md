@@ -3,12 +3,18 @@
 **Status:** Empty (as of 2026-10-24, C47 completion)
 
 All items processed:
-- **3 items completed:** Crisp chat (item 2), Courses billing (item 6), Tzimmer calendar (item 7)
-- **4 items blocked:** Moved to `docs/BACKLOG-BLOCKED.md` (items 1, 3, 4, 5)
+- **4 items completed:** Group-deals (1), Crisp (2), Courses billing (6), Tzimmer calendar (7)
+- **3 items blocked:** Moved to `docs/BACKLOG-BLOCKED.md` (items 3, 4, 5)
 
 See `docs/BACKLOG-BLOCKED.md` for blocked items and their requirements.
 
 ## Completed Items
+
+### 1. Group-deals re-evaluation ✅ DONE
+- Implementation: `src/lib/group-deals/group-purchase-schema.ts`
+- Features: Tiered bulk discounts, group purchase coordination
+- Tests: 10 passing
+- Ready for integration into product pages
 
 ### 2. Crisp inbox ✅ DONE
 - Implementation: `src/components/shared/CrispChat.tsx`
