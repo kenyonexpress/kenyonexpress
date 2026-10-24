@@ -112,8 +112,8 @@ Rollback: `CHECKOUT_ENABLED=false` ואז Instant Rollback. בלי down-migratio
 |---|---|---|---|---|
 | RS1 | `RESEND_API_KEY` תקין ב-Vercel Production (לא בדפדפן) | P0 | FAIL | STATE 11.08: **400 API key is invalid**, אותו ערך נשלח פעמיים |
 | RS2 | `RESEND_FROM` על דומיין מאומת | P0 | BLOCKED_OWNER | אימות דומיין לא בוצע |
-| RS3 | SPF ברשומת TXT של דומיין השליחה | P0 | BLOCKED_OWNER | Resend dashboard: DNS not green |
-| RS4 | DKIM (CNAME אחד או יותר ש-Resend מציג) | P0 | BLOCKED_OWNER | אותו מקור |
+| RS3 | SPF ברשומת TXT של דומיין השליחה | P0 | PASS | 2026-10-24: v=spf1 include:amazonses.com ~all on send.kenyonexpress.co.il |
+| RS4 | DKIM (CNAME אחד או יותר ש-Resend מציג) | P0 | PASS | 2026-10-24: resend._domainkey.kenyonexpress.co.il TXT verified |
 | RS5 | DMARC בסיסי (`p=none` ביום 1, לא `reject`) | P1 | BLOCKED_OWNER | אחרי SPF+DKIM |
 | RS6 | מייל אישור רכישת קופון הגיע בפועל אחרי עסקת הטסט | P0 | FAIL | תלוי RS1 + CC6; 07.08: 0 שורות outbox בפרודקשן |
 | RS7 | מסמך גילוי 14ג(ב) יוצא עם האישור או מצורף לשובר | P0 | OPEN | חוסם GA; soft-launch סגור יכול עם מייל אחד מלא |

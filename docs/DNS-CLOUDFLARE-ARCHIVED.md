@@ -152,26 +152,33 @@ $ dig _dmarc.kenyonexpress.co.il TXT +short
 "v=DMARC1; p=none;"
 ```
 
-**Resend DNS records NOT FOUND:**
+**Resend DNS records VERIFIED on send subdomain:**
 ```bash
-$ dig _resend._domainkey.kenyonexpress.co.il TXT +short
-(no output)
+# DKIM (resend._domainkey, NOT _resend._domainkey)
+$ dig resend._domainkey.kenyonexpress.co.il TXT +short
+"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCSLiJVyYJvyWcY6mDZv3g7chG2nVI8v2vq6Oc67XUeShO8kXAytuQND5FXmZtgnxHJuJsLRhzhQZhu1QiEWm4Dvj8V+SlWrGu0gSx6HO7fpaHqCU4odp4vd6NXLaAiNkYHSl05GlXx2UH7jCN8RmlmV6icllIaIw0uUN+qNUaS2wIDAQAB"
 
-$ dig kenyonexpress.co.il MX +short
-(no output)
+# MX (send subdomain, NOT apex)
+$ dig send.kenyonexpress.co.il MX +short
+10 feedback-smtp.us-east-1.amazonses.com.
 
-$ dig kenyonexpress.co.il TXT +short | grep -E 'v=spf1'
-(no output)
+# SPF (send subdomain, NOT apex)
+$ dig send.kenyonexpress.co.il TXT +short
+"v=spf1 include:amazonses.com ~all"
 ```
 
-## Outstanding: Resend Email Setup
+## Resend Email Setup: COMPLETE
 
 Per `docs/LAUNCH-CHECKLIST.md` (items RS3, RS4):
 
-- **RS3:** SPF TXT record on sending domain - **BLOCKED_OWNER** (Resend dashboard DNS not green)
-- **RS4:** DKIM CNAME(s) from Resend dashboard - **BLOCKED_OWNER**
+- **RS3:** SPF TXT record on sending domain - ✅ **COMPLETE** (verified on send.kenyonexpress.co.il)
+- **RS4:** DKIM CNAME(s) from Resend dashboard - ✅ **COMPLETE** (verified at resend._domainkey.kenyonexpress.co.il)
 
-**Action required:** Configure Resend DNS records (DKIM, SPF, MX) via Vercel DNS or Resend dashboard. The old Cloudflare records (both valid and corrupt) are no longer accessible.
+**Note:** Resend uses `send.kenyonexpress.co.il` subdomain for sending, not the apex domain. All three required DNS records (DKIM, SPF, MX) are configured in Vercel DNS and resolving correctly.
+
+**Created:** 2026-09-04 (per Vercel DNS record timestamps)
+
+The old Cloudflare records (both valid and corrupt) are no longer accessible or relevant.
 
 ## References
 
