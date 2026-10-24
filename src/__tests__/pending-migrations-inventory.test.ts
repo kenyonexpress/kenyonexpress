@@ -74,7 +74,6 @@ describe('the pending migration inventory', () => {
       '125_expire_vouchers_drop_escrow.sql',
       '126_percent_range_checks.sql',
       '127_homepage_cms.sql',
-      '130_payment_events.sql',
       '131_refunds.sql',
       '132_search_index_outbox.sql',
       '133_supplier_branches.sql',
@@ -122,6 +121,7 @@ describe('the pending migration inventory', () => {
       '284_products_weekend_only.sql',
       '285_auth_wa_otps.sql',
       '286_feature_flags.sql',
+      '294_payment_events.sql',
     ])
   })
 
