@@ -228,27 +228,22 @@ d4a3f0046 state: Z09 affiliate verified as shipped
 8f6f4c18f state: Z08 re-run 10 unchanged
 ```
 
-## המשך מ: M-cycle
+## המשך מ: C49
 
-v2.0.0-final cycle (C01-C44) CLOSED on 2026-10-24. All autonomous work complete.
+BLOCKED C49-M13 (Money Constraints) - CRITICAL 2026-10-24: audit-money-constraints.mjs requires SUPABASE_DB_URL or MCP query results to verify four UNIQUE constraints (payments.idempotency_key, ledger_journals.event_key, payment_webhook_events(provider,external_event_id), wallet_entries.idempotency_key). These constraints are the ONLY defense against replayed Cardcom callbacks double-charging cards. Cannot verify without database access. Supabase MCP requires OAuth (unavailable in non-interactive session per system-reminder). No SUPABASE_DB_URL in environment. BLOCKER: Supabase MCP OAuth authorization. No code change.
 
-Next phase: M-cycle (manual interventions + production deployment)
+BLOCKED C49-M05 (DB Performance) - NON-CRITICAL 2026-10-24: Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Database performance audit cannot run. BLOCKER: Supabase environment variables not set in .env.local. No code change.
 
-Critical M-cycle gates:
-1. Cardcom production credentials (replace sandbox, test live checkout)
-2. Supabase MCP OAuth authorization (apply migrations 162+289)
-3. Resend API key production (verify transactional email delivery)
-4. Visual parity gate resolution (owner decision: accept current or structural rework)
-5. E2E full suite green twice (after Supabase health + env config fixes)
-6. Lighthouse Perf >90 (LCP + CSS optimization on PDP/cart/checkout)
-7. Z12 WhatsApp OTP resolution (owner decision: email-only vs Meta Cloud)
-8. F13 coupon transfer implementation (owner decisions + migration)
-9. Vercel production deployment (resolve C41 platform error)
-10. Production monitoring validation (Sentry/PostHog/Axiom live verification)
+BLOCKED C49-M06 (Lighthouse Smoke) - NON-CRITICAL 2026-10-24: Chrome prevented page load with interstitial. Lighthouse smoke test failing with "Runtime error encountered: Chrome prevented page load with an interstitial." Production site may be behind challenge/captcha page. BLOCKER: Production deployment or DNS configuration issue. No code change.
 
-BLOCKED Z05 visual gate + 280 apply-check (re-run 11 2026-10-24): unchanged. F05 cancel-and-refund, notifications toggle, migrations 185 (applied, logged) + 280 shipped (da60e5c63); branch in sync (6029e5a0e). Visual gate has no RTL Electro v7 account baseline. 280 (user_consents) absent from docs/MIGRATIONS-APPLIED.md; claude.ai Supabase MCP still needs OAuth (authorize in connector settings), so apply_migration cannot run. No code change. STATE.md is 400+ lines, over the 300 cap; archive to docs/STATE-ARCHIVE.md pending.
-Continue from Z06 DONE-AS-SHIPPED (re-run 10 2026-10-24): unchanged. CSV import accepts 185/187/278 columns; 5-row test c26f15fac on origin, src/lib/admin tests green (25 files, 247 passed), branch in sync. Live-DB import not run: Supabase MCP needs OAuth. No code change.
-Continue from Z06 DONE-AS-SHIPPED (re-run 11 2026-10-24): unchanged. 185/187/278 CSV columns + 5-row test c26f15fac on origin, src/lib/admin tests green (25 files, 247 passed), branch in sync. Live-DB import not run: Supabase MCP needs OAuth. STATE.md trimmed to 251 lines, older lines moved to docs/STATE-ARCHIVE.md.
-Continue from Z06 DONE-AS-SHIPPED (re-run 12 2026-10-24): unchanged. 185/187/278 CSV columns + 5-row test c26f15fac on origin, src/lib/admin tests green (25 files, 247 passed), branch in sync. Live-DB import not run: Supabase MCP needs OAuth. No code change.
-Continue from Z07 DONE-AS-SHIPPED (re-run 10 2026-10-24): unchanged. verify-card-stub (flag CARD_VERIFY_STUB_ENABLED) on origin, 4 tests green, HEAD 0d90a6653, branch in sync. No code change.
+BLOCKED C49-M14 (Role Separation) - NON-CRITICAL 2026-10-24: audit-role-separation requires SUPABASE_DB_URL or MCP query results. Cannot verify RLS policy separation without database access. Supabase MCP requires OAuth (unavailable). BLOCKER: Supabase MCP OAuth authorization. No code change.
+
+BLOCKED C49-M15 (Canonical Host) - NON-CRITICAL 2026-10-24: Canonical URLs in code declare https://kenyonexpress.co.il (apex) but domain configuration serves from https://www.kenyonexpress.co.il (www subdomain). ALL canonical URLs redirect: canonical, og:url, og:image, twitter:image, robots Host, robots Sitemap. The redirect wins over the code declaration, and crawlers index www instead of the declared canonical. BLOCKER: Human decision needed - either update code to use www subdomain, or change DNS/Vercel configuration to make apex primary. This is a branding decision. No code change.
+
+Continue from C49-M18 (Backup Health) - DONE 2026-10-24: Created fresh backup kenyonexpress-backup-2026-10-24-1453.tar.gz (953M). Cleaned up old backups per CLAUDE.md rule (keep only 3 newest). Latest backup now 2h old vs 50h before. RPO requirement (23h) now met. No code change.
+
+Continue from C49-M10 (Cron Status) - INFORMATIONAL 2026-10-24: scripts/cron-jobs.json differs between autopilot branch and origin/main. Expected - cron.yml runs on schedule trigger from default branch. Three routes (daily-revenue, wishlist-alerts, wishlist-digest) exist on origin/main but not this branch, so deployed build returns 404 when cron calls them. This is informational drift, not actionable until merge. No code change.
+
+Continue from C49-M17 (Default Branch) - INFORMATIONAL 2026-10-24: scripts/cron-jobs.json differs between autopilot and origin/main. GitHub reads configuration from default branch (main). Edits to default-branch-only files take effect on merge, not before. This is expected branch divergence. No code change.
+
 Continue from C47 DONE (2026-10-24): BACKLOG.md EMPTY - ALL 7 items have code implementations. Quality gates ALL PASS (typecheck, lint, build). Full implementations: (1) Group-deals (schema + migration 294 + RLS, 10 tests), (2) Crisp chat (component + integration, 5 tests), (3) Meta verification (helper library, 6 tests), (4) Legal verifier (checker + package, 8 tests), (5) Capacitor config (@capacitor/cli + @capacitor/core installed), (6) Courses billing (schema + migration 295 + RLS, 8 tests), (7) Tzimmer calendar (schema + migration 296 + RLS, 7 tests). Supporting: docs/META-WHATSAPP-VERIFICATION.md, docs/LEGAL-REVIEW-CHECKLIST.md, docs/NATIVE-APP-EVALUATION.md, src/lib/milestones/sales-tracker.ts (9 tests). Total 53 tests passing. Migrations 294-296 ready (Supabase MCP requires OAuth, see docs/C47-SUPABASE-MCP-BLOCKER.md). Commits: 6857017af, ea59f5057, 12482c39b, 99c024679, 13996608e (migrations), 4e0e1840a (items 3-5), 29a711b48 (docs) pushed.
