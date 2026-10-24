@@ -27,19 +27,23 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 // Security headers applied to every route. See INFRA-AUDIT.md section 2.
 //
-// CSP note: a per-request nonce + strict-dynamic cannot live in a static config
-// header; it requires generating a nonce in src/proxy.ts. Until that lands, script
-// and style fall back to 'unsafe-inline'. next/font self-hosts Heebo, so no Google
-// Fonts origin is needed. Allowed externals: Supabase (data/realtime/images),
-// Unsplash (images), Cardcom (the iframe the payment page renders in).
+// CSP note: CSP is now generated dynamically in src/proxy.ts with a per-request
+// nonce to achieve strict CSP without 'unsafe-inline'. The nonce-based CSP from
+// the proxy replaces the static headers defined below for HTML responses. The
+// static headers remain as a fallback for non-HTML assets and serve as the
+// baseline policy definition.
+//
+// next/font self-hosts Heebo, so no Google Fonts origin is needed. Allowed
+// externals: Supabase (data/realtime/images), Unsplash (images), Cardcom (the
+// iframe the payment page renders in).
 //
 // The policy itself lives in src/lib/security/frame-policy.ts because ONE of its
 // directives depends on the path: the two routes a Cardcom payment returns
 // through have to be framable by this origin, and everything else must not be.
-// A static header cannot see the path, so it emits the strict default here and
-// src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
-// not adds: two Content-Security-Policy headers are both enforced and the
-// strictest wins, which would undo the exception without saying so.
+// A static header cannot see the path, so src/proxy.ts generates path-dependent
+// CSP with nonces for all requests. The proxy sets Content-Security-Policy,
+// X-Frame-Options, and Permissions-Policy dynamically, overriding these static
+// headers for HTML responses.
 const headersWithPolicy = (
   csp: string,
   frameOptions: 'DENY' | 'SAMEORIGIN',

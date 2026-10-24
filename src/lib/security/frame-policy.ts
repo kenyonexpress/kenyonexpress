@@ -77,26 +77,37 @@ const IMG_SRC = [
  * it is the one directive that depends on the path, and appending it here as
  * well would produce it twice, where the strictest wins and the exception is
  * silently undone.
+ *
+ * Nonce parameter: when provided, script-src and style-src use strict nonce-based
+ * CSP instead of 'unsafe-inline'. The nonce is generated per request in src/proxy.ts.
  */
-const BASE_DIRECTIVES = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
-  "style-src 'self' 'unsafe-inline'",
-  IMG_SRC,
-  "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co",
-  'frame-src https://secure.cardcom.solutions https://challenges.cloudflare.com',
-  "base-uri 'self'",
-  "form-action 'self' https://secure.cardcom.solutions",
-  "object-src 'none'",
-  'upgrade-insecure-requests',
-] as const
+function baseDirectives(nonce?: string) {
+  const scriptSrc = nonce
+    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com`
+    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com"
 
-export function contentSecurityPolicyFor(pathname: string): string {
+  const styleSrc = nonce ? `style-src 'self' 'nonce-${nonce}'` : "style-src 'self' 'unsafe-inline'"
+
+  return [
+    "default-src 'self'",
+    scriptSrc,
+    styleSrc,
+    IMG_SRC,
+    "font-src 'self'",
+    "connect-src 'self' https://*.supabase.co",
+    'frame-src https://secure.cardcom.solutions https://challenges.cloudflare.com',
+    "base-uri 'self'",
+    "form-action 'self' https://secure.cardcom.solutions",
+    "object-src 'none'",
+    'upgrade-insecure-requests',
+  ]
+}
+
+export function contentSecurityPolicyFor(pathname: string, nonce?: string): string {
   const frameAncestors = isPaymentFramePath(pathname)
     ? "frame-ancestors 'self'"
     : "frame-ancestors 'none'"
-  return [...BASE_DIRECTIVES, frameAncestors].join('; ')
+  return [...baseDirectives(nonce), frameAncestors].join('; ')
 }
 
 /**
