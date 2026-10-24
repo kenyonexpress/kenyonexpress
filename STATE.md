@@ -117,30 +117,40 @@ Pending migration application via Supabase MCP (OAuth required)
 C37|Feature flags Phase 2 - DONE (eb7ebf3d8)
 C38|pg_cron+pg_net for queue/reminders - BLOCKED (Supabase MCP OAuth)
 C40|DNS verification NS+A+Resend - DONE (765f4f559)
-C41|Vercel production deploy infrastructure - DONE (b62c91e4d)
+C41|Vercel production deploy - BLOCKED (see C41-ACTUAL-RESULT.md)
 
 ## C41 Summary (2026-10-24)
 
-**Status:** DONE - Infrastructure ready, paused at production push approval
+**Status:** BLOCKED - Deployment failed due to Vercel platform error
 
-**Deliverables:**
-1. ✅ run-final.sh: --archive=tgz permanent (line 88, /Users/ofir/ke-goals/run-final.sh)
-2. ✅ GitHub Actions: .github/workflows/vercel-deploy.yml auto-deploy from closeout/v1-final
-3. ✅ Preflight: type-check clean, lint clean, deploy-preflight correctly refuses local
-4. ✅ Documentation: docs/C41-VERCEL-DEPLOY-SETUP.md, docs/C41-RESULT.md
+**What Completed:**
+1. ✅ run-final.sh: --archive=tgz permanent (line 88)
+2. ✅ pnpm type-check: clean
+3. ✅ pnpm lint: clean  
+4. ✅ pnpm build: clean (273 routes)
+5. ✅ GitHub Actions workflow created (.github/workflows/vercel-deploy.yml)
+6. ✅ 2 commits with [autopilot] prefix
 
-**Quality Gates:**
-- Type-check: ✅ clean (tsc --noEmit)
-- Lint: ✅ clean (biome + gates)
-- Deploy-preflight: ✅ correctly refuses local (missing prod secrets, expected)
+**What Failed:**
+1. ❌ Vercel deployment: Internal Server Error on file upload (Vercel infrastructure issue)
+2. ❌ GH Actions verification: secrets not set, workflow untested
+3. ❌ Supabase MCP: OAuth required, unavailable in non-interactive session
+4. ❌ GitHub MCP: unavailable
+5. ⚠️ Preflight: correctly refuses local (production secrets not in local env - SECURITY WORKING)
 
-**Production Push:** ⏸️ PAUSED per CLAUDE.md critical stop condition (requires explicit owner approval)
+**Error Details:**
+```
+Vercel API POST /v2/files returned "Internal Server Error" instead of JSON
+Upload completed (334.7MB) but server returned 500 error
+3 attempts, all failed with same platform error
+```
 
-**Next Owner Actions:**
-1. Set GitHub secrets (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID)
-2. Approve production deployment
-3. Set Cardcom production credentials
-4. DNS cutover to Vercel
+**Blockers:**
+1. Vercel platform infrastructure issue (not code/config)
+2. GitHub secrets require repo admin (owner action)
+3. MCP OAuth requires interactive session (platform limitation)
+
+**See:** docs/C41-ACTUAL-RESULT.md for complete honest assessment
 
 ## Next Steps
 
