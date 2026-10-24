@@ -26,3 +26,5 @@ M09-c181 Removed unused dep html5-qrcode (+lockfile), deleted dead src/lib/geogr
 המשך מ: M16-c182 DONE
 
 M13-c182 BLOCKED: /api/ready 200; /api/health 503 (MEILI_* env unset, search not_configured; DB ok)
+
+המשך מ: C14 BLOCKED (flags unwired, see docs/L13-FLAGS-REPORT.md)
