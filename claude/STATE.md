@@ -21,4 +21,5 @@ Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 -0.14px body letter-spacing in `src/app/globals.css`, gate flags
 `--widths`, `--baseline`, `--live-url` in `scripts/compare-args.mjs`. Rows in
 `docs/UI-PARITY-REPORT.md`, 2026-10-21.
-המשך מ: M05-c181 DONE
+M08-c181 Lighthouse mobile (local `next start`, simulated throttling, 2026-10-25): `/` perf 86 / a11y 100 / BP 96 / SEO 100 (FCP 1.5s, LCP 4.1s, TBT 50ms, CLS 0.019); `/product/עוזרת-אישית-שירותי-משרד` perf 82 / a11y 100 / BP 96 / SEO 100 (FCP 1.7s, LCP 4.8s, TBT 40ms, CLS 0). LCP is the drag on both. Localhost simulated scores are noisy, see docs/PERFORMANCE-BUDGET.md.
+המשך מ: M08-c181 DONE
