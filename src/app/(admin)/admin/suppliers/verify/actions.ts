@@ -1,12 +1,14 @@
 'use server'
 
 import { requireSection } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function updateSupplierVerificationAction(formData: FormData) {
+async function runUpdateSupplierVerification(formData: FormData) {
   const supplierId = formData.get('supplier_id') as string
   const status = formData.get('status') as 'unverified' | 'pending' | 'verified'
 
@@ -51,11 +53,17 @@ export async function updateSupplierVerificationAction(formData: FormData) {
     .is('deleted_at', null)
 
   if (error) {
-    console.error('Failed to update supplier verification:', error)
+    log.error('supplier_verification.update_failed', { supplierId, error: error.message })
     throw new Error('Failed to update verification status')
   }
 
   revalidatePath('/admin/suppliers/verify')
   revalidatePath('/admin/suppliers')
   redirect('/admin/suppliers/verify')
+}
+
+export async function updateSupplierVerificationAction(formData: FormData) {
+  return withActionContext('supplier.verification.update', () =>
+    runUpdateSupplierVerification(formData),
+  )
 }

@@ -62,6 +62,10 @@ const EXEMPT: Record<string, { because: string; mustContain: string }> = {
     because: 'alias that re-exports the guarded /api/supplier/vouchers/redeem handler',
     mustContain: "export { POST } from '@/app/api/supplier/vouchers/redeem/route'",
   },
+  'src/app/api/supplier/verify-card/route.ts': {
+    because: 'alias that re-exports the session-guarded, rate-limited verify-card-stub handler',
+    mustContain: "export { POST } from '@/app/api/payments/verify-card-stub/route'",
+  },
 }
 
 function walk(dir: string): string[] {

@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -17,7 +18,7 @@ export async function getProductPurchaseCount(productId: string): Promise<number
     .gte('created_at', thirtyDaysAgo.toISOString())
 
   if (error) {
-    console.error('[getProductPurchaseCount] Error fetching count:', error)
+    log.error('product_purchase_count.fetch_failed', { productId, error: error.message })
     return 0
   }
 

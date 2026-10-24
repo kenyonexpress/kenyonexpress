@@ -57,6 +57,7 @@ export const NEEDS_DATABASE_SPECS = {
   'admin-refund.spec.ts': 'refunds a seeded order',
   'admin-refund-to-wallet.spec.ts': 'refunds a seeded order to a seeded wallet',
   'auth.spec.ts': 'signs in as the fixture customer',
+  'cancel-refund.spec.ts': 'buys a seeded coupon as the fixture customer, then cancels it',
   'coupon-scan.spec.ts': 'redeems a seeded voucher as a supplier',
   'full-purchase-redeem.spec.ts': 'buys, then redeems what it bought',
   'guest-upgrade.spec.ts': 'signs in as the fixture customer and reads a seeded order',

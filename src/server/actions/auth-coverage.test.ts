@@ -60,6 +60,10 @@ const PUBLIC_ACTIONS = new Map<string, string>([
     'consent.ts:resetConsent',
     'withdraws that decision by deleting the cookie. Public for the same reason the decision is: requiring a session to stop being tracked would make withdrawal harder than consent, which is the wrong way round.',
   ],
+  [
+    'consent.ts:saveGranularConsent',
+    "writes the visitor's own consent cookies and records no personal data. Public for the same reason decideConsent is: consent has to be recordable before any sign-in exists.",
+  ],
   // Token-bearing links, where the unguessable token is the authorisation.
   ['newsletter.ts:confirmNewsletter', 'token in the confirmation link is the authorisation'],
   ['newsletter.ts:unsubscribeByToken', 'unsubscribe must work from an email client'],

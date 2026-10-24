@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { getProductPurchaseCount } from './product-purchase-count'
 
+vi.mock('@/lib/observability/log', () => ({
+  log: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}))
+
 // Mock the supabase client
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() => ({
@@ -46,7 +50,7 @@ describe('getProductPurchaseCount', () => {
   })
 
   it('returns 0 and logs error when query fails', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { log } = await import('@/lib/observability/log')
     const { createClient } = await import('@/lib/supabase/server')
 
     vi.mocked(createClient).mockImplementationOnce(
@@ -67,11 +71,10 @@ describe('getProductPurchaseCount', () => {
 
     const count = await getProductPurchaseCount('test-product-id')
     expect(count).toBe(0)
-    expect(consoleSpy).toHaveBeenCalledWith('[getProductPurchaseCount] Error fetching count:', {
-      message: 'Database error',
+    expect(log.error).toHaveBeenCalledWith('product_purchase_count.fetch_failed', {
+      productId: 'test-product-id',
+      error: 'Database error',
     })
-
-    consoleSpy.mockRestore()
   })
 
   it('queries order_items for the last 30 days', async () => {

@@ -123,6 +123,7 @@ describe('the pending migration inventory', () => {
       '285_auth_wa_otps.sql',
       '286_feature_flags.sql',
       '292_supplier_agreements.sql',
+      '299_cookie_consent.sql',
     ])
   })
 
@@ -226,6 +227,7 @@ describe('the pending migration inventory', () => {
       '184_carts_one_row_per_owner.sql',
       '188_search_analytics.sql',
       '189_affiliate_program.sql',
+      '190_maintenance.sql',
       '190_partner_api_infrastructure.sql',
       '191_saved_payment_method.sql',
       '192_notification_history.sql',
@@ -247,6 +249,13 @@ describe('the pending migration inventory', () => {
       '294_group_deals.sql',
       '295_subscriptions.sql',
       '296_bookings.sql',
+      '297_order_items_purchase_count_rls.sql',
+      '297_user_verification_milestones.sql',
+      '298_admin_users_rls.sql',
+      '298_voucher_8digit_redemption_codes.sql',
+      '299_payment_card_verifications_rls.sql',
+      '300_profiles_orders_physical_count.sql',
+      '301_supplier_verification_status.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_169.sql',
@@ -280,6 +289,11 @@ describe('the pending migration inventory', () => {
       'preflight_294.sql',
       'preflight_295.sql',
       'preflight_296.sql',
+      'preflight_297.sql',
+      'preflight_298.sql',
+      'preflight_299.sql',
+      'preflight_300.sql',
+      'preflight_301.sql',
     ])
   })
 

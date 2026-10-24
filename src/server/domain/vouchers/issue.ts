@@ -158,11 +158,14 @@ export async function issueVoucher(
   }
 
   const redemptionCodeExists = async (redemptionCode: string): Promise<boolean> => {
-    const { data } = await client
+    const { data, error } = await client
       .from('vouchers')
       .select('id')
       .eq('redemption_code', redemptionCode)
       .maybeSingle()
+    // A failed lookup is not "unused": reading it that way could issue a duplicate code.
+    if (error)
+      throw new VoucherIssueError(`redemption code lookup failed: ${JSON.stringify(error)}`)
     return data !== null
   }
 
