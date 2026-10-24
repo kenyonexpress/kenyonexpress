@@ -2,6 +2,7 @@
 import { writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import pngToIco from 'png-to-ico'
 import sharp from 'sharp'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -75,15 +76,20 @@ async function generateAssets() {
   await sharp(Buffer.from(ogSVG)).resize(1200, 630).png().toFile(join(publicDir, 'og-default.png'))
   console.log('✓ og-default.png')
 
-  // favicon.ico (convert from 32x32 PNG)
-  const faviconSVG = createLogoSVG(32, 32, 12)
-  const faviconPNG = await sharp(Buffer.from(faviconSVG)).resize(32, 32).png().toBuffer()
+  // favicon.ico (proper multi-resolution ICO with 16x16, 32x32, 48x48)
+  const favicon16SVG = createLogoSVG(16, 16, 6)
+  const favicon16PNG = await sharp(Buffer.from(favicon16SVG)).resize(16, 16).png().toBuffer()
 
-  // Sharp doesn't support ICO output, so we'll create a multi-size ICO manually
-  // For now, just create a 32x32 PNG and rename it
-  // Modern browsers support PNG favicons
-  writeFileSync(join(publicDir, 'favicon.ico'), faviconPNG)
-  console.log('✓ favicon.ico (PNG format)')
+  const favicon32SVG = createLogoSVG(32, 32, 12)
+  const favicon32PNG = await sharp(Buffer.from(favicon32SVG)).resize(32, 32).png().toBuffer()
+
+  const favicon48SVG = createLogoSVG(48, 48, 18)
+  const favicon48PNG = await sharp(Buffer.from(favicon48SVG)).resize(48, 48).png().toBuffer()
+
+  // Create proper multi-resolution ICO file
+  const icoBuffer = await pngToIco([favicon16PNG, favicon32PNG, favicon48PNG])
+  writeFileSync(join(publicDir, 'favicon.ico'), icoBuffer)
+  console.log('✓ favicon.ico (multi-resolution ICO: 16x16, 32x32, 48x48)')
 
   console.log('\nAll brand assets generated successfully!')
 }
