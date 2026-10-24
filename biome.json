@@ -19,7 +19,9 @@
       "coverage",
       "playwright-report",
       "test-results",
-      "blob-report"
+      "blob-report",
+      "ios/**",
+      "android/**"
     ]
   },
   "formatter": {

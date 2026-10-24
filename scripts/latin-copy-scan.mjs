@@ -76,6 +76,9 @@ const PHRASE_ALLOWLIST = [
   'Air Port City',
   'Tel Aviv',
   'Service Worker',
+  'Meta WhatsApp',
+  'Meta Business',
+  'Meta Business Manager',
 ]
 
 const COPY_KEYS =
