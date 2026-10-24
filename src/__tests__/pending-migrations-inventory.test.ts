@@ -238,6 +238,7 @@ describe('the pending migration inventory', () => {
       '287_sms_marketing.sql',
       '288_customer_rfm_segmentation.sql',
       '293_phase2_feature_flags.sql',
+      '295_notification_preferences.sql',
       '300_c16_payment_refund_infrastructure.sql',
       'preflight_162.sql',
       'preflight_169.sql',
@@ -266,6 +267,7 @@ describe('the pending migration inventory', () => {
       'preflight_288.sql',
       'preflight_289.sql',
       'preflight_293.sql',
+      'preflight_295.sql',
       'preflight_300.sql',
     ])
   })
