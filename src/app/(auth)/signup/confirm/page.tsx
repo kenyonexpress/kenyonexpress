@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'אמתו את האימייל — KenyonExpress' }
+export const metadata: Metadata = { title: 'אמתו את האימייל — קניון EXPRESS' }
 
 export default function ConfirmPage() {
   return (

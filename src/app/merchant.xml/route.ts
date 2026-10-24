@@ -27,8 +27,8 @@ async function handleGET(): Promise<NextResponse> {
 
   const feed = buildMerchantFeed(products, {
     siteUrl: site,
-    title: 'KenyonExpress',
-    description: 'קטלוג המוצרים של קניון אקספרס',
+    title: 'קניון EXPRESS',
+    description: 'קטלוג המוצרים של קניון EXPRESS',
     builtAt: new Date(0),
   })
 

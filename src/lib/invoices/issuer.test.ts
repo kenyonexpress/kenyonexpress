@@ -8,8 +8,8 @@ describe('resolveInvoiceIssuer', () => {
   it('answers with the platform identity by default', () => {
     expect(resolveInvoiceIssuer(null, env({}))).toEqual({
       accountId: 'platform',
-      businessName: 'KenyonExpress',
-      taxId: null,
+      businessName: 'קניון אקספרס',
+      taxId: '033798513',
       address: null,
     })
   })

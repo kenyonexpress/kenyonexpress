@@ -112,7 +112,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         unsubscribeUrl,
         html: `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif;text-align:right">
           <h1 style="font-size:20px">הסל שלך מחכה</h1>
-          <p>נשארו לך <bdi>${row.item_count}</bdi> פריטים בסל בקניון אקספרס.</p>
+          <p>נשארו לך <bdi>${row.item_count}</bdi> פריטים בסל בקניון EXPRESS.</p>
           <p><a href="${base}/cart" style="background:${OFF_PAGE.brand};color:${OFF_PAGE.ink};font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">חזרה לסל</a></p>
           ${unsubscribeUrl ? `<p style="color:${OFF_PAGE.muted};font-size:12px"><a href="${unsubscribeUrl}">הסרה מרשימת הדיוור</a></p>` : ''}
         </div>`,

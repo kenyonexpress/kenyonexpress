@@ -32,7 +32,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
     dateModified: post.updatedAt ?? post.publishedAt,
     url: `${base}/blog/${post.slug}`,
     inLanguage: 'he-IL',
-    publisher: { '@type': 'Organization', name: 'KenyonExpress', url: base },
+    publisher: { '@type': 'Organization', name: 'קניון EXPRESS', url: base },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${base}/blog/${post.slug}` },
   }
 

@@ -86,11 +86,11 @@ export function buildWhatsAppText(kind: string, payload: Record<string, unknown>
 }
 
 /** Confirmation after an opt-out keyword. The last message this number gets. */
-export const OPT_OUT_REPLY = 'הוסרתם מעדכוני וואטסאפ של KenyonExpress. כדי לחזור, השיבו: הצטרפות'
+export const OPT_OUT_REPLY = 'הוסרתם מעדכוני וואטסאפ של קניון EXPRESS. כדי לחזור, השיבו: הצטרפות'
 
 /** Confirmation after an opt-in keyword. */
 export const OPT_IN_REPLY =
-  'נרשמתם לעדכוני וואטסאפ של KenyonExpress. נעדכן כאן על סטטוס ההזמנות שלכם. להסרה השיבו: הסר'
+  'נרשמתם לעדכוני וואטסאפ של קניון EXPRESS. נעדכן כאן על סטטוס ההזמנות שלכם. להסרה השיבו: הסר'
 
 /** Acknowledgment for a free-text message that opened or joined a ticket. */
 export function ticketAckText(ticketRef: string): string {

@@ -15,7 +15,7 @@ import { ImageResponse } from 'next/og'
  * build stays green.
  */
 
-export const alt = 'קניון אקספרס — קופונים ומבצעים'
+export const alt = 'קניון EXPRESS — קופונים ומבצעים'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -42,7 +42,7 @@ export default async function Image() {
       }}
     >
       <div style={{ display: 'flex', fontSize: 96, fontWeight: 700, color: SITE.brand.dark }}>
-        קניון אקספרס
+        קניון EXPRESS
       </div>
       <div style={{ display: 'flex', fontSize: 40, color: SITE.functional.heading, marginTop: 16 }}>
         {/* No comma. Satori has no bidi algorithm, so a neutral character

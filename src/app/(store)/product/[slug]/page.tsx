@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props) {
     return {
       title: 'מוצר לא נמצא',
       robots: { index: false, follow: true },
-      description: 'המוצר לא נמצא או שאינו זמין בקניון אקספרס.',
+      description: 'המוצר לא נמצא או שאינו זמין בקניון EXPRESS.',
     }
   }
 
@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: Props) {
     data.seo_description?.trim() ||
     data.short_description_he?.trim() ||
     data.description_he?.trim() ||
-    `${title} בקניון אקספרס. קופונים, מבצעים ומשלוחים.`
+    `${title} בקניון EXPRESS. קופונים, מבצעים ומשלוחים.`
 
   // A canonical, because the same product is reachable through more than one
   // path (category trails, search, share links with tracking parameters) and

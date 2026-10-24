@@ -108,7 +108,7 @@ function shell(bodyHtml: string, footer: string): string {
   return `
     <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
-        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">KenyonExpress</div>
+        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">קניון EXPRESS</div>
         ${bodyHtml}
         <div style="font-size:12px;color:${MUTED};margin-top:18px;text-align:center">${escapeHtml(footer)}</div>
       </div>
@@ -230,7 +230,7 @@ export function buildOrderPaidEmail(
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
         ${receiptUrl ? `<div style="font-size:13px;color:${MUTED};margin-top:12px;text-align:center"><a href="${escapeHtml(receiptUrl)}" style="color:${MUTED}">להורדת הקבלה</a></div>` : ''}
       </div>`,
-    'קיבלת את המייל הזה כי ביצעת רכישה ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי ביצעת רכישה בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -314,7 +314,7 @@ export function buildOrderShippedEmail(
         </div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למעקב אחרי ההזמנה</a>
       </div>`,
-    'קיבלת את המייל הזה כי יש לך הזמנה פעילה ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי יש לך הזמנה פעילה בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -349,7 +349,7 @@ export function buildSupplierSaleEmail(
     isCoupon: line.product_type === 'coupon',
   }))
 
-  const subject = `מכירה חדשה ב-KenyonExpress · הזמנה ${ref}`
+  const subject = `מכירה חדשה בקניון EXPRESS · הזמנה ${ref}`
 
   const text = [
     `שלום ${supplier},`,
@@ -392,7 +392,7 @@ export function buildSupplierSaleEmail(
         }
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לניהול ההזמנות</a>
       </div>`,
-    'קיבלתם את המייל הזה כספקים ב-KenyonExpress.',
+    'קיבלתם את המייל הזה כספקים בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -448,7 +448,7 @@ export function buildVoucherRedeemedEmail(
         <div style="font-size:13px;color:${MUTED};margin-top:12px">אם לא אתם מימשתם את הקופון, פנו אלינו מיד.</div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לכל הקופונים שלי</a>
       </div>`,
-    'קיבלת את המייל הזה כי הקופון רשום על שמך ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי הקופון רשום על שמך בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -530,7 +530,7 @@ export function buildVoucherGiftedEmail(
   const text = [
     greeting,
     '',
-    sender ? `${sender} קנה עבורך קופון ב-KenyonExpress:` : 'קנו עבורך קופון ב-KenyonExpress:',
+    sender ? `${sender} קנה עבורך קופון בקניון EXPRESS:` : 'קנו עבורך קופון בקניון EXPRESS:',
     product,
     '',
     message ? `"${message}"` : '',
@@ -560,7 +560,7 @@ export function buildVoucherGiftedEmail(
         ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">הקופון בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
         <div style="font-size:13px;color:${MUTED};margin-top:6px">הקישור אישי. אל תעבירו אותו הלאה.</div>
       </div>`,
-    'קיבלת את המייל הזה כי מישהו קנה עבורך קופון ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי מישהו קנה עבורך קופון בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -610,7 +610,7 @@ export function buildVoucherExpiringEmail(
         ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לצפייה בקופון</a>
       </div>`,
-    'קיבלת את המייל הזה כי יש לך קופון פעיל ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי יש לך קופון פעיל בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -655,7 +655,7 @@ export function buildCashbackCreditedEmail(
         <div style="font-size:15px;color:${INK};margin-top:10px">זיכינו את הארנק שלך${ref ? ` על הזמנה ${escapeHtml(ref)}` : ''}. אפשר להשתמש בסכום בקנייה הבאה.</div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
       </div>`,
-    'קיבלת את המייל הזה כי נכנס קאשבק לארנק שלך ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי נכנס קאשבק לארנק שלך בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -875,7 +875,7 @@ export function buildRefundCompletedEmail(
         <div style="font-size:13px;color:${MUTED};margin-top:12px">הזיכוי מבוצע מול חברת האשראי, וההופעה בפועל בדף החשבון תלויה במנפיק הכרטיס.</div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">להזמנות שלי</a>
       </div>`,
-    'קיבלת את המייל הזה כי בוצע זיכוי על הזמנה שלך ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי בוצע זיכוי על הזמנה שלך בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -902,7 +902,7 @@ export function buildWelcomeEmail(
   const site = trimSite(siteUrl)
   const name = asText(payload.full_name)
   const greeting = name ? `שלום ${name},` : 'שלום,'
-  const subject = 'ברוכים הבאים ל-KenyonExpress'
+  const subject = 'ברוכים הבאים ל-קניון EXPRESS'
 
   const text = [
     greeting,
@@ -921,7 +921,7 @@ export function buildWelcomeEmail(
         <div style="font-size:14px;color:${MUTED};margin-top:8px">הקופונים שתקנו יחכו לך באזור האישי, עם קוד לסריקה בבית העסק.</div>
         <a href="${escapeHtml(`${site}/account/coupons`)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לקופונים שלי</a>
       </div>`,
-    'קיבלת את המייל הזה כי נפתח חשבון ב-KenyonExpress עם כתובת המייל הזאת.',
+    'קיבלת את המייל הזה כי נפתח חשבון בקניון EXPRESS עם כתובת המייל הזאת.',
   )
 
   return { subject, html, text }
@@ -983,7 +983,7 @@ export function buildPriceDropEmail(
         <div style="font-size:16px;margin-top:8px"><span style="color:${MUTED};text-decoration:line-through">${escapeHtml(formatAgorot(oldAgorot))}</span> <span style="font-weight:800;color:${INK}">${escapeHtml(formatAgorot(newAgorot))}</span></div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
       </div>${unsubscribeFooterHtml(payload)}`,
-    'קיבלת את המייל הזה כי שמרת את המוצר ברשימת המשאלות שלך ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי שמרת את המוצר ברשימת המשאלות שלך בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -1027,7 +1027,7 @@ export function buildBackInStockEmail(
         <div style="font-size:13px;color:${MUTED};margin-top:10px">כמות המלאי מוגבלת.</div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
       </div>${unsubscribeFooterHtml(payload)}`,
-    'קיבלת את המייל הזה כי ביקשת עדכון כשהמוצר חוזר למלאי ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי ביקשת עדכון כשהמוצר חוזר למלאי בקניון EXPRESS.',
   )
 
   return { subject, html, text }
@@ -1058,7 +1058,7 @@ export function buildGiftCardIssuedEmail(
   const text = [
     greeting,
     '',
-    `קיבלת גיפט קארד של KenyonExpress על סך ${formatAgorot(amountAgorot)}.`,
+    `קיבלת גיפט קארד של קניון EXPRESS על סך ${formatAgorot(amountAgorot)}.`,
     ...(giftMessage ? ['', `"${giftMessage}"`] : []),
     '',
     `הקוד שלך: ${ltrText(code)}`,
@@ -1071,14 +1071,14 @@ export function buildGiftCardIssuedEmail(
   const html = shell(
     `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(greeting)}</div>
-        <div style="font-size:15px;color:${INK};margin-top:10px">קיבלת גיפט קארד של KenyonExpress על סך <span style="font-weight:800">${escapeHtml(formatAgorot(amountAgorot))}</span>.</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">קיבלת גיפט קארד של קניון EXPRESS על סך <span style="font-weight:800">${escapeHtml(formatAgorot(amountAgorot))}</span>.</div>
         ${giftMessage ? `<div style="font-size:15px;color:${INK};margin-top:10px;background:${PANEL};border-radius:10px;padding:12px">"${escapeHtml(giftMessage)}"</div>` : ''}
         <div dir="ltr" style="font-size:22px;font-weight:800;letter-spacing:2px;color:${INK};background:${PANEL};border:1px dashed ${RULE};border-radius:10px;padding:14px;margin-top:14px;text-align:center;font-family:monospace">${escapeHtml(code)}</div>
         <div style="font-size:13px;color:${MUTED};margin-top:10px">למימוש נכנסים לחשבון באתר ומזינים את הקוד. הסכום נטען לארנק וניתן לשימוש בכל רכישה.</div>
         ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:6px">תוקף הקוד: עד ${escapeHtml(expires)}.</div>` : ''}
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למימוש הגיפט קארד</a>
       </div>`,
-    'קיבלת את המייל הזה כי נרכש עבורך גיפט קארד ב-KenyonExpress.',
+    'קיבלת את המייל הזה כי נרכש עבורך גיפט קארד בקניון EXPRESS.',
   )
 
   return { subject, html, text }

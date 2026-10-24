@@ -25,8 +25,8 @@ export default function manifest(): MetadataRoute.Manifest {
     // The Hebrew name is what the launcher shows under the icon, and the
     // launcher is the one surface where the Latin brand string reads as a
     // foreign app. `short_name` must survive a ~12-character truncation.
-    name: 'קניון אקספרס',
-    short_name: 'קניון אקספרס',
+    name: 'קניון EXPRESS',
+    short_name: 'קניון EXPRESS',
     description: 'קופונים ומוצרים מעסקים בישראל',
     start_url: '/',
     scope: '/',

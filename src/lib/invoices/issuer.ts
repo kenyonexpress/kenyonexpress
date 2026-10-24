@@ -72,8 +72,8 @@ export function resolveInvoiceIssuer(
 ): InvoiceIssuer {
   const platform: InvoiceIssuer = {
     accountId: PLATFORM_ACCOUNT_ID,
-    businessName: text(env.INVOICE_ISSUER_NAME) ?? 'KenyonExpress',
-    taxId: text(env.INVOICE_ISSUER_TAX_ID),
+    businessName: text(env.INVOICE_ISSUER_NAME) ?? 'קניון אקספרס',
+    taxId: text(env.INVOICE_ISSUER_TAX_ID) ?? '033798513',
     address: text(env.INVOICE_ISSUER_ADDRESS),
   }
   const wanted = text(accountId)

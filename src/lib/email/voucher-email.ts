@@ -106,8 +106,8 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
   const count = input.vouchers.length
   const subject =
     count === 1
-      ? `הקופון שלך מוכן: ${input.vouchers[0]?.productName ?? 'קופון KenyonExpress'}`
-      : `${count} קופונים מוכנים לך ב-KenyonExpress`
+      ? `הקופון שלך מוכן: ${input.vouchers[0]?.productName ?? 'קופון קניון EXPRESS'}`
+      : `${count} קופונים מוכנים לך בקניון EXPRESS`
 
   const greeting = input.customerName ? `שלום ${input.customerName},` : 'שלום,'
 
@@ -176,7 +176,7 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
   const html = `
     <div dir="rtl" style="background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
-        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:4px">KenyonExpress</div>
+        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:4px">קניון EXPRESS</div>
         <div style="font-size:15px;color:${INK};margin-bottom:18px">${escapeHtml(greeting)} ${
           count === 1 ? 'הקופון שלך מוכן לשימוש.' : `${count} הקופונים שלך מוכנים לשימוש.`
         }</div>

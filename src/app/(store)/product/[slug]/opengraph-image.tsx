@@ -32,7 +32,7 @@ import { ImageResponse } from 'next/og'
  * `.next`), subset by Google Fonts to Hebrew + Latin at 44KB per weight.
  */
 
-export const alt = 'דיל בקניון אקספרס'
+export const alt = 'דיל בקניון EXPRESS'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -62,7 +62,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         priceIls: Number(data.product.kenyon_price ?? 0) || null,
         offer: data.couponOffer,
       })
-    : buildOgCard({ name: 'קניון אקספרס', supplierName: null, priceIls: null, offer: null })
+    : buildOgCard({ name: 'קניון EXPRESS', supplierName: null, priceIls: null, offer: null })
 
   return new ImageResponse(
     <div
@@ -85,7 +85,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 34, fontWeight: 700, color: SITE.brand.dark }}>קניון אקספרס</div>
+          <div style={{ fontSize: 34, fontWeight: 700, color: SITE.brand.dark }}>קניון EXPRESS</div>
           {card.supplier && (
             <div style={{ fontSize: 28, color: SITE.functional.heading, marginTop: 6 }}>
               {card.supplier}

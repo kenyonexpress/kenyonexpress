@@ -87,7 +87,7 @@ export default function Footer() {
           <div className="md:col-span-1">
             <Image
               src="/logo-white.png"
-              alt="KenyonExpress"
+              alt="קניון EXPRESS"
               width={176}
               height={43}
               className="h-10 w-auto mb-6 brightness-0 invert"

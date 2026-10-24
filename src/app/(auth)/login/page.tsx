@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import LoginForm from './LoginForm'
 
-export const metadata: Metadata = { title: 'כניסה — KenyonExpress' }
+export const metadata: Metadata = { title: 'כניסה — קניון EXPRESS' }
 
 /**
  * The fallback is null rather than a copy of the form at its defaults, and that

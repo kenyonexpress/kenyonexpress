@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'מימוש גיפט קארד',
-  description: 'בדיקת יתרה ומימוש גיפט קארד של קניון אקספרס: הקוד נטען לארנק ומשמש בכל רכישה.',
+  description: 'בדיקת יתרה ומימוש גיפט קארד של קניון EXPRESS: הקוד נטען לארנק ומשמש בכל רכישה.',
   alternates: { canonical: '/gift-card' },
 }
 

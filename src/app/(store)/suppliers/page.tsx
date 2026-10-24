@@ -5,7 +5,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'הצטרפו כספקים',
   description:
-    'בית עסק שרוצה למכור קופונים ומוצרים בקניון אקספרס: איך זה עובד, מה נדרש, ואיך משאירים פרטים.',
+    'בית עסק שרוצה למכור קופונים ומוצרים בקניון EXPRESS: איך זה עובד, מה נדרש, ואיך משאירים פרטים.',
   alternates: { canonical: '/suppliers' },
 }
 
@@ -75,7 +75,7 @@ export default function SuppliersPage() {
       <header className="mb-10 max-w-3xl">
         <h1 className="text-3xl font-bold text-heading">הצטרפו כספקים</h1>
         <p className="mt-4 text-base leading-relaxed text-heading/80">
-          קניון אקספרס מוכרת קופונים של בתי עסק ישראליים. הלקוח משלם כאן מקדמה, מגיע אליכם עם שובר
+          קניון EXPRESS מוכרת קופונים של בתי עסק ישראליים. הלקוח משלם כאן מקדמה, מגיע אליכם עם שובר
           שנסרק במקום, ואת היתרה משלם אצלכם. אנחנו מביאים את הלקוח, אתם נותנים את השירות.
         </p>
       </header>

@@ -39,7 +39,7 @@ function shekelsFromIls(value: number): string {
  * Facebook as the `u` parameter — and a URL baked in here would be sent twice.
  */
 export function buildShareMessage(subject: ShareSubject): string {
-  const lead = `מצאתי משהו שווה ב-KenyonExpress: ${subject.name}`
+  const lead = `מצאתי משהו שווה בקניון EXPRESS: ${subject.name}`
 
   if (subject.offer?.sellable) {
     const { paidOnlineIls, balanceAtBusinessIls, discountPercent } = subject.offer

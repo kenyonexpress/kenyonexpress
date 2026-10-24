@@ -12,7 +12,7 @@ import { storeWhatsAppLink } from '@/lib/whatsapp'
  * contact page carried on working -- a failure with no symptom anyone reports.
  */
 export default function WhatsAppFloat() {
-  const href = storeWhatsAppLink('שלום, אשמח לעזרה עם הזמנה באתר KenyonExpress')
+  const href = storeWhatsAppLink('שלום, אשמח לעזרה עם הזמנה באתר קניון EXPRESS')
   if (!href) return null
 
   return (

@@ -36,7 +36,7 @@ export interface BlogPost {
 export const BLOG_POSTS: readonly BlogPost[] = [
   {
     slug: 'how-coupons-work',
-    title: 'איך עובד קופון בקניון אקספרס',
+    title: 'איך עובד קופון בקניון EXPRESS',
     description:
       'מה בדיוק קורה מרגע התשלום ועד הסריקה בבית העסק: מקדמה, שובר עם QR, יתרה במקום, תוקף, ומה קורה לכסף אם לא מימשתם.',
     publishedAt: '2026-08-10',

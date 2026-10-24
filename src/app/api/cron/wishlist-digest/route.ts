@@ -218,7 +218,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
     const html = `<div dir="rtl" style="background:${PAPER};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
-        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:14px">KenyonExpress</div>
+        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:14px">קניון EXPRESS</div>
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <table style="border-collapse:collapse;width:100%;margin-top:12px">${items.map(itemLineHtml).join('')}</table>
         <a href="${escapeHtml(`${site}/account/wishlist`)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לרשימת המשאלות</a>

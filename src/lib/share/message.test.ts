@@ -51,7 +51,7 @@ describe('buildShareMessage', () => {
       validUntil: null,
     }
     const message = buildShareMessage({ name: 'ארוחה', priceIls: 200, offer: unsellable })
-    expect(message).toBe('מצאתי משהו שווה ב-KenyonExpress: ארוחה')
+    expect(message).toBe('מצאתי משהו שווה בקניון EXPRESS: ארוחה')
     expect(message).not.toContain('₪')
   })
 

@@ -65,7 +65,7 @@ function escapeHtml(value: string): string {
 }
 
 export function buildMagicLinkEmail(input: MagicLinkEmailInput): BuiltMagicLinkEmail {
-  const site = input.siteName ?? 'KenyonExpress'
+  const site = input.siteName ?? 'קניון EXPRESS'
   const link = input.actionLink
   const subject = `הקישור שלך לכניסה ל-${site}`
 

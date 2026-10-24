@@ -156,7 +156,7 @@ export default function InstallPrompt() {
     >
       <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
       <div className="min-w-0 flex-1">
-        <p className="font-bold text-heading text-sm">התקינו את KenyonExpress</p>
+        <p className="font-bold text-heading text-sm">התקינו את קניון EXPRESS</p>
         {offer.kind === 'ios' ? (
           // The two taps, in the order Safari shows them. "שיתוף" is the
           // label under the share button in Hebrew iOS, and "הוסף למסך הבית"

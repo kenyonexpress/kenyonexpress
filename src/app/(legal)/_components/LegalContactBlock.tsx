@@ -61,6 +61,7 @@ export default function LegalContactBlock({
             עמוד צור קשר
           </Link>
         </li>
+        <li>מפעילת האתר: קניון אקספרס, ח.פ 033798513</li>
         <li>כתובת האתר: www.kenyonexpress.co.il</li>
       </ul>
     </section>

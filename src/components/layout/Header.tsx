@@ -74,7 +74,7 @@ export default function SiteHeader() {
               Both halves of MobileDrawer are xl:hidden internally. */}
           <MobileDrawer />
 
-          <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
+          <Link href="/" aria-label="קניון EXPRESS, לדף הבית" className="shrink-0">
             <SmartImage
               src={LOGO}
               alt="קניון EXPRESS"

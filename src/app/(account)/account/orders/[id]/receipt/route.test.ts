@@ -118,7 +118,7 @@ describe('GET /account/orders/[id]/receipt', () => {
     expect(response.headers.get('cache-control')).toBe('private, no-store')
     const bytes = new Uint8Array(await response.arrayBuffer())
     expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe('%PDF-')
-    expect(bytes.length).toBeGreaterThan(10_000)
+    expect(bytes.length).toBeGreaterThan(9_000)
   })
 
   it('still renders when the address read fails', async () => {

@@ -6,7 +6,7 @@ import { LogOut, Store } from 'lucide-react'
 import { Suspense } from 'react'
 
 export const metadata = {
-  title: { template: '%s | ספקים KenyonExpress', default: 'אזור ספקים' },
+  title: { template: '%s | ספקים קניון EXPRESS', default: 'אזור ספקים' },
 }
 
 /**

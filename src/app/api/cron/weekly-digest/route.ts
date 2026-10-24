@@ -53,7 +53,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   ]
 
   const html = `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif">
-    <h2>סיכום שבועי — KenyonExpress</h2>
+    <h2>סיכום שבועי — קניון EXPRESS</h2>
     <table style="border-collapse:collapse">${rows
       .map(
         ([label, value]) =>

@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import AdminMfaForm from './AdminMfaForm'
 
-export const metadata: Metadata = { title: 'אימות דו-שלבי - KenyonExpress' }
+export const metadata: Metadata = { title: 'אימות דו-שלבי - קניון EXPRESS' }
 
 /**
  * The landing spot of enforceSuperAdminMfa (lib/admin/rbac.ts). Deliberately

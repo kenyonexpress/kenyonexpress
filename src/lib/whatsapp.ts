@@ -130,7 +130,7 @@ export function buildCouponShareText(input: {
   expiresAt: string
   siteUrl: string
 }): string {
-  const lines = ['קופון מ-KenyonExpress 🎁']
+  const lines = ['קופון מ-קניון EXPRESS 🎁']
   if (input.productName) lines.push(input.productName)
   lines.push(`קוד: ${input.code}`)
   if (input.collectAmountAgorot > 0) {
@@ -154,7 +154,7 @@ export function buildCouponShareText(input: {
  */
 export function buildSupplierInquiryText(productName: string | null, url?: string): string {
   const subject = productName ? `על "${productName}"` : 'על דיל שראיתי'
-  const lines = [`שלום, ראיתי ב-KenyonExpress ואשמח לפרטים ${subject}`]
+  const lines = [`שלום, ראיתי בקניון EXPRESS ואשמח לפרטים ${subject}`]
   if (url) lines.push(url)
   return lines.join('\n')
 }
@@ -168,11 +168,11 @@ export function buildSupplierInquiryText(productName: string | null, url?: strin
  */
 export function buildRedemptionInquiryText(productName: string | null): string {
   const subject = productName ? ` על "${productName}"` : ''
-  return `שלום, יש לי קופון מ-KenyonExpress${subject} ואשמח לתאם מימוש`
+  return `שלום, יש לי קופון מ-קניון EXPRESS${subject} ואשמח לתאם מימוש`
 }
 
 export function buildOrderInquiryText(orderShortId: string): string {
-  return `שלום, אשמח לעדכון על הזמנה ${orderShortId} שביצעתי באתר KenyonExpress`
+  return `שלום, אשמח לעדכון על הזמנה ${orderShortId} שביצעתי באתר קניון EXPRESS`
 }
 
 export function buildOrderUpdateText(input: {
@@ -181,5 +181,5 @@ export function buildOrderUpdateText(input: {
   statusLabel: string
 }): string {
   const greeting = input.customerName ? `שלום ${input.customerName},` : 'שלום,'
-  return `${greeting}\nעדכון מ-KenyonExpress על הזמנה ${input.orderShortId}: ${input.statusLabel}`
+  return `${greeting}\nעדכון מ-קניון EXPRESS על הזמנה ${input.orderShortId}: ${input.statusLabel}`
 }

@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 
 export const metadata = {
-  title: { template: '%s | ניהול KenyonExpress', default: 'ניהול' },
+  title: { template: '%s | ניהול קניון EXPRESS', default: 'ניהול' },
   robots: { index: false, follow: false },
 }
 
@@ -38,7 +38,7 @@ async function AdminFrame({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href={adminLandingPath(role)} className="text-lg font-bold text-heading">
-            KenyonExpress <span className="text-sm font-normal text-black/50">/ ניהול</span>
+            קניון EXPRESS <span className="text-sm font-normal text-black/50">/ ניהול</span>
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-black/60">{ROLE_LABELS[role]}</span>
