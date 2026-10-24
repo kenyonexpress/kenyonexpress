@@ -228,7 +228,9 @@ d4a3f0046 state: Z09 affiliate verified as shipped
 8f6f4c18f state: Z08 re-run 10 unchanged
 ```
 
-## המשך מ: C49
+## המשך מ: Next unblocked autonomous work
+
+Continue from C49 COMPLETE (2026-10-24): M-cycle health audit executed. Five blockers documented (M13 CRITICAL money constraints, M05 DB performance, M06 Lighthouse, M14 role separation, M15 canonical host). M18 backup health RESOLVED (fresh backup created, old cleaned, RPO met). M10/M17 informational (cron drift vs main, expected). Quality gates ALL PASS: type-check ✅, lint ✅ (6415 files), build ✅ (273 routes). Notifications sent via ntfy. Evidence: docs/C49-RESULT.md. Commit 3dcf03ec2 pushed. No code changes.
 
 BLOCKED C49-M13 (Money Constraints) - CRITICAL 2026-10-24: audit-money-constraints.mjs requires SUPABASE_DB_URL or MCP query results to verify four UNIQUE constraints (payments.idempotency_key, ledger_journals.event_key, payment_webhook_events(provider,external_event_id), wallet_entries.idempotency_key). These constraints are the ONLY defense against replayed Cardcom callbacks double-charging cards. Cannot verify without database access. Supabase MCP requires OAuth (unavailable in non-interactive session per system-reminder). No SUPABASE_DB_URL in environment. BLOCKER: Supabase MCP OAuth authorization. No code change.
 
