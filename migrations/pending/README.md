@@ -38,6 +38,10 @@ Every file below is **not applied** and now has a row and a preflight. Run the
 - `291_pg_cron_scheduled_gifts.sql` - pg_cron job that drains scheduled gift sends (C27 `notification_outbox` rows with `next_attempt_at`). Preflight: `preflight_291.sql`.
 - `193_weekend_and_free_shipping.sql` - **CANCELLED**, moved to `migrations/cancelled/`. The weekend chip shipped as 284 and the free-shipping chip reads `shipping_price_agorot = 0` (278), so this would only add a duplicate `weekend_only` and a redundant `free_shipping` column.
 
+## 2026-10-24: 293 PENDING - Phase 2 feature flags (C37)
+
+`293_phase2_feature_flags.sql` seeds Phase 2 flags in `feature_flags` table (from migration 286): `physical_products`, `courses_monthly`, `tzimmer_calendar`, `monthly_billing`, all `false`. Admin toggle at `/admin/feature-flags` with audit logging. Code reads via `getSupabaseFlags()` (30s cache, fails open to env vars). **NOT YET APPLIED** - awaiting Supabase MCP OAuth.
+
 ## 2026-10-24: 292 APPLIED - supplier_agreements (C29)
 
 `292_supplier_agreements.sql` creates `supplier_agreements` table for click-wrap terms acceptance tracking: version_hash (SHA-256), version_date, IP address, user_agent, links to supplier_lead/verification/supplier. Service role writes only (RLS enabled, no public policies). Applied via Supabase MCP (version 20261023202611), verified in schema_migrations and confirmed anon has no access.
