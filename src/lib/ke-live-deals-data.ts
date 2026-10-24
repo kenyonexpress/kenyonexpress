@@ -193,7 +193,7 @@ export const KE_LIVE_DEALS: Product[] = [
     category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
   },
   {
-    id: 'ke-deal-facial',
+    id: 'ke-deal-facial-massage',
     slug: 'עיסוי-מאסטר',
     name_he: 'טיפול פנים',
     kenyon_price: 99,
