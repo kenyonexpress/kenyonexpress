@@ -52,3 +52,4 @@ RESULT: DONE
 M06-c182 2026-10-25: pnpm build succeeds (all routes generated). Drift committed: docs/M-CYCLE-STATUS.md regenerated timestamps.
 RESULT: DONE
 המשך מ: M06-c182 DONE
+- המשך מ: M08-c182 DONE (Lighthouse mobile / ≈81, /product ≈82; LCP ~4.7s; see logs/lighthouse-m08-c182.txt)

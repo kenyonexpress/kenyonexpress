@@ -1,0 +1,4 @@
+M08-c182 Lighthouse mobile (simulated throttle, localhost next start, 3 runs each) 2026-10-25
+/                          perf 82 82 79  (LCP 4.9/4.7/5.5s, TBT 20ms, CLS <=0.029)
+/product/מוצר-לדוגמא       perf 83 81 82  (LCP 4.6/4.9/4.7s, TBT 20ms, CLS 0)
+Note: /product alone is 404 (no index route); sampled pinned slug. Below G23 target 95; LCP is the bottleneck.
