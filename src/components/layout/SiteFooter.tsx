@@ -1,16 +1,8 @@
-import {
-  EcSupport,
-  FaChevronDown,
-  FaFacebook,
-  FaInstagram,
-  FaWhatsapp,
-  FaYoutube,
-} from '@/components/icons/electro-icons'
+import { EcSupport, FaChevronDown } from '@/components/icons/electro-icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
 import { BRAND_DISPLAY_NAME } from '@/lib/brand'
 import { businessRegistrationLine } from '@/lib/legal-entity'
-import { storeWhatsAppLink } from '@/lib/whatsapp'
 import Link from 'next/link'
 
 /**
@@ -61,35 +53,6 @@ const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   { label: 'מדיניות עוגיות', href: '/cookie-policy' },
   { label: 'ביטולים והחזרות', href: '/returns' },
   { label: 'הצהרת נגישות', href: '/accessibility' },
-]
-
-// Brand glyphs are Font Awesome as shipped by Electro v7 (fa-youtube, fa-instagram,
-// fa-whatsapp, fa-facebook). Telegram and Twitter are not in Electro's footer and
-// do not render. RTL order as listed: YouTube (rightmost) ... Facebook (leftmost).
-const SOCIALS: { label: string; href: string; Icon: typeof FaFacebook }[] = [
-  {
-    label: 'יוטיוב',
-    href: 'https://www.youtube.com/channel/UCTksP_5SYgaRrqBPgxBehQQ',
-    Icon: FaYoutube,
-  },
-  {
-    label: 'אינסטגרם',
-    href: 'https://www.instagram.com/kenyonexpress',
-    Icon: FaInstagram,
-  },
-  {
-    label: 'וואטסאפ',
-    // One source for the store's number ([68]). The literal that used to sit
-    // here was the third copy of it, and the only one of the three that did not
-    // read the env override.
-    href: storeWhatsAppLink() ?? '#',
-    Icon: FaWhatsapp,
-  },
-  {
-    label: 'פייסבוק',
-    href: 'https://www.facebook.com/קניון-Express-114398873446854/',
-    Icon: FaFacebook,
-  },
 ]
 
 export default function SiteFooter() {
@@ -288,24 +251,6 @@ export default function SiteFooter() {
               ))}
             </ul>
           </details>
-        </div>
-
-        {/* 3. Social icons row — dark circular */}
-        <div className="border-t border-border">
-          <div className="mx-auto flex max-w-store-footer items-center justify-center gap-3 px-4 py-4 lg:py-6">
-            {SOCIALS.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={s.label}
-                className="hit-44 flex size-touch-min items-center justify-center rounded-full bg-footer-bg text-white transition-colors hover:bg-brand-secondary hover:text-heading lg:h-10 lg:w-10"
-              >
-                <s.Icon size={18} />
-              </a>
-            ))}
-          </div>
         </div>
       </div>
 

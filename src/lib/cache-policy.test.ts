@@ -77,7 +77,6 @@ describe('the cache policy document matches the code', () => {
       'lib/product-seo.ts',
       'lib/related-products.ts',
       'lib/supplier-storefront.ts',
-      'server/queries/reviews.ts',
     ])
     for (const module of measured.cached) {
       expect(DOC, `${module} caches and the document does not list it`).toContain(module)
@@ -85,14 +84,14 @@ describe('the cache policy document matches the code', () => {
   })
 
   it('agrees on the lifetime counts', () => {
-    expect(measured.lives).toEqual({ hours: 25, days: 1 })
-    expect(DOC).toContain("cacheLife('hours')        25")
+    expect(measured.lives).toEqual({ hours: 24, days: 1 })
+    expect(DOC).toContain("cacheLife('hours')        24")
     expect(DOC).toContain("cacheLife('days')          1")
   })
 
-  it('agrees that there is exactly one invalidation tag, used 24 times', () => {
-    expect(measured.tags).toBe(24)
-    expect(DOC).toContain('cacheTag(CATALOGUE_TAG)   24')
+  it('agrees that there is exactly one invalidation tag, used 23 times', () => {
+    expect(measured.tags).toBe(23)
+    expect(DOC).toContain('cacheTag(CATALOGUE_TAG)   23')
   })
 
   it('still holds that no route declares its own caching', () => {

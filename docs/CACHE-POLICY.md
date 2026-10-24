@@ -30,7 +30,6 @@ everything it awaits is:
 | `lib/brands-row.ts` | the homepage brands row |
 | `lib/supplier-storefront.ts` | a supplier's public page |
 | `lib/feeds/catalogue.ts` | the Merchant and RSS feeds |
-| `server/queries/reviews.ts` | approved reviews and the rating summary |
 | `app/sitemap.ts` | the sitemap |
 | `components/CopyrightYear.tsx` | the footer year |
 
@@ -49,9 +48,9 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 ## 2. One lifetime and one tag, application-wide
 
 ```
-cacheLife('hours')        25
+cacheLife('hours')        24
 cacheLife('days')          1     CopyrightYear.tsx
-cacheTag(CATALOGUE_TAG)   24
+cacheTag(CATALOGUE_TAG)   23
 ```
 
 Every cached read in the product surface has the same one-hour life and the
@@ -61,13 +60,13 @@ invalidates a year.
 
 **What one tag buys and costs.** It is impossible to invalidate one product: any
 catalogue write clears the product pages, the category pages, the coupon
-catalogue, the supplier pages, the feeds, the sitemap and the reviews together.
+catalogue, the supplier pages, the feeds, and the sitemap together.
 On a 45-product catalogue that is free and simple, and over-invalidation is
 always safe - it costs a cache miss, never a wrong answer. It is worth revisiting
 when the catalogue is large enough that a full cold rebuild is expensive, and
 not before.
 
-**Who invalidates.** Eight modules, and **not all of them are admin**:
+**Who invalidates.** Seven modules, and **not all of them are admin**:
 
 ```
 server/actions/admin/products.ts        6 calls
@@ -75,10 +74,9 @@ server/actions/admin/categories.ts      4
 server/actions/admin/suppliers.ts       4
 server/actions/admin/approvals.ts       2
 server/actions/admin/coupon-deals.ts    2
-server/actions/admin/reviews.ts         1
 server/actions/admin/product-location.ts 2
 server/actions/supplier/profile.ts      1
-                                       22
+                                       21
 ```
 
 **Corrected 2026-09-08.** This list said "four modules, all admin" and totalled

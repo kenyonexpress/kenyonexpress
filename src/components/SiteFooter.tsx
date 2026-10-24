@@ -1,6 +1,5 @@
 import CopyrightYear from '@/components/CopyrightYear'
 import FooterAccordion from '@/components/FooterAccordion'
-import { FaFacebook, FaInstagram } from '@/components/icons/electro-icons'
 import { businessRegistrationLine } from '@/lib/legal-entity'
 
 type FooterLink = { label: string; href: string }
@@ -32,17 +31,6 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { label: 'מדיניות עוגיות', href: '#' },
       { label: 'נגישות', href: '#' },
     ],
-  },
-]
-
-const socials: { label: string; href: string }[] = [
-  {
-    label: 'פייסבוק',
-    href: 'https://www.facebook.com/קניון-Express-114398873446854/',
-  },
-  {
-    label: 'אינסטגרם',
-    href: 'https://www.instagram.com/kenyonexpress',
   },
 ]
 
@@ -83,27 +71,8 @@ export default function SiteFooter() {
               <FooterSection key={col.title} title={col.title} links={col.links} />
             ))}
 
-            {/* Social Column */}
+            {/* Payment Methods Column */}
             <div>
-              <h2 className="text-white text-footer-heading mb-4">עקבו אחרינו</h2>
-              <div className="flex items-center gap-3 mb-6">
-                {socials.map(({ label, href }) => {
-                  const Icon = label === 'פייסבוק' ? FaFacebook : FaInstagram
-                  return (
-                    <a
-                      key={label}
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={label}
-                      className="w-10 h-10 rounded-full bg-gray-800 hover:bg-brand flex items-center justify-center transition-colors"
-                    >
-                      <Icon size={20} />
-                    </a>
-                  )
-                })}
-              </div>
-
               {/* Payment Methods */}
               <div className="mt-8">
                 <h2 className="text-white font-bold mb-3 text-sm">אמצעי תשלום</h2>
@@ -134,7 +103,7 @@ export default function SiteFooter() {
       {/* Mobile Footer - Accordion */}
       <div className="md:hidden">
         <div className="bg-gray-800">
-          <FooterAccordion columns={columns} socials={socials} />
+          <FooterAccordion columns={columns} />
         </div>
 
         {/* Mobile Copyright */}

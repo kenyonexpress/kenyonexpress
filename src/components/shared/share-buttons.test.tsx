@@ -2,7 +2,6 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import FacebookShareButton from './FacebookShareButton'
 import WhatsAppFloat from './WhatsAppFloat'
 import WhatsAppShareButton from './WhatsAppShareButton'
 
@@ -107,35 +106,6 @@ describe('the WhatsApp share button', () => {
   it('opens without handing the opener over', () => {
     clickWith({ message: 'שווה' })
     expect(String(open.mock.calls[0]?.[2])).toContain('noopener')
-  })
-})
-
-describe('the Facebook share button', () => {
-  const open = vi.fn()
-
-  beforeEach(() => {
-    open.mockReset()
-    vi.stubGlobal('open', open)
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { href: 'https://kenyonexpress.co.il/product/spa' },
-    })
-  })
-
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
-
-  it('sends the sharer a URL and nothing else', () => {
-    // Facebook removed the `quote` parameter in 2017 and ignores it silently.
-    // Everything the post shows comes from the Open Graph tags it scrapes, so a
-    // text parameter here would be a message nobody ever reads.
-    const element = FacebookShareButton({})
-    ;(element as { props: { onClick: () => void } }).props.onClick()
-    const url = new URL(String(open.mock.calls[0]?.[0]))
-    expect(url.host).toBe('www.facebook.com')
-    expect([...url.searchParams.keys()]).toEqual(['u'])
-    expect(url.searchParams.get('u')).toBe('https://kenyonexpress.co.il/product/spa')
   })
 })
 

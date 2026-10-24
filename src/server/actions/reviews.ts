@@ -14,10 +14,7 @@ import { revalidatePath } from 'next/cache'
  * this file only translates its refusals into Hebrew. An admin-client version
  * of these writes would silently re-open everything the policy closes.
  *
- * The customer review form that lived here (`submitReview`,
- * `getMyReviewableItem`) was removed in F42 together with the storefront
- * review components: the site shows no review buttons or forms. Approved
- * reviews are still readable by the admin screen through `server/queries`.
+ * The site has no reviews UI (no forms, widgets, ratings or admin screen).
  */
 
 export type WishlistActionState = { ok: boolean; saved?: boolean; error?: string }

@@ -46,21 +46,6 @@ describe('SiteFooter', () => {
     }
   })
 
-  it('renders social media links with correct hrefs', () => {
-    render(<SiteFooter />)
-    const facebookLinks = screen.getAllByRole('link', { name: 'פייסבוק' })
-    const instagramLinks = screen.getAllByRole('link', { name: 'אינסטגרם' })
-
-    // Check desktop version (first one)
-    expect(facebookLinks[0]).toHaveAttribute(
-      'href',
-      'https://www.facebook.com/קניון-Express-114398873446854/',
-    )
-    expect(instagramLinks[0]).toHaveAttribute('href', 'https://www.instagram.com/kenyonexpress')
-    expect(facebookLinks[0]).toHaveAttribute('target', '_blank')
-    expect(instagramLinks[0]).toHaveAttribute('target', '_blank')
-  })
-
   it('renders payment method indicators on desktop', () => {
     render(<SiteFooter />)
     expect(screen.getByText('💳')).toBeInTheDocument()
@@ -123,13 +108,9 @@ describe('SiteFooter', () => {
     expect(link).toHaveClass('transition-colors')
   })
 
-  it('renders social icons with proper styling', () => {
+  it('renders no social network links', () => {
     const { container } = render(<SiteFooter />)
-    const socialLinks = container.querySelectorAll('a[aria-label]')
-    for (const link of socialLinks) {
-      expect(link).toHaveClass('rounded-full')
-      expect(link).toHaveClass('hover:bg-brand')
-      expect(link).toHaveClass('transition-colors')
-    }
+    expect(screen.queryByText('עקבו אחרינו')).not.toBeInTheDocument()
+    expect(container.querySelector('a[href*="facebook.com"], a[href*="instagram.com"]')).toBeNull()
   })
 })

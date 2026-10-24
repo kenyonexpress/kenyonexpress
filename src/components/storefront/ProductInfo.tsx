@@ -3,7 +3,6 @@
 import { useCart } from '@/components/cart/CartProvider'
 import { EcAddToCart } from '@/components/icons/electro-icons'
 import ProductLocation from '@/components/product-card/ProductLocation'
-import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import { productQuantityCeiling } from '@/lib/cart/format'
@@ -393,7 +392,6 @@ export default function ProductInfo({
             message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
             appendCurrentUrl
           />
-          <FacebookShareButton />
         </span>
       </div>
     </div>
