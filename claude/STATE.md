@@ -21,4 +21,4 @@ Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 -0.14px body letter-spacing in `src/app/globals.css`, gate flags
 `--widths`, `--baseline`, `--live-url` in `scripts/compare-args.mjs`. Rows in
 `docs/UI-PARITY-REPORT.md`, 2026-10-21.
-המשך מ: G19 DONE
+המשך מ: M05-c181 DONE

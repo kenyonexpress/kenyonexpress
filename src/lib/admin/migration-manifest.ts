@@ -534,13 +534,13 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '301',
     file: '301_push_subscriptions.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '302',
     file: '302_address_book.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
   {
     number: '303',
@@ -552,6 +552,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '304',
     file: '304_soft_delete_consolidation.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
 ] as const
