@@ -14,7 +14,8 @@ import { useState } from 'react'
 type VoucherStatus = 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
 
 type Props = {
-  token: string
+  /** Signed QR payload. Omit for a hand-typed code: the short code is sent instead. */
+  token?: string
   code: string
   codeDisplay: string
   status: VoucherStatus
@@ -93,8 +94,8 @@ export default function RedeemConfirm(props: Props) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            qr_payload: props.token,
-            method: 'camera',
+            ...(props.token ? { qr_payload: props.token } : { code: props.code }),
+            method: props.token ? 'camera' : 'manual',
             idempotency_key: idempotencyKey,
           }),
         })
