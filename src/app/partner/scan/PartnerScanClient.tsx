@@ -1,8 +1,8 @@
 'use client'
 
 import { parseScanInput } from '@/lib/vouchers/scan-input'
-import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { type RedeemResult, redeemVoucherFromQr } from './actions'
 
 // BarcodeDetector is not in the TS DOM lib yet.
 type BarcodeDetectorLike = {
@@ -14,17 +14,17 @@ type BarcodeDetectorCtor = new (opts?: { formats?: string[] }) => BarcodeDetecto
  * Partner QR scanner client component.
  *
  * Provides camera access via navigator.mediaDevices to scan voucher QR codes.
- * When a valid QR is detected, navigates to /redeem/[token] which:
- * - Validates the signature (via classifyVoucherQrPayload)
- * - Marks redeemed_at in the vouchers table
- * - Records the redemption in voucher_redemptions (idempotent)
- * - Shows the RESULT
+ * When a valid QR is detected, calls redeemVoucherFromQr server action which:
+ * - Validates the signature (via verifyVoucherQrPayload)
+ * - Calls redeem_voucher() RPC which marks redeemed_at in vouchers table (idempotent)
+ * - Records the redemption attempt in voucher_redemptions audit table
+ * - Returns the RESULT directly
  */
 export default function PartnerScanClient() {
-  const router = useRouter()
   const [cameraOn, setCameraOn] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
+  const [result, setResult] = useState<RedeemResult | null>(null)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -53,9 +53,10 @@ export default function PartnerScanClient() {
   }, [stopCamera])
 
   const handleQrDetected = useCallback(
-    (rawValue: string) => {
+    async (rawValue: string) => {
       stopCamera()
       setScanning(true)
+      setError(null)
 
       const parsed = parseScanInput(rawValue)
 
@@ -65,17 +66,23 @@ export default function PartnerScanClient() {
         return
       }
 
-      // Navigate to the redemption flow which validates signature and redeems
-      if (parsed.token) {
-        // QR contains the full signed token - navigate to redeem page
-        router.push(`/redeem/${encodeURIComponent(parsed.token)}`)
-      } else if (parsed.code) {
-        // Manual code - would need token, but parseScanInput should handle this
-        setError('קוד זה דורש אימות. אנא סרקו את קוד ה-QR של הלקוח.')
+      if (!parsed.token) {
+        setError('קוד זה דורש QR חתום. אנא סרקו את קוד ה-QR של הלקוח.')
+        setScanning(false)
+        return
+      }
+
+      // Call redemption action which validates signature and marks voucher as redeemed
+      try {
+        const redemptionResult = await redeemVoucherFromQr(parsed.token)
+        setResult(redemptionResult)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'אירעה שגיאה בעת מימוש השובר. נסו שוב.')
+      } finally {
         setScanning(false)
       }
     },
-    [router, stopCamera],
+    [stopCamera],
   )
 
   const startCamera = useCallback(async () => {
@@ -167,6 +174,106 @@ export default function PartnerScanClient() {
       <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 text-center">
         <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
         <p className="text-sm font-medium text-blue-900">מעבד את השובר...</p>
+      </div>
+    )
+  }
+
+  // Show result if redemption completed
+  if (result) {
+    if (result.success) {
+      const { voucher } = result
+      return (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-green-200 bg-green-50 p-6">
+            <div className="mb-4 text-center">
+              <div className="mb-3 text-5xl" aria-hidden="true">
+                ✓
+              </div>
+              <h2 className="text-xl font-bold text-green-900">השובר מומש בהצלחה!</h2>
+            </div>
+
+            <div className="mb-4 rounded-xl bg-white p-4 text-center shadow-sm">
+              <p className="text-sm text-gray-500">לגבייה מהלקוח עכשיו</p>
+              <p className="mt-2 text-4xl font-extrabold text-gray-900">
+                ₪{(voucher.remainingAmountDueAgorot / 100).toFixed(2)}
+              </p>
+            </div>
+
+            <dl className="space-y-2 rounded-xl bg-white p-4 text-sm shadow-sm">
+              <div className="flex justify-between">
+                <dt className="text-gray-500">קוד</dt>
+                <dd className="font-mono font-medium text-gray-900">{voucher.code}</dd>
+              </div>
+              {voucher.productName && (
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">מוצר</dt>
+                  <dd className="font-medium text-gray-900">{voucher.productName}</dd>
+                </div>
+              )}
+              {voucher.customerName && (
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">לקוח</dt>
+                  <dd className="font-medium text-gray-900">{voucher.customerName}</dd>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <dt className="text-gray-500">שולם באתר</dt>
+                <dd className="font-medium text-gray-900">
+                  ₪{(voucher.couponPriceAgorot / 100).toFixed(2)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">מחיר מלא</dt>
+                <dd className="font-medium text-gray-900">
+                  ₪{(voucher.faceValueAgorot / 100).toFixed(2)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">מומש ב</dt>
+                <dd className="font-medium text-gray-900">
+                  {new Date(voucher.redeemedAt).toLocaleString('he-IL')}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setResult(null)
+              setError(null)
+            }}
+            className="w-full rounded-xl bg-gray-900 py-3 text-sm font-bold text-white transition hover:bg-gray-800"
+          >
+            סריקה נוספת
+          </button>
+        </div>
+      )
+    }
+
+    // Error result
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+          <div className="mb-4 text-center">
+            <div className="mb-3 text-5xl" aria-hidden="true">
+              ✗
+            </div>
+            <h2 className="text-xl font-bold text-red-900">{result.error}</h2>
+            {result.details && <p className="mt-2 text-sm text-red-700">{result.details}</p>}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setResult(null)
+            setError(null)
+          }}
+          className="w-full rounded-xl bg-gray-900 py-3 text-sm font-bold text-white transition hover:bg-gray-800"
+        >
+          נסה שוב
+        </button>
       </div>
     )
   }
