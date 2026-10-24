@@ -1,8 +1,9 @@
-import ValidityCountdown from '@/components/coupon/ValidityCountdown'
+import WhatsAppButton from '@/components/shared/WhatsAppButton'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { resolveCarrier } from '@/lib/shipping/carriers'
 import { VALIDITY_LABEL } from '@/lib/vouchers/countdown'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
+import { buildOrderInquiryText, waChatLink } from '@/lib/whatsapp'
 import { getOrderDetail } from '@/server/queries/orders'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -138,11 +139,26 @@ export default async function OrderDetailPage({ params }: Props) {
                   )
                 })()}
               {line.supplier && (
-                <p className="account-row__meta">
-                  {line.supplier.name}
-                  {line.supplier.city ? ` · ${line.supplier.city}` : ''}
-                  {line.supplier.phone ? ` · ${line.supplier.phone}` : ''}
-                </p>
+                <>
+                  <p className="account-row__meta">
+                    {line.supplier.name}
+                    {line.supplier.city ? ` · ${line.supplier.city}` : ''}
+                    {line.supplier.phone ? ` · ${line.supplier.phone}` : ''}
+                  </p>
+                  {line.supplier.phone && (
+                    <div className="mt-2">
+                      <WhatsAppButton
+                        href={
+                          waChatLink(line.supplier.phone, buildOrderInquiryText(order.id)) ??
+                          `mailto:support@kenyonexpress.co.il?subject=${encodeURIComponent(`שאלה על הזמנה ${order.id}`)}`
+                        }
+                        size="sm"
+                      >
+                        צור קשר עם הספק
+                      </WhatsAppButton>
+                    </div>
+                  )}
+                </>
               )}
 
               {line.vouchers.length > 0 && (

@@ -165,19 +165,8 @@ export default function InstallPrompt() {
     >
       <Image src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
       <div className="min-w-0 flex-1">
-        <p className="font-bold text-heading text-sm">התקינו את KenyonExpress</p>
-        {offer.kind === 'ios' ? (
-          // The two taps, in the order Safari shows them. "שיתוף" is the
-          // label under the share button in Hebrew iOS, and "הוסף למסך הבית"
-          // is the sheet item verbatim, so the shopper is matching text they
-          // can see rather than translating a description.
-          <p className="text-gray-500 text-xs">
-            לחצו על <span className="font-bold">שיתוף</span> בסרגל הדפדפן ואז על{' '}
-            <span className="font-bold">הוסף למסך הבית</span>.
-          </p>
-        ) : (
-          <p className="text-gray-500 text-xs">גישה מהירה מהמסך הראשי, גם בלי דפדפן.</p>
-        )}
+        <p className="font-bold text-heading text-sm">התקינו את קניון EXPRESS</p>
+        <p className="text-gray-500 text-xs">גישה מהירה מהמסך הראשי, גם בלי דפדפן.</p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {offer.kind === 'ios' ? (

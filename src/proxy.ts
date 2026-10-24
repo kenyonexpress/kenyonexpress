@@ -57,8 +57,14 @@ function forward(
   const response = NextResponse.next({ request: { headers } })
   response.headers.set(REQUEST_ID_HEADER, requestId)
 
-  // Set strict nonce-based CSP header, overriding the static config
-  response.headers.set('Content-Security-Policy', contentSecurityPolicyFor(pathname, nonce))
+  // The nonce is NOT put into the CSP. With cacheComponents the page shell is
+  // prerendered, so Next's own <script src> chunk tags and its inline
+  // __next_f bootstrap carry no nonce; a nonce + 'strict-dynamic' policy blocks
+  // every one of them and no page hydrates (verified on `next start`: 23-74
+  // blocked scripts per route, no service worker registration, no interaction).
+  // Until the shell can be rendered per request, the policy stays on the
+  // 'unsafe-inline' form that contentSecurityPolicyFor() emits without a nonce.
+  response.headers.set('Content-Security-Policy', contentSecurityPolicyFor(pathname))
   response.headers.set('X-Frame-Options', frameOptionsFor(pathname))
   response.headers.set('Permissions-Policy', permissionsPolicyFor(pathname))
 
@@ -76,10 +82,10 @@ function withRequestId<T extends Response>(
   response: T,
   requestId: string,
   pathname: string,
-  nonce: string,
+  _nonce: string,
 ): T {
   response.headers.set(REQUEST_ID_HEADER, requestId)
-  response.headers.set('Content-Security-Policy', contentSecurityPolicyFor(pathname, nonce))
+  response.headers.set('Content-Security-Policy', contentSecurityPolicyFor(pathname))
   response.headers.set('X-Frame-Options', frameOptionsFor(pathname))
   response.headers.set('Permissions-Policy', permissionsPolicyFor(pathname))
   return response
