@@ -266,3 +266,16 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-24 02:55 | home | 380 | 50.72% | **FAIL** | `ba8c8b375` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-24 02:57 | home | 768 | 38.09% | **FAIL** | `ba8c8b375-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-24 02:59 | home | 1440 | 27.98% | **FAIL** | `ba8c8b375-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-24 14:52 | home | 380 | n/a | **UNMEASURED** | `16938d904-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/ Call log: [2m - navigating to "http://localhost:3000/", waiting until "domc |
+| 2026-10-24 14:57 | home | 380 | 49.90% | **FAIL** | `16938d904-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-24 15:05 | home | 768 | n/a | **UNMEASURED** | `16938d904-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
+| 2026-10-24 15:09 | home | 380 | 49.90% | **FAIL** | `16938d904-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 329 failed to load (194 script, 129 font, 4 stylesheet, 2 xhr) |
+| 2026-10-24 15:11 | home | 768 | 43.05% | **FAIL** | `16938d904-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-24 15:14 | home | 1440 | n/a | **UNMEASURED** | `16938d904-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
+| 2026-10-24 19:43 | home | 380 | 49.89% | **FAIL** | `33adcd8b5-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-24 19:51 | product | 380 | 53.74% | **FAIL** | `33adcd8b5-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-24 19:52 | product | 768 | 41.96% | **FAIL** | `33adcd8b5-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-24 19:54 | product | 1440 | 26.32% | **FAIL** | `33adcd8b5-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-24 19:56 | product | 380 | 53.74% | **FAIL** | `3bce7bc42-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-24 19:58 | product | 768 | 41.96% | **FAIL** | `3bce7bc42-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-24 20:00 | product | 1440 | 26.32% | **FAIL** | `85e170c0c-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
