@@ -35,7 +35,7 @@ Every file below is **not applied** and now has a row and a preflight. Run the
 - `276_stock_notifications.sql` - back-in-stock subscriptions.
 - `277_fraud_monitoring.sql` - fraud signals, flags and the chargeback history table.
 - `287_sms_marketing.sql` - SMS broadcasts, recipients, delivery events, unsubscribes and consent. **Renumbered from 132**, which is `132_search_index_outbox.sql` in `applied/`. The shorter earlier draft draft in `supabase/migrations/` numbered 131 was removed in favour of this one, which is the version `src/lib/sms/` is written against.
-- `288_customer_rfm_segmentation.sql` - RFM scores, segments and `fn_calculate_rfm_scores` / `fn_segment_users`. **Moved from `supabase/migrations/` as number 130**, where 130 collided with `130_payment_events.sql` in `applied/`.
+- `288_customer_rfm_segmentation.sql` - RFM scores, segments and `fn_calculate_rfm_scores` / `fn_segment_users`. **Moved from `supabase/migrations/` as number 130**, where 130 collided with `294_payment_events.sql` in `applied/`.
 - `193_weekend_and_free_shipping.sql` - **CANCELLED**, moved to `migrations/cancelled/`. The weekend chip shipped as 284 and the free-shipping chip reads `shipping_price_agorot = 0` (278), so this would only add a duplicate `weekend_only` and a redundant `free_shipping` column.
 
 ## 2026-10-18: 286 APPLIED - feature_flags (rc5 F19)
@@ -676,7 +676,7 @@ running. Order is the position in the apply sequence.
 | 125 | `125_expire_vouchers_drop_escrow.sql` | Replaces `expire_vouchers()`, dropping its last escrow branch | **Low.** Escrow model already abolished in 085; this finishes it | 4 | migration 085 (applied) | Restore the prior body from `supabase/migrations/085_voucher_scan_audit_and_no_escrow.sql` |
 | 126 | `126_percent_range_checks.sql` | `CHECK (0..100)` on 12 unconstrained percent columns | **Low.** Fails at apply time only if a row is already out of range | 5 | none | `alter table public.<t> drop constraint if exists <t>_<col>_range;` (12 statements, listed in the file) |
 | 127 | `127_homepage_cms.sql` | `banners`, `homepage_sections`, RLS policies, scheduling windows | **None.** Readers treat absence as normal and fall back to `src/lib/hero-singlefile-data.ts` | 6 | none | `drop table if exists public.banners, public.homepage_sections cascade;` |
-| 130 | `130_payment_events.sql` | `payment_events` append-only table, `payment_event_type` enum, no-mutation trigger | **None.** New table, no existing reader | 7 | none | `drop trigger if exists payment_events_no_mutation on public.payment_events; drop function if exists public.payment_events_append_only(); drop table if exists public.payment_events; drop type if exists public.payment_event_type;` |
+| 130 | `294_payment_events.sql` | `payment_events` append-only table, `payment_event_type` enum, no-mutation trigger | **None.** New table, no existing reader | 7 | none | `drop trigger if exists payment_events_no_mutation on public.payment_events; drop function if exists public.payment_events_append_only(); drop table if exists public.payment_events; drop type if exists public.payment_event_type;` |
 | 131 | `131_refunds.sql` | `refunds` table, `refund_state` + `refund_ground` enums | **None.** Holds no money truth; `payments` stays authoritative | 8 | 130 (shares the payment vocabulary) | `drop table if exists public.refunds; drop type if exists public.refund_state; drop type if exists public.refund_ground;` |
 | 132 | `132_search_index_outbox.sql` | `search_index_outbox`, enqueue trigger on `products`, `claim_search_index_jobs()` | **Low.** Adds a trigger to `products`; every product write now also writes an outbox row | 9 | none | `drop trigger if exists products_enqueue_search_index on public.products; drop function if exists public.enqueue_search_index(); drop function if exists public.claim_search_index_jobs(integer); drop table if exists public.search_index_outbox;` |
 | 133 | `133_supplier_branches.sql` | `supplier_branches` table | **None.** Changes no money and no authorisation; a voucher still redeems against `suppliers.id` | 10 | none | `drop table if exists public.supplier_branches;` |
@@ -1045,7 +1045,7 @@ effect, not by trusting this list. The version string is from
 | File | Production version | Applied as | Verified by |
 | --- | --- | --- | --- |
 | `123_products_whatsapp_enabled.sql` | `20260901013104` | `123_products_whatsapp_enabled` | `products.whatsapp_enabled` exists |
-| `130_payment_events.sql` | `20260901013413` | `130_payment_events` | `payment_events` table + `payment_events_no_mutation` trigger |
+| `294_payment_events.sql` | `20260901013413` | `294_payment_events` | `payment_events` table + `payment_events_no_mutation` trigger |
 | `134_order_items_delivered_at.sql` | `20260901013122` | `134_order_items_delivered_at` | `delivered_at` + `shipped_at` + `order_item_cancellation_deadline()` |
 | `136_supplier_coordinates.sql` | `20260901013134` | `136_supplier_coordinates` | `suppliers.latitude` + `.longitude` |
 | `146_wallet_balance_floor.sql` | `20260901013143` | `146_wallet_balance_floor` | constraint `wallet_accounts_user_balance_floor` |
