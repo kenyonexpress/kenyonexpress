@@ -1,11 +1,12 @@
 C47 BACKLOG PROCESSED - 2026-10-24
 
-**3 ITEMS COMPLETED:**
-- Item 2: Crisp chat integration (post-launch activation)
+**4 ITEMS COMPLETED:**
+- Item 1: Group-deals bulk purchase discounts (10 tests)
+- Item 2: Crisp chat integration (5 tests, post-launch activation)
 - Item 6: Courses monthly billing (subscription schema, 8 tests)
 - Item 7: Tzimmer calendar (booking schema, 7 tests)
 
-**Total: 20 new tests passing, all features flag-gated for Phase 2**
+**Total: 30 new tests passing (all green)**
 
 ====================
 
