@@ -48,6 +48,14 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:signOutAll', "acts on the caller's own session, no arguments"],
   ['auth.ts:sendPasswordReset', 'reset must work when locked out'],
   ['auth.ts:updatePassword', 'runs against the recovery session Supabase issued'],
+  ['auth.ts:generatePasskeyAuthOptions', 'WebAuthn sign-in entry point'],
+  ['auth.ts:verifyPasskeyAuth', 'WebAuthn verification, browser-bounded ceremony'],
+  [
+    'auth.ts:sendWhatsAppOtp',
+    'WhatsApp OTP sign-in entry point, rate limited per IP and per number',
+  ],
+  ['auth.ts:verifyWhatsAppOtp', 'WhatsApp OTP verification, rate limited per IP'],
+  ['auth.ts:checkAuthFallback', 'public helper to determine auth method availability'],
   // The guest cart is open by business-model decision: browsing and adding to
   // cart never require an account.
   ['cart.ts:mergeGuestCart', 'internal helper, see STATE.md 20.08 finding 1'],
