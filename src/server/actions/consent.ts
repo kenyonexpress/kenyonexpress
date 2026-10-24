@@ -7,6 +7,10 @@ import {
   type ConsentDecision,
   serializeConsent,
 } from '@/lib/analytics/consent'
+import {
+  CONSENT_GRANULAR_COOKIE,
+  CONSENT_GRANULAR_MAX_AGE_SECONDS,
+} from '@/lib/analytics/consent-categories'
 import { withActionContext } from '@/lib/observability/action-context'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -83,4 +87,48 @@ export async function decideConsent(formData: FormData): Promise<void> {
 
 export async function resetConsent(): Promise<void> {
   return withActionContext('consent.reset', () => runResetConsent())
+}
+
+/**
+ * C63: Save granular consent preferences (Analytics, Marketing).
+ *
+ * Sets the ke_consent_prefs cookie with granular settings.
+ * Format: essential.analytics.marketing.version (e.g., "1.1.0.2")
+ */
+async function runSaveGranularConsent(value: string): Promise<void> {
+  const jar = await cookies()
+  jar.set({
+    name: CONSENT_GRANULAR_COOKIE,
+    value,
+    maxAge: CONSENT_GRANULAR_MAX_AGE_SECONDS,
+    path: '/',
+    sameSite: 'lax',
+    // Readable by client-side analytics scripts
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+  })
+
+  // Also set the legacy cookie for backward compatibility
+  // If any category is granted, set old cookie to granted
+  const parts = value.split('.')
+  const hasAnyConsent = parts[1] === '1' || parts[2] === '1' // analytics or marketing
+
+  jar.set({
+    name: CONSENT_COOKIE,
+    value: serializeConsent({
+      decision: hasAnyConsent ? 'granted' : 'denied',
+      wordingVersion: CONSENT_WORDING_VERSION,
+    }),
+    maxAge: CONSENT_MAX_AGE_SECONDS,
+    path: '/',
+    sameSite: 'lax',
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+  })
+
+  redirect(await backToWhereTheyWere())
+}
+
+export async function saveGranularConsent(value: string): Promise<void> {
+  return withActionContext('consent.saveGranular', () => runSaveGranularConsent(value))
 }
