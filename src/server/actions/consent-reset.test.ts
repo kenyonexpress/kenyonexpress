@@ -46,11 +46,11 @@ describe('the control is reachable', () => {
   it('is rendered by the cookie policy page', () => {
     // An action with no caller is the defect this repo keeps finding; the
     // policy's promise is only true if something renders the button.
-    expect(read('src/app/(store)/cookie-policy/page.tsx')).toContain('<ConsentResetBlock />')
+    expect(read('src/app/(legal)/cookie-policy/page.tsx')).toContain('<ConsentResetBlock />')
   })
 
   it('posts to the action with a plain form, no client bundle', () => {
-    const block = read('src/app/(store)/cookie-policy/ConsentResetBlock.tsx')
+    const block = read('src/app/(legal)/cookie-policy/ConsentResetBlock.tsx')
     expect(block).toContain('action={resetConsent}')
     expect(block).not.toContain("'use client'")
   })

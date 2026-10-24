@@ -60,6 +60,8 @@ const ALLOWED: Record<string, string> = {
 
   'app/error.tsx':
     'Browser error boundary: probes our own /api/health to tell the visitor whether the site is down, and a hung probe costs the page nothing.',
+  'components/auth/PasskeyBanner.tsx':
+    'Browser, to our own passkey routes, inside a WebAuthn ceremony the browser already bounds with its own prompt timeout.',
   'components/auth/PasskeyManager.tsx':
     'Browser, to our own passkey routes, inside a WebAuthn ceremony the browser already bounds with its own prompt timeout.',
   'components/auth/PasskeySignIn.tsx':
@@ -74,6 +76,10 @@ const ALLOWED: Record<string, string> = {
     'Browser, fire-and-forget subscribe to our own origin after the permission prompt; a hang costs the page nothing.',
   'lib/offline/sync.ts':
     'Browser replay of the offline queue to our own origin; a stalled item stays queued and is retried with backoff, which is its own ceiling.',
+
+  // --- Server calls to external APIs -------------------------------------
+  'lib/auth/whatsapp-otp.ts':
+    'Server-side WhatsApp OTP send via Meta Cloud API; the caller is already rate-limited (whatsapp-otp policies: 5/hour per IP, 5/hour per number), and Meta enforces its own rate limits.',
 
   // --- Deliberately unbounded, on the voucher-burn path -------------------
   'app/(supplier)/scan/ScanClient.tsx':
