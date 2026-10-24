@@ -13,6 +13,7 @@ import {
 } from '@/lib/security/maintenance'
 import { maintenanceFlagOn } from '@/lib/security/maintenance-flag'
 import { lookupRedirect } from '@/lib/seo/redirects'
+import { wpLegacyTarget } from '@/lib/seo/wp-legacy'
 import { recordAffiliateClick } from '@/server/affiliate/clicks'
 import { createServerClient } from '@supabase/ssr'
 import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server'
@@ -107,7 +108,13 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   // may or may not resend, and a payment callback that gets redirected is a
   // payment we never hear about.
   if (request.method === 'GET' || request.method === 'HEAD') {
-    const hit = await lookupRedirect(pathname)
+    const hit =
+      (await lookupRedirect(pathname)) ??
+      // Structural WP shapes, the backstop under the seo_redirects table.
+      (() => {
+        const legacy = wpLegacyTarget(pathname)
+        return legacy ? { target: legacy, status: 301 as const } : null
+      })()
     if (hit) {
       if (hit.status === 410) {
         // Gone, not missing. A 410 is a decision we made; a 404 is an
@@ -115,11 +122,12 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
         return withRequestId(new NextResponse(null, { status: 410 }), requestId)
       }
       const url = request.nextUrl.clone()
-      url.pathname = hit.target
+      const [targetPath, targetQuery] = hit.target.split('?', 2)
+      url.pathname = targetPath ?? '/'
       // The query string is dropped on purpose: the targets are canonical
       // paths, and carrying `?ref=` or a stale WooCommerce `?product=` through
       // would produce duplicate URLs for one page.
-      url.search = ''
+      url.search = targetQuery ? `?${targetQuery}` : ''
       return withRequestId(NextResponse.redirect(url, 301), requestId)
     }
   }
