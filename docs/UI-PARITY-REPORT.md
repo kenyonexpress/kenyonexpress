@@ -263,3 +263,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-23 22:40 | home | 1440 | 27.98% | **FAIL** | `a25630015-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-23 22:42 | home | 380 | n/a | **UNMEASURED** | `a25630015-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3111/ Call log: [2m - navigating to "http://localhost:3111/", waiting until "domc |
 | 2026-10-23 22:43 | home | 768 | n/a | **UNMEASURED** | `a25630015-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3111/ Call log: [2m - navigating to "http://localhost:3111/", waiting until "domc |
+| 2026-10-24 02:55 | home | 380 | 50.72% | **FAIL** | `ba8c8b375` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-24 02:57 | home | 768 | 38.09% | **FAIL** | `ba8c8b375-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-24 02:59 | home | 1440 | 27.98% | **FAIL** | `ba8c8b375-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
