@@ -70,12 +70,26 @@ See [`docs/MEILISEARCH-SETUP.md`](./MEILISEARCH-SETUP.md) for full configuration
 
 ## Instance Status
 
-### Known State (from memory)
+### Verified State (2026-10-25)
 
-According to production health checks:
-- **Engine:** `'database'` (Postgres fallback, not Meilisearch)
-- **Last probe:** Memory indicates "engine database is inactive"
-- **Diagnosis:** Instance may be paused, unreachable, or URL/key incorrect
+**Environment Variables:**
+- `MEILISEARCH_HOST`: Set in Vercel (encrypted)
+- `MEILISEARCH_API_KEY`: `20afdc2f9a407634fa090c76379b73caddedf6a4` (found in `.env.vercel.production`)
+- Example suggests host: `https://search.kenyonexpress.co.il`
+
+**Health Check Result:**
+```bash
+curl 'https://search.kenyonexpress.co.il/health'
+# Returns: "The deployment could not be found on Vercel."
+# Status: DEPLOYMENT_NOT_FOUND
+```
+
+**Diagnosis:** No Meilisearch instance exists at the configured URL. The subdomain `search.kenyonexpress.co.il` returns a Vercel 404, meaning:
+1. No Meilisearch Cloud instance was ever created, OR
+2. Instance exists at a different URL not documented in repo
+
+**Current Search Engine:**
+- `engine: 'database'` (Postgres ILIKE fallback confirmed)
 
 ### What Works
 
@@ -95,21 +109,43 @@ According to production health checks:
 
 ## Actions Needed
 
-### To Activate Production Meilisearch
+### ⚠️ BLOCKER: No Meilisearch Instance Exists
 
-1. **Verify instance exists and is running**
-   - Check Meilisearch Cloud dashboard
-   - Ensure instance is not paused (free tier auto-pauses)
-   - Verify region (should be Paris for low latency to Israel)
+**Evidence:**
+- `https://search.kenyonexpress.co.il/health` → `DEPLOYMENT_NOT_FOUND`
+- API key exists but points to non-existent host
+- All search queries fall back to database
 
-2. **Test credentials**
-   ```bash
-   curl 'https://<MEILISEARCH_HOST>/health' \
-     -H 'Authorization: Bearer <MEILISEARCH_API_KEY>'
-   # Should return: {"status":"available"}
-   ```
+**Required Action:** Create Meilisearch Cloud instance
 
-3. **Seed the index**
+### 1. Create Paris Region Instance
+
+Follow [`docs/MEILISEARCH-SETUP.md`](./MEILISEARCH-SETUP.md#recommended-paris-region-instance):
+
+1. Go to https://cloud.meilisearch.com
+2. Create new project → Select **Paris (eu-west-3)**
+3. Choose plan:
+   - **Development:** Starter ($0/mo, pauses after inactivity)
+   - **Production:** Pro ($29/mo+, always-on, 10GB storage)
+4. Copy instance URL (e.g., `https://<project>.meilisearch.io`)
+5. Copy Master API key from dashboard
+
+### 2. Update Vercel Environment Variables
+
+```bash
+vercel env rm MEILISEARCH_HOST production
+vercel env add MEILISEARCH_HOST production
+# Paste: https://<your-instance>.meilisearch.io
+
+vercel env rm MEILISEARCH_API_KEY production
+vercel env add MEILISEARCH_API_KEY production
+# Paste: <master-key-from-dashboard>
+
+# Redeploy to apply
+vercel --prod
+```
+
+### 3. Seed the index
    ```bash
    # With production credentials
    MEILISEARCH_HOST=<prod> \

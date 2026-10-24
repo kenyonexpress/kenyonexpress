@@ -12,7 +12,7 @@ test.describe('WhatsAppButton rendered dimensions', () => {
         <head>
           <style>
             .min-h-touch-min { min-height: 44px; }
-            .bg-whatsapp { background-color: #25d366; }
+            .bg-whatsapp { background-color: var(--color-whatsapp); }
             a { display: inline-flex; align-items: center; padding: 10px 16px; }
           </style>
         </head>
