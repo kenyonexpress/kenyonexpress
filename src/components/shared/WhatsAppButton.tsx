@@ -29,8 +29,8 @@ export default function WhatsAppButton({
         'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all',
         'bg-whatsapp text-white hover:brightness-110',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-whatsapp',
-        size === 'md' && 'min-h-[44px] px-4 py-2.5 text-base',
-        size === 'sm' && 'min-h-[44px] px-3 py-2 text-sm',
+        size === 'md' && 'min-h-touch-min px-4 py-2.5 text-base',
+        size === 'sm' && 'min-h-touch-min px-3 py-2 text-sm',
         className,
       )}
     >

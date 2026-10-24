@@ -2,7 +2,6 @@ import { EcMapPointer, EcPhone } from '@/components/icons/electro-icons'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
-import { buildSupplierInquiryText } from '@/lib/whatsapp'
 import Link from 'next/link'
 
 export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow) | null
@@ -77,7 +76,7 @@ export default function SupplierInfo({
   whatsappEnabled?: boolean
 }) {
   const contact = buildSupplierContact(supplier, {
-    whatsappMessage: buildSupplierInquiryText(productName ?? null),
+    whatsappMessage: productName ? `שאלה על: ${productName}` : 'שאלה על דיל',
   })
 
   const showWhatsApp = whatsappEnabled && contact.whatsappHref !== null
