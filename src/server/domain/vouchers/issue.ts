@@ -1,5 +1,6 @@
 import { type Agorot, agorot, ilsToAgorot } from '@/lib/commerce/money'
 import type { VoucherRateColumn } from '@/lib/commerce/order-money-columns'
+import { generateUniqueRedemptionCode } from '@/lib/voucher-code'
 import { computeVoucherExpiry, generateUniqueVoucherCode } from './code'
 import { signVoucherQrPayload } from './qr'
 
@@ -48,6 +49,8 @@ export interface IssuedVoucherRow {
   code: string
   qr_payload: string
   qr_key_id: string
+  redemption_code: string
+  redemption_code_signature: string
   order_id: string
   order_item_id: string
   product_id: string
@@ -154,8 +157,23 @@ export async function issueVoucher(
     return data !== null
   }
 
+  const redemptionCodeExists = async (redemptionCode: string): Promise<boolean> => {
+    const { data } = await client
+      .from('vouchers')
+      .select('id')
+      .eq('redemption_code', redemptionCode)
+      .maybeSingle()
+    return data !== null
+  }
+
   for (let attempt = 1; attempt <= MAX_INSERT_RETRIES; attempt++) {
     const code = await generateUniqueVoucherCode(codeExists)
+
+    // Generate 8-digit redemption code signed with order_item_id
+    // We use order_item_id for signing since voucher.id isn't known yet
+    const { code: redemptionCode, signature: redemptionCodeSignature } =
+      await generateUniqueRedemptionCode(input.orderItemId, redemptionCodeExists)
+
     const qrPayload = signVoucherQrPayload({
       c: code,
       s: input.supplierId,
@@ -168,6 +186,8 @@ export async function issueVoucher(
       code,
       qr_payload: qrPayload,
       qr_key_id: keyId,
+      redemption_code: redemptionCode,
+      redemption_code_signature: redemptionCodeSignature,
       order_id: input.orderId,
       order_item_id: input.orderItemId,
       product_id: input.productId,

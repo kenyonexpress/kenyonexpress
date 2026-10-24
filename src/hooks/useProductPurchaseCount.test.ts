@@ -77,7 +77,7 @@ describe('useProductPurchaseCount', () => {
     }
 
     // Wait for state update (using rerender to get updated value)
-    const { result: updatedResult } = renderHook(() => useProductPurchaseCount('product-1', 5))
+    const { result: _updatedResult } = renderHook(() => useProductPurchaseCount('product-1', 5))
     // Note: In real implementation with act() this would show the increment
     // For this basic test we verify the callback was set up
     expect(insertCallback).toBeDefined()

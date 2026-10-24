@@ -11,6 +11,7 @@ const mockVoucher = {
   id: 'test-voucher-id',
   code: '1234567890', // 10-char code
   qr_payload: 'KEV1.test.payload',
+  redemption_code: '12345678', // 8-digit redemption code
   status: 'issued' as const,
   face_value_agorot: 10000,
   coupon_price_agorot: 8000,
