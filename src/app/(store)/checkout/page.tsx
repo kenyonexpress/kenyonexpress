@@ -119,44 +119,54 @@ async function CheckoutPageBody({
 
   if (user) {
     const admin = createAdminClient()
-    const [wallet, { data: defaultAddress }, { data: tokens }] = await Promise.all([
-      // Probed rather than named. The comment that stood here said
-      // `balance_agorot` was correct since 059 and that the old name had
-      // failed with 42703; the hosted project never received 059, so it was
-      // the new name that failed there, and the effect described was exactly
-      // the one being caused: the money was there and could never be spent.
-      readWalletAccountAgorot(
-        (select, ids) =>
-          admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
-        user.id,
-      ),
-      admin
-        .from('user_addresses')
-        .select('id, full_name, phone, city, street, street_number, apartment, floor, zip')
-        .eq('user_id', user.id)
-        .is('deleted_at', null)
-        .order('is_default', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      admin
-        .from('payment_tokens')
-        .select('id, last_4, card_brand, expiry_month, expiry_year, is_default')
-        .eq('profile_id', user.id)
-        .order('is_default', { ascending: false })
-        .order('created_at', { ascending: false }),
-    ])
+    const [wallet, { data: defaultAddress }, { data: addressBookEntry }, { data: tokens }] =
+      await Promise.all([
+        // Probed rather than named. The comment that stood here said
+        // `balance_agorot` was correct since 059 and that the old name had
+        // failed with 42703; the hosted project never received 059, so it was
+        // the new name that failed there, and the effect described was exactly
+        // the one being caused: the money was there and could never be spent.
+        readWalletAccountAgorot(
+          (select, ids) =>
+            admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
+          user.id,
+        ),
+        admin
+          .from('user_addresses')
+          .select('id, full_name, phone, city, street, street_number, apartment, floor, zip')
+          .eq('user_id', user.id)
+          .is('deleted_at', null)
+          .order('is_default', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        admin
+          .from('address_book')
+          .select('id, label, full_name, phone, city, street, postal_code')
+          .eq('user_id', user.id)
+          .eq('is_default', true)
+          .limit(1)
+          .maybeSingle(),
+        admin
+          .from('payment_tokens')
+          .select('id, last_4, card_brand, expiry_month, expiry_year, is_default')
+          .eq('profile_id', user.id)
+          .order('is_default', { ascending: false })
+          .order('created_at', { ascending: false }),
+      ])
 
+    // Prefer address_book if available, fallback to user_addresses
+    const sourceAddress = addressBookEntry ?? defaultAddress
     address = {
-      id: defaultAddress?.id ?? null,
-      full_name: defaultAddress?.full_name ?? user.user_metadata?.full_name ?? '',
-      phone: defaultAddress?.phone ?? '',
-      city: defaultAddress?.city ?? '',
-      street: defaultAddress?.street ?? '',
-      street_number: defaultAddress?.street_number ?? '',
-      apartment: defaultAddress?.apartment ?? '',
-      floor: defaultAddress?.floor ?? '',
-      zip: defaultAddress?.zip ?? '',
+      id: sourceAddress?.id ?? null,
+      full_name: sourceAddress?.full_name ?? user.user_metadata?.full_name ?? '',
+      phone: sourceAddress?.phone ?? '',
+      city: sourceAddress?.city ?? '',
+      street: sourceAddress?.street ?? '',
+      street_number: addressBookEntry ? '' : (defaultAddress?.street_number ?? ''),
+      apartment: addressBookEntry ? '' : (defaultAddress?.apartment ?? ''),
+      floor: addressBookEntry ? '' : (defaultAddress?.floor ?? ''),
+      zip: addressBookEntry ? (addressBookEntry.postal_code ?? '') : (defaultAddress?.zip ?? ''),
       email: user.email ?? '',
     }
     // The verified-shipping gate (F42): after five paid physical orders the

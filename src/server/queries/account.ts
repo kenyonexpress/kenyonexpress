@@ -57,6 +57,19 @@ export interface AccountAddress {
   isDefault: boolean
 }
 
+export interface AddressBookEntry {
+  id: string
+  label: string
+  fullName: string
+  phone: string
+  street: string
+  city: string
+  postalCode: string | null
+  country: string
+  isDefault: boolean
+  createdAt: string
+}
+
 export interface AccountPaymentToken {
   id: string
   last4: string | null
@@ -212,6 +225,31 @@ export async function getMyAddresses(): Promise<AccountAddress[]> {
     zip: a.zip,
     notesForCourier: a.notes_for_courier,
     isDefault: a.is_default,
+  }))
+}
+
+export async function getMyAddressBook(): Promise<AddressBookEntry[]> {
+  const supabase = await createClient()
+  const data = orFail(
+    await supabase
+      .from('address_book')
+      .select('id, label, full_name, phone, street, city, postal_code, country, is_default, created_at')
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false }),
+    'account.address_book_read_failed',
+  )
+
+  return (data ?? []).map((a) => ({
+    id: a.id,
+    label: a.label,
+    fullName: a.full_name,
+    phone: a.phone,
+    street: a.street,
+    city: a.city,
+    postalCode: a.postal_code,
+    country: a.country,
+    isDefault: a.is_default,
+    createdAt: a.created_at,
   }))
 }
 
