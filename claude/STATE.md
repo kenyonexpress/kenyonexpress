@@ -68,3 +68,6 @@ RESULT: BLOCKED supabase-anon-key-401 + gate 22-43pct
 המשך מ: C04 BLOCKED
 
 C05: BLOCKED, migration 301 unapplied (Supabase MCP unauthenticated), e2e guest flow unverified; unit tests 278 pass. See docs/L4-CHECKOUT-REPORT.md
+
+C06: BLOCKED, supabase-anon-key-401, account pages need a session (guest gets 307 to /login). See docs/L5-ACCOUNT-REPORT.md
+המשך מ: C06 BLOCKED
