@@ -43,27 +43,39 @@ for (const width of WIDTHS) {
       status = -1
     }
     await page.waitForTimeout(400)
-    const m = await page.evaluate(() => {
-      const de = document.documentElement
-      const tooSmall = [
-        ...document.querySelectorAll('a,button,input,select,textarea,[role=button]'),
-      ].filter((el) => {
-        const r = el.getBoundingClientRect()
-        const cs = getComputedStyle(el)
-        return (
-          r.width > 0 &&
-          r.height > 0 &&
-          cs.visibility !== 'hidden' &&
-          (r.height < 24 || r.width < 24)
-        )
-      }).length
-      return {
-        scrollW: de.scrollWidth,
-        clientW: de.clientWidth,
-        tooSmall,
-        finalPath: window.location.pathname,
+    await page.waitForLoadState('load').catch(() => {})
+    const measure = () =>
+      page.evaluate(() => {
+        const de = document.documentElement
+        const tooSmall = [
+          ...document.querySelectorAll('a,button,input,select,textarea,[role=button]'),
+        ].filter((el) => {
+          const r = el.getBoundingClientRect()
+          const cs = getComputedStyle(el)
+          return (
+            r.width > 0 &&
+            r.height > 0 &&
+            cs.visibility !== 'hidden' &&
+            (r.height < 24 || r.width < 24)
+          )
+        }).length
+        return {
+          scrollW: de.scrollWidth,
+          clientW: de.clientWidth,
+          tooSmall,
+          finalPath: window.location.pathname,
+        }
+      })
+    let m
+    for (let i = 0; i < 4 && !m; i++) {
+      try {
+        m = await measure()
+      } catch {
+        await page.waitForTimeout(1000)
+        await page.waitForLoadState('load').catch(() => {})
       }
-    })
+    }
+    if (!m) m = { scrollW: 9999, clientW: 0, tooSmall: -1, finalPath: 'unstable' }
     await page.screenshot({ path: `docs/mobile-audit/${name}-${width}.png`, fullPage: false })
     rows.push({
       name,
