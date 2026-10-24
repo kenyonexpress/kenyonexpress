@@ -1,5 +1,6 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import LocationPin from '@/components/product/LocationPin'
+import PurchaseCountWrapper from '@/components/product/PurchaseCountWrapper'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
 import ProductGallery from '@/components/storefront/ProductGallery'
@@ -313,11 +314,9 @@ export default async function ProductPage({ params }: Props) {
                 />
               </Suspense>
             }
-            /* Real paid orders or nothing. Its own boundary for the same
-               reason as the line above; under the floor it renders null. */
-            proofSlot={
+            purchaseCountSlot={
               <Suspense fallback={null}>
-                <BoughtThisWeek productId={product.id} />
+                <PurchaseCountWrapper productId={product.id} variant="full" />
               </Suspense>
             }
             sku={product.sku}
