@@ -1,6 +1,11 @@
 'use client'
 
-import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
+import { CONSENT_COOKIE, CONSENT_WORDING_VERSION, isTrackingAllowed } from '@/lib/analytics/consent'
+import {
+  CONSENT_CATEGORIES,
+  CONSENT_GRANULAR_COOKIE,
+  isCategoryAllowed,
+} from '@/lib/analytics/consent-categories'
 import {
   type ThirdPartyAnalyticsConfig,
   hasAnyThirdParty,
@@ -44,21 +49,42 @@ function readCookie(name: string): string | null {
 }
 
 export default function ThirdPartyTags({ config }: { config: ThirdPartyAnalyticsConfig }) {
-  const [allowed, setAllowed] = useState(false)
+  // C63: Granular consent - separate flags for analytics and marketing
+  const [analyticsAllowed, setAnalyticsAllowed] = useState(false)
+  const [marketingAllowed, setMarketingAllowed] = useState(false)
   const valid = validatedConfig(config)
 
   useEffect(() => {
-    const check = () => setAllowed(isTrackingAllowed(readCookie(CONSENT_COOKIE)))
+    const check = () => {
+      const granularCookie = readCookie(CONSENT_GRANULAR_COOKIE)
+      const legacyCookie = readCookie(CONSENT_COOKIE)
+
+      // Try granular consent first (C63)
+      if (granularCookie) {
+        setAnalyticsAllowed(
+          isCategoryAllowed(granularCookie, CONSENT_CATEGORIES.analytics, CONSENT_WORDING_VERSION),
+        )
+        setMarketingAllowed(
+          isCategoryAllowed(granularCookie, CONSENT_CATEGORIES.marketing, CONSENT_WORDING_VERSION),
+        )
+      } else {
+        // Fall back to legacy all-or-nothing consent
+        const allowed = isTrackingAllowed(legacyCookie)
+        setAnalyticsAllowed(allowed)
+        setMarketingAllowed(allowed)
+      }
+    }
     check()
     window.addEventListener(CONSENT_GRANTED_EVENT, check)
     return () => window.removeEventListener(CONSENT_GRANTED_EVENT, check)
   }, [])
 
-  if (!allowed || !hasAnyThirdParty(valid)) return null
+  if (!hasAnyThirdParty(valid)) return null
 
   return (
     <>
-      {valid.ga4MeasurementId && (
+      {/* C63: GA4 loads only if analytics consent granted */}
+      {analyticsAllowed && valid.ga4MeasurementId && (
         <>
           <Script
             id="ga4-src"
@@ -85,7 +111,8 @@ export default function ThirdPartyTags({ config }: { config: ThirdPartyAnalytics
         </>
       )}
 
-      {valid.metaPixelId && (
+      {/* C63: Meta Pixel loads only if marketing consent granted */}
+      {marketingAllowed && valid.metaPixelId && (
         <Script id="meta-pixel" strategy="afterInteractive">
           {[
             '!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?',
