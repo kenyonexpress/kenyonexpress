@@ -106,6 +106,19 @@ describe('CardcomProvider.createLowProfile', () => {
     expect(result).toMatchObject({ lowProfileId: 'lp-1', redirectUrl: 'https://pay.example/lp-1' })
   })
 
+  it('sends no billing-address, card-owner or issuing-country field, so any card is accepted', async () => {
+    // Shipping address only (NO billing). The hosted page must not be told to
+    // demand an address, and nothing here may narrow cards by country.
+    respondJson({ ResponseCode: 0, LowProfileCode: 'lp-1', Url: 'https://pay.example/lp-1' })
+
+    await provider().createLowProfile(lowProfileInput)
+
+    const names = Object.keys(sentFields())
+    expect(
+      names.filter((n) => /address|addres|street|city|zip|postal|country|avs|owner|issu/i.test(n)),
+    ).toEqual([])
+  })
+
   it('asks for a token only when the caller wants one stored', async () => {
     respondJson({ ResponseCode: 0, LowProfileCode: 'lp-1', Url: 'https://pay.example/lp-1' })
     await provider().createLowProfile(lowProfileInput)
