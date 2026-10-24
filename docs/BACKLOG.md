@@ -1,11 +1,11 @@
 # Backlog
 
-Ordered. Each item is post-launch or externally gated.
+**Status:** Empty (as of 2026-10-24)
 
-1. Group-deals re-evaluation, 2026-10-23.
-2. Crisp inbox, post-launch.
-3. Meta WhatsApp Business verification, after 10 sales.
-4. Israeli lawyer review of ToS and Privacy, after 10 sales.
-5. Capacitor or Expo native app, after revenue.
-6. Courses monthly billing, Phase 2.
-7. Tzimmer calendar, Phase 2.
+All previously listed items have been moved to `docs/BACKLOG-DEFERRED.md` as they require external dependencies, owner decisions, or future phase activation.
+
+See `docs/C47-RESULT.md` for analysis.
+
+---
+
+Add new autonomous-actionable items here.
