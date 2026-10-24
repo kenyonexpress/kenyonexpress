@@ -150,3 +150,10 @@ describe('permissionsPolicyFor', () => {
     }
   })
 })
+
+describe('connect-src', () => {
+  it('allows the Supabase realtime websocket, not just https', () => {
+    const csp = contentSecurityPolicyFor('/')
+    expect(csp).toContain('https://*.supabase.co wss://*.supabase.co')
+  })
+})

@@ -84,7 +84,7 @@ const BASE_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline'",
   IMG_SRC,
   "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
   'frame-src https://secure.cardcom.solutions https://challenges.cloudflare.com',
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",
