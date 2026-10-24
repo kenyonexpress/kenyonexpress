@@ -233,7 +233,9 @@ export async function getMyAddressBook(): Promise<AddressBookEntry[]> {
   const data = orFail(
     await supabase
       .from('address_book')
-      .select('id, label, full_name, phone, street, city, postal_code, country, is_default, created_at')
+      .select(
+        'id, label, full_name, phone, street, city, postal_code, country, is_default, created_at',
+      )
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: false }),
     'account.address_book_read_failed',
