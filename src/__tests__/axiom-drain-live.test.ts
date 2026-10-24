@@ -17,7 +17,7 @@ function loadAxiomEnv(): { token: string; dataset: string } | null {
     const tokenMatch = content.match(/^AXIOM_TOKEN=["']?([^"'\n]+)["']?/m)
     const datasetMatch = content.match(/^AXIOM_DATASET=["']?([^"'\n]+)["']?/m)
 
-    if (tokenMatch && datasetMatch) {
+    if (tokenMatch?.[1] && datasetMatch?.[1]) {
       return {
         token: tokenMatch[1],
         dataset: datasetMatch[1],
