@@ -94,6 +94,7 @@ export default function CheckoutForm({
   isAuthenticated,
   resuming = false,
   channel = 'web',
+  isGift: isGiftProp = false,
 }: {
   cart: CartView
   clientRef: string
@@ -115,6 +116,8 @@ export default function CheckoutForm({
    * changes where Cardcom sends the browser back to, and nothing else.
    */
   channel?: 'web' | 'app'
+  /** True when arriving from product page gift button (?gift=true). */
+  isGift?: boolean
 }) {
   /**
    * `begin_checkout`, once per mount of the checkout page.
@@ -289,7 +292,7 @@ export default function CheckoutForm({
   // Gift fields are mounted only while the box is ticked, so an unticked box
   // cannot post a half-typed address, and the server forwards the fields only
   // when both the flag and the email are present.
-  const [isGift, setIsGift] = useState(false)
+  const [isGift, setIsGift] = useState(isGiftProp)
 
   // `walletBalance` and the `apply_wallet_ils` field are the one place on this
   // page still denominated in shekels: the wallet column is `balance_ils` and
