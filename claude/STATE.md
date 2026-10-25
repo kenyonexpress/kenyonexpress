@@ -281,3 +281,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M18-c205 DONE (claude/STATE.md 280 lines, under 300; nothing to archive; docs/STATE-ARCHIVE.md unchanged)
 המשך מ: M04-c206 DONE (pnpm type-check clean, tsc exit 0, no drift, no code changes)
 המשך מ: M07-c206 DONE (TODO/FIXME scan: 6 markers in 3 items, all older than 7 days per git blame, all already in docs/BACKLOG.md (Cardcom creds x2, R2 migration feature stub); none newly resolvable; BACKLOG stamp updated; no forbidden files touched)
+המשך מ: M08-c206 DONE (2026-10-26): Lighthouse mobile prod build, / simulate 89 / provided 100, product slug simulate 82 / provided 100; logged in docs/LIGHTHOUSE-STATUS.md; G23 95+ not yet met under simulate (LCP 3.5-4.7s); no code change)
