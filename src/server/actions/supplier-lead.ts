@@ -90,7 +90,7 @@ async function runSubmitSupplierLead(
   }
 
   const ip = await getClientIp()
-  if (!(await checkRateLimit(`supplier-lead:${ip}`, 5, 3600))) {
+  if (!(await checkRateLimit(`supplier-lead:${ip}`, 2, 86400))) {
     return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
   }
   // rc5 F19: Turnstile, a no-op until TURNSTILE_SECRET_KEY is set.

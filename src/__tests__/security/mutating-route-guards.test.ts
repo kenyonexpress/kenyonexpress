@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest'
 const API_DIR = resolve(process.cwd(), 'src/app/api')
 const MUTATING = /export\s+(?:const|async\s+function)\s+(POST|PUT|PATCH|DELETE)\b/
 const GATES = [
-  /checkRateLimit|enforceRateLimit/, // human callers
+  /checkRateLimit|enforceRateLimit|\brateLimit\(/, // human callers
   /timingSafeEqual|bearerMatches|verifyQstashSignature/, // machine callers
 ]
 

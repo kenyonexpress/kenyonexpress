@@ -183,7 +183,7 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   const isE2EAccount = parsed.data.email.startsWith('e2e-')
 
   if (!isE2EAccount) {
-    const allowed = await checkRateLimit(`login:${ip}`)
+    const allowed = await checkRateLimit(`login:${ip}`, 5, 900)
     if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
 
     // Per-account as well as per-IP, for the same reason `phone-otp-number` exists
@@ -227,7 +227,7 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
 // ──────────────────────────────────────────────
 async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
-  const allowed = await checkRateLimit(`signup:${ip}`, 5, 3600)
+  const allowed = await checkRateLimit(`signup:${ip}`, 3, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות הרשמה — נסו שוב בעוד שעה' }
   if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
     return { error: 'אימות האנושיות נכשל. נסו שוב.' }
@@ -470,7 +470,7 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
   if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
     return passwordResetResult(new Error('אימות האנושיות נכשל'))
   }
-  const allowed = await checkRateLimit(`reset:${ip}`, 5, 3600)
+  const allowed = await checkRateLimit(`reset:${ip}`, 3, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
 
   const parsed = passwordResetSchema.safeParse({ email: formData.get('email') })
@@ -480,7 +480,7 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
   // mailing one customer a reset link every minute until they click one.
   const addressAllowed = await checkRateLimit(
     `reset-address:${parsed.data.email.trim().toLowerCase()}`,
-    5,
+    3,
     3600,
   )
   // Still the neutral reply. A refusal that differs from the success message

@@ -257,6 +257,7 @@ describe('the pending migration inventory', () => {
       '300_profiles_orders_physical_count.sql',
       '301_supplier_verification_status.sql',
       '305_add_gift_scheduled_at_column.sql',
+      '306_suppliers_open_weekends.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_169.sql',
@@ -296,6 +297,7 @@ describe('the pending migration inventory', () => {
       'preflight_300.sql',
       'preflight_301.sql',
       'preflight_305.sql',
+      'preflight_306.sql',
     ])
   })
 
