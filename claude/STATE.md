@@ -3,6 +3,7 @@ The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
 **המשך מ: M09-c192 DONE removed unused @mdx-js/react + dead FaLinkedin/FaPinterest icons; other deps verified in use; knip dead-export list left (test-only/API surface); tsc clean, vitest 7055 pass**
+**המשך מ: M04-c193 DONE pnpm type-check clean (tsc --noEmit, 0 errors); drift committed (docs/M-CYCLE-STATUS.md, docs/UI-PARITY-REPORT.md)**
 **המשך מ: M04-c192 DONE pnpm type-check clean (tsc --noEmit, 0 errors); drift committed (UI-PARITY-REPORT rows, migration-310/fraud-table helper scripts)**
 **המשך מ: M18-c191 DONE STATE.md already under 300 lines (claude/STATE.md 178), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M16-c191 DONE /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test 26/26); no code change**
