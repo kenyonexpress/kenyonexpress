@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M06-c200 DONE pnpm build passes (exit 0); only drift was docs/M-CYCLE-STATUS.md timestamp, committed; no src change**
 **המשך מ: M08-c199 DONE Lighthouse mobile sample logged to logs/lighthouse-m08-c199.log: home perf 78, product perf 82 (a11y/BP/SEO 100, CLS ≤0.006, TBT ≤30ms); LCP-bound, G23 95+ not yet met; no src change**
 **המשך מ: M16-c197 DONE re-verified: only indexable product route (store)/product/[slug] emits Product + BreadcrumbList JSON-LD (one script each); /product/[slug]/gift is noindex, no JSON-LD needed; json-ld.test.ts 26/26 pass; no code change**
 **המשך מ: M12-c197 DONE robots.ts production-safe: live www robots.txt serves allow / + disallow redeem/coupon/account/supplier/admin/cart/checkout/auth/api, sitemap declared, no site-wide block, robots.test.ts 6/6; no code change**
