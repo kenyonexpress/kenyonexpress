@@ -99,21 +99,10 @@ export function verifySignedJWT(token: string): VoucherQRPayload | null {
 }
 
 /**
- * Generate voucher QR code URL with signed JWT.
- * Stores QR image and returns public URL for orders.voucher_qr_url.
+ * Generate voucher QR code with signed JWT.
+ * Returns the JWT directly (not a data URL) for storage in orders.voucher_qr_url.
+ * The JWT can be rendered as a QR code on the frontend.
  */
 export async function generateVoucherQR(payload: VoucherQRPayload): Promise<string> {
-  const secret = process.env.VOUCHER_QR_SECRET
-  if (!secret) {
-    throw new Error('VOUCHER_QR_SECRET environment variable not set')
-  }
-
-  // Generate signed JWT token
-  const jwt = generateSignedJWT(payload)
-
-  // In production, this would generate QR image and upload to storage
-  // For now, return the JWT as a data URL that can be rendered as QR
-  const qrDataUrl = `data:text/plain;base64,${Buffer.from(jwt, 'utf-8').toString('base64')}`
-
-  return qrDataUrl
+  return generateSignedJWT(payload)
 }

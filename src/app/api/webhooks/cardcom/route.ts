@@ -1,10 +1,11 @@
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { generateVoucherQR } from '@/lib/vouchers/qr-generation'
+import { generateSignedJWT } from '@/lib/vouchers/qr-generation'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Cardcom webhook handler for payment events.
- * Processes: payment_success, payment_failed, refund events
+ * Validates HMAC signature, processes payment_success/payment_failed/refund events.
  * Updates orders table with status transitions and voucher QR generation.
  */
 
@@ -16,16 +17,44 @@ interface CardcomWebhookPayload {
   amount?: number
   failure_reason?: string
   refund_amount?: number
+  signature: string
+}
+
+/**
+ * Validate webhook signature using HMAC-SHA256.
+ * Timing-safe comparison to prevent timing attacks.
+ */
+function validateSignature(payload: string, signature: string): boolean {
+  const secret = process.env.CARDCOM_WEBHOOK_SECRET
+  if (!secret) {
+    console.error('CARDCOM_WEBHOOK_SECRET not set')
+    return false
+  }
+
+  const expectedSignature = createHmac('sha256', secret).update(payload).digest('hex')
+
+  if (signature.length !== expectedSignature.length) {
+    return false
+  }
+
+  return timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expectedSignature, 'hex'))
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const admin = createAdminClient()
 
   try {
-    // Parse webhook payload
-    const payload: CardcomWebhookPayload = await request.json()
+    // Get raw body for signature validation
+    const rawBody = await request.text()
+    const payload: CardcomWebhookPayload = JSON.parse(rawBody)
 
-    const { event_type, order_id, payment_id, transaction_id, failure_reason } = payload
+    const { event_type, order_id, payment_id, transaction_id, failure_reason, signature } = payload
+
+    // Validate signature
+    if (!signature || !validateSignature(rawBody, signature)) {
+      console.error('Invalid webhook signature')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
 
     // Validate required fields
     if (!event_type || !order_id || !payment_id) {
@@ -88,14 +117,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           if (vouchers && vouchers.length > 0) {
             const voucher = vouchers[0]
             if (voucher?.id && voucher.user_id && voucher.expires_at) {
-              const qrUrl = await generateVoucherQR({
+              // Generate JWT (not data URL) for QR code
+              const jwt = generateSignedJWT({
                 voucher_id: voucher.id,
                 user_id: voucher.user_id,
                 expiry: new Date(voucher.expires_at),
               })
 
-              // Update order with voucher QR URL
-              await admin.from('orders').update({ voucher_qr_url: qrUrl }).eq('id', order_id)
+              // Store JWT directly in orders.voucher_qr_url
+              await admin.from('orders').update({ voucher_qr_url: jwt }).eq('id', order_id)
             }
           }
         }
