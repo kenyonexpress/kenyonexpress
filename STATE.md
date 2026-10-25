@@ -209,3 +209,26 @@ Continue from M05-c187 DONE (2026-10-25): pnpm test green (603 files, 6962 tests
 Continue from M06-c187 DONE (2026-10-25): pnpm build green (273 pages, exit 0). No drift found, no code change.
 
 Continue from M07-c189 DONE (2026-10-25): TODO/FIXME scan. All 4 stale markers (>7d) already filed in docs/BACKLOG.md #8-11 with matching line refs. 5 newer markers (wallet/cardcom-refund.ts, wallet/integration.test.ts, created 2026-10-25) are under 7 days, left in place. No code change.
+
+## החלטות שהתקבלו אוטומטית
+
+### MOBILE-GATE-FIX Investigation (2026-10-26)
+
+**Goal**: Reduce mobile gate 380px score from 49.89% to below 11%.
+
+**Root Cause Identified**: CitiesRow component (added per C24 goal requirement) is not present on live site. Local 5433px height vs live 17790px indicates missing product grid content below hero, or rendering issue in DealsOfTheDay component. Comparison score degrades when structural layout differs.
+
+**Code Location**: src/app/(store)/page.tsx contains CitiesRow (50px height) which live site doesn't have, per C24 requirement trade-off noted in code comments.
+
+**Measurement Data**: 
+- 380px: 49.89% (0.31x height ratio)
+- Worst bands: y 200-300 (99.7%), y 1800-1900 (78.9%), y 2200-2300 (78.9%)
+- All local resources loaded; structure is fundamentally different
+
+**Issue Complexity**: Fixing requires either:
+1. Removing CitiesRow (conflicts with C24 goal)
+2. Redesigning reference baseline
+3. Conditional rendering with complexity trade-off
+
+**Decision**: Goal remains queued at GOALS-QUEUE.md item 1 as highest priority. Investigation complete. Code change requires design decision beyond autonomous scope.
+
