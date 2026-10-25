@@ -160,3 +160,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M10-c189 DONE-DEFERRED (87 files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session; 301_supplier_verification_status.sql still known unapplied; apply one at a time via apply_migration once Supabase access is restored)
 המשך מ: M15-c189 DONE (console check on prod build via next start: / and /product/עוזרת-אישית-שירותי-משרד at 1440 + 380, 0 console errors/warnings, 0 pageerrors, 0 failed requests, 0 HTTP >=400; no code changes)
 המשך מ: M04-c190 DONE (pnpm type-check green, tsc exit 0; only drift was docs/M-CYCLE-STATUS.md timestamps, committed)
+המשך מ: M05-c190 DONE (pnpm test 7034 pass/0 fail, 612 files; only drift was docs/M-CYCLE-STATUS.md timestamps, committed)
