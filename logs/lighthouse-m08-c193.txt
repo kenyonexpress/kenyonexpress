@@ -1,0 +1,7 @@
+home run1 perf=94 LCP=3.0 s TBT=80 ms CLS=0.002
+home run2 perf=78 LCP=5.6 s TBT=100 ms CLS=0 (outlier, LCP variance)
+home run3 perf=98 LCP=2.3 s TBT=40 ms CLS=0
+product run1 perf=94 LCP=3.0 s TBT=20 ms CLS=0.001
+product run2 perf=90 LCP=3.5 s TBT=50 ms CLS=0.001
+product run3 perf=94 LCP=3.0 s TBT=40 ms CLS=0.001
+medians: home 94, product 94 (live www.kenyonexpress.co.il, mobile, simulated throttling; up from 91/93 in c189, just under G23 95 target)
