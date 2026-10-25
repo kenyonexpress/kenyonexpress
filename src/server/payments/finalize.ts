@@ -11,6 +11,11 @@ import {
   resolveOrderItemGeneration,
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
+import {
+  checkDeviceBulkPurchase,
+  createFraudAlert,
+  isOrderRateExceeded,
+} from '@/lib/fraud/order-validation'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
@@ -899,11 +904,40 @@ export async function finalizeOrder(input: {
       })
     }
 
-    // The funnel's conversion event, emitted server-side ON PURPOSE: a browser
-    // purchase is lost every time a tab closes on the payment redirect, and
-    // this is the only place that knows the charge settled. Swallows its own
-    // errors. Fired after the paid_at stamp so a replayed finalize, which
-    // returns above, cannot emit it twice.
+    // F66: Fraud detection checks (best effort, never blocks payment)
+    try {
+      // Check order rate (10 per 24h)
+      if (await isOrderRateExceeded(order.user_id)) {
+        await createFraudAlert({
+          userId: order.user_id,
+          orderId: order.id,
+          alertType: 'order_rate_exceeded',
+          severity: 'high',
+          details: {
+            reason: 'User exceeded 10 orders in 24h',
+          },
+        })
+      }
+
+      // Check device fingerprint for bulk purchases
+      const { data: orderData } = await admin
+        .from('orders')
+        .select('device_fingerprint')
+        .eq('id', order.id)
+        .maybeSingle()
+      if (orderData?.device_fingerprint) {
+        await checkDeviceBulkPurchase(orderData.device_fingerprint, order.user_id, order.id)
+      }
+    } catch (fraudError) {
+      log.warn('finalize.fraud_checks_failed', {
+        order_id: order.id,
+        reason: fraudError instanceof Error ? fraudError.message : 'unknown',
+      })
+    }
+
+    // The funnel's terminal event (marathon step 14). Swallows its own
+    // errors; a finalize that already charged a card must never fail on
+    // analytics. Skipped by the DB whitelist until draft 169 applies.
     await trackServerEvent({
       eventName: 'purchase',
       userId: order.user_id,
