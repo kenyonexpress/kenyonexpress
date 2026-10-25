@@ -3,7 +3,7 @@ The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
 
-**המשך מ: F43 DONE mobile 8.53%**
+**המשך מ: M04-c184 DONE type-check clean, no drift**
 
 Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 `pnpm run compare` command and by a fresh archive shot: 380px 8.53% PASS,
