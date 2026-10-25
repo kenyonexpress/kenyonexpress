@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M16-c202 DONE all product pages (single /product/[slug] template) emit JSON-LD Product + BreadcrumbList; json-ld tests 26/26 pass, no code change**
 **המשך מ: M12-c202 DONE robots.txt verified production-safe; added missing /debug/ and /voucher/ disallows (7401732da)**
 **המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
 **המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
