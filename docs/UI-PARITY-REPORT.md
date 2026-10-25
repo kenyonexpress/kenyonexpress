@@ -280,3 +280,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-25 16:56 | home | 380 | 50.62% | **FAIL** | `91f5a0b64` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-25 20:18 | home | 380 | 50.62% | **FAIL** | `a34890a53` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-25 20:20 | home | 380 | 50.62% | **FAIL** | `a34890a53-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-25 22:55 | home | 1440 | 8.09% | PASS | `189d01677` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-25 22:57 | home | 380 | 50.62% | **FAIL** | `189d01677-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-25 23:00 | home | 380 | 50.63% | **FAIL** | `189d01677-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 96 failed to load (57 script, 37 fo |
+| 2026-10-25 23:02 | home | 380 | 50.62% | **FAIL** | `189d01677-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
