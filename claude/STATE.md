@@ -96,3 +96,5 @@ M08-c198 DONE: Lighthouse mobile live, 3 runs each. Medians home 75 (runs 100/74
 
 המשך מ: M08-c198 DONE
 המשך מ: M12-c198 DONE
+
+המשך מ: M16-c198 DONE (product page emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld.ts; 26 tests pass; no code change)
