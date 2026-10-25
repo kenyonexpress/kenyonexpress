@@ -225,3 +225,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c199 DONE (pnpm type-check green, tsc --noEmit 0 errors; no drift; no code changes)
 המשך מ: M05-c199 DONE (pnpm test green: 614 files / 7055 tests passed, 2 skipped; no drift; no code changes)
 המשך מ: M06-c199 DONE (pnpm build green, route table generated; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
+המשך מ: M09-c199 DONE (knip --dependencies: only @capacitor/android flagged, kept — needed for cap sync android; storybook/supabase are CLI binaries; no removable deps; dead exports are public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
