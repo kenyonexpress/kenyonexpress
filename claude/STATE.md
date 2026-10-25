@@ -60,3 +60,7 @@ M09-c186 DONE: no unused deps (lint-staged used by .husky/pre-commit); removed 3
 M05-c188 DONE: pnpm test green (584 files / 6876 tests), tsc clean. Root cause: F60 flipped money-format.ts to sign-first, undoing the measured bidi fix (reverted 4fa43b33b for money-format.ts + test). F62 order-paid webhook brought under guards: withRequestLog, CRON_SECRET bearer gate, admin client, log not console, fetchWithTimeout, siteUrl(); dashboard read error handled; chart yellow button text-gray-900; not-found test title synced.
 
 המשך מ: M05-c188 DONE
+
+M08-c189 DONE: Lighthouse mobile x3 on / and /product, medians 91 / 93 (logs/lighthouse-m08-c189.txt). Below G23 95 target; render-blocking CSS 450-900 ms is the lever.
+
+המשך מ: M08-c189 DONE

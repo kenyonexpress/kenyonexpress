@@ -1,0 +1,7 @@
+home run1 perf=91 LCP=3.4 s TBT=0 ms CLS=0.016
+home run2 perf=63 LCP=3.6 s TBT=1,210 ms CLS=0.061 (outlier, TTFB 410 ms, local noise)
+home run3 perf=92 LCP=3.3 s TBT=0 ms CLS=0.019
+product run1 perf=93 LCP=3.1 s TBT=0 ms CLS=0
+product run2 perf=93 LCP=3.1 s TBT=0 ms CLS=0
+product run3 perf=92 LCP=3.3 s TBT=0 ms CLS=0
+medians: home 91, product 93 (below the G23 95 target; render-blocking 450-900 ms is the main lever)
