@@ -31,3 +31,5 @@ MAINTENANCE_LOOP_10: Appended cycles 1-10 to ~/ke-goals/queue.txt
 - Fresh cycles 1-10 appended (infinite loop pattern ready)
 - All validation gates: ✅ type-check, lint, build PASS
 
+
+המשך מ: M13-c185 DONE-DEFERRED (repo .env.local Supabase service key returns 401; /api/health + /api/ready 503 database=down on repo code)

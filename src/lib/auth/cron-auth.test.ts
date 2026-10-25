@@ -139,6 +139,7 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/reconcile/route.ts',
       'src/app/api/cron/retention/route.ts',
       'src/app/api/cron/rfm-segmentation/route.ts',
+      'src/app/api/cron/scheduled-gifts/route.ts',
       'src/app/api/cron/search-report/route.ts',
       'src/app/api/cron/sms-broadcasts/route.ts',
       'src/app/api/cron/stock-notifications/route.ts',

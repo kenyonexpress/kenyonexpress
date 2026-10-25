@@ -29,17 +29,19 @@ export default function GiftButton({ productId, isCoupon }: GiftButtonProps) {
   const { addToCart, isPending } = useCart()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [failed, setFailed] = useState(false)
 
   // Only coupons can be gifted
   if (!isCoupon) return null
 
   const handleClick = async () => {
     setLoading(true)
+    setFailed(false)
     try {
       await addToCart(productId, null, 1)
       router.push('/checkout?gift=true')
-    } catch (error) {
-      console.error('Failed to add gift to cart:', error)
+    } catch {
+      setFailed(true)
       setLoading(false)
     }
   }
@@ -54,6 +56,7 @@ export default function GiftButton({ productId, isCoupon }: GiftButtonProps) {
     >
       <EcFavorites />
       <span>{loading ? 'מוסיף...' : 'שלח כמתנה'}</span>
+      {failed && <span role="alert">לא הצלחנו להוסיף את המתנה, נסו שוב</span>}
     </button>
   )
 }
