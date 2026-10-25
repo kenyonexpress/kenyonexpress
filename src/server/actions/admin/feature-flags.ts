@@ -44,9 +44,9 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
       `vercel env rm MAINTENANCE_MODE production --yes; vercel env rm MAINTENANCE_MODE preview --yes; vercel env rm MAINTENANCE_MODE development --yes; vercel env add MAINTENANCE_MODE production --value="${value}" --type=config; vercel env add MAINTENANCE_MODE preview --value="${value}" --type=config; vercel env add MAINTENANCE_MODE development --value="${value}" --type=config`,
       { cwd: process.cwd(), shell: '/bin/bash' },
     )
-  } catch (vercelError) {
-    // Log but don't fail - DB write below is the fallback
-    console.error('Vercel env update failed:', vercelError)
+  } catch {
+    // Vercel CLI failed - DB write below is the fallback
+    // Error swallowed intentionally (toggle still works via DB)
   }
 
   // Write to DB as fallback (instant updates via cache)
