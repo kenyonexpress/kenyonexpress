@@ -14,7 +14,7 @@ const _NO_CHIPS: DealChips = { weekend: false, freeShipping: false }
 
 type Params = Record<string, string | string[] | undefined> | URLSearchParams
 
-function read(params: Params, key: string): string | undefined {
+export function read(params: Params, key: string): string | undefined {
   if (params instanceof URLSearchParams) return params.get(key) ?? undefined
   const v = params[key]
   return Array.isArray(v) ? v[0] : v
@@ -27,7 +27,7 @@ export function parseDealChips(params: Params): DealChips {
   }
 }
 
-function anyChip(chips: DealChips): boolean {
+export function anyChip(chips: DealChips): boolean {
   return chips.weekend || chips.freeShipping
 }
 

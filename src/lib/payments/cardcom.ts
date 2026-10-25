@@ -26,13 +26,13 @@ import { secretEquals } from '@/lib/security/constant-time'
 
 type CardcomJson = Record<string, unknown>
 
-function asString(value: unknown): string | null {
+export function asString(value: unknown): string | null {
   if (typeof value === 'string' && value.length > 0) return value
   if (typeof value === 'number') return String(value)
   return null
 }
 
-function asNumber(value: unknown): number | null {
+export function asNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value === 'string' && value.trim() !== '') {
     const n = Number(value)
@@ -64,7 +64,7 @@ function asNumber(value: unknown): number | null {
  * platform's own request ceiling, which is what leaves room for the one retry
  * on the read-only paths.
  */
-function cardcomTimeoutMs(): number {
+export function cardcomTimeoutMs(): number {
   const parsed = Number(process.env.CARDCOM_TIMEOUT_MS)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : 15_000
 }
@@ -581,7 +581,7 @@ export type TokenizedChargeInput = z.input<typeof tokenizedChargeInputSchema>
  * have no effects of its own. Note the adapter's rule still applies through
  * the delegation: a token charge is never retried.
  */
-async function createTokenizedCharge(
+export async function createTokenizedCharge(
   input: TokenizedChargeInput,
   provider: Pick<PaymentProvider, 'chargeWithToken'>,
 ): Promise<ChargeWithTokenResult> {
@@ -614,7 +614,7 @@ export type RefundChargeInput = z.input<typeof refundChargeInputSchema>
  * left for Cardcom to notice; through the delegation, the adapter's no-retry
  * rule for money-moving calls applies.
  */
-async function refundCharge(
+export async function refundCharge(
   input: RefundChargeInput,
   provider: Pick<PaymentProvider, 'refundByTransactionId'>,
 ): Promise<RefundResult> {
@@ -646,7 +646,7 @@ export type WebhookSignatureInput = z.input<typeof webhookSignatureInputSchema>
  *
  * Pure: same inputs, same answer, nothing read from the environment.
  */
-function verifyWebhookSignature(input: WebhookSignatureInput): boolean {
+export function verifyWebhookSignature(input: WebhookSignatureInput): boolean {
   const { providedSecret, currentSecret, previousSecret } = webhookSignatureInputSchema.parse(input)
   if (secretEquals(providedSecret, currentSecret)) return true
   return previousSecret != null && secretEquals(providedSecret, previousSecret)

@@ -91,7 +91,7 @@ export type CheckoutDetailsParse =
  * safeParse flattened to one message per field, first issue wins. The form
  * renders one error line under each input, so a list per field buys nothing.
  */
-function parseCheckoutDetails(raw: Record<string, unknown>): CheckoutDetailsParse {
+export function parseCheckoutDetails(raw: Record<string, unknown>): CheckoutDetailsParse {
   const parsed = checkoutDetailsFormSchema.safeParse(raw)
   if (parsed.success) return { ok: true, data: parsed.data }
   const fieldErrors: Partial<Record<keyof CheckoutDetailsForm, string>> = {}

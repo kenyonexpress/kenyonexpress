@@ -158,7 +158,7 @@ export function isSmsConfigured(): boolean {
 /**
  * Schedule a broadcast to be sent at a specific time
  */
-async function scheduleBroadcast(broadcastId: string, scheduledAt: Date): Promise<void> {
+export async function scheduleBroadcast(broadcastId: string, scheduledAt: Date): Promise<void> {
   const db = createAdminClient()
 
   const { error } = await db

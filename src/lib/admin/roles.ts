@@ -33,7 +33,7 @@ export function isAdminRole(role: UserRole | null | undefined): boolean {
 
 // support sits OUTSIDE the has_role() hierarchy (V2 section 6.1): it gets
 // operational read access, never catalog writes.
-function isSupportRole(role: UserRole | null | undefined): boolean {
+export function isSupportRole(role: UserRole | null | undefined): boolean {
   return role === 'support' || isAdminRole(role)
 }
 

@@ -133,7 +133,7 @@ export async function getSegmentUsers(supabase: SupabaseClient, segmentType: Cus
 /**
  * Get RFM scores for current user
  */
-async function getUserRFMScore(supabase: SupabaseClient) {
+export async function getUserRFMScore(supabase: SupabaseClient) {
   const {
     data: { user },
     error: authError,
@@ -159,7 +159,7 @@ async function getUserRFMScore(supabase: SupabaseClient) {
 /**
  * Get all active segments
  */
-async function getAllSegments(supabase: SupabaseClient) {
+export async function getAllSegments(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('customer_segments')
     .select('*')

@@ -64,7 +64,7 @@ const PDI = '\u2069'
 const NBSP = '\u00a0'
 
 /** The digits and the sign, with no isolate. Everything shared lives here. */
-function shekelBody(value: Agorot, withFraction: boolean): string {
+export function shekelBody(value: Agorot, withFraction: boolean): string {
   const negative = value < 0
   const absolute = Math.abs(value)
   const whole = Math.trunc(absolute / AGOROT_PER_ILS)
@@ -75,7 +75,7 @@ function shekelBody(value: Agorot, withFraction: boolean): string {
 }
 
 /** Wrap a price so no surrounding text can reorder it. See the note above. */
-function isolate(body: string): string {
+export function isolate(body: string): string {
   return `${LRI}${body}${PDI}`
 }
 
@@ -151,7 +151,7 @@ export function shekelsFromIlsPlain(value: number | string | null | undefined): 
 }
 
 /** Whole shekels, no agorot, no isolate. `399 ₪`, not `399.00 ₪`. */
-function shekelsFromIlsPlainRounded(value: number | string | null | undefined): string {
+export function shekelsFromIlsPlainRounded(value: number | string | null | undefined): string {
   return shekelsFromIlsRounded(value).replaceAll(LRI, '').replaceAll(PDI, '')
 }
 
