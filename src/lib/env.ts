@@ -168,5 +168,5 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV ==
 // After parsing, so a malformed environment fails on its own terms first.
 assertNoCompromisedKeys(isDeployedRuntime())
 
-export const env = parsed.data
+const env = parsed.data
 export type Env = typeof env

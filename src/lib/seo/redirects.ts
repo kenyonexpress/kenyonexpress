@@ -129,7 +129,7 @@ export async function lookupRedirect(pathname: string): Promise<RedirectHit | nu
 }
 
 /** Test seam and admin hook: drop the cache so the next lookup re-reads. */
-export function invalidateRedirectCache(): void {
+function invalidateRedirectCache(): void {
   cache = null
   loadedAt = 0
 }

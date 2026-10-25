@@ -36,7 +36,7 @@ export const SERVER_EVENT_NAMES = [
 ] as const
 export type ServerEventName = (typeof SERVER_EVENT_NAMES)[number]
 
-export const CHECKOUT_STEPS = ['identity', 'address', 'payment_redirect'] as const
+const CHECKOUT_STEPS = ['identity', 'address', 'payment_redirect'] as const
 export type CheckoutStep = (typeof CHECKOUT_STEPS)[number]
 
 export const WEB_VITAL_METRICS = ['LCP', 'CLS', 'INP', 'TTFB', 'FCP'] as const
@@ -44,7 +44,7 @@ export type WebVitalMetric = (typeof WEB_VITAL_METRICS)[number]
 
 // Required props per client event, mirroring the registry seed in migrations
 // 033 and 053. Keep in sync when adding an event.
-export const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
+const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
   page_view: [],
   view_product: ['product_id'],
   view_category: ['category_id'],
@@ -57,7 +57,7 @@ export const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
 }
 
 export const MAX_BATCH_SIZE = 20
-export const PROPS_MAX_BYTES = 4096
+const PROPS_MAX_BYTES = 4096
 
 const utmSchema = z
   .object({

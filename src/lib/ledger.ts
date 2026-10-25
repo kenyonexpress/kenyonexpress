@@ -126,7 +126,7 @@ function serializeLines(lines: readonly JournalLine[]): unknown[] {
  * Post a balanced journal atomically and idempotently. Returns the journal id
  * (existing id on replay). `client` MUST be the service-role admin client.
  */
-export async function postJournal(client: SupabaseClient, input: JournalInput): Promise<string> {
+async function postJournal(client: SupabaseClient, input: JournalInput): Promise<string> {
   assertBalanced(input.eventKey, input.lines)
 
   const { data, error } = await client.rpc('fn_post_journal', {
@@ -153,7 +153,7 @@ export async function postJournal(client: SupabaseClient, input: JournalInput): 
  * most one reversal per journal (reverses_journal_id UNIQUE). Idempotent on
  * `eventKey` (use `reversal:<journalId>`).
  */
-export async function postReversal(
+async function postReversal(
   client: SupabaseClient,
   params: {
     journalId: string

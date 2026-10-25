@@ -166,7 +166,7 @@ export async function getP95Samples(
 /**
  * Get summary statistics for p95 latency
  */
-export async function getP95Statistics(
+async function getP95Statistics(
   endpointPath: string,
   method: string,
   limitMinutes = 1440,

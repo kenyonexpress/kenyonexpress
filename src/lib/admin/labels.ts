@@ -29,7 +29,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   platform_settled: 'סולק לפלטפורמה',
 }
 
-export const ORDER_ITEM_STATUS_LABELS: Record<OrderItemStatus, string> = {
+const ORDER_ITEM_STATUS_LABELS: Record<OrderItemStatus, string> = {
   pending: 'ממתין',
   issued: 'הונפק',
   shipped: 'נשלח',
@@ -59,7 +59,7 @@ export const COUPON_STATUS_LABELS: Record<CouponStatus, string> = {
   refunded: 'הוחזר',
 }
 
-export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
+const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
   draft: 'טיוטה',
   active: 'פעיל',
   paused: 'מושהה',
@@ -67,7 +67,7 @@ export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
   archived: 'בארכיון',
 }
 
-export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
+const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   coupon: 'קופון',
   physical: 'מוצר פיזי',
   service: 'שירות',
@@ -75,14 +75,14 @@ export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   recurring: 'מנוי',
 }
 
-export const APPROVAL_STATUS_LABELS: Record<ProductApprovalStatus, string> = {
+const APPROVAL_STATUS_LABELS: Record<ProductApprovalStatus, string> = {
   draft: 'טיוטה',
   pending: 'ממתין לאישור',
   approved: 'מאושר',
   rejected: 'נדחה',
 }
 
-export const SETTLEMENT_STATUS_LABELS: Record<SettlementStatus, string> = {
+const SETTLEMENT_STATUS_LABELS: Record<SettlementStatus, string> = {
   pending: 'ממתין',
   paid: 'שולם',
   split_executed: 'פוצל לספק',

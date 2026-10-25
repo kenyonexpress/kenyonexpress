@@ -32,7 +32,7 @@ import QRCode from 'qrcode'
  * opened against a dev server still produces a scannable link instead of one
  * pointing at production.
  */
-export async function resolveVoucherOrigin(): Promise<string> {
+async function resolveVoucherOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_APP_URL
   if (configured) return configured
   const h = await headers()

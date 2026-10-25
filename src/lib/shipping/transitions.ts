@@ -20,12 +20,7 @@
 
 export type ItemStatus = 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
 
-export const PAID_OR_LATER = [
-  'paid',
-  'partially_fulfilled',
-  'fulfilled',
-  'platform_settled',
-] as const
+const PAID_OR_LATER = ['paid', 'partially_fulfilled', 'fulfilled', 'platform_settled'] as const
 
 export type ShippingVerb = 'ship' | 'deliver'
 

@@ -8,11 +8,11 @@
 
 import { z } from 'zod'
 
-export const subscriptionIntervalSchema = z.enum(['monthly', 'quarterly', 'annual'])
+const subscriptionIntervalSchema = z.enum(['monthly', 'quarterly', 'annual'])
 
 export type SubscriptionInterval = z.infer<typeof subscriptionIntervalSchema>
 
-export const subscriptionStatusSchema = z.enum([
+const subscriptionStatusSchema = z.enum([
   'active',
   'cancelled',
   'paused',
@@ -22,7 +22,7 @@ export const subscriptionStatusSchema = z.enum([
 
 export type SubscriptionStatus = z.infer<typeof subscriptionStatusSchema>
 
-export const createSubscriptionSchema = z.object({
+const createSubscriptionSchema = z.object({
   productId: z.string().uuid(),
   userId: z.string().uuid(),
   interval: subscriptionIntervalSchema,

@@ -535,7 +535,7 @@ export function buildCashbackCreditedEmail(
  * The provider's raw error is included here and NOT shown to customers
  * anywhere. That asymmetry is the point of an operator channel.
  */
-export function buildInvoiceDeadEmail(
+function buildInvoiceDeadEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -583,7 +583,7 @@ export function buildInvoiceDeadEmail(
  * only "3 in stock" while all three are inside payment sessions will conclude
  * the alert is wrong.
  */
-export function buildLowStockEmail(
+function buildLowStockEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -636,7 +636,7 @@ export function buildLowStockEmail(
  * line: `missing_locally` means a customer was charged and has no order, which
  * no support ticket will ever report because there is no order number to cite.
  */
-export function buildReconciliationGapEmail(
+function buildReconciliationGapEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {

@@ -171,7 +171,7 @@ export async function getCategoryParent(
   return data
 }
 
-export async function getCategoryChildren(
+async function getCategoryChildren(
   categoryId: string,
 ): Promise<{ id: string; slug: string; name_he: string }[]> {
   'use cache'
@@ -240,7 +240,7 @@ export function productTypeFilter(productType: ProductTypeFilter): {
  * becomes "no filter" instead of an empty page, and nothing user-controlled
  * reaches a query.
  */
-export function parseCity(raw: string | string[] | undefined): string | undefined {
+function parseCity(raw: string | string[] | undefined): string | undefined {
   const value = Array.isArray(raw) ? raw[0] : raw
   return typeof value === 'string' && cityBySlug(value) ? value : undefined
 }
@@ -354,7 +354,7 @@ async function newestProductIds(
   return (data ?? []).map((row) => row.id)
 }
 
-export async function getCategoryProducts(opts: {
+async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
   sort: SortValue

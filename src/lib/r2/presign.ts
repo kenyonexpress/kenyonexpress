@@ -11,7 +11,7 @@ const REGION = 'auto'
 const SERVICE = 's3'
 
 /** S3 allows at most 7 days. */
-export const MAX_PRESIGN_SECONDS = 604_800
+const MAX_PRESIGN_SECONDS = 604_800
 
 export type R2Method = 'GET' | 'PUT'
 
@@ -22,7 +22,7 @@ export type R2Credentials = {
   bucket: string
 }
 
-export function r2CredentialsFromEnv(
+function r2CredentialsFromEnv(
   env: Record<string, string | undefined> = process.env,
 ): R2Credentials | null {
   const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } = env
@@ -126,9 +126,9 @@ export async function presignR2Url(opts: {
 }
 
 /** Short-lived link to a private object. Default 5 minutes. */
-export const signedGetUrl = (key: string, expiresSeconds = 300) =>
+const signedGetUrl = (key: string, expiresSeconds = 300) =>
   presignR2Url({ method: 'GET', key, expiresSeconds })
 
 /** Short-lived upload URL for the browser. Default 10 minutes. */
-export const signedPutUrl = (key: string, expiresSeconds = 600) =>
+const signedPutUrl = (key: string, expiresSeconds = 600) =>
   presignR2Url({ method: 'PUT', key, expiresSeconds })

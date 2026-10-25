@@ -556,7 +556,7 @@ const agorotAmountSchema = z
   .positive()
   .transform((n) => agorot(n))
 
-export const tokenizedChargeInputSchema = z.object({
+const tokenizedChargeInputSchema = z.object({
   /** Correlation id stored as payments.id / ReturnValue. */
   paymentId: z.string().min(1),
   orderId: z.string().min(1),
@@ -576,14 +576,14 @@ export type TokenizedChargeInput = z.input<typeof tokenizedChargeInputSchema>
  * have no effects of its own. Note the adapter's rule still applies through
  * the delegation: a token charge is never retried.
  */
-export async function createTokenizedCharge(
+async function createTokenizedCharge(
   input: TokenizedChargeInput,
   provider: Pick<PaymentProvider, 'chargeWithToken'>,
 ): Promise<ChargeWithTokenResult> {
   return provider.chargeWithToken(tokenizedChargeInputSchema.parse(input))
 }
 
-export const refundChargeInputSchema = z
+const refundChargeInputSchema = z
   .object({
     /** Cardcom transaction id (InternalDealNumber) of the ORIGINAL charge. */
     transactionId: z.string().min(1),
@@ -609,14 +609,14 @@ export type RefundChargeInput = z.input<typeof refundChargeInputSchema>
  * left for Cardcom to notice; through the delegation, the adapter's no-retry
  * rule for money-moving calls applies.
  */
-export async function refundCharge(
+async function refundCharge(
   input: RefundChargeInput,
   provider: Pick<PaymentProvider, 'refundByTransactionId'>,
 ): Promise<RefundResult> {
   return provider.refundByTransactionId(refundChargeInputSchema.parse(input))
 }
 
-export const webhookSignatureInputSchema = z.object({
+const webhookSignatureInputSchema = z.object({
   /** The `?s=` value from the callback URL; null/absent when Cardcom's caller sent none. */
   providedSecret: z.string().nullish(),
   /** The active `CARDCOM_WEBHOOK_SECRET`. */
@@ -641,7 +641,7 @@ export type WebhookSignatureInput = z.input<typeof webhookSignatureInputSchema>
  *
  * Pure: same inputs, same answer, nothing read from the environment.
  */
-export function verifyWebhookSignature(input: WebhookSignatureInput): boolean {
+function verifyWebhookSignature(input: WebhookSignatureInput): boolean {
   const { providedSecret, currentSecret, previousSecret } = webhookSignatureInputSchema.parse(input)
   if (secretEquals(providedSecret, currentSecret)) return true
   return previousSecret != null && secretEquals(providedSecret, previousSecret)

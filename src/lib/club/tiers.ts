@@ -15,7 +15,7 @@ export interface ClubTier {
   minSpendAgorot: Agorot
 }
 
-export const CLUB_TIERS: readonly ClubTier[] = [
+const CLUB_TIERS: readonly ClubTier[] = [
   { key: 'basic', labelHe: 'חבר', minSpendAgorot: agorot(0) },
   { key: 'silver', labelHe: 'כסף', minSpendAgorot: agorot(100_000) },
   { key: 'gold', labelHe: 'זהב', minSpendAgorot: agorot(300_000) },

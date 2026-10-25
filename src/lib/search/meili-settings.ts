@@ -10,7 +10,7 @@ import { buildSynonyms } from '@/lib/search/hebrew-synonyms'
  */
 
 export const PRODUCTS_INDEX = process.env.MEILISEARCH_INDEX ?? 'products'
-export const PRIMARY_KEY = 'id'
+const PRIMARY_KEY = 'id'
 
 /**
  * Typo tolerance, tuned for Hebrew.
@@ -115,7 +115,7 @@ export const RANKING_RULES = [
  * way English does, but these conjunctions and fillers show up in product
  * titles often enough to dilute relevance.
  */
-export const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
+const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
 
 export const INDEX_SETTINGS = {
   searchableAttributes: [...SEARCHABLE_ATTRIBUTES],

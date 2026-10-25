@@ -162,3 +162,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M15-c189 DONE (console check on prod build via next start: / and /product/עוזרת-אישית-שירותי-משרד at 1440 + 380, 0 console errors/warnings, 0 pageerrors, 0 failed requests, 0 HTTP >=400; no code changes)
 המשך מ: M04-c190 DONE (pnpm type-check green, tsc exit 0; only drift was docs/M-CYCLE-STATUS.md timestamps, committed)
 המשך מ: M05-c190 DONE (pnpm test 7034 pass/0 fail, 612 files; only drift was docs/M-CYCLE-STATUS.md timestamps, committed)
+המשך מ: M09-c190 DONE (no unused deps removable: lighthouse used via pnpm exec, capacitor needed by native projects/config, mdx peers of @next/mdx; un-exported ~130 dead exports in src/lib via knip; type-check green; pnpm test has 8 failures from F66 fraud work (migration inventory, use-fingerprint console, finalize.ts reads), unrelated)

@@ -23,7 +23,7 @@ export const REQUIRED_LEGAL_DOCS = [
  * Check if all required legal documents are in place.
  * Returns true if all documents exist and are accessible.
  */
-export async function verifyLegalDocs(baseUrl = 'http://localhost:3000'): Promise<{
+async function verifyLegalDocs(baseUrl = 'http://localhost:3000'): Promise<{
   allPresent: boolean
   docs: LegalDocStatus[]
   missing: string[]

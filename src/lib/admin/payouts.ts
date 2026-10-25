@@ -13,13 +13,7 @@ import { z } from 'zod'
  * run, while a cancellation means the statement was abandoned.
  */
 
-export const PAYOUT_STATUSES = [
-  'draft',
-  'pending_approval',
-  'approved',
-  'paid',
-  'cancelled',
-] as const
+const PAYOUT_STATUSES = ['draft', 'pending_approval', 'approved', 'paid', 'cancelled'] as const
 
 export type PayoutStatus = (typeof PAYOUT_STATUSES)[number]
 
@@ -44,7 +38,7 @@ export const PAYOUT_STATE_VARIANTS: Record<PayoutState, 'gray' | 'yellow' | 'gre
   rolled_over: 'yellow',
 }
 
-export const PAYOUT_LINE_TYPE_LABELS: Record<string, string> = {
+const PAYOUT_LINE_TYPE_LABELS: Record<string, string> = {
   physical_delivery: 'מסירה פיזית',
   adjustment: 'התאמה',
   // Kept only so historic statements written before the 2026-07-28 reversal

@@ -411,7 +411,7 @@ export function isRecurringProduct(row: unknown): boolean {
 }
 
 /** Agorot, integer, for a row that stores its own amount. */
-export function subscriptionChargeAgorot(sub: Pick<BillableSubscription, 'amount_agorot'>): Agorot {
+function subscriptionChargeAgorot(sub: Pick<BillableSubscription, 'amount_agorot'>): Agorot {
   return agorot(sub.amount_agorot)
 }
 

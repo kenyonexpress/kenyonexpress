@@ -59,7 +59,7 @@ export function toPushMessages(tokens: readonly string[], content: PushContent):
  * Disables the tokens Expo reported as gone. Never deletes: the row, with its
  * reason, is the answer to "why did this customer stop getting notifications".
  */
-export async function disableDeadTokens(
+async function disableDeadTokens(
   admin: SupabaseClient,
   tokens: readonly string[],
   reason = 'DeviceNotRegistered',
@@ -72,7 +72,7 @@ export async function disableDeadTokens(
   return error ? 0 : tokens.length
 }
 
-export async function loadPushTargets(
+async function loadPushTargets(
   admin: SupabaseClient,
   userId: string | null,
   email: string | null,
@@ -139,7 +139,7 @@ export async function pushOutboxRow(
  * subscriptions the push service reports gone, and returns how many accepted.
  * Never throws: a broken browser leg must not cost the app or the email leg.
  */
-export async function pushToBrowsers(
+async function pushToBrowsers(
   admin: SupabaseClient,
   row: { kind: string; payload: Record<string, unknown> | null; user_id: string | null },
   content: PushContent,

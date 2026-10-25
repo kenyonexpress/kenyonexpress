@@ -8,7 +8,7 @@
 
 import { z } from 'zod'
 
-export const groupDealStatusSchema = z.enum(['active', 'completed', 'cancelled', 'expired'])
+const groupDealStatusSchema = z.enum(['active', 'completed', 'cancelled', 'expired'])
 
 export type GroupDealStatus = z.infer<typeof groupDealStatusSchema>
 
@@ -19,7 +19,7 @@ export const discountTierSchema = z.object({
 
 export type DiscountTier = z.infer<typeof discountTierSchema>
 
-export const createGroupDealSchema = z.object({
+const createGroupDealSchema = z.object({
   productId: z.string().uuid(),
   tiers: z.array(discountTierSchema).min(1),
   maxParticipants: z.number().int().positive().max(1000),
@@ -28,7 +28,7 @@ export const createGroupDealSchema = z.object({
 
 export type CreateGroupDeal = z.infer<typeof createGroupDealSchema>
 
-export const groupDealSchema = z.object({
+const groupDealSchema = z.object({
   id: z.string().uuid(),
   productId: z.string().uuid(),
   organizerId: z.string().uuid(),

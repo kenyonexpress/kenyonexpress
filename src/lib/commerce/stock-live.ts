@@ -34,7 +34,7 @@ export interface LiveStock {
   threshold: number | null
 }
 
-export const UNTRACKED_STOCK: LiveStock = { available: null, initial: null, threshold: null }
+const UNTRACKED_STOCK: LiveStock = { available: null, initial: null, threshold: null }
 
 export async function readLiveStock(
   productId: string,
