@@ -210,3 +210,8 @@ M18-c192: STATE.md was at 299 lines; moved 94 older lines (FINAL-AUDIT and 17.09
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as M01-c191: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. refs/electro-home-v7.html now exists in refs/, but the script's reference is still the LIVE_HOME URL, not that file. No percentages produced.
 **המשך מ: M01-c193 BLOCKED no-reference**
+
+## M02-c193 (2026-10-25)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (exit 5), no diffs to record.
+Same cause as M01-c193: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. refs/electro-product-fresh.html exists, but the script's reference is still the LIVE_PRODUCT URL. No percentages produced.
+**המשך מ: M02-c193 BLOCKED no-reference**
