@@ -12,6 +12,7 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M06-c190 DONE pnpm build clean (all routes generated), no drift, nothing to fix**
 **המשך מ: M18-c190 DONE STATE.md already under 300 lines (claude/STATE.md 168), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M18-c189 DONE STATE.md already under 300 lines (claude/STATE.md 161), remainder in docs/STATE-ARCHIVE.md**
+**המשך מ: M10-c194 DONE-DEFERRED migrations/pending has 45 numbered .sql files (000,162,169-177,184,188-196,200,276-310) none in applied/; cannot verify or apply: Supabase MCP unauthorized (OAuth), apply once auth is back, one at a time on ixvwfbuvfxxsjiywhbbb**
 **המשך מ: M11-c189 DONE sitemap.xml live: www 200 application/xml, 75 URLs, lastmod 2026-10-24, sitemap/robots tests 17/17; note locs+robots use apex which 308s to www (Vercel primary-domain setting, not code)**
 **המשך מ: M18-c188 DONE STATE.md already under 300 lines (claude/STATE.md 154, root 182), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M15-c188 DONE-DEFERRED console check / and /product: / clean (only dev img-aspect warnings at 1440); /product logs suppliers.verification_status missing (42703) until migrations/pending/301 applied via Supabase MCP (auth unavailable)**
@@ -189,3 +190,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c194 DONE (pnpm type-check green, no TS errors; committed docs drift docs/DB-STATUS.md + docs/M-CYCLE-STATUS.md; no code changes)
 המשך מ: M05-c194 DONE (pnpm test green: 614 files passed, 7055 tests passed, 28 skipped; committed docs drift docs/M-CYCLE-STATUS.md; no code changes)
 המשך מ: M06-c194 DONE (pnpm build green exit 0; no tracked drift after build, nothing to commit; untracked scripts/db-check.mjs pre-existing, left alone; no code changes)
+המשך מ: M09-c194 DONE (knip re-audit: drizzle-orm/postgres/pg flagged only because drizzle.config.ts needs SUPABASE_DB_URL, all imported in src/scripts; @capacitor/android is native platform dep; 0 removable deps, dead exports already pruned in c190/c191; no code changes)
