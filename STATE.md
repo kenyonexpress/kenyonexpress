@@ -186,3 +186,7 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M01-c205 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://refs/electro-home-v7.html (dev server restarted, 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204/c192. No locked files touched.
 **המשך מ: M01-c205 BLOCKED reference-images-not-loading**
+
+## M02-c205 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://refs/electro-product-fresh.html (dev server up, product מוצר-לדוגמא 200). Reference passes classifyReference (120 wp-content refs, woocommerce body class), but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set (would score catalogue difference, not design). No locked files touched.
+**המשך מ: M02-c205 BLOCKED grid-count-mismatch-12-vs-4**
