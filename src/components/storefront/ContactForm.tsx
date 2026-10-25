@@ -2,8 +2,8 @@
 
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { CONTACT_CHANNELS } from '@/lib/contact-channels'
-import { type ContactState, submitContactForm } from '@/server/actions/contact'
-import { useActionState, useId } from 'react'
+import type { ContactState } from '@/server/actions/contact'
+import { useId, useState } from 'react'
 
 const EMPTY: ContactState = { ok: false }
 
@@ -15,12 +15,34 @@ const fieldClass =
  * browser (CSP connect-src is self + Supabase only).
  */
 export default function ContactForm() {
-  const [state, action, pending] = useActionState(submitContactForm, EMPTY)
+  const [state, setState] = useState<ContactState>(EMPTY)
+  const [pending, setPending] = useState(false)
   const baseId = useId()
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setPending(true)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const res = await fetch('/api/contact', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (res.ok && data.ok) {
+        setState({ ok: true, message: data.message })
+        e.currentTarget.reset()
+      } else {
+        setState({ ok: false, error: data.error || 'שגיאה לא צפויה' })
+      }
+    } catch (_err) {
+      setState({ ok: false, error: 'שגיאת רשת' })
+    } finally {
+      setPending(false)
+    }
+  }
 
   return (
     <form
-      action={action}
+      onSubmit={handleSubmit}
       className="relative mx-auto flex w-full max-w-lg flex-col gap-4"
       noValidate
     >
