@@ -16,9 +16,9 @@ describe('rate-limit exports', () => {
   it('exports policy table', () => {
     expect(RATE_LIMIT_POLICIES).toBeDefined()
     expect(RATE_LIMIT_POLICIES.login).toEqual({
-      limit: 10,
-      windowSeconds: 3600,
-      reason: 'password guessing, per IP',
+      limit: 5,
+      windowSeconds: 900,
+      reason: 'password guessing, per IP (F64: 5/15min)',
     })
   })
 

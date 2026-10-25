@@ -2,6 +2,8 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M18-c188 DONE STATE.md already under 300 lines (claude/STATE.md 154, root 182), remainder in docs/STATE-ARCHIVE.md**
+**המשך מ: M15-c188 DONE-DEFERRED console check / and /product: / clean (only dev img-aspect warnings at 1440); /product logs suppliers.verification_status missing (42703) until migrations/pending/301 applied via Supabase MCP (auth unavailable)**
 **המשך מ: M16-c187 DONE all product pages (/product/[slug], single template) emit JSON-LD Product + BreadcrumbList via lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; gift sub-route noindex**
 **המשך מ: M04-c187 DONE pnpm type-check clean (tsc --noEmit, 0 errors), no drift**
 **המשך מ: M18-c186 DONE STATE.md already under 300 lines (claude/STATE.md 139, root 180), remainder in docs/STATE-ARCHIVE.md**
@@ -147,3 +149,6 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M02-c188 BLOCKED gate-fail (compare.mjs --page=product, COMPARE_ALLOW_GRID_MISMATCH=1 since live snapshot shows 1 card vs local 4: 380px 53.74%, 768px 41.96%, 1440px 26.32%, all >11%; height ratios 0.58x/0.43x/0.35x so figures are structural-mismatch not pixel gate; no code changes)
 המשך מ: M06-c188 DONE (pnpm build passes; committed untracked drift src/lib/rate-limit.ts + docs/TURNSTILE-SETUP.md)
 המשך מ: M07-c188 DONE (TODO/FIXME scan: 6 markers in 4 groups, all >7 days old, all already filed in docs/BACKLOG.md #1-4; no new markers; no code changes)
+המשך מ: M09-c188 DONE (deps audit: 0 removable - @mdx-js/loader+react are @next/mdx peers, capacitor platforms/husky/lint-staged/@types are implicit tooling; 53 unreferenced lib function exports are payment/ledger/R2/push/ops infra kept for launch, not deleted; no code changes)
+המשך מ: M16-c188 DONE (JSON-LD audit: only indexable product page src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList via src/lib/seo/json-ld.ts, both built from resolved page values; gift sub-page is noindex; json-ld.test.ts 26/26 pass; note: Product LD includes aggregateRating from getProductReviews, conflicts with no-reviews rule, left untouched as out of scope; no code changes)
+המשך מ: M17-c188 DONE (RTL check / and /product/[slug] at 380/768/1440: html lang=he dir=rtl, body direction rtl, scrollWidth==viewport, 0 Hebrew text nodes with text-align:left or direction:ltr; rtl-lint hits on home/product files are all false positives (comments, centered 50% pseudo-element, OG image); no code changes)
