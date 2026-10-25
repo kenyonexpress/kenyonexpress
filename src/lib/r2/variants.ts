@@ -2,7 +2,7 @@
 // (R2Image). No node built-ins and no sharp: safe to import in a client bundle.
 
 export const VARIANT_WIDTHS = [320, 640, 960, 1280, 1920] as const
-export const VARIANT_FORMATS = ['avif', 'webp'] as const
+const VARIANT_FORMATS = ['avif', 'webp'] as const
 
 export type VariantFormat = (typeof VARIANT_FORMATS)[number]
 
