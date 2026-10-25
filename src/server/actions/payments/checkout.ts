@@ -827,10 +827,8 @@ async function runBeginCheckout(
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
 
-    // Scheduled delivery (305 renames 186's gift_send_at to gift_scheduled_at).
-    // Before 305 is applied the column is named gift_send_at and this update
-    // fails with 42703, which means the gift is sent immediately - the behaviour
-    // before scheduling existed.
+    // Scheduled delivery (186). The column gift_send_at stores when the gift
+    // email should be sent. NULL means send immediately.
     const sendAt = giftSendAt(input.gift_send_date, now)
     if (sendAt) {
       const { error: sendAtError } = await admin
