@@ -194,3 +194,7 @@ Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=fi
 ## M03-c205 (2026-10-26)
 Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server up, 200). All three REFUSED by the live-reference guard: kenyonexpress.co.il serves our own build, and refs/ still has no Electro v7 category capture (only home + product). No diff percentages produced; guard not bypassed. Same as M03-c202/c203. No locked files touched.
 **המשך מ: M03-c205 BLOCKED no-reference**
+
+## M01-c206 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Default live URL (kenyonexpress.co.il) REFUSED: it serves our own build. With --live=file://refs/electro-home-v7.html the reference passes classifyReference (60 wp-content refs), but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204/c205. No locked files touched.
+**המשך מ: M01-c206 BLOCKED reference-images-not-loading**
