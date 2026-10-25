@@ -268,3 +268,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M08-c204 DONE (2026-10-26): Lighthouse mobile sampled, / simulate 78 / provided 100, product simulate 81 / provided 100; logged in docs/LIGHTHOUSE-STATUS.md; G23 95+ not yet met under simulate (LCP 4.8-5.4s); no code change)
 המשך מ: M09-c204 DONE (2026-10-26): import-grep of all deps/devDeps: only unreferenced are implicit (@types/*, typescript, biome, husky, lint-staged, vitest coverage, capacitor native, @mdx-js/loader via next config); none removable; dead exports are public type surfaces/generated database.ts, kept; no code change, no forbidden files touched)
 המשך מ: M13-c204 DONE
+המשך מ: M17-c204 BLOCKED locked-component (RTL on / and /product: /product clean; / still has 5 dir="ltr" sites in locked src/components/home/HeroSlider.tsx:555,565,575,619,628 wrapping Hebrew hero text; not edited; no code changes)
