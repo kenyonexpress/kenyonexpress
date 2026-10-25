@@ -24,6 +24,18 @@ import {
   sumAgorot,
 } from './commerce/money'
 
+// Import the canonical Hebrew display formatters
+import {
+  repairPriceOrder,
+  shekels,
+  shekelsFromIls,
+  shekelsFromIlsCompact,
+  shekelsFromIlsCompactPlain,
+  shekelsFromIlsPlain,
+  shekelsPlain,
+  shekelsRounded,
+} from './money-format'
+
 export type { Agorot }
 export {
   agorot,
@@ -32,6 +44,15 @@ export {
   formatIls as formatAgorot,
   multiplyAgorot,
   sumAgorot,
+  // Hebrew money display formatters (canonical for UI)
+  shekels,
+  shekelsPlain,
+  shekelsRounded,
+  shekelsFromIls,
+  shekelsFromIlsPlain,
+  shekelsFromIlsCompact,
+  shekelsFromIlsCompactPlain,
+  repairPriceOrder,
 }
 
 // --- basis points ----------------------------------------------------------
