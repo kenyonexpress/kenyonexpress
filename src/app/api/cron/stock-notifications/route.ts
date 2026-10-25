@@ -1,8 +1,10 @@
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidateTag } from 'next/cache'
 
 /**
  * Process stock notifications: find products that are back in stock and
@@ -123,9 +125,8 @@ async function handlePOST(request: Request) {
         }
       }
 
-      // No cache invalidation here: this job only sends emails and never writes stock or
-      // price, and no cache is tagged `product_<id>` (catalogue caches use CATALOGUE_TAG,
-      // invalidated by the writers that change product data).
+      // Invalidate catalogue cache so storefront reflects stock changes
+      revalidateTag(CATALOGUE_TAG, 'max')
     }
 
     // Send alert if any notifications were sent
