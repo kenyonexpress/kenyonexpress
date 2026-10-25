@@ -109,6 +109,18 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
           return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
         }
 
+        // Trigger order-paid notification webhook
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/order-paid`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: order_id }),
+          })
+        } catch (err) {
+          // Fire-and-forget: log but don't fail the payment
+          log.error('order_paid_webhook_failed', { err })
+        }
+
         // Check if order has coupon items - generate voucher QR
         const { data: orderItems, error: orderItemsError } = await admin
           .from('order_items')
