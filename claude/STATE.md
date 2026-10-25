@@ -79,3 +79,7 @@ M13-c191 DONE-DEFERRED: prod https://www.kenyonexpress.co.il/api/ready = 200 (da
 M08-c193 DONE: Lighthouse mobile x3 on / and /product (live www), medians 94 / 94 (logs/lighthouse-m08-c193.txt). Up from 91/93 in c189, 1 point under G23 95 target; no code changes.
 
 המשך מ: M08-c193 DONE
+
+M16-c193 DONE: product page src/app/(store)/product/[slug]/page.tsx (only PDP route) emits JSON-LD Product (buildProductJsonLd) + BreadcrumbList (buildBreadcrumbJsonLd) via src/lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; no code changes.
+
+המשך מ: M16-c193 DONE
