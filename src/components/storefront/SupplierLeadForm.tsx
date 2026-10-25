@@ -3,8 +3,8 @@
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { legalEntityLine } from '@/lib/legal-entity'
 import { resetTurnstile } from '@/lib/security/turnstile-client'
-import { type SupplierLeadState, submitSupplierLead } from '@/server/actions/supplier-lead'
-import { useActionState, useEffect } from 'react'
+import type { SupplierLeadState } from '@/server/actions/supplier-lead'
+import { useEffect, useState } from 'react'
 
 const INITIAL: SupplierLeadState = { ok: false }
 
@@ -34,7 +34,32 @@ export default function SupplierLeadForm({
   agreementVersion: string
   clauses: readonly string[]
 }) {
-  const [state, action, pending] = useActionState(submitSupplierLead, INITIAL)
+  const [state, setState] = useState<SupplierLeadState>(INITIAL)
+  const [pending, setPending] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setPending(true)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const res = await fetch('/api/supplier/apply', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (res.ok && data.ok) {
+        if (data.redirectUrl) {
+          window.location.assign(data.redirectUrl)
+        } else {
+          setState({ ok: true, message: data.message })
+        }
+      } else {
+        setState({ ok: false, error: data.error || 'שגיאה לא צפויה' })
+      }
+    } catch (_err) {
+      setState({ ok: false, error: 'שגיאת רשת' })
+    } finally {
+      setPending(false)
+    }
+  }
 
   // The ₪1 card verification happens on Cardcom's hosted page.
   useEffect(() => {
@@ -54,7 +79,7 @@ export default function SupplierLeadForm({
   }
 
   return (
-    <form action={action} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {state.error && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
       )}

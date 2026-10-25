@@ -4,12 +4,7 @@ import PasskeySignIn from '@/components/auth/PasskeySignIn'
 import WhatsappOtpForm from '@/components/auth/WhatsappOtpForm'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
-import {
-  type AuthState,
-  sendMagicLink,
-  signInWithEmail,
-  signInWithGoogle,
-} from '@/server/actions/auth'
+import { type AuthState, sendMagicLink, signInWithGoogle } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
 import PhoneOtpForm from './PhoneOtpForm'
@@ -39,10 +34,9 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
   const [showPhone, setShowPhone] = useState(false)
   const [showWhatsapp, setShowWhatsapp] = useState(false)
 
-  const [emailState, emailAction, emailPending] = useActionState<AuthState, FormData>(
-    signInWithEmail,
-    null,
-  )
+  const [emailState, setEmailState] = useState<AuthState>(null)
+  const [emailPending, setEmailPending] = useState(false)
+
   const [googleState, googleAction, googlePending] = useActionState<AuthState, FormData>(
     signInWithGoogle,
     null,
@@ -51,6 +45,28 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
     sendMagicLink,
     null,
   )
+
+  const handleEmailLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setEmailPending(true)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const res = await fetch('/api/auth/login', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (res.ok && data.redirect) {
+        window.location.href = data.redirect
+      } else if (res.ok) {
+        setEmailState({ success: data.message })
+      } else {
+        setEmailState({ error: data.error || 'שגיאה לא צפויה' })
+      }
+    } catch (_err) {
+      setEmailState({ error: 'שגיאת רשת' })
+    } finally {
+      setEmailPending(false)
+    }
+  }
 
   const topError =
     getError(googleState) ??
@@ -127,7 +143,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
       </div>
 
       {/* Email / password */}
-      <form action={emailAction} className="space-y-4">
+      <form onSubmit={handleEmailLogin} className="space-y-4">
         {next && <input type="hidden" name="next" value={next} />}
 
         <div>
