@@ -1,7 +1,11 @@
 # Cron Routes Status
 
 **Last check:** 2026-10-25 11:06:43 UTC (MAINTENANCE_LOOP_5 check)
-**Method:** Vercel MCP `get_runtime_logs` attempted with `group_by=requestPath` and returned **403 forbidden** (persistent authorization issue with claude.ai connector for team_TUMTPVDP8218QHwedSjmgJWl / prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP). Per MCP recovery guidance, CLI fallback used: `vercel --scope team_TUMTPVDP8218QHwedSjmgJWl logs --project kenyonexpress` plus GitHub Actions workflow run logs via `gh run view <id> --log` for all 30 runs since 2026-10-24T19:35:00Z.
+
+**⚠️ BLOCKER:** Condition requires "via Vercel MCP get_runtime_logs" but MCP returns **403 forbidden** on every attempt (request IDs: lsgw9-1792926796574-566ab9a94955 and prior). Authorization issue persists with claude.ai Vercel connector for team_TUMTPVDP8218QHwedSjmgJWl / prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP. **The MCP requirement cannot be satisfied until connector authorization is fixed** (requires Ofir's claude.ai settings).
+
+**Method used (not condition-compliant):** CLI fallback per MCP recovery guidance: `vercel --scope team_TUMTPVDP8218QHwedSjmgJWl logs --project kenyonexpress` plus GitHub Actions workflow run logs via `gh run view <id> --log` for all 30 runs since 2026-10-24T19:35:00Z. CLI reads request-log store, not runtime logs (different schema: has responseStatusCode, lacks observability events).
+
 **Status:** 🔴 CRITICAL - Majority of cron routes failing with 000 (connection timeout). Scheduler is active but 12+ jobs consistently unreachable. Build verified: `✓ Compiled successfully in 7.8s`.
 
 ## Current Status Summary (2026-10-25 11:06 UTC)
@@ -77,6 +81,28 @@ From the 22 routes in scripts/cron-jobs.json, these were not observed in workflo
 - rfm-segmentation: 1 run (06:13:03Z)
 
 **Pattern:** Scheduler is active and calling jobs, but 12 manifest routes + 8 non-manifest routes failing (000/404).
+
+## ⚠️ MCP Authorization Blocker
+
+**MAINTENANCE_LOOP_5 condition requires "via Vercel MCP get_runtime_logs" which is blocked by authorization:**
+
+- **Current state:** Vercel MCP `get_runtime_logs` returns **403 forbidden** on every attempt
+- **Request IDs:** lsgw9-1792926796574-566ab9a94955 (latest), multiple prior attempts
+- **Grant scope:** claude.ai Vercel connector can list teams/projects but cannot read logs
+- **Affected resources:** team_TUMTPVDP8218QHwedSjmgJWl / prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP
+
+**To satisfy the MCP requirement:**
+
+1. Ofir must update claude.ai Vercel connector permissions
+   - Location: claude.ai → Settings → Connectors → Vercel → Permissions
+   - Required: runtime logs read access for team kenyonexpress-projects
+2. OR: Update MAINTENANCE_LOOP_5 condition to explicitly accept CLI+GHA fallback method
+
+**Current workaround (not condition-compliant):**
+
+- CLI: `vercel logs` (request-log store, has responseStatusCode but lacks runtime observability events)
+- GitHub Actions: workflow run logs (scheduler attempts, not function execution)
+- Limitation: Different data schema than MCP runtime logs
 
 ## Issues Requiring Action
 
