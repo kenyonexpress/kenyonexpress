@@ -143,3 +143,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M07-c187 DONE (TODO/FIXME scan: 7 TODOs older than 7 days, all filed in docs/BACKLOG.md; stock-notifications revalidateTag added as #4; no source changes)
 המשך מ: M10-c187 DONE-DEFERRED (85 files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session; 301_supplier_verification_status.sql still known unapplied; apply one at a time via apply_migration once Supabase access is restored)
 המשך מ: M13-c187 DONE
+המשך מ: M17-c187 BLOCKED locked-component (RTL probe / and /product at 380/768/1440: dir=rtl lang=he, 0 overflow, product clean, static scan clean; / at 768+1440 has 11 Hebrew <p dir="ltr"> in src/components/home/HeroSlider.tsx:555-628 (standard_line/promo lines) - fix needs locked file; no code changes)
