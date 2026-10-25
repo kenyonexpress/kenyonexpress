@@ -275,3 +275,18 @@ No source changed, so no compare.mjs run needed. No runtime browser pass (no ser
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard again, no diffs to record.
 Same cause as M01-c196..c200: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. Local dev server on :3000 was up this run (200), so the blocker is the reference, not the server. No percentages produced; guard not bypassed.
 **המשך מ: M01-c201 BLOCKED no-reference**
+
+## M01-c202 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard again, no diffs to record.
+Same cause as M01-c196..c201: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. No percentages produced; guard not bypassed.
+**המשך מ: M01-c202 BLOCKED no-reference**
+
+## M02-c202 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c196..c202: kenyonexpress.co.il serves our own build, so build vs build. No percentages produced; guard not bypassed.
+**המשך מ: M02-c202 BLOCKED no-reference**
+
+## M03-c202 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (exit 5), no diffs to record.
+Same cause as M02-c202: kenyonexpress.co.il serves our own build. refs/ has Electro v7 home + product captures but no category capture, so no honest category reference exists. Guard not bypassed.
+**המשך מ: M03-c202 BLOCKED no-reference**
