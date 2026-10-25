@@ -1,0 +1,41 @@
+-- Migration F65: Signup bonus documentation
+--
+-- This migration documents the 10₪ signup bonus feature added in F65.
+-- No schema changes are required because:
+--
+-- 1. Wallet infrastructure already exists:
+--    - wallet_accounts table (migration 046)
+--    - wallet_entries table (migration 046)
+--    - fn_wallet_transfer function (migration 046)
+--    - platform:cashback_reserve account (seeded in migration 046)
+--
+-- 2. The signup bonus uses existing wallet_reason enum value 'referral_bonus'
+--    which is semantically correct for bonus credits (migration 026)
+--
+-- 3. Idempotency is achieved via fn_wallet_transfer's p_idempotency parameter
+--    using key pattern 'signup_bonus:<user_id>'
+--
+-- IMPLEMENTATION:
+-- - src/app/auth/callback/route.ts: creditSignupBonusOnce() function
+-- - Credits 10₪ from platform:cashback_reserve to user wallet
+-- - One-time per user via idempotency key
+-- - Best-effort (does not fail signup if wallet unavailable)
+--
+-- VERIFICATION:
+-- To verify a user received their signup bonus:
+--
+-- SELECT
+--   we.created_at,
+--   we.amount_ils,
+--   we.reason,
+--   we.idempotency_key,
+--   wa_credit.user_id
+-- FROM wallet_entries we
+-- JOIN wallet_accounts wa_debit ON wa_debit.id = we.debit_account
+-- JOIN wallet_accounts wa_credit ON wa_credit.id = we.credit_account
+-- WHERE wa_debit.code = 'platform:cashback_reserve'
+--   AND we.reason = 'referral_bonus'
+--   AND we.idempotency_key LIKE 'signup_bonus:%'
+--   AND wa_credit.user_id = '<user-id>';
+--
+-- NO SCHEMA CHANGES REQUIRED - This is a documentation-only migration.
