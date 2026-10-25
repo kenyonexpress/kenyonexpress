@@ -68,3 +68,5 @@ M08-c189 DONE: Lighthouse mobile x3 on / and /product, medians 91 / 93 (logs/lig
 המשך מ: M07-c190 DONE (TODO/FIXME scan: all items older than 7d already in docs/BACKLOG.md #8-#11; wallet/cardcom-refund.ts + wallet/integration.test.ts TODOs added 2026-10-25, under 7d, not yet eligible; no code changes)
 M17-c190 DONE: RTL scan on / and /product (rtl-lint + grep of home/product components, globals.css): no LTR leaks; only hits are comments ("right-to-left" prose, Satori note) and tests. html dir=rtl lang=he confirmed. Static check only, no live render.
 המשך מ: M17-c190 DONE
+M11-c191 DONE: sitemap.xml verified. https://www.kenyonexpress.co.il/sitemap.xml = 200 application/xml, 75 urls, valid, lastmod 2026-10-24 (= newest catalogue update, cacheLife hours, Vercel HIT age ~14h, last-modified 24.10 20:47Z); robots.txt references it. FINDING: all <loc> use apex kenyonexpress.co.il (NEXT_PUBLIC_APP_URL unset -> siteUrl() default) but apex 308-redirects to www, so every sitemap URL is a redirect. Fix is Vercel env NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il (or make apex primary); no code change.
+המשך מ: M11-c191 DONE
