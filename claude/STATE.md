@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M15-c204 DONE console check / and /product at 380/768/1440 on next dev: 0 console errors, 0 pageerrors; only dev-mode next/image aspect-ratio warnings on home deal cards (ke-live-deal-*) + aborted /api/cart fetch (endpoint 200); no code change**
 **המשך מ: M12-c204 DONE robots.ts verified prod-safe: allow /, disallows redeem/coupon/voucher/account/supplier/admin/scan/checkout/cart/auth/api/debug/reset+forgot-password; sitemap+host from NEXT_PUBLIC_APP_URL (prod env = https://kenyonexpress.co.il, trailing slash stripped); 7/7 robots tests pass; no code change**
 **המשך מ: M05-c204 DONE pnpm test 615 files / 7063 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
 **המשך מ: M15-c203 DONE console check / and /product at 380/768/1440 on fresh next start: 0 errors/warnings; note: long-running :3000 server is stale (serves old chunk hashes, 500s) — restart it; no code change**
@@ -266,3 +267,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M07-c204 DONE (2026-10-26): TODO/FIXME scan: only 3 groups in src/ (cardcom.ts:249, :312, r2-migration.ts:103-106), all >7d and already filed in docs/BACKLOG.md; blocked on Cardcom prod creds / Supabase service key; no code change, no forbidden files touched)
 המשך מ: M08-c204 DONE (2026-10-26): Lighthouse mobile sampled, / simulate 78 / provided 100, product simulate 81 / provided 100; logged in docs/LIGHTHOUSE-STATUS.md; G23 95+ not yet met under simulate (LCP 4.8-5.4s); no code change)
 המשך מ: M09-c204 DONE (2026-10-26): import-grep of all deps/devDeps: only unreferenced are implicit (@types/*, typescript, biome, husky, lint-staged, vitest coverage, capacitor native, @mdx-js/loader via next config); none removable; dead exports are public type surfaces/generated database.ts, kept; no code change, no forbidden files touched)
+המשך מ: M13-c204 DONE
