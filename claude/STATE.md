@@ -95,3 +95,4 @@ M04-c195 DONE: pnpm type-check (tsc --noEmit) passes clean, no drift, working tr
 M08-c198 DONE: Lighthouse mobile live, 3 runs each. Medians home 75 (runs 100/74/75, LCP variance 1.7-5.8s), product 97 (97/99/82). Log: logs/lighthouse-m08-c198.txt. No code changes.
 
 המשך מ: M08-c198 DONE
+המשך מ: M12-c198 DONE
