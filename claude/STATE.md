@@ -2,7 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
-**המשך מ: M09-c193 DONE removed dead TopBarUserSection.tsx; remaining knip deps are false positives (@mdx-js/loader peer of @next/mdx, @types/*, @capacitor/* native scaffold); dead-export list left (API surface); tsc clean, vitest 7055 pass**
+**המשך מ: M18-c193 DONE STATE.md already under 300 lines (claude/STATE.md 188, root STATE.md 190); no trim needed, docs/STATE-ARCHIVE.md untouched**
 **המשך מ: M05-c193 DONE pnpm test clean (614 files pass, 7055 tests pass, 28 skipped); drift committed (docs/M-CYCLE-STATUS.md)**
 **המשך מ: M09-c192 DONE removed unused @mdx-js/react + dead FaLinkedin/FaPinterest icons; other deps verified in use; knip dead-export list left (test-only/API surface); tsc clean, vitest 7055 pass**
 **המשך מ: M04-c193 DONE pnpm type-check clean (tsc --noEmit, 0 errors); drift committed (docs/M-CYCLE-STATUS.md, docs/UI-PARITY-REPORT.md)**
