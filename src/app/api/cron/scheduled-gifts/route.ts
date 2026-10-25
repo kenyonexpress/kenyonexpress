@@ -2,50 +2,35 @@ import { buildNotification } from '@/lib/email/notifications'
 import { sendEmail } from '@/lib/email/resend'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
-import { cronSecretMatches } from '@/lib/security/constant-time'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Scheduled gift delivery cron - runs every 10 minutes.
  *
- * Checks notification_outbox for gift emails where gift_scheduled_at <= now
- * AND not yet sent, then sends them via Resend.
+ * Checks orders.gift_scheduled_at <= now AND not_sent per F59 spec.
  *
  * Flow:
- * 1. Find voucher_gifted rows in notification_outbox where:
- *    - status = 'pending'
- *    - next_attempt_at <= now (this is set to gift_scheduled_at at queue time)
- * 2. For each row, build gift email template F49 with:
- *    - Coupon code (claim token)
- *    - Personal message
- *    - Link to redeem
- * 3. Send via Resend
- * 4. Update status to 'sent' and set sent_at
+ * 1. Query orders where gift_scheduled_at <= now
+ * 2. For each order, find vouchers where gift_sent_at IS NULL (not_sent)
+ * 3. Build gift email template F49 with coupon code, message, claim link
+ * 4. Send via Resend
+ * 5. Mark vouchers.gift_sent_at to record sent
  *
- * Recipient must create account to redeem the gift (handled by claim flow).
+ * Requires migration 305 (gift_scheduled_at column).
+ * Falls back gracefully if column doesn't exist.
  *
- * Auth: Vercel Cron sends x-cron-secret header.
+ * Auth: Bearer token from Vercel Cron.
  */
 
 const BATCH = 50
 
-type GiftOutboxRow = {
-  id: string
-  kind: string
-  recipient_email: string
-  payload: Record<string, unknown> | null
-  dedupe_key: string
-  attempts: number
-  status: string
-  next_attempt_at: string
-}
-
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
-  const cronHeader = request.headers.get('x-cron-secret')
+  const authHeader = request.headers.get('authorization')
 
-  if (!cronSecretMatches(cronHeader, secret ?? '')) {
+  if (!bearerMatches(authHeader, secret ?? '')) {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 
@@ -53,86 +38,103 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
   const now = new Date().toISOString()
 
-  // Find scheduled gifts that are due (gift_scheduled_at <= now AND not_sent)
-  const { data, error } = await admin
-    .from('notification_outbox')
-    .select('id, kind, recipient_email, payload, dedupe_key, attempts, status, next_attempt_at')
-    .eq('kind', 'voucher_gifted')
-    .eq('status', 'pending')
-    .lte('next_attempt_at', now)
-    .order('created_at', { ascending: true })
+  // Check orders where gift_scheduled_at <= now
+  const { data: orders, error: ordersError } = await admin
+    .from('orders')
+    .select('id, gift_recipient_email, gift_recipient_name, gift_message')
+    .not('gift_recipient_email', 'is', null)
+    .lte('gift_scheduled_at' as never, now)
     .limit(BATCH)
 
-  if (error) {
-    log.error('scheduled_gifts.read_failed', { reason: error.message })
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  // Graceful fallback if migration 305 not applied
+  if (ordersError?.code === '42703') {
+    log.warn('scheduled_gifts.column_missing', {
+      hint: 'Migration 305 required for gift_scheduled_at column',
+    })
+    return NextResponse.json({
+      ok: true,
+      processed: 0,
+      sent: 0,
+      message: 'Migration 305 required',
+    })
   }
 
-  const rows = (data ?? []) as unknown as GiftOutboxRow[]
+  if (ordersError) {
+    log.error('scheduled_gifts.orders_failed', { reason: ordersError.message })
+    return NextResponse.json({ ok: false, error: ordersError.message }, { status: 500 })
+  }
+
+  const dueOrders = (orders ?? []) as {
+    id: string
+    gift_recipient_email: string
+    gift_recipient_name: string | null
+    gift_message: string | null
+  }[]
+
   let sent = 0
   let failed = 0
 
-  for (const row of rows) {
-    // Build gift email template F49
-    const built = buildNotification(row.kind, row.payload ?? {}, siteUrl)
-    if (!built) {
-      log.warn('scheduled_gifts.no_template', { row_id: row.id })
-      await admin
-        .from('notification_outbox')
-        .update({ status: 'dead', last_error: 'no template for voucher_gifted' })
-        .eq('id', row.id)
-      continue
-    }
+  for (const order of dueOrders) {
+    // Find vouchers not yet sent (not_sent check via gift_sent_at IS NULL)
+    const { data: vouchers } = await admin
+      .from('vouchers')
+      .select('id, product_id, expires_at, gift_claim_token_hash')
+      .eq('order_id', order.id)
+      .is('gift_sent_at', null)
+      .eq('status', 'issued')
 
-    // Send gift email with coupon code, personal message, and claim link
-    const result = await sendEmail({
-      to: row.recipient_email,
-      subject: built.subject,
-      html: built.html,
-      text: built.text,
-      idempotencyKey: row.dedupe_key,
-    })
+    if (!vouchers || vouchers.length === 0) continue
 
-    if (result.ok) {
-      sent++
-      await admin
-        .from('notification_outbox')
-        .update({
-          status: 'sent',
-          sent_at: new Date().toISOString(),
-          attempts: row.attempts + 1,
-          last_error: null,
-        })
-        .eq('id', row.id)
-      log.info('scheduled_gifts.sent', { row_id: row.id, recipient: row.recipient_email })
-    } else {
-      failed++
-      const attempts = row.attempts + 1
-      const isDead = attempts >= 5
-      await admin
-        .from('notification_outbox')
-        .update({
-          status: isDead ? 'dead' : 'pending',
-          attempts,
-          last_error: result.reason?.slice(0, 500) ?? 'send failed',
-          next_attempt_at: new Date(Date.now() + 2 * 60_000).toISOString(), // retry in 2 min
-        })
-        .eq('id', row.id)
-      log.error('scheduled_gifts.send_failed', {
-        row_id: row.id,
-        attempts,
-        reason: result.reason,
+    for (const voucher of vouchers) {
+      // Build gift email template F49
+      const built = buildNotification(
+        'voucher_gifted',
+        {
+          product_name: null,
+          recipient_name: order.gift_recipient_name,
+          gift_message: order.gift_message,
+          claim_token: voucher.gift_claim_token_hash || '',
+          expires_at: voucher.expires_at,
+        },
+        siteUrl,
+      )
+
+      if (!built) {
+        failed++
+        continue
+      }
+
+      // Send with coupon code, personal message, claim link
+      const result = await sendEmail({
+        to: order.gift_recipient_email,
+        subject: built.subject,
+        html: built.html,
+        text: built.text,
+        idempotencyKey: `gift:${voucher.id}`,
       })
+
+      if (result.ok) {
+        await admin
+          .from('vouchers')
+          .update({ gift_sent_at: new Date().toISOString() } as never)
+          .eq('id', voucher.id)
+        sent++
+      } else {
+        failed++
+        log.error('scheduled_gifts.send_failed', {
+          order_id: order.id,
+          reason: result.reason,
+        })
+      }
     }
   }
 
   return NextResponse.json({
     ok: true,
-    processed: rows.length,
+    processed: dueOrders.length,
     sent,
     failed,
-    message:
-      sent > 0 ? `Sent ${sent} scheduled gift${sent === 1 ? '' : 's'}` : 'No scheduled gifts due',
+    message: sent > 0 ? `Sent ${sent} scheduled gift${sent === 1 ? '' : 's'}` : 'No gifts due',
   })
 }
 
