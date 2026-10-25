@@ -13,7 +13,7 @@ Continue from F60 DONE (2026-10-25): Hebrew formatting polish complete. Created 
 Continue from F61 DONE + VERIFIED (2026-10-25): Toggle sets Vercel env via CLI, tested and verified. Executed toggle CLI sequence (vercel env rm + add for MAINTENANCE_MODE) across production/preview/development - all succeeded. Verified with 'vercel env ls': MAINTENANCE_MODE Config in all 3 environments. Updated error.tsx with Sentry.captureException(). not-found.tsx title '404 - הדף לא נמצא'. maintenance page brand design. Middleware at project root (Next.js 16 requires root, not src/). Toggle implementation: src/server/actions/admin/feature-flags.ts calls authenticated vercel CLI (no API token needed), falls back to DB write. Test suite: 6960/6962 passing (99.97%). Quality gates: typecheck ✅ lint ✅ build ✅. Note: src/middleware.ts conflicts with Next.js 16 proxy.ts (framework requirement). Commits: c7fee6930, fc47305a8, 1a45011fe. Evidence: docs/F61-EVIDENCE.md.
 
 ## המשך מ:
-F61 DONE (2026-10-25) - Toggle sets Vercel env via CLI, all requirements met - see docs/F61-VERIFIED.md - awaiting next goal
+F61 DONE (2026-10-25) - Toggle test passing, middleware committed - see docs/F61-EVIDENCE.md - awaiting next goal
 
 ## החלטות שהתקבלו אוטומטית
 
@@ -47,6 +47,7 @@ F61 DONE (2026-10-25) - Toggle sets Vercel env via CLI, all requirements met - s
 - Database access unavailable: no connection string in .env.local, no CLI access token
 - CLI authentication blocked: commands timeout in non-interactive session
 
+<<<<<<< HEAD
 **Conservative decision per CLAUDE.md:** "goal that got stuck twice: skip." After two stuck attempts on fundamental session-type incompatibility, goal is SKIPPED rather than continuing to attempt impossible task.
 
 **What was delivered within session constraints:**
@@ -98,3 +99,13 @@ The deployment containing working nonce-based CSP is READY but has `target: null
 - Verify A+ rating with strict nonce CSP
 
 **Commits:** d47e45037, d324b085f, a0a48249d, 0044ba539 (closeout/v1-final)
+=======
+Continue from Z09 DONE (2026-10-24): F12 affiliate already shipped in 10a784e9c (migration 283 in migrations/applied; campaigns with admin commission_bp, links, ke_aff 30-day attribution with rate snapshot, wallet payout via fn_wallet_transfer key affiliate:<order>, 14-day hold, reversal, no self-referral; /account/affiliate and /admin/affiliates/campaigns). Re-verified: affiliate rules tests 7/7 pass. No code change. Note: 283 has no entry in docs/MIGRATIONS-APPLIED.md and Supabase MCP is unauthenticated, so live DB state not re-verified.
+Continue from G07 DONE (2026-10-24): F05 cancel API at src/app/api/orders/[id]/cancel/route.ts (POST, wraps requestOrderRefund, ground fixed to distance_sale_14d), cancel button on OrderCard for paid orders, e2e/cancel-refund.spec.ts (testDir is e2e/, not tests/e2e). Fixed request-refund.ts selecting nonexistent orders.order_number (every cancel was 500). 7 e2e validation/edge tests green; purchase-leg tests need the mock-pay stack (full-purchase-redeem also times out on this dev server). Visual gate not run (account pages have no Electro v7 baseline).
+Continue from G17 DONE (2026-10-24): legal pages /terms /privacy /returns /accessibility already shipped (F22/F42) under src/app/(legal). Verified: each renders LegalContactBlock (קניון אקספרס + מספר עוסק 033798513), terms has 18+ per סעיף 2 לחוק הכשרות המשפטית and Tel Aviv jurisdiction, returns cites 14ג. Legal tests 83/83 pass. No code change.
+Continue from C72 DONE (2026-10-25): RLS coverage audit complete with migrations applied. Queried all 127 public tables via Supabase Management API. Found 2 without RLS: admin_users and payment_card_verifications. Created and APPLIED migrations 298 (admin_users: 4 admin-only policies) and 299 (payment_card_verifications: owner+admin read, service-key writes). Applied via scripts/apply-rls-migrations.mjs using Management API. Verification confirmed: admin_users rowsecurity=true with 4 policies, payment_card_verifications rowsecurity=true with 2 policies. Final check: scripts/check-rls-coverage.mjs confirms 127/127 tables have RLS (exit 0). Documentation: docs/RLS-COVERAGE.md, docs/C72-RESULT.md. Quality gates: type-check ✅, lint ✅ (all errors fixed), build ✅ (273 pages). GOAL SATISFIED: pg_tables WHERE schemaname='public' AND rowsecurity=false returns 0 rows. Commits: 06e471412 (migrations created), fa5d749f3 (docs), 582ac7c9a (migrations applied) pushed to origin/closeout/v1-final.
+Continue from C73 DONE (2026-10-25): Vercel preview deployment protection password configured via API. Password protection enabled for all preview deployments (deploymentType: "preview") with 24-character URL-safe password. Automation bypass secret generated (32-character hex: e7e91a84e6193bf399ad417c8fafeb15) and configured with isEnvVar:true, automatically set as VERCEL_AUTOMATION_BYPASS_SECRET on all deployments. API calls: PATCH /v9/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP (password protection), PATCH /v1/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP/protection-bypass (bypass secret). Documentation: docs/C73-VERCEL-DEPLOYMENT-PROTECTION.md (comprehensive guide with integration examples), docs/C73-RESULT.md (result summary). Configuration-only change via Vercel API, no code modifications. Quality gates: type-check ✅, lint ✅, build ✅ (273 pages). Commit 0793471f5 pushed to origin/closeout/v1-final.
+Continue from M05-c183 DONE (2026-10-25): pnpm test green (602 files, 6955 tests). Fixed drift: zod 4 absent optional CSV columns now null, vendor-form UUID fixtures valid v4, seed-search route on bearerMatches + withRequestLog + fetchWithTimeout + handled suppliers error, ProductInfo share text via buildShareMessage. Commit 0e52c6757.
+Continue from M05-c187 DONE (2026-10-25): pnpm test green (603 files, 6962 tests). Fixed drift: not-found.test.tsx metadata title expectation now matches shipped "404 - הדף לא נמצא".
+Continue from M06-c187 DONE (2026-10-25): pnpm build green (273 pages, exit 0). No drift found, no code change.
+>>>>>>> 8956cd3c2 ([autopilot] F61 FINAL: Toggle test passing, middleware committed)
