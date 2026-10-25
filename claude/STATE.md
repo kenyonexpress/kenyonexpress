@@ -70,3 +70,5 @@ M17-c190 DONE: RTL scan on / and /product (rtl-lint + grep of home/product compo
 המשך מ: M17-c190 DONE
 M11-c191 DONE: sitemap.xml verified. https://www.kenyonexpress.co.il/sitemap.xml = 200 application/xml, 75 urls, valid, lastmod 2026-10-24 (= newest catalogue update, cacheLife hours, Vercel HIT age ~14h, last-modified 24.10 20:47Z); robots.txt references it. FINDING: all <loc> use apex kenyonexpress.co.il (NEXT_PUBLIC_APP_URL unset -> siteUrl() default) but apex 308-redirects to www, so every sitemap URL is a redirect. Fix is Vercel env NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il (or make apex primary); no code change.
 המשך מ: M11-c191 DONE
+M13-c191 DONE-DEFERRED: prod https://www.kenyonexpress.co.il/api/ready = 200 (database/redis/meilisearch/r2/cardcom all ok). /api/health = 503: database ok, search down, search_detail=invalid_api_key (Meilisearch search key rejected on prod; /api/ready passes meilisearch so it only checks reachability). Fix is a valid MEILI search key in Vercel env, then re-run curl. No code change.
+המשך מ: M13-c191 DONE-DEFERRED
