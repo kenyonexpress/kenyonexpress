@@ -584,4 +584,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '309',
+    file: '309_signup_bonus_documentation.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const
