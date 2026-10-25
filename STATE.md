@@ -103,6 +103,7 @@ d205bf459 STATE: Z10 re-run 2 done-as-shipped
 
 BLOCKED MAINTENANCE_LOOP_9 (2026-10-26): Cannot verify DB performance - verification impossible, not completed. Supabase MCP requires OAuth (unavailable), Supabase CLI timed out (>120s, three attempts), background tasks killed. docs/DB-STATUS.md documents ❌ No slow queries verified, ❌ No connection pool stats. Goal requires actual verification evidence, not documentation of inability to verify. Per CLAUDE.md "goal שנתקע פעמיים: לדלג". Commits 1a35ec459, 251de2897 document attempt. BLOCKER: Interactive session with MCP OAuth or manual Supabase dashboard verification required.
 
+המשך מ: M16-c204 DONE (2026-10-26): /product/[slug] (single dynamic route, all products) renders JSON-LD Product + BreadcrumbList via src/lib/seo/json-ld.ts; 26 unit tests pass, tsc clean on both files. /product/[slug]/gift is noindex. No code change.
 המשך מ: M06-c198 DONE (2026-10-26): pnpm build passes (exit 0). First attempt failed only on transient Supabase 10s timeouts during prerender; anon key valid (200), retry clean. No code drift, no code change.
 
 Continue from M04-c196 DONE (2026-10-25): pnpm type-check passes (tsc --noEmit, 0 errors), working tree clean, no drift to fix. No code change.
