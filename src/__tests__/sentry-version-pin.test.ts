@@ -42,6 +42,6 @@ describe('the Sentry packages', () => {
 
   it('has not been moved past the last version that can be imported under vitest', () => {
     // Raise this deliberately, with the alarm tests run, and update the note above.
-    expect(manifest.dependencies['@sentry/nextjs']).toBe('10.71.0')
+    expect(manifest.dependencies['@sentry/nextjs']).toBe('10.76.2')
   })
 })

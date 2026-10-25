@@ -136,7 +136,6 @@ describe('parseProductsCsv – CSV input', () => {
         name_he: 'עכבר מקצועי',
         type: 'physical',
         name_en: 'Pro Mouse',
-        description_he: null,
         kenyon_price: 149.9,
         full_price: 199,
         platform_percent: 12.5,
@@ -254,10 +253,7 @@ describe('parseProductsCsv – Excel input', () => {
         slug: 'tablet-11',
         name_he: 'טאבלט 11',
         type: 'physical',
-        name_en: null,
-        description_he: null,
         kenyon_price: 1299.5,
-        full_price: null,
         platform_percent: 8,
       },
     ])
