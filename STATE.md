@@ -7,9 +7,23 @@ SKIPPED C71 - IMPOSSIBLE IN NON-INTERACTIVE SESSION (2026-10-25): Goal "Download
 Continue from C75 CODE COMPLETE, A+ BLOCKED (2026-10-25): Implemented comprehensive security headers with strict nonce-based CSP for A+ rating. Added nonce infrastructure (src/lib/security/csp-nonce.ts), modified frame-policy.ts + proxy.ts for per-request nonce generation/injection, fixed critical next.config.ts bug (headers() overwrites middleware CSP), added security headers to vercel.json, modified deploy-preflight.mjs for preview support. Created comprehensive tests (csp-nonce.test.ts 4 tests, frame-policy.test.ts 31 tests, all passing). Deployment dpl_BCoMPmXKygih2uH9ypNuKYDqmJte READY on closeout/v1-final (commit d47e45037) with working nonce CSP. A+ verification BLOCKED: cannot promote to production (requires user action per CLAUDE.md autonomous rules - "push לפרודקשן ב-Vercel" is one of 4 ask-first situations). Current production (dpl_D1o2XrTFDsJoXvtasAojvtftq1tz, commit d6ba9ed3b4) serves old CSP with 'unsafe-inline'. Preview URL testing blocked (password protection 401 bypasses middleware, shows only HSTS+X-Frame-Options). Implementation complete and correct, securityheaders.com A+ verification requires deployment promotion. Quality gates: type-check ✅ lint ✅ build ✅ test ✅. Documentation: docs/C75-RESULT.md. Commits: d47e45037, d324b085f, a0a48249d, 0044ba539 (closeout/v1-final).
 
 ## המשך מ:
-(Queue empty - awaiting next goal)
+F55 SKIPPED - awaiting next goal
 
 ## החלטות שהתקבלו אוטומטית
+
+### F55 - SKIPPED (Database Access Unavailable, 2026-10-25)
+
+**Goal**: Order lifecycle end-to-end with state machine, webhooks, JWT QR codes, and redemption flow.
+
+**Delivered**: Code complete (webhook handler, JWT generation, scan page, migration SQL), unit tested (27/28 passing), build passing, documentation complete. See docs/F55-SKIPPED.md.
+
+**Not delivered**: Migration applied, E2E verification (12/16 tests failing due to missing orders.voucher_qr_url column).
+
+**Why skipped**: 131k tokens consumed attempting 5 database access paths - all blocked (Supabase MCP unavailable in non-interactive session, Docker not running, no direct credentials, staging branch migration history conflict, production migration is stopping condition). Per CLAUDE.md "goal stuck twice: skip."
+
+**Commits**: 0c80ea41b, 9165f045d, f0ab90c83, 6f5eb1432
+
+**Manual completion required**: Apply migrations/pending/preflight_305.sql to database, then re-run E2E tests.
 
 ### C71 - SKIPPED (Session Type Incompatibility)
 
