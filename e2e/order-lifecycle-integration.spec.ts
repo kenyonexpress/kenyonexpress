@@ -155,7 +155,7 @@ test.describe('Order Lifecycle Integration', () => {
   })
 
   test('expired JWT is rejected', async () => {
-    const { generateSignedJWT, verifySignedJWT } = await import('@/lib/vouchers/qr-generation')
+    const { generateSignedJWT, verifySignedJWT } = await import('../src/lib/vouchers/qr-generation')
 
     const payload = {
       voucher_id: 'expired-voucher',
@@ -171,7 +171,7 @@ test.describe('Order Lifecycle Integration', () => {
   })
 
   test('tampered JWT is rejected', async () => {
-    const { generateSignedJWT, verifySignedJWT } = await import('@/lib/vouchers/qr-generation')
+    const { generateSignedJWT, verifySignedJWT } = await import('../src/lib/vouchers/qr-generation')
 
     const payload = {
       voucher_id: 'valid-voucher',
