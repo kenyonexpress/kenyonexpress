@@ -37,13 +37,13 @@ export type RateLimitPolicy = {
 export const RATE_LIMIT_POLICIES = {
   // -- Authentication. The smallest numbers in the table, because every one of
   // these paths either sends a message to a real person or guesses a secret.
-  login: { limit: 10, windowSeconds: 3600, reason: 'password guessing, per IP' },
+  login: { limit: 5, windowSeconds: 900, reason: 'password guessing, per IP (F64: 5/15min)' },
   'login-account': {
     limit: 20,
     windowSeconds: 3600,
     reason: 'password guessing on one account from rotating IPs',
   },
-  signup: { limit: 5, windowSeconds: 3600, reason: 'account flooding, per IP' },
+  signup: { limit: 3, windowSeconds: 3600, reason: 'account flooding, per IP (F64: 3/hour)' },
   magic: { limit: 5, windowSeconds: 3600, reason: 'magic-link mail sent to a real inbox' },
   'phone-otp': { limit: 5, windowSeconds: 3600, reason: 'OTP SMS costs money, per IP' },
   'phone-otp-number': {
@@ -52,53 +52,11 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'OTP SMS to one number: the measured lockout vector',
   },
   'phone-verify': { limit: 20, windowSeconds: 3600, reason: 'OTP code guessing' },
-  'email-verify': { limit: 20, windowSeconds: 3600, reason: 'mail OTP code guessing, per IP' },
-  'email-verify-address': {
-    limit: 20,
-    windowSeconds: 3600,
-    reason: 'mail OTP code guessing, per address, so proxies cannot buy one account more tries',
-  },
-  'passkey-register': {
-    limit: 10,
-    windowSeconds: 3600,
-    reason: 'WebAuthn enrolment ceremonies; a real person adds one key, not eleven',
-  },
-  'mfa-enrol': {
-    limit: 10,
-    windowSeconds: 3600,
-    reason: 'TOTP factor creation, per user; one authenticator, not a pile of abandoned factors',
-  },
-  'mfa-verify': {
-    limit: 10,
-    windowSeconds: 900,
-    reason: 'six digits are brute forceable; per-user bound is what actually protects the account',
-  },
-  'mfa-verify-ip': {
-    limit: 30,
-    windowSeconds: 900,
-    reason: 'the same guesses spread across accounts from one address',
-  },
-  'passkey-login': {
-    limit: 30,
-    windowSeconds: 3600,
-    reason: 'challenge issuance, per IP; cheap but each one sets a cookie',
-  },
-  'passkey-login-finish': {
-    limit: 20,
-    windowSeconds: 3600,
-    reason: 'assertion verification plus admin calls; one per real login',
-  },
-  'push-subscribe': {
-    limit: 30,
-    windowSeconds: 3600,
-    reason:
-      'service-role upserts to push_subscriptions; a browser re-posts one per page load at most',
-  },
-  reset: { limit: 5, windowSeconds: 3600, reason: 'reset mail, per IP' },
+  reset: { limit: 3, windowSeconds: 3600, reason: 'reset mail, per IP (F64: 3/hour)' },
   'reset-address': {
-    limit: 5,
+    limit: 3,
     windowSeconds: 3600,
-    reason: 'reset mail to one address from rotating IPs',
+    reason: 'reset mail to one address from rotating IPs (F64: 3/hour)',
   },
   'checkout-otp-send': {
     limit: 5,
@@ -136,49 +94,10 @@ export const RATE_LIMIT_POLICIES = {
   // -- Commerce. Higher, because a real shopper trips these by shopping.
   cart_write: { limit: 120, windowSeconds: 3600, reason: 'cart mutation, user or IP' },
   coupon: { limit: 10, windowSeconds: 3600, reason: 'coupon code guessing' },
-  // Higher than `coupon` because the Luhn check in the route rejects malformed
-  // codes before the counter is spent, so only well-formed probes count; a
-  // genuine shopper scans one flyer.
-  coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
-  // The shape gate answers malformed strings free of charge, so only
-  // well-formed 16-character probes spend the counter; the code space is ~78
-  // bits, so the limit is UX headroom, not the security boundary.
-  gift_card_check: { limit: 20, windowSeconds: 3600, reason: 'gift card balance by code, per IP' },
-  gift_card_redeem: {
+  begin_checkout: {
     limit: 10,
     windowSeconds: 3600,
-    reason: 'gift card redemption attempts, per user',
-  },
-  begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
-  // One lookup per address field blur, against a third party that has no
-  // interest in being our proxy. A shopper correcting a street twice spends
-  // two; a scraper walking a city's streets through us spends the window.
-  'postal-lookup': {
-    limit: 30,
-    windowSeconds: 600,
-    reason: 'postal-code lookups relayed to Israel Post, per IP',
-  },
-
-  // -- Order velocity, one bucket per identity dimension (src/lib/fraud).
-  // `begin_checkout` above bounds a retry loop; these bound a fraud run, which
-  // rotates cards and accounts but keeps the address it ships to and the phone
-  // the courier calls. Spent after the idempotent-replay short-circuit, so a
-  // declined card retried against the same order costs nothing here. Exceeding
-  // one also enqueues a fraud review item for a human.
-  'checkout-velocity-ip': {
-    limit: 30,
-    windowSeconds: 86400,
-    reason: 'new orders from one address in a day; carding rotates cards, not addresses',
-  },
-  'checkout-velocity-email': {
-    limit: 15,
-    windowSeconds: 86400,
-    reason: 'new orders on one email in a day; a stolen-card run batches on one login',
-  },
-  'checkout-velocity-phone': {
-    limit: 15,
-    windowSeconds: 86400,
-    reason: 'new orders naming one delivery phone in a day, across accounts',
+    reason: 'Cardcom checkout creation (F64: 10/hour)',
   },
 
   // Added when this layer was rebased onto main: `referral-code` landed on main
@@ -246,8 +165,8 @@ export const RATE_LIMIT_POLICIES = {
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
   // -- Public write forms. Five an hour, because these reach a human inbox.
-  contact: { limit: 5, windowSeconds: 3600, reason: 'contact form mail' },
-  'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
+  contact: { limit: 5, windowSeconds: 3600, reason: 'contact form mail (F64: 5/hour)' },
+  'supplier-lead': { limit: 2, windowSeconds: 86400, reason: 'supplier lead mail (F64: 2/24h)' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
 
   // -- Admin voucher tools. Keyed on the staff user; generous because a busy
