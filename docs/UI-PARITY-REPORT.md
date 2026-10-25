@@ -334,3 +334,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-25 14:25 | home | 1440 | 31.72% | **FAIL** | `4ba8a260f-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); OURS dropped 6 script (unhydrated, not a fidelity score); ref 96 failed to load (57 script, 37 fo |
 | 2026-10-25 14:26 | home | 768 | 42.76% | **FAIL** | `4ba8a260f-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-25 14:28 | home | 1440 | 31.72% | **FAIL** | `4ba8a260f-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-25 14:29 | home | 1440 | 31.72% | **FAIL** | `888f3c35c` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); OURS dropped 6 script (unhydrated, not a fidelity score); ref 141 failed to load (101 script, 37  |
