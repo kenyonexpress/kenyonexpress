@@ -106,7 +106,7 @@ export const checkoutPaymentSchema = z.object({
   client_ref: uuid,
   apply_wallet_ils: ilsAmount.default(0),
   accept_terms: z.literal(true, {
-    errorMap: () => ({ message: 'יש לאשר את התקנון' }),
+    error: 'יש לאשר את התקנון',
   }),
   save_card: z.boolean().default(true),
   token_id: uuid.optional(),

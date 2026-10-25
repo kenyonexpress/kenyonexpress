@@ -101,7 +101,7 @@ export const productSchema = z
     platform_percent: z.preprocess(
       emptyToNull,
       z.coerce
-        .number({ invalid_type_error: 'עמלת פלטפורמה נדרשת' })
+        .number({ error: 'עמלת פלטפורמה נדרשת' })
         .min(0, 'עמלה לא יכולה להיות שלילית')
         .max(100, 'עמלה לא יכולה לעלות על 100')
         .nullable()
@@ -127,7 +127,7 @@ export const productSchema = z
     coupon_expiry_days: z.preprocess(
       emptyToNull,
       z.coerce
-        .number({ invalid_type_error: 'תוקף קופון בימים נדרש' })
+        .number({ error: 'תוקף קופון בימים נדרש' })
         .int('תוקף חייב להיות מספר שלם של ימים')
         .min(1, 'תוקף חייב להיות לפחות יום אחד')
         .nullable()
