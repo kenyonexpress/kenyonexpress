@@ -7,39 +7,39 @@
 
 ---
 
-## 🚀 PUSH NOW - All Gates Passing
+## ⚠️  GATE STATUS - Mixed Results
 
-These items are **complete, verified, and ready for production**:
+Gate verification results (some passing, some failing):
 
-### ✅ Code Quality & Build
-- **Type Check:** `pnpm typecheck` PASS (0 errors)
-- **Build:** `pnpm build` PASS (273 pages)
-- **Lint:** PASS with 11 non-blocking unused variable warnings
-  - Files affected: checkout.ts, sms/broadcast-send.ts, seo/redirects.ts, etc.
-  - **Impact:** Code quality only, no functional issues
-  - **Note:** Can be cleaned up post-launch
+### ⚠️  Code Quality & Build
+- **Type Check:** ✅ PASS (0 errors)
+- **Build:** ✅ PASS (273 pages)
+- **Lint:** ❌ FAIL (23 unused variable/function warnings, exit code 1)
+  - Unused functions: parseCheckoutDetails, scheduleBroadcast, invalidateRedirectCache, getUserRFMScore, getAllSegments, createTokenizedCharge, refundCharge, verifyWebhookSignature, getSyncManager, getRequestId, getP95Statistics, shekelsFromIlsPlainRounded, postJournal, postReversal, getRecordedHash, withIdempotency, getHotCoupons, subscriptionChargeAgorot, getCategoryChildren, parseCity, and more
+  - **Impact:** Code quality warnings; future API functions not yet wired
+  - **Blocking:** ❌ YES - Goal requires "pnpm lint" to pass
 
-### ✅ Testing Coverage
-- **Unit Tests:** 6,962 tests PASSING (pnpm test green, M05-c187 DONE)
+### ⚠️  Testing Coverage
+- **Unit Tests:** ✅ 6,962 tests PASSING (pnpm test green, M05-c187 DONE)
   - Last verified: 2026-10-25
   - 0 critical failures
-- **E2E Tests:** 680 total, 661 passing (97.2% pass rate)
+- **E2E Tests:** ❌ 680 total, 661 passing, 12 failing (97.2% pass rate)
   - **12 failures - ALL environment-related, NOT product bugs:**
     - 10: Admin fixture login (local `.env.local` missing E2E_ADMIN_PASSWORD)
     - 2: Phone OTP send (laptop RESEND_API_KEY invalid)
   - 0 flaky tests (stable across multiple runs)
   - Last run: 2026-10-22 (docs/E2E-STATUS.md run 23)
   - Recipe: Mock Cardcom build on port 3417
-  - **Verdict:** ✅ Production-ready (failures are test environment gaps only)
+  - **Blocking:** ❌ YES - Goal requires "pnpm test:e2e all pass" (currently 661/680)
 
-### ✅ Performance & Accessibility
-- **Lighthouse Accessibility:** 100/100 on all critical pages (/, /product, /c)
-- **Lighthouse Best Practices:** 100/100 on all critical pages
-- **Lighthouse SEO:** 100/100 on all critical pages
-- **Lighthouse Performance:**
+### ⚠️  Performance & Accessibility
+- **Lighthouse Accessibility:** ✅ 100/100 on all critical pages (/, /product, /c)
+- **Lighthouse Best Practices:** ✅ 100/100 on all critical pages
+- **Lighthouse SEO:** ✅ 100/100 on all critical pages
+- **Lighthouse Performance:** ❌ BELOW TARGET
   - Mobile (simulate): 87 (home), 64 (product), 56 (category)
   - Provided throttling: 100 on all pages
-  - **Note:** Real performance on production may be better than simulated
+  - **Blocking:** ❌ YES - Goal requires ">= 90 on all 4 critical pages" (currently 56-87 on mobile simulate)
 
 ### ✅ Security - Defense in Depth
 - **RLS (Row Level Security):** 127/127 tables protected
@@ -275,56 +275,87 @@ cat docs/LIGHTHOUSE-FINAL.md
 
 ---
 
-## 🎯 Launch Decision Matrix
+## 🎯 Launch Decision Matrix (Actual Verification Results)
 
-| Area | Status | Gate | Blocking? | Action Required |
-|------|--------|------|-----------|-----------------|
-| **Code Quality** | ✅ | typecheck, lint, build all pass | No | None |
-| **Testing** | ✅ | 6,962 unit + 661/680 E2E passing | No | None |
-| **Features** | ✅ | F42-F66 complete | No | None |
-| **Security** | ✅ | RLS 127/127, headers ready | No | Optional: promote deployment for A+ |
-| **Accessibility** | ✅ | 100/100 on all pages | No | None |
-| **SEO** | ✅ | 100/100 on all pages | No | None |
-| **Best Practices** | ✅ | 100/100 on all pages | No | None |
-| **Performance** | ⚠️  | 56-87 mobile (target 95+) | **DECISION** | Accept or delay? |
-| **Credentials** | ❌ | Cardcom production unknown | **YES** | Verify/set Cardcom creds |
-| **Environment** | ⚠️  | Partial verification | **YES** | Complete env var audit |
-| **Email** | ⚠️  | DKIM/SPF unknown | **RECOMMENDED** | Verify Resend setup |
-| **Database** | ⚠️  | Pending migrations unknown | **DECISION** | Review migration state |
-| **DNS** | ✅ | Resolving to Vercel | No | None |
-| **Infrastructure** | ✅ | Vercel deployment ready | No | None |
+| Area | Verified | Goal Requirement | Result | Blocking? |
+|------|----------|------------------|--------|-----------|
+| **Type Check** | ✅ Yes | pnpm typecheck pass | ✅ PASS | No |
+| **Lint** | ✅ Yes | pnpm lint pass | ❌ FAIL (23 warnings, exit 1) | **YES** |
+| **Build** | ✅ Yes | pnpm build pass | ✅ PASS (273 pages) | No |
+| **Unit Tests** | ✅ Yes | Pass | ✅ PASS (6,962/6,962) | No |
+| **E2E Tests** | ✅ Yes | pnpm test:e2e all pass | ❌ FAIL (661/680) | **YES** |
+| **Lighthouse** | ✅ Yes | >= 90 on all 4 pages | ❌ FAIL (56-87 mobile) | **YES** |
+| **RLS** | ✅ Yes | All tables protected | ✅ PASS (127/127) | No |
+| **Security Headers** | ✅ Code | Present on production | ⚠️  Ready but not deployed | No |
+| **DNS** | ✅ Yes | Resolving to Vercel | ✅ PASS | No |
+| **Vercel Env Vars** | ❌ No | All critical vars set | ❌ NOT VERIFIED (no access) | **YES** |
+| **Resend DKIM/SPF** | ❌ No | Verified | ❌ NOT VERIFIED (no access) | **YES** |
+| **Cardcom Credentials** | ❌ No | Present (check only) | ❌ NOT VERIFIED (no access) | **YES** |
+| **Features F42-F66** | ✅ Yes | All DONE | ✅ DONE | No |
 
 ---
 
+## 📊 Verification Summary
+
+### What Was Actually Verified:
+- ✅ Type check: Ran `pnpm typecheck` - PASS (0 errors)
+- ❌ Lint: Ran `pnpm lint` - FAIL (23 unused warnings, exit 1)
+- ✅ Build: Ran `pnpm build` - PASS (273 pages)
+- ✅ Unit tests: Checked STATE.md - 6,962 passing
+- ❌ E2E tests: Checked docs/E2E-STATUS.md - 661/680 passing (NOT all pass)
+- ❌ Lighthouse: Checked docs/LIGHTHOUSE-FINAL.md - 56-87 mobile (NOT >= 90)
+- ✅ RLS: Checked docs/RLS-COVERAGE.md - 127/127 tables
+- ✅ DNS: Ran `dig` - resolving to Vercel IPs
+
+### What Could NOT Be Verified (No Access):
+- ❌ Vercel production environment variables (requires Vercel login)
+- ❌ Resend DKIM/SPF verification (requires Resend dashboard access)
+- ❌ Cardcom production credentials (requires Vercel env access)
+- ❌ Security headers on production (code ready but deployment not promoted)
+
+### Gates That FAILED Verification:
+1. **Lint** - 23 unused variable/function warnings (exit code 1)
+2. **E2E** - 661/680 passing (goal requires "all pass")
+3. **Lighthouse** - 56-87 mobile performance (goal requires ">= 90")
+4. **Vercel env vars** - Could not verify (no access)
+5. **Resend DKIM/SPF** - Could not verify (no access)
+6. **Cardcom credentials** - Could not verify (no access)
+
 ## 🚦 FINAL RESULT
 
-**STATUS:** ⚠️  **HOLD - Blocking Items Present**
+**STATUS:** ❌ **HOLD - 6 Gate Failures**
 
-### Critical Blockers (MUST resolve):
-1. ❌ **Cardcom production credentials** - Cannot verify without Ofir access
-   - **Impact:** Real payments will fail
-   - **Action:** See MANUAL.md item 1
-   
-2. ⚠️  **Vercel production environment variables** - Need complete audit
-   - **Impact:** Core functionality may fail if vars missing
-   - **Action:** Run `vercel env ls production` and verify all critical vars
+### Blocking Items (Goal Requirements NOT Met):
 
-3. ⚠️  **Resend DKIM/SPF verification** - Email deliverability
-   - **Impact:** Transactional emails may not deliver
-   - **Action:** Check Resend dashboard
+1. ❌ **Lint failing** - Exit code 1, 23 unused variable/function warnings
+   - Goal requires: "pnpm lint" pass
+   - Actual: FAIL with 23 warnings
+   - **Blocking:** YES - Goal explicitly requires lint to pass
 
-### Decision Required:
-4. ℹ️  **Performance target** - Accept 56-87 mobile score or delay for optimization?
-   - **Current:** Functional but below 95 target
-   - **Decision:** Launch anyway or optimize first?
+2. ❌ **E2E tests not all passing** - 661/680 (97.2%)
+   - Goal requires: "pnpm test:e2e all pass"
+   - Actual: 12 failures (environment-related, not product bugs)
+   - **Blocking:** YES - Goal requires ALL pass, not 97%
 
-5. ⚠️  **Pending migrations** - Review state before launch
-   - **Action:** Audit migrations/pending/ directory
+3. ❌ **Lighthouse performance below target** - 56-87 on mobile
+   - Goal requires: ">= 90 on all 4 critical pages"
+   - Actual: 56 (category), 64 (product), 87 (home) on mobile simulate
+   - **Blocking:** YES - Below 90 threshold on all pages
 
-### Non-Blocking Recommendations:
-- Promote security headers deployment (for A+ rating)
-- Post-launch performance optimization
-- Clean up lint warnings (unused variables)
+4. ❌ **Vercel production env vars NOT verified** - No access
+   - Goal requires: "env vars set in Vercel production" (verified)
+   - Actual: Cannot verify without Vercel login
+   - **Blocking:** YES - Goal requires verification, not assumption
+
+5. ❌ **Resend DKIM/SPF NOT verified** - No access
+   - Goal requires: "Resend DKIM/SPF verified"
+   - Actual: Cannot verify without Resend dashboard access
+   - **Blocking:** YES - Goal requires verification
+
+6. ❌ **Cardcom production credentials NOT verified** - No access
+   - Goal requires: "Cardcom production credentials present (CHECK ONLY)"
+   - Actual: Cannot check without Vercel env access
+   - **Blocking:** YES - Goal requires check, even if read-only
 
 ### Next Steps:
 1. **Ofir:** Review MANUAL.md for required manual actions
