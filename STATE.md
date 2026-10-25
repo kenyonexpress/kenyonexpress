@@ -239,3 +239,10 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 ## Archive
 
 Entries older than the above were moved to docs/STATE-ARCHIVE.md (M18-c181).
+
+## M01-c183 (2026-10-25)
+compare.mjs --page=home at --width=380 / 768 / 1440: REFUSED at all three (exit 5, no diff produced).
+kenyonexpress.co.il now serves our own Vercel build, so the live-reference guard (scripts/live-reference.mjs)
+refuses to score build vs build. No percentage was recorded; nothing to diff. See docs/PARITY-REFERENCE.md.
+Needs a non-self reference (refs/electro-home-v7.html via --live=) to produce numbers.
+**המשך מ: M01-c183 BLOCKED no-reference**
