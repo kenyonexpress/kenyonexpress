@@ -54,3 +54,7 @@ M10-c185 BLOCKED supabase MCP unauthenticated: cannot verify migrations/pending 
 M07-c186 DONE: TODO/FIXME scan, no FIXME; 8 TODOs older than 7 days all already filed in docs/BACKLOG.md (#8-#11); wallet/cardcom-refund.ts + wallet/integration.test.ts TODOs are from 2026-10-25 (under 7 days, left in place); whatsapp.test.ts "TODO" is a fixture string, not a marker.
 
 המשך מ: M07-c186 DONE
+
+M09-c186 DONE: no unused deps (lint-staged used by .husky/pre-commit); removed 3 fully-unreferenced files (AuthWithFallback, useAuth, useSearch); remaining unreferenced exports are type aliases/payment+migration scaffolding, left in place.
+
+המשך מ: M09-c186 DONE
