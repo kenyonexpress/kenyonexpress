@@ -87,3 +87,7 @@ M16-c193 DONE: product page src/app/(store)/product/[slug]/page.tsx (only PDP ro
 M07-c194 DONE: TODO/FIXME scan; all markers older than 7 days (cardcom.ts:249/:312, r2-migration.ts:103-106, stock-notifications route:126, screenshot-all.mjs:42) already filed in docs/BACKLOG.md items 8-11; new markers in src/lib/wallet/{cardcom-refund,integration.test}.ts are dated 2026-10-25 (under 7 days), whatsapp.test.ts "TODO" is a fixture string; no code changes.
 
 המשך מ: M07-c194 DONE
+
+M04-c195 DONE: pnpm type-check (tsc --noEmit) passes clean, no drift, working tree clean; no code changes.
+
+המשך מ: M04-c195 DONE
