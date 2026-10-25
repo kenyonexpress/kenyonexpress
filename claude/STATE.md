@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M09-c200 DONE no unused deps (4 scan false positives are peer/native deps); 534 dead-export candidates (types/schema/ui surface) logged to logs/m09-c200-dead-exports.log, none removed; no src change**
 **המשך מ: M06-c200 DONE pnpm build passes (exit 0); only drift was docs/M-CYCLE-STATUS.md timestamp, committed; no src change**
 **המשך מ: M08-c199 DONE Lighthouse mobile sample logged to logs/lighthouse-m08-c199.log: home perf 78, product perf 82 (a11y/BP/SEO 100, CLS ≤0.006, TBT ≤30ms); LCP-bound, G23 95+ not yet met; no src change**
 **המשך מ: M16-c197 DONE re-verified: only indexable product route (store)/product/[slug] emits Product + BreadcrumbList JSON-LD (one script each); /product/[slug]/gift is noindex, no JSON-LD needed; json-ld.test.ts 26/26 pass; no code change**
@@ -229,3 +230,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M09-c199 DONE (knip --dependencies: only @capacitor/android flagged, kept — needed for cap sync android; storybook/supabase are CLI binaries; no removable deps; dead exports are public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
 המשך מ: M03-c200 BLOCKED gate-fail (compare.mjs --page=category /category/hot-deals vs refs/localized/ke_live_category.html, first 2600px: 380=21.31%, 768=17.25%, 1440=9.58%; 380+768 over 11%; needed COMPARE_ALLOW_GRID_MISMATCH=1 since local page renders 0 product cards vs live 2 (Supabase catalogue unavailable), so numbers include a content gap; no code changes)
 המשך מ: M05-c200 DONE (pnpm test green: 615 files / 7062 tests passed, 28 skipped; no drift; no code changes)
+המשך מ: M08-c200 DONE (Lighthouse mobile sample logged to logs/lighthouse-m08-c200.log: home perf 87-90, product 81-87, a11y 100, SEO 100, best-practices 96; G23 95+ not yet met, LCP-bound; no code changes)
