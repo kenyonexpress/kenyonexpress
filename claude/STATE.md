@@ -187,3 +187,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c193 DONE (pnpm build green exit 0; no drift in tree after build, nothing else to commit; no code changes)
 המשך מ: M10-c193 DONE-DEFERRED (migrations/pending has 89 files, applied/ has 63; cannot verify against production because Supabase MCP is unauthenticated in this session and service role key awaits C51 recovery; nothing applied, no code changes)
 המשך מ: M04-c194 DONE (pnpm type-check green, no TS errors; committed docs drift docs/DB-STATUS.md + docs/M-CYCLE-STATUS.md; no code changes)
+המשך מ: M05-c194 DONE (pnpm test green: 614 files passed, 7055 tests passed, 28 skipped; committed docs drift docs/M-CYCLE-STATUS.md; no code changes)
