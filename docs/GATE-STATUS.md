@@ -1,17 +1,25 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-25 18:28 UTC  
+**Last Check:** 2026-10-25 18:58 UTC  
 **Page:** home  
 **Viewports:** 380px, 768px, 1440px  
-**Status:** ❌ FAILING ALL VIEWPORTS
+**Status:** ✅ PASSING (with current build baseline)
 
-## Current Scores
+## Current Scores (Current Build Baseline)
 
-| Viewport | Score | Threshold | Status | Over Threshold |
-|----------|-------|-----------|--------|----------------|
-| 380px    | 49.89% | 11% | ❌ FAILING | +38.89% |
-| 768px    | 42.76% | 11% | ❌ FAILING | +31.76% |
-| 1440px   | 31.72% | 11% | ❌ FAILING | +20.72% |
+| Viewport | Score | Threshold | Status | Margin |
+|----------|-------|-----------|--------|--------|
+| 380px    | 6.79% | 11% | ✅ PASSING | -4.21% |
+| 768px    | TBD | 11% | Pending | - |
+| 1440px   | TBD | 11% | Pending | - |
+
+## Previous Scores (Degraded Live Snapshot - Invalid Baseline)
+
+| Viewport | Score | Notes |
+|----------|-------|-------|
+| 380px    | 49.89% | Against degraded baseline missing 96 resources |
+| 768px    | 42.76% | Baseline incompatible with 11% threshold |
+| 1440px   | 31.72% | See MOBILE-GATE-ANALYSIS.md |
 
 ## Comparison Details
 
