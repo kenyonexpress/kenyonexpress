@@ -263,4 +263,9 @@ Same cause as M01-c196/c197/c198: kenyonexpress.co.il serves our own build (30-3
 ## M01-c200 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as M01-c196..c199: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. No local dev server on :3000 this run. No percentages produced; guard not bypassed.
-**המשך מ: M01-c200 BLOCKED no-reference**
+
+## M17-c200 (2026-10-26)
+RTL check on / and /product, static (scripts/rtl-lint.mjs, 83 hits repo-wide, none edited). `<html lang="he" dir="rtl">` confirmed in layout.tsx:113.
+Hits reaching / and /product are all non-leaks: comments (BenefitBar, MastheadNav, CityTag, newsletter.css, ReviewForm, CartLineItem, mini-cart.css), test mocks (ProductGallery.test), or deliberate physical anchors (MobileDrawer right-0 slide-in, pdp-gallery nav arrows). HeroSlider/TopBar hits are in forbidden files, untouched.
+No source changed, so no compare.mjs run needed. No runtime browser pass (no server on :3000).
+**המשך מ: M17-c200 DONE**
