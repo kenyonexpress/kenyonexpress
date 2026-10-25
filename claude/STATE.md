@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M05-c205 DONE pnpm test 615 files / 7064 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
 **המשך מ: M15-c204 DONE console check / and /product at 380/768/1440 on next dev: 0 console errors, 0 pageerrors; only dev-mode next/image aspect-ratio warnings on home deal cards (ke-live-deal-*) + aborted /api/cart fetch (endpoint 200); no code change**
 **המשך מ: M12-c204 DONE robots.ts verified prod-safe: allow /, disallows redeem/coupon/voucher/account/supplier/admin/scan/checkout/cart/auth/api/debug/reset+forgot-password; sitemap+host from NEXT_PUBLIC_APP_URL (prod env = https://kenyonexpress.co.il, trailing slash stripped); 7/7 robots tests pass; no code change**
 **המשך מ: M05-c204 DONE pnpm test 615 files / 7063 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
@@ -270,3 +271,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M13-c204 DONE
 המשך מ: M17-c204 BLOCKED locked-component (RTL on / and /product: /product clean; / still has 5 dir="ltr" sites in locked src/components/home/HeroSlider.tsx:555,565,575,619,628 wrapping Hebrew hero text; not edited; no code changes)
 המשך מ: M18-c204 DONE (claude/STATE.md already 271 lines, under 300; nothing to archive; docs/STATE-ARCHIVE.md unchanged)
+המשך מ: M04-c205 DONE (pnpm type-check clean, tsc exit 0, no drift, no code changes)
