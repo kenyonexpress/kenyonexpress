@@ -298,3 +298,8 @@ Same cause as M01-c190: kenyonexpress.co.il serves our own build (build vs build
 ## M02-c191 (2026-10-25)
 Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as M01-c191: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/. No percentages produced.
+
+## M03-c192 (2026-10-25)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (exit 5), no diffs to record.
+Same cause as M01-c191 / M02-c191: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. No percentages produced.
+**המשך מ: M03-c192 BLOCKED no-reference**
