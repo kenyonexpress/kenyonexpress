@@ -16,7 +16,7 @@ import Link from 'next/link'
  */
 
 export const metadata = {
-  title: 'הדף לא נמצא',
+  title: '404 - הדף לא נמצא',
   robots: { index: false, follow: true },
 }
 

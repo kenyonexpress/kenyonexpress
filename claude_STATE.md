@@ -28,3 +28,5 @@
 ## Loop Status: STOPPED
 All code executed. Awaiting manual tasks.
 
+
+המשך מ: M13-c185 DONE-DEFERRED (repo .env.local Supabase service key returns 401; /api/health + /api/ready 503 database=down on repo code)
