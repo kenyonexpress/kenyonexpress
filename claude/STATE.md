@@ -233,3 +233,6 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M03-c200 BLOCKED gate-fail (compare.mjs --page=category /category/hot-deals vs refs/localized/ke_live_category.html, first 2600px: 380=21.31%, 768=17.25%, 1440=9.58%; 380+768 over 11%; needed COMPARE_ALLOW_GRID_MISMATCH=1 since local page renders 0 product cards vs live 2 (Supabase catalogue unavailable), so numbers include a content gap; no code changes)
 המשך מ: M05-c200 DONE (pnpm test green: 615 files / 7062 tests passed, 28 skipped; no drift; no code changes)
 המשך מ: M08-c200 DONE (Lighthouse mobile sample logged to logs/lighthouse-m08-c200.log: home perf 87-90, product 81-87, a11y 100, SEO 100, best-practices 96; G23 95+ not yet met, LCP-bound; no code changes)
+המשך מ: M04-c201 DONE (pnpm type-check green, tsc --noEmit clean; no drift; no code changes)
+המשך מ: M06-c201 DONE (pnpm build green, route table generated; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
+המשך מ: M07-c201 DONE (TODO/FIXME scan: 3 open, all >7d and blocked on Cardcom creds / R2 feature work, filed in docs/BACKLOG.md; stock-notifications TODO already resolved in 46217252e, removed from backlog; no forbidden files touched)
