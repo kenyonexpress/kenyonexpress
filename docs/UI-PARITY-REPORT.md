@@ -277,3 +277,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-23 13:07 | supplier | 1440 | 0.21% | PASS | `e8a0628d6-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_supplier_1440.png (frozen PNG, 2026-10-23T13:02:29.622Z), not a fresh archive shot |
 | 2026-10-23 13:08 | supplier | 768 | 0.40% | PASS | `e8a0628d6-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_supplier_768.png (frozen PNG, 2026-10-23T13:02:26.832Z), not a fresh archive shot |
 | 2026-10-23 13:10 | supplier | 1440 | 0.21% | PASS | `e8a0628d6-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); baseline nextjs_supplier_1440.png (frozen PNG, 2026-10-23T13:02:29.622Z), not a fresh archive shot |
+| 2026-10-25 16:56 | home | 380 | 50.62% | **FAIL** | `91f5a0b64` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
