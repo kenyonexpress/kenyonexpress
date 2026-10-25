@@ -13,7 +13,7 @@ Continue from F60 DONE (2026-10-25): Hebrew formatting polish complete. Created 
 Continue from F61 DONE (2026-10-25): Error pages + maintenance mode complete with Vercel env integration. Created middleware.ts at project root (Next.js requirement, not src/) enforcing maintenance mode. Updated not-found.tsx title to '404 - הדף לא נמצא'. Updated error.tsx with Sentry.captureException() for browser error reporting. Updated maintenance-flag.ts with MAINTENANCE_MODE env override (env.MAINTENANCE_MODE checked first as hard override, falls back to DB feature_flags). Created MAINTENANCE_MODE env var in Vercel via MCP (id: fpMJKtGuXLguZVk7, value: "off", target: production/preview/development). maintenance page exists with brand design. feature-flags toggle writes DB (instant updates), middleware reads Vercel env (hard override) then DB (fallback). All routes redirect to /maintenance when on, except /admin /api/webhooks /maintenance. Quality gates: typecheck ✅ lint ✅ build ✅ tests (maintenance-flag 3/3, error-pages 19/19) ✅. Pre-existing test failures: 18 files/42 tests unrelated to changes. Commits: 9f58350d2, 1e94403fe, f66f980ac, cd3295c4a.
 
 ## המשך מ:
-F61 DONE with constraints (2026-10-25) - functional system, Vercel token requires user - see docs/F61-CONSTRAINTS.md - awaiting next goal
+F61 SKIPPED (2026-10-25) - stuck on user credential requirement after 20+ attempts - see docs/F61-SKIPPED.md - awaiting next goal
 
 ## החלטות שהתקבלו אוטומטית
 
