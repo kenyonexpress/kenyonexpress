@@ -65,3 +65,4 @@ M08-c189 DONE: Lighthouse mobile x3 on / and /product, medians 91 / 93 (logs/lig
 
 המשך מ: M08-c189 DONE
 המשך מ: M16-c189 DONE
+המשך מ: M07-c190 DONE (TODO/FIXME scan: all items older than 7d already in docs/BACKLOG.md #8-#11; wallet/cardcom-refund.ts + wallet/integration.test.ts TODOs added 2026-10-25, under 7d, not yet eligible; no code changes)
