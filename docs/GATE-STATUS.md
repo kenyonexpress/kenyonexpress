@@ -1,34 +1,89 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-22 00:27 UTC  
+**Last Check:** 2026-10-25 18:28 UTC  
 **Page:** home  
-**Viewport:** 1440px  
-**Current Score:** 23.91%  
-**Threshold:** 11%  
-**Status:** ❌ FAILING (12.91% over threshold)
+**Viewports:** 380px, 768px, 1440px  
+**Status:** ❌ FAILING ALL VIEWPORTS
 
-## Comparison Results
+## Current Scores
 
+| Viewport | Score | Threshold | Status | Over Threshold |
+|----------|-------|-----------|--------|----------------|
+| 380px    | 49.89% | 11% | ❌ FAILING | +38.89% |
+| 768px    | 42.76% | 11% | ❌ FAILING | +31.76% |
+| 1440px   | 31.72% | 11% | ❌ FAILING | +20.72% |
+
+## Comparison Details
+
+### 380px Viewport
+- **Live:** 380x17790px
+- **Local:** 380x5433px
+- **Compared:** 380x2600px (first segment)
+- **Best Known:** 30.26% (tolerance: 0.5%)
+- **Height Ratio:** 0.31x (structurally different pages)
+
+**Worst Performing Bands:**
+1. y 200-300: **99.7%** (critical variance)
+2. y 1800-1900: **78.9%** (severe variance)
+3. y 2200-2300: **78.9%** (severe variance)
+4. y 1200-1300: **76.8%** (severe variance)
+5. y 1700-1800: **75.6%** (severe variance)
+
+### 768px Viewport
+- **Live:** 768x9152px
+- **Local:** 768x8712px
+- **Compared:** 768x2600px (first segment)
+- **Best Known:** 29% (tolerance: 0.5%)
+
+**Worst Performing Bands:**
+1. y 1000-1100: **70.2%** (severe variance)
+2. y 1200-1300: **70.2%** (severe variance)
+3. y 1400-1500: **69%** (severe variance)
+4. y 1600-1700: **67.9%** (severe variance)
+5. y 1900-2000: **67.3%** (severe variance)
+
+### 1440px Viewport
 - **Live:** 1440x5492px
-- **Local:** 1490x5562px
+- **Local:** 1440x5372px
 - **Compared:** 1440x2600px (first segment)
 - **Best Known:** 8.29% (tolerance: 0.5%)
 
-## Worst Performing Bands
+**Worst Performing Bands:**
+1. y 1800-1900: **63.5%** (severe variance)
+2. y 1200-1300: **59.9%** (severe variance)
+3. y 1300-1400: **59.5%** (severe variance)
+4. y 1100-1200: **58.7%** (severe variance)
+5. y 1400-1500: **50.1%** (large variance)
 
-1. y 1100-1200: **67.5%** (severe variance)
-2. y 1200-1300: **63.1%** (severe variance)
-3. y 1600-1700: **61.5%** (severe variance)
-4. y 1700-1800: **55.6%** (large variance)
-5. y 2100-2200: **54.8%** (large variance)
+## Resource Loading
 
-## Root Causes
+- **Reference (live):** 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr)
+- **Local:** Everything loaded successfully
 
-- 201 resources failed to load on live site (113 scripts, 48 images, 37 fonts, 2 stylesheets, 1 xhr)
-- 3 resources failed locally (2 scripts, 1 fetch)
-- Layout shifts visible in vertical bands 1100-2600px
+## Root Cause Analysis
+
+### 380px Critical Issue
+The height ratio of 0.31x indicates the local build renders at approximately 1/3 the height of the live site. This suggests:
+1. Major structural differences between builds (NOT just styling)
+2. Possible data loading failures on local build
+3. Missing content sections or components
+
+The script output warns: "These are structurally different pages, not the same page styled differently."
+
+### Common Issues Across All Viewports
+- Large variance concentrated in mid-page vertical bands (y 1000-2400px)
+- Reference site has significant resource loading failures (96 resources)
+- Local build loads all resources successfully but renders shorter content
 
 ## Action Required
 
-Gate FAILING at 19.04% (threshold 11%).  
-Mobile fix goal requeued at head of queue per MAINTENANCE_LOOP_6.
+**CRITICAL:** All three viewports failing gate at 2-4x threshold.  
+**Mobile (380px) worst:** 49.89% vs 11% threshold (+38.89 percentage points).
+
+Mobile fix goal requires investigation of:
+1. Why local build is 1/3 height of live site at 380px
+2. Whether data is loading correctly in all environments
+3. Structural differences in responsive layout implementation
+4. Content parity between live and local builds
+
+Per MAINTENANCE_LOOP_6: Mobile fix goal should be requeued at head of queue.
