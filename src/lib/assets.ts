@@ -37,9 +37,9 @@ const HERO_CATEGORY_BANNERS = {
 } as const
 
 /** @deprecated use HERO_CATEGORY_BANNERS */
-const CATEGORIES = HERO_CATEGORY_BANNERS
+const _CATEGORIES = HERO_CATEGORY_BANNERS
 
-const HERO_ICONS = {
+const _HERO_ICONS = {
   logo: '/images/hero/icons/Kenyonexpress-190x50-1.png',
   payment: '/images/hero/icons/patment-icon.webp',
 } as const

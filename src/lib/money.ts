@@ -154,7 +154,7 @@ export function extractVat(gross: Agorot, vatRateBp: number = VAT_RATE_BP): VatB
   return { gross, net, vat, vatRateBp }
 }
 
-const moneyConstants = {
+const _moneyConstants = {
   agorotPerIls: 100,
   bpWhole: BP_WHOLE,
   vatRateBp: VAT_RATE_BP,
