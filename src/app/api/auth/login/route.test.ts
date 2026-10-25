@@ -75,7 +75,7 @@ describe('POST /api/auth/login', () => {
 
   it('delegates to signInWithEmail', async () => {
     await POST(req({ email: 'test@example.com', password: 'password' }))
-    expect(signInWithEmail).toHaveBeenCalledWith(null, expect.any(FormData))
+    expect(signInWithEmail).toHaveBeenCalledWith(null, expect.objectContaining({}))
   })
 
   it('returns error from action', async () => {

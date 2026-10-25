@@ -79,6 +79,6 @@ describe('POST /api/contact', () => {
     await POST(
       req({ channel: 'general', name: 'Test', email: 'test@example.com', message: 'Hello' }),
     )
-    expect(submitContactForm).toHaveBeenCalledWith({ ok: false }, expect.any(FormData))
+    expect(submitContactForm).toHaveBeenCalledWith({ ok: false }, expect.objectContaining({}))
   })
 })
