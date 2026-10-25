@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { eligibleVendorProfiles, parseVendorForm } from './vendor-form'
 
-const UUID_A = '11111111-1111-1111-1111-111111111111'
-const UUID_B = '22222222-2222-2222-2222-222222222222'
+const UUID_A = '11111111-1111-4111-8111-111111111111'
+const UUID_B = '22222222-2222-4222-8222-222222222222'
 
 // Minimal valid raw payload for creating a vendor.
 function rawCreate(overrides: Record<string, unknown> = {}) {

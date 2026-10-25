@@ -132,7 +132,11 @@ function validateGrid(grid: string[][]): ParseProductsResult {
     totalDataRows++
     const physicalRow = i + 1
 
-    const record: Record<string, string> = {}
+    // zod 4 omits an optional key whose column is absent; seed every schema
+    // column with '' so an absent optional column parses to null like an empty cell.
+    const record: Record<string, string> = Object.fromEntries(
+      Object.keys(productImportRowSchema.shape).map((key) => [key, '']),
+    )
     for (const [name, index] of columnOf) {
       record[name] = (cells[index] ?? '').trim()
     }
