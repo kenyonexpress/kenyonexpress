@@ -186,3 +186,6 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M16-c192 DONE (verified: only indexable PDP src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList via src/lib/seo/json-ld.ts; gift sub-page is noindex; json-ld.test.ts 26/26 green; no code changes)
 המשך מ: M06-c193 DONE (pnpm build green exit 0; no drift in tree after build, nothing else to commit; no code changes)
 המשך מ: M10-c193 DONE-DEFERRED (migrations/pending has 89 files, applied/ has 63; cannot verify against production because Supabase MCP is unauthenticated in this session and service role key awaits C51 recovery; nothing applied, no code changes)
+המשך מ: M04-c194 DONE (pnpm type-check green, no TS errors; committed docs drift docs/DB-STATUS.md + docs/M-CYCLE-STATUS.md; no code changes)
+המשך מ: M05-c194 DONE (pnpm test green: 614 files passed, 7055 tests passed, 28 skipped; committed docs drift docs/M-CYCLE-STATUS.md; no code changes)
+המשך מ: M06-c194 DONE (pnpm build green exit 0; no tracked drift after build, nothing to commit; untracked scripts/db-check.mjs pre-existing, left alone; no code changes)
