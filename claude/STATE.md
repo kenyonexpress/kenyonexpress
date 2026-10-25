@@ -169,3 +169,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c191 DONE (type-check green; committed 16 drifted files - unused-const underscore renames, migration 310 manifest entry; untracked 310/fraud scripts left uncommitted)
 המשך מ: M05-c191 DONE (pnpm test 7055 pass/0 fail, 614 files; fixed F66 drift: removed supabase/migrations/310 copy, added preflight_310 + README row + manifest, named discarded read errors in fraud-alerts/[id] + finalize.ts, dropped console.error in use-fingerprint; type-check green)
 המשך מ: M06-c191 DONE (pnpm build exit 0; committed M-CYCLE-STATUS.md timestamp drift; untracked 310/fraud scripts left uncommitted)
+המשך מ: M07-c191 DONE (TODO/FIXME scan: 4 markers older than 7 days, all already in docs/BACKLOG.md, none new or resolvable without Cardcom creds/feature work; BACKLOG header re-verified)
