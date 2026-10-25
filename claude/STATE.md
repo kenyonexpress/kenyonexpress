@@ -34,3 +34,7 @@ M08-c183 Lighthouse mobile (local next start, 3 runs): / perf 86/90/87 (LCP 3.3-
 M15-c183 BLOCKED locked-component: console on / and /product has ~1030 and ~116 errors (380/768/1440, fresh next start). Cause: prerendered (PPR) HTML emits 19 async chunk <script src> + inline scripts with no nonce, blocked by strict-dynamic CSP (src/proxy.ts). Fix needs dynamic rendering in src/app/layout.tsx (forbidden).
 
 המשך מ: M15-c183 BLOCKED
+
+M06-c184 pnpm build passes clean on autopilot @ 265f1b65b; no drift to fix (only untracked src/lib/supplier-onboarding.staging.test.ts from F57, live-staging test, left uncommitted).
+
+המשך מ: M06-c184 DONE
