@@ -44,14 +44,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const admin = createAdminClient()
 
   try {
-    // Get raw body for signature validation
+    // Get raw body and parse payload
     const rawBody = await request.text()
     const payload: CardcomWebhookPayload = JSON.parse(rawBody)
 
     const { event_type, order_id, payment_id, transaction_id, failure_reason, signature } = payload
 
-    // Validate signature
-    if (!signature || !validateSignature(rawBody, signature)) {
+    // Validate signature (calculated on payload without signature field)
+    if (!signature) {
+      console.error('Missing webhook signature')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
+
+    // Reconstruct payload without signature for validation
+    const { signature: _, ...payloadWithoutSignature } = payload
+    const payloadForValidation = JSON.stringify(payloadWithoutSignature)
+
+    if (!validateSignature(payloadForValidation, signature)) {
       console.error('Invalid webhook signature')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }

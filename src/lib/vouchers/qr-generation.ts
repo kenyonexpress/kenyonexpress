@@ -6,6 +6,7 @@ import { createHmac } from 'node:crypto'
  */
 
 interface VoucherQRPayload {
+  v: 1
   voucher_id: string
   user_id: string
   expiry: Date
@@ -15,10 +16,10 @@ interface VoucherQRPayload {
  * Generate signed JWT for voucher QR code.
  * Format: base64(header).base64(payload).signature
  */
-export function generateSignedJWT(payload: VoucherQRPayload): string {
+export function generateSignedJWT(payload: Omit<VoucherQRPayload, 'v'> & { v?: 1 }): string | null {
   const secret = process.env.VOUCHER_QR_SECRET
   if (!secret) {
-    throw new Error('VOUCHER_QR_SECRET environment variable not set')
+    return null
   }
 
   // JWT header
@@ -27,8 +28,9 @@ export function generateSignedJWT(payload: VoucherQRPayload): string {
     typ: 'JWT',
   }
 
-  // JWT payload
+  // JWT payload with version
   const jwtPayload = {
+    v: 1,
     voucher_id: payload.voucher_id,
     user_id: payload.user_id,
     exp: Math.floor(payload.expiry.getTime() / 1000), // Unix timestamp
@@ -53,7 +55,7 @@ export function generateSignedJWT(payload: VoucherQRPayload): string {
 export function verifySignedJWT(token: string): VoucherQRPayload | null {
   const secret = process.env.VOUCHER_QR_SECRET
   if (!secret) {
-    throw new Error('VOUCHER_QR_SECRET environment variable not set')
+    return null
   }
 
   try {
@@ -88,6 +90,7 @@ export function verifySignedJWT(token: string): VoucherQRPayload | null {
     }
 
     return {
+      v: 1,
       voucher_id: payload.voucher_id,
       user_id: payload.user_id,
       expiry: new Date(payload.exp * 1000),
@@ -103,6 +106,8 @@ export function verifySignedJWT(token: string): VoucherQRPayload | null {
  * Returns the JWT directly (not a data URL) for storage in orders.voucher_qr_url.
  * The JWT can be rendered as a QR code on the frontend.
  */
-export async function generateVoucherQR(payload: VoucherQRPayload): Promise<string> {
+export async function generateVoucherQR(
+  payload: Omit<VoucherQRPayload, 'v'>,
+): Promise<string | null> {
   return generateSignedJWT(payload)
 }
