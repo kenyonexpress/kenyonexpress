@@ -72,3 +72,4 @@ M11-c191 DONE: sitemap.xml verified. https://www.kenyonexpress.co.il/sitemap.xml
 המשך מ: M11-c191 DONE
 M13-c191 DONE-DEFERRED: prod https://www.kenyonexpress.co.il/api/ready = 200 (database/redis/meilisearch/r2/cardcom all ok). /api/health = 503: database ok, search down, search_detail=invalid_api_key (Meilisearch search key rejected on prod; /api/ready passes meilisearch so it only checks reachability). Fix is a valid MEILI search key in Vercel env, then re-run curl. No code change.
 המשך מ: M13-c191 DONE-DEFERRED
+המשך מ: M15-c191 BLOCKED (console check live www: / @380 still pageerror React #418 hydration mismatch + 429 on /monitoring Sentry tunnel; /product @380+1440 and / @1440 not assessable, Vercel bot challenge returned 403/708 after repeated runs; no code changes; #418 source likely in locked hero/header components)
