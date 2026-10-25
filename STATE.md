@@ -17,7 +17,7 @@ Continue from F60 DONE (2026-10-25): Hebrew formatting polish complete. Created 
 Continue from F61 DONE + VERIFIED (2026-10-25): Toggle sets Vercel env via CLI, tested and verified. Executed toggle CLI sequence (vercel env rm + add for MAINTENANCE_MODE) across production/preview/development - all succeeded. Verified with 'vercel env ls': MAINTENANCE_MODE Config in all 3 environments. Updated error.tsx with Sentry.captureException(). not-found.tsx title '404 - הדף לא נמצא'. maintenance page brand design. Middleware at project root (Next.js 16 requires root, not src/). Toggle implementation: src/server/actions/admin/feature-flags.ts calls authenticated vercel CLI (no API token needed), falls back to DB write. Test suite: 6960/6962 passing (99.97%). Quality gates: typecheck ✅ lint ✅ build ✅. Note: src/middleware.ts conflicts with Next.js 16 proxy.ts (framework requirement). Commits: c7fee6930, fc47305a8, 1a45011fe. Evidence: docs/F61-EVIDENCE.md.
 
 ## המשך מ:
-MAINTENANCE_LOOP_5 COMPLETE (2026-10-25 16:25 UTC) - Cron routes status check completed via Vercel logs. Checked all 20 cron routes for last-run timestamps. 5 routes active in last 24h (health, notifications, invoices, stranded-payments, stock). 15 routes stale >72h with no activity. Status improved since 11:06 UTC check (5 routes recovered from 000 timeout). High priority routes identified for investigation. MCP get_runtime_logs returns 403, used CLI fallback per recovery guidance. Results documented in docs/CRON-STATUS.md. Commit 3b1c32e52 pushed. Next: continue with remaining maintenance loops or return to feature/goal queue.
+MAINTENANCE_LOOP_5 FIRST ATTEMPT BLOCKED (2026-10-25 16:25 UTC) - Condition requires "via Vercel MCP get_runtime_logs" but MCP returns 403 forbidden (Vercel API authorization issue with claude.ai connector). Used CLI fallback which identified 5 active routes and 15 stale routes, but CLI method does not satisfy the literal condition requirement. Documentation delivered in docs/CRON-STATUS.md. Commits 3b1c32e52, fe517b664 pushed. Per CLAUDE.md "goal stuck twice: skip" - will attempt different approach or skip after second blocked attempt. Next: continue with remaining maintenance loops or return to feature/goal queue.
 
 ## החלטות שהתקבלו אוטומטית
 
@@ -38,6 +38,26 @@ MAINTENANCE_LOOP_5 COMPLETE (2026-10-25 16:25 UTC) - Cron routes status check co
 **Status**: First attempt. Per CLAUDE.md "goal stuck twice: skip" - will skip after second blocked attempt. External state dependency (npm package releases) may change between attempts.
 
 **Commits**: cadde48f7 (empty commit, force-pushed to autopilot)
+
+### MAINTENANCE_LOOP_5 - FIRST ATTEMPT BLOCKED (MCP Authorization, 2026-10-25)
+
+**Goal**: Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
+
+**What was delivered**: Cron status check via CLI fallback, documentation in docs/CRON-STATUS.md identifying 5 active routes and 15 stale routes, commits with [autopilot] prefix, quality gates passed.
+
+**What cannot be delivered**: Timestamp check "via Vercel MCP get_runtime_logs" as literally required by condition.
+
+**Why blocked**: Vercel MCP `get_runtime_logs` returns 403 forbidden on every attempt. Authorization issue with claude.ai Vercel connector for team_TUMTPVDP8218QHwedSjmgJWl / prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP. The connector can list teams/projects but lacks runtime logs read access. Per MCP error response and memory "Vercel MCP via CLI bearer token", this requires Ofir to update claude.ai connector permissions (Settings → Connectors → Vercel → enable runtime logs read).
+
+**Evidence**: MCP call failed with "Vercel API request failed (403: forbidden)" in tool result. Used CLI fallback `vercel --scope team_TUMTPVDP8218QHwedSjmgJWl logs --project prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP --since 72h` which succeeded and showed 5 routes active (health, notifications, invoices, stranded-payments, stock at 23:25-23:20 local time) and 15 routes with no activity in 72h.
+
+**Goal stop hook interpretation**: Requires literal use of MCP `get_runtime_logs` tool, not CLI fallback. CLI output was used to infer stale routes from absence rather than from MCP timestamp data. Commit message "chore: ops cron status check via Vercel logs" does not match required exact wording "chore ops cron status check". docs/CRON-STATUS.md diff 97 insertions/1133 deletions indicates large rewrite.
+
+**Conservative decision**: Cannot satisfy condition without MCP authorization fix (external dependency, requires Ofir's claude.ai settings). Condition does not accept CLI fallback method.
+
+**Status**: First attempt. Per CLAUDE.md "goal stuck twice: skip" - will skip after second blocked attempt if MCP authorization remains unavailable.
+
+**Commits**: 3b1c32e52, fe517b664 (autopilot)
 
 ### F55 - SKIPPED (Database Access Unavailable, 2026-10-25)
 
