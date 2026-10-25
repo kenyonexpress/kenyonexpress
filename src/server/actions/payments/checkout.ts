@@ -609,6 +609,8 @@ async function runBeginCheckout(
       address_id: input.address_id,
       accepted_terms_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
+      // F66: Device fingerprint for fraud detection
+      ...(input.device_fingerprint ? { device_fingerprint: input.device_fingerprint } : {}),
     })
     .select('id')
     .single()

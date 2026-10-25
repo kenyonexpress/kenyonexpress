@@ -25,6 +25,7 @@ import {
   type ShippingVerification,
 } from '@/lib/checkout/verified-shipping'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
+import { useDeviceFingerprint } from '@/lib/fraud/use-fingerprint'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { resetTurnstile } from '@/lib/security/turnstile-client'
@@ -161,6 +162,9 @@ export default function CheckoutForm({
     signInWithGoogle,
     null,
   )
+
+  // F66: Capture device fingerprint for fraud detection
+  const { fingerprint } = useDeviceFingerprint()
 
   const formRef = useRef<HTMLFormElement>(null)
   const googleFormRef = useRef<HTMLFormElement>(null)
@@ -476,6 +480,8 @@ export default function CheckoutForm({
           <input type="hidden" name="address_id" value={address.id} />
         )}
         {verifiedPhone && <input type="hidden" name="phone_verified_e164" value={verifiedPhone} />}
+        {/* F66: Device fingerprint for fraud detection */}
+        {fingerprint && <input type="hidden" name="device_fingerprint" value={fingerprint} />}
 
         <div className="checkout-col-main">
           <div className="checkout-step" data-inactive={step !== 'details' ? '' : undefined}>
