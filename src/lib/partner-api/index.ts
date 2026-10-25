@@ -60,7 +60,7 @@ export function hasScopePermission(
 }
 
 // All scopes for partner access (default on new keys)
-const DEFAULT_PARTNER_SCOPES: PartnerApiScope[] = ['products:read', 'categories:read']
+const _DEFAULT_PARTNER_SCOPES: PartnerApiScope[] = ['products:read', 'categories:read']
 
 // Public scope mapping (what external partners see)
 export const PUBLIC_SCOPE_DESCRIPTIONS: Record<PartnerApiScope, string> = {

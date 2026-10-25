@@ -10,7 +10,7 @@ export interface DealChips {
   freeShipping: boolean
 }
 
-const NO_CHIPS: DealChips = { weekend: false, freeShipping: false }
+const _NO_CHIPS: DealChips = { weekend: false, freeShipping: false }
 
 type Params = Record<string, string | string[] | undefined> | URLSearchParams
 

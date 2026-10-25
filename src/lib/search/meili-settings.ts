@@ -10,7 +10,7 @@ import { buildSynonyms } from '@/lib/search/hebrew-synonyms'
  */
 
 export const PRODUCTS_INDEX = process.env.MEILISEARCH_INDEX ?? 'products'
-const PRIMARY_KEY = 'id'
+const _PRIMARY_KEY = 'id'
 
 /**
  * Typo tolerance, tuned for Hebrew.

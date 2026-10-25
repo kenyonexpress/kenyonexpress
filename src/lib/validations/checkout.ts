@@ -188,7 +188,7 @@ const beginCheckoutOutputSchema = z.discriminatedUnion('kind', [
   }),
 ])
 
-const validateCartInputSchema = z.object({
+const _validateCartInputSchema = z.object({
   // empty object: cart is loaded from session/user
 })
 

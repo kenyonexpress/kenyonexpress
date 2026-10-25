@@ -51,9 +51,10 @@ export function decideRefund(input: RefundPolicyInput): RefundDecision {
   }
 }
 
-const REFUND_REASON_HE: Record<Extract<RefundDecision, { refundable: false }>['reason'], string> = {
-  redeemed: 'הקופון מומש, אין החזר',
-  window_closed: 'עברו יותר מ-14 ימים, אין החזר',
-  cancelled: 'כבר בוטל',
-  zero_policy: 'מדיניות המוצר ללא החזר',
-}
+const _REFUND_REASON_HE: Record<Extract<RefundDecision, { refundable: false }>['reason'], string> =
+  {
+    redeemed: 'הקופון מומש, אין החזר',
+    window_closed: 'עברו יותר מ-14 ימים, אין החזר',
+    cancelled: 'כבר בוטל',
+    zero_policy: 'מדיניות המוצר ללא החזר',
+  }

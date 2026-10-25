@@ -4,7 +4,7 @@
  * backfill through `aggregate_daily_revenue(p_day)`.
  */
 
-const REVENUE_DAILY_JOB = 'ke-revenue-daily'
+const _REVENUE_DAILY_JOB = 'ke-revenue-daily'
 
 /** The calendar day (YYYY-MM-DD) before `now`, read on the Asia/Jerusalem clock. */
 export function previousIsraelDay(now: Date): string {

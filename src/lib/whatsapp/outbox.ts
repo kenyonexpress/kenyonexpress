@@ -26,7 +26,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * expiry-reminder. Everything else returns null and costs nothing.
  */
 
-const WHATSAPP_KINDS = ['voucher_issued', 'voucher_expiring'] as const
+const _WHATSAPP_KINDS = ['voucher_issued', 'voucher_expiring'] as const
 
 export type WhatsappMessage = { contentSid: string; variables: Record<string, string> }
 
