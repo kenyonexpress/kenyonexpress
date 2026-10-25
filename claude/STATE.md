@@ -103,3 +103,7 @@ RESULT: DONE
 M04-c183: pnpm type-check clean (tsc --noEmit exit 0), no drift to fix.
 RESULT: DONE
 המשך מ: M04-c183 DONE
+
+M06-c183: pnpm build succeeds (Next.js production build, all routes generated), no drift to fix.
+RESULT: DONE
+המשך מ: M06-c183 DONE
