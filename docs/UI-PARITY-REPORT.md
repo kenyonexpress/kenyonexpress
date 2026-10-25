@@ -299,3 +299,9 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-24 21:59 | product | 768 | 33.85% | **FAIL** | `b3222561e-dirty` | baseline electro-product-fresh_768.png (frozen PNG, 2026-10-01T02:02:19.634Z), not a fresh archive shot |
 | 2026-10-24 22:00 | product | 1440 | 22.89% | **FAIL** | `5ea3789b3-dirty` | baseline electro-product-fresh_1440.png (frozen PNG, 2026-10-01T02:02:20.461Z), not a fresh archive shot |
 | 2026-10-24 22:02 | home | 380 | 46.03% | **FAIL** | `5ea3789b3-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); baseline electro-home-v7_380.png (frozen PNG, 2026-10-01T02:01:01.055Z), not a fresh archive shot |
+| 2026-10-25 06:15 | product | 380 | 53.74% | **FAIL** | `515976998-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-25 06:16 | product | 768 | 41.96% | **FAIL** | `4efb40b05-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-25 06:18 | product | 1440 | 26.32% | **FAIL** | `51dc640eb-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-25 06:20 | product | 380 | 53.74% | **FAIL** | `51dc640eb-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-25 06:22 | product | 768 | 41.96% | **FAIL** | `51dc640eb-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-25 06:24 | product | 1440 | 26.32% | **FAIL** | `51dc640eb-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
