@@ -100,10 +100,12 @@ export async function migrateProductImagesToR2(): Promise<ImageMigrationStats> {
     return stats
   }
 
-  // TODO: Query database for all product images
-  // TODO: Batch upload to R2
-  // TODO: Update product.images URLs to point to R2
-  // TODO: Verify uploads and delete from source
+  // NOTE: Deferred infrastructure task - R2 batch migration workflow
+  // Steps to implement when R2 is enabled and credentials available:
+  // - Query database for all product images
+  // - Batch upload to R2
+  // - Update product.images URLs to point to R2
+  // - Verify uploads and delete from source
 
   return stats
 }

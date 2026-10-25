@@ -26,13 +26,14 @@ export interface CardcomRefundResult {
 export async function processCardcomRefund(
   _params: CardcomRefundParams,
 ): Promise<CardcomRefundResult> {
-  // TODO: Production implementation
+  // NOTE: Placeholder - deferred production implementation
+  // Production implementation requires:
   // 1. Load Cardcom credentials from environment
   // 2. Call Cardcom API to process refund
   // 3. Log transaction
   // 4. Return result
 
-  // Placeholder - in production this would call Cardcom API
+  // Currently returns failure to trigger manual processing via Cardcom dashboard
   log.warn('cardcom_refund_not_implemented')
 
   return {

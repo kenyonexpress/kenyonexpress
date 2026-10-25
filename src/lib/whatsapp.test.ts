@@ -88,7 +88,7 @@ describe('the store number', () => {
   })
 
   it('ignores an env value that is not a phone number', () => {
-    process.env.NEXT_PUBLIC_WHATSAPP_PHONE = 'TODO'
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE = '__NOTSET__'
     expect(storeWhatsAppNumber()).toBe(PUBLISHED_STORE_WHATSAPP)
   })
 })
