@@ -1,3 +1,5 @@
+import { buildNotification } from '@/lib/email/notifications'
+import { sendEmail } from '@/lib/email/resend'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { cronSecretMatches } from '@/lib/security/constant-time'
@@ -5,27 +7,39 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
- * Scheduled gift delivery cron.
+ * Scheduled gift delivery cron - runs every 10 minutes.
  *
- * Runs every 10 minutes to process gift vouchers whose scheduled send time has
- * arrived. This is a specialized view of the notification_outbox queue: it
- * looks only for voucher_gifted rows whose next_attempt_at is now or past.
- *
- * The actual email sending happens via /api/cron/notifications, which processes
- * ALL notification_outbox rows. This route exists as a dedicated entry point
- * for the gift-sending concern, making it easier to monitor and control the
- * gift delivery schedule independently of other notifications.
+ * Checks notification_outbox for gift emails where gift_scheduled_at <= now
+ * AND not yet sent, then sends them via Resend.
  *
  * Flow:
- * 1. Gift purchase completed -> finalize.ts calls sendOrderGifts
- * 2. sendOrderGifts inserts voucher_gifted row into notification_outbox
- * 3. If gift_send_at is future, sets next_attempt_at to that time
- * 4. This cron (or /api/cron/notifications) picks up due rows
- * 5. buildNotification renders gift email template
- * 6. Email sent via Resend with gift claim link
+ * 1. Find voucher_gifted rows in notification_outbox where:
+ *    - status = 'pending'
+ *    - next_attempt_at <= now (this is set to gift_scheduled_at at queue time)
+ * 2. For each row, build gift email template F49 with:
+ *    - Coupon code (claim token)
+ *    - Personal message
+ *    - Link to redeem
+ * 3. Send via Resend
+ * 4. Update status to 'sent' and set sent_at
+ *
+ * Recipient must create account to redeem the gift (handled by claim flow).
  *
  * Auth: Vercel Cron sends x-cron-secret header.
  */
+
+const BATCH = 50
+
+type GiftOutboxRow = {
+  id: string
+  kind: string
+  recipient_email: string
+  payload: Record<string, unknown> | null
+  dedupe_key: string
+  attempts: number
+  status: string
+  next_attempt_at: string
+}
 
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
@@ -36,40 +50,89 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   }
 
   const admin = createAdminClient()
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
   const now = new Date().toISOString()
 
-  // Count how many scheduled gifts are due
-  const { count, error: countError } = await admin
+  // Find scheduled gifts that are due (gift_scheduled_at <= now AND not_sent)
+  const { data, error } = await admin
     .from('notification_outbox')
-    .select('*', { count: 'exact', head: true })
+    .select('id, kind, recipient_email, payload, dedupe_key, attempts, status, next_attempt_at')
     .eq('kind', 'voucher_gifted')
     .eq('status', 'pending')
     .lte('next_attempt_at', now)
+    .order('created_at', { ascending: true })
+    .limit(BATCH)
 
-  if (countError) {
-    log.error('scheduled_gifts.count_failed', { reason: countError.message })
-    return NextResponse.json({ ok: false, error: countError.message }, { status: 500 })
+  if (error) {
+    log.error('scheduled_gifts.read_failed', { reason: error.message })
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   }
 
-  const due = count ?? 0
+  const rows = (data ?? []) as unknown as GiftOutboxRow[]
+  let sent = 0
+  let failed = 0
 
-  // Log for monitoring
-  log.info('scheduled_gifts.check', { due, now })
+  for (const row of rows) {
+    // Build gift email template F49
+    const built = buildNotification(row.kind, row.payload ?? {}, siteUrl)
+    if (!built) {
+      log.warn('scheduled_gifts.no_template', { row_id: row.id })
+      await admin
+        .from('notification_outbox')
+        .update({ status: 'dead', last_error: 'no template for voucher_gifted' })
+        .eq('id', row.id)
+      continue
+    }
 
-  // The actual sending is handled by /api/cron/notifications, which processes
-  // all notification_outbox rows including gifts. This route just reports how
-  // many gift emails are scheduled and due.
-  //
-  // To trigger immediate processing, you can call /api/cron/notifications
-  // directly. This separation allows:
-  // - Dedicated monitoring of gift delivery schedule
-  // - Independent rate limiting if needed
-  // - Clear audit trail of scheduled vs immediate gifts
+    // Send gift email with coupon code, personal message, and claim link
+    const result = await sendEmail({
+      to: row.recipient_email,
+      subject: built.subject,
+      html: built.html,
+      text: built.text,
+      idempotencyKey: row.dedupe_key,
+    })
+
+    if (result.ok) {
+      sent++
+      await admin
+        .from('notification_outbox')
+        .update({
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+          attempts: row.attempts + 1,
+          last_error: null,
+        })
+        .eq('id', row.id)
+      log.info('scheduled_gifts.sent', { row_id: row.id, recipient: row.recipient_email })
+    } else {
+      failed++
+      const attempts = row.attempts + 1
+      const isDead = attempts >= 5
+      await admin
+        .from('notification_outbox')
+        .update({
+          status: isDead ? 'dead' : 'pending',
+          attempts,
+          last_error: result.reason?.slice(0, 500) ?? 'send failed',
+          next_attempt_at: new Date(Date.now() + 2 * 60_000).toISOString(), // retry in 2 min
+        })
+        .eq('id', row.id)
+      log.error('scheduled_gifts.send_failed', {
+        row_id: row.id,
+        attempts,
+        reason: result.reason,
+      })
+    }
+  }
 
   return NextResponse.json({
     ok: true,
-    due,
-    message: due > 0 ? `${due} scheduled gifts are due` : 'No scheduled gifts due',
+    processed: rows.length,
+    sent,
+    failed,
+    message:
+      sent > 0 ? `Sent ${sent} scheduled gift${sent === 1 ? '' : 's'}` : 'No scheduled gifts due',
   })
 }
 
