@@ -245,3 +245,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M05-c202 DONE (pnpm test green: 615 files / 7062 tests passed, 28 skipped; no drift; no code changes)
 המשך מ: M06-c202 DONE (pnpm build green, all routes generated; drift limited to state/status docs, committed; no src change)
 המשך מ: M09-c202 DONE (re-scan of all deps/devDeps by import grep: every dep referenced; capacitor native pkgs + @mdx-js/loader + @types/* are implicit/CLI use; dead exports are public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
+המשך מ: M15-c202 DONE (Playwright console/pageerror/HTTP>=400 check on / and /product/<slug> at 380/768/1440 against fresh next start: 6/6 clean; the long-running :3000 server predates the 03:22 rebuild and serves stale chunk hashes (500 on 3-c503juuqoxp.js) so needs restart, not a code issue; no code changes)
