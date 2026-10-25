@@ -1,9 +1,31 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { turnstileConfigured, verifyTurnstile } from './turnstile'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const env = (v: Record<string, string>) => v as unknown as NodeJS.ProcessEnv
 
-afterEach(() => vi.unstubAllGlobals())
+const mockLog = {
+  warn: vi.fn(),
+  info: vi.fn(),
+  error: vi.fn(),
+}
+
+vi.mock('@/lib/observability/log', () => ({
+  log: mockLog,
+}))
+
+let turnstileConfigured: typeof import('./turnstile').turnstileConfigured
+let verifyTurnstile: typeof import('./turnstile').verifyTurnstile
+
+beforeEach(async () => {
+  vi.clearAllMocks()
+  vi.resetModules()
+  const mod = await import('./turnstile')
+  turnstileConfigured = mod.turnstileConfigured
+  verifyTurnstile = mod.verifyTurnstile
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('turnstile', () => {
   it('passes when no secret is configured', async () => {
@@ -34,5 +56,26 @@ describe('turnstile', () => {
       }),
     )
     expect(await verifyTurnstile('tok', undefined, env({ TURNSTILE_SECRET_KEY: 's' }))).toBe(false)
+  })
+  it('logs warning once when TURNSTILE_SECRET_KEY is missing', async () => {
+    // First call should log
+    await verifyTurnstile(null, '1.2.3.4', env({}))
+    expect(mockLog.warn).toHaveBeenCalledTimes(1)
+    expect(mockLog.warn).toHaveBeenCalledWith('turnstile.env_missing', {
+      message: 'TURNSTILE_SECRET_KEY not set, verification skipped. See docs/TURNSTILE-SETUP.md',
+    })
+
+    // Second call should not log again (one-time warning)
+    await verifyTurnstile(null, '1.2.3.5', env({}))
+    expect(mockLog.warn).toHaveBeenCalledTimes(1) // Still 1, not 2
+  })
+  it('does not log when TURNSTILE_SECRET_KEY is set', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ success: true }), { status: 200 })),
+    )
+
+    await verifyTurnstile('token', '1.2.3.4', env({ TURNSTILE_SECRET_KEY: 'test-secret' }))
+    expect(mockLog.warn).not.toHaveBeenCalled()
   })
 })

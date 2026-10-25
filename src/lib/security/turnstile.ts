@@ -1,4 +1,5 @@
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { log } from '@/lib/observability/log'
 
 /**
  * Cloudflare Turnstile, on the two public forms a bot can reach without an
@@ -18,13 +19,23 @@ export const TURNSTILE_FIELD = 'cf-turnstile-response'
 
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
+let warnedMissingKey = false
+
 export async function verifyTurnstile(
   token: FormDataEntryValue | null,
   ip?: string,
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<boolean> {
   const secret = env.TURNSTILE_SECRET_KEY
-  if (!secret) return true
+  if (!secret) {
+    if (!warnedMissingKey) {
+      log.warn('turnstile.env_missing', {
+        message: 'TURNSTILE_SECRET_KEY not set, verification skipped. See docs/TURNSTILE-SETUP.md',
+      })
+      warnedMissingKey = true
+    }
+    return true
+  }
   if (typeof token !== 'string' || token.length === 0 || token.length > 2048) return false
   const body = new URLSearchParams({ secret, response: token })
   if (ip && ip !== 'unknown') body.set('remoteip', ip)
