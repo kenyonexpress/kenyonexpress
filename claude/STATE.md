@@ -269,3 +269,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M09-c204 DONE (2026-10-26): import-grep of all deps/devDeps: only unreferenced are implicit (@types/*, typescript, biome, husky, lint-staged, vitest coverage, capacitor native, @mdx-js/loader via next config); none removable; dead exports are public type surfaces/generated database.ts, kept; no code change, no forbidden files touched)
 המשך מ: M13-c204 DONE
 המשך מ: M17-c204 BLOCKED locked-component (RTL on / and /product: /product clean; / still has 5 dir="ltr" sites in locked src/components/home/HeroSlider.tsx:555,565,575,619,628 wrapping Hebrew hero text; not edited; no code changes)
+המשך מ: M18-c204 DONE (claude/STATE.md already 271 lines, under 300; nothing to archive; docs/STATE-ARCHIVE.md unchanged)
