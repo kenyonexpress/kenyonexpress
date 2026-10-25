@@ -117,6 +117,6 @@ RESULT: DONE
 המשך מ: M09-c183 DONE
 המשך מ: M11-c183 DONE (sitemap.xml 200 on www, 75 urls, lastmod 2026-10-24; locs use apex host which 308s to www - env NEXT_PUBLIC_APP_URL note)
 המשך מ: M17-c183 DONE (RTL probe on /, /product/barbecue, /product/pampers-* at 380/768/1440: html dir=rtl lang=he, 0 overflow, 0 LTR-Hebrew leaks, 0 text-align:left; only intentional dir=ltr = hero Latin promo text + email/tel inputs)
-M08-c184: Lighthouse mobile (live www, simulated 4G, performance only, 2026-10-25): / = 98 (FCP 1.3s, LCP 1.9s, TBT 80ms, CLS 0.005); /product/barbecue = 82 (FCP 1.6s, LCP 4.4s, TBT 70ms, CLS 0). Product below G23 95 target, LCP is the gap. Local `next build` fails at HEAD: ambiguous routes /c/[slug] vs /c/[code] (src/app/c/[code]/route.ts vs src/app/(store)/c/[slug]) - not touched here.
+M09-c184: Unused deps + dead exports re-audit. knip: only unused dep is @capacitor/android (needed by android/ Capacitor platform, kept). Remaining src unused-file hits are entry/test/dynamic/backlog-kept (c183 already removed the safe ones); exports/types are tested public surface. No code change, no UI impact.
 RESULT: DONE
-המשך מ: M08-c184 DONE
+המשך מ: M09-c184 DONE
