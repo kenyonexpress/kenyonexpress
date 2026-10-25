@@ -135,3 +135,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M05-c186 DONE (pnpm test 6962 pass/0 fail; F59 drift fixed: scheduled-gifts cron registered, migration 305 listed, GiftButton console removed, cron voucher read handles error)
 המשך מ: M06-c186 DONE (pnpm build passes; drift committed: not-found title, M-CYCLE-STATUS, claude_STATE, F59 status doc)
 המשך מ: M10-c186 DONE-DEFERRED (85 files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session and anon key 401; 301_supplier_verification_status.sql known unapplied via product_detail.supplier_load_failed; apply one at a time via apply_migration once Supabase access is restored)
+המשך מ: M14-c186 DONE-DEFERRED (SENTRY_AUTH_TOKEN is placeholder/absent in .env.local, .env.production, .env.vercel; Sentry release vs HEAD not verified; re-run once real token set)
