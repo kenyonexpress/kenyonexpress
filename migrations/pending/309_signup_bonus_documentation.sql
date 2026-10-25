@@ -1,4 +1,4 @@
--- Migration F65: Signup bonus documentation
+-- Migration 309: Signup bonus documentation (F65)
 --
 -- This migration documents the 10₪ signup bonus feature added in F65.
 -- No schema changes are required because:

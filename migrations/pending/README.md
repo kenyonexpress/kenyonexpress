@@ -1,5 +1,9 @@
 # `migrations/pending/`
 
+## 2026-10-25: 309 added (F65)
+
+- `309_signup_bonus_documentation.sql` - PENDING (F65). Documents the 10₪ signup bonus feature. No schema changes required - uses existing wallet infrastructure (wallet_accounts, wallet_entries, fn_wallet_transfer from migration 046). Credits bonus from platform:cashback_reserve to user wallet on first successful authentication via idempotency key 'signup_bonus:<uid>'. See preflight_309.sql for verification checks.
+
 ## 2026-10-25: 305, 306, 307 and 308 added (F55-F58)
 
 - `305_supplier_applications.sql` - PENDING (F57). Creates supplier_applications for onboarding requests, with owner read, admin all and audit trigger. Requires MCP apply_migration.

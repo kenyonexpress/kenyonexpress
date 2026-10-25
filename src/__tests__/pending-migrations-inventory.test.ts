@@ -249,6 +249,7 @@ describe('the pending migration inventory', () => {
       '306_supplier_agreements.sql',
       '307_wallet_cashback_withdrawals.sql',
       '308_order_lifecycle_transition_guards.sql',
+      '309_signup_bonus_documentation.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -286,6 +287,7 @@ describe('the pending migration inventory', () => {
       'preflight_306.sql',
       'preflight_307.sql',
       'preflight_308.sql',
+      'preflight_309.sql',
     ])
   })
 
