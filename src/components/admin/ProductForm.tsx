@@ -141,6 +141,12 @@ export default function ProductForm({
     product?.discount_percent != null ? String(product.discount_percent) : '',
   )
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    product?.category_id ? [product.category_id] : [],
+  )
+  const [originalPrice, setOriginalPrice] = useState('')
+  const [sourceUrl, setSourceUrl] = useState('')
+  const [validFrom, setValidFrom] = useState('')
 
   const error = state && 'error' in state ? state.error : null
 
@@ -343,24 +349,42 @@ export default function ProductForm({
         />
       </div>
 
-      {/* Category */}
+      {/* Category Multi-Select */}
       <div>
-        <label htmlFor="category_id" className="block text-xs font-medium text-gray-700 mb-1">
-          קטגוריה
-        </label>
-        <select
-          id="category_id"
-          name="category_id"
-          defaultValue={product?.category_id ?? ''}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-        >
-          <option value="">ללא קטגוריה</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name_he}
-            </option>
-          ))}
-        </select>
+        <p className="block text-xs font-medium text-gray-700 mb-1">קטגוריות</p>
+        <input type="hidden" name="category_id" value={selectedCategories[0] ?? ''} />
+        <input type="hidden" name="category_ids" value={JSON.stringify(selectedCategories)} />
+        <div className="border border-gray-300 rounded-lg px-3 py-2 max-h-48 overflow-y-auto">
+          {categories.length === 0 ? (
+            <p className="text-xs text-gray-400">אין קטגוריות זמינות</p>
+          ) : (
+            <div className="space-y-1.5">
+              {categories.map((c) => (
+                <label
+                  key={c.id}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(c.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedCategories([...selectedCategories, c.id])
+                      } else {
+                        setSelectedCategories(selectedCategories.filter((id) => id !== c.id))
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+                  />
+                  <span className="text-sm text-gray-700">{c.name_he}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <p className="mt-1 text-xs text-gray-500">
+          ניתן לבחור מספר קטגוריות. הראשונה תשמש כקטגוריה ראשית.
+        </p>
       </div>
 
       {/* Type + Status */}
@@ -591,6 +615,45 @@ export default function ProductForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
+                htmlFor="original_price"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מחיר מקורי (₪)
+              </label>
+              <input
+                id="original_price"
+                name="original_price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={originalPrice}
+                onChange={(e) => setOriginalPrice(e.target.value)}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">מחיר המוצר אצל הספק המקורי</p>
+            </div>
+            <div>
+              <label htmlFor="source_url" className="block text-xs font-medium text-gray-700 mb-1">
+                קישור למקור
+              </label>
+              <input
+                id="source_url"
+                name="source_url"
+                type="url"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+                dir="ltr"
+                placeholder="https://..."
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">קישור לעמוד המוצר המקורי</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
                 htmlFor="platform_percent"
                 className="block text-xs font-medium text-gray-700 mb-1"
               >
@@ -789,7 +852,7 @@ export default function ProductForm({
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label
                   htmlFor="discount_percent"
@@ -810,6 +873,23 @@ export default function ProductForm({
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <p className="mt-1 text-xs text-gray-500">מקטין בפועל את הסכום שנגבה באתר</p>
+              </div>
+              <div>
+                <label
+                  htmlFor="valid_from"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  המבצע מתחיל ב
+                </label>
+                <input
+                  id="valid_from"
+                  name="valid_from"
+                  type="date"
+                  value={validFrom}
+                  onChange={(e) => setValidFrom(e.target.value)}
+                  dir="ltr"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                />
               </div>
               <div>
                 <label
