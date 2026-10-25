@@ -269,3 +269,8 @@ RTL check on / and /product, static (scripts/rtl-lint.mjs, 83 hits repo-wide, no
 Hits reaching / and /product are all non-leaks: comments (BenefitBar, MastheadNav, CityTag, newsletter.css, ReviewForm, CartLineItem, mini-cart.css), test mocks (ProductGallery.test), or deliberate physical anchors (MobileDrawer right-0 slide-in, pdp-gallery nav arrows). HeroSlider/TopBar hits are in forbidden files, untouched.
 No source changed, so no compare.mjs run needed. No runtime browser pass (no server on :3000).
 **המשך מ: M17-c200 DONE**
+
+## M01-c201 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard again, no diffs to record.
+Same cause as M01-c196..c200: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. Local dev server on :3000 was up this run (200), so the blocker is the reference, not the server. No percentages produced; guard not bypassed.
+**המשך מ: M01-c201 BLOCKED no-reference**
