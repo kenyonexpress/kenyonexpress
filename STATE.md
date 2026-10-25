@@ -221,3 +221,13 @@ Same cause as M01-c193: kenyonexpress.co.il serves our own build (build vs build
 Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as M01-c193 / M02-c193: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. The script's reference is still the LIVE_CATEGORY URL, not a refs/ file. No percentages produced.
 **המשך מ: M03-c193 BLOCKED no-reference**
+
+## M01-c194 (2026-10-25)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c193: kenyonexpress.co.il serves our own build (30-32 /_next/ assets, no wp-content), so build vs build. The script's reference is still LIVE_HOME, not refs/electro-home-v7.html. No local dev server was up on :3000 either. No percentages produced; guard not bypassed.
+**המשך מ: M01-c194 BLOCKED no-reference**
+
+## M03-c194 (2026-10-25)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M03-c193: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. No percentages produced.
+**המשך מ: M03-c194 BLOCKED no-reference**
