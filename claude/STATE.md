@@ -147,3 +147,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M02-c188 BLOCKED gate-fail (compare.mjs --page=product, COMPARE_ALLOW_GRID_MISMATCH=1 since live snapshot shows 1 card vs local 4: 380px 53.74%, 768px 41.96%, 1440px 26.32%, all >11%; height ratios 0.58x/0.43x/0.35x so figures are structural-mismatch not pixel gate; no code changes)
 המשך מ: M06-c188 DONE (pnpm build passes; committed untracked drift src/lib/rate-limit.ts + docs/TURNSTILE-SETUP.md)
 המשך מ: M07-c188 DONE (TODO/FIXME scan: 6 markers in 4 groups, all >7 days old, all already filed in docs/BACKLOG.md #1-4; no new markers; no code changes)
+המשך מ: M09-c188 DONE (deps audit: 0 removable - @mdx-js/loader+react are @next/mdx peers, capacitor platforms/husky/lint-staged/@types are implicit tooling; 53 unreferenced lib function exports are payment/ledger/R2/push/ops infra kept for launch, not deleted; no code changes)
