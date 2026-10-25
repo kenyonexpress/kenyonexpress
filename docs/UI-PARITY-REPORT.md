@@ -335,3 +335,10 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-25 14:26 | home | 768 | 42.76% | **FAIL** | `4ba8a260f-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-25 14:28 | home | 1440 | 31.72% | **FAIL** | `4ba8a260f-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-25 14:29 | home | 1440 | 31.72% | **FAIL** | `888f3c35c` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); OURS dropped 6 script (unhydrated, not a fidelity score); ref 141 failed to load (101 script, 37  |
+| 2026-10-25 18:55 | category | 380 | n/a | **UNMEASURED** | `46217252e-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/category/hot-deals Call log: [2m - navigating to "http://localhost:3000/cate |
+| 2026-10-25 18:56 | category | 380 | 13.57% | **FAIL** | `46217252e-dirty` | ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
+| 2026-10-25 18:58 | category | 768 | 11.26% | **FAIL** | `46217252e-dirty` | ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
+| 2026-10-25 19:00 | category | 1440 | 6.33% | PASS | `fb172da11-dirty` | ref 62 failed to load (30 script, 29 font, 2 stylesheet, 1 xhr) |
+| 2026-10-25 19:02 | category | 380 | 21.31% | **FAIL** | `fb172da11-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
+| 2026-10-25 19:03 | category | 768 | 17.25% | **FAIL** | `fb172da11-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
+| 2026-10-25 19:05 | category | 1440 | 9.58% | PASS | `fb172da11-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 62 failed to load (30 script, 29 font, 2 stylesheet, 1 xhr) |
