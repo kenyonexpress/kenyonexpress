@@ -126,3 +126,8 @@ RESULT: DONE
 M09-c185: Unused deps + dead exports re-audit. knip: only unused dep is @capacitor/android (needed by android/ Capacitor platform, kept). Unused-file hits are entry/test/script/backlog-kept and locked components (untouched); exports are tested public surface, same as c183/c184. No code change, no UI impact.
 RESULT: DONE
 המשך מ: M09-c185 DONE
+M15-c185: Console check on / and /product/<slug> at 380/768/1440 (dev server). / clean apart from dev-only noise. /product logs error product_detail.supplier_load_failed: column suppliers.verification_status does not exist (migrations/pending/301_supplier_verification_status.sql not applied; Supabase MCP not authorized in this session). No code change.
+RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
+המשך מ: M15-c185 BLOCKED
+המשך מ: M16-c185 DONE
+המשך מ: M17-c185 DONE (live RTL probe / and /product/עוזרת-אישית-שירותי-משרד at 380/768/1440: html dir=rtl lang=he, 0 overflow, 0 text-align:left, 0 LTR leaks on /product; on / only 11 dir=ltr hero promo paragraphs in locked hero, untouched; no code changes)
