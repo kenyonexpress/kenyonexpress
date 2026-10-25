@@ -47,3 +47,16 @@ Previous comprehensive audit (2026-10-20) showed variance across 10 pages. Curre
 | `/product/<slug>` | provided | 100 | 0.1 s | 0.1 s | 0 ms | 0 |
 
 Simulated scores on localhost are unstable (see scripts/lighthouse-smoke.mjs header; 88 on a first run). Simulated LCP is the gap to the G23 95+ target. No code changed.
+
+## M08-c205 sample (2026-10-26, mobile, local `next start` on :3000)
+
+Sampled `/` and `/product/עוזרת-אישית-שירותי-משרד` (`/product` alone is 404 by design).
+
+| Page | Throttling | Perf | FCP | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|
+| `/` | simulate | 69 | 1.1 s | 9.8 s | 300 ms | 0.001 |
+| `/` | provided | 100 | 0.2 s | 0.2 s | 0 ms | 0.001 |
+| `/product/<slug>` | simulate | 67 | 1.7 s | 9.7 s | 190 ms | 0 |
+| `/product/<slug>` | provided | 100 | 0.2 s | 0.2 s | 0 ms | 0.001 |
+
+Simulated scores on localhost remain unstable (78/81 in c204, 69/67 here, same tree class); `provided` is 100. Sampling only, no code changed.
