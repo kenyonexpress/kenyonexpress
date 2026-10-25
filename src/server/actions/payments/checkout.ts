@@ -653,17 +653,18 @@ async function runBeginCheckout(
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
 
-    // Scheduled delivery (186), again in its own statement: before 186 is
-    // applied the column does not exist, the update fails, and the gift is sent
-    // immediately, which is the behaviour before scheduling existed.
+    // Scheduled delivery (305 renames 186's gift_send_at to gift_scheduled_at).
+    // Before 305 is applied the column is named gift_send_at and this update
+    // fails with 42703, which means the gift is sent immediately - the behaviour
+    // before scheduling existed.
     const sendAt = giftSendAt(input.gift_send_date, now)
     if (sendAt) {
       const { error: sendAtError } = await admin
         .from('orders')
-        .update({ gift_send_at: sendAt.toISOString() } as never)
+        .update({ gift_scheduled_at: sendAt.toISOString() } as never)
         .eq('id', order.id)
       if (sendAtError) {
-        log.warn('checkout.gift_send_at_not_recorded', {
+        log.warn('checkout.gift_scheduled_at_not_recorded', {
           order_id: order.id,
           err: sendAtError.message,
         })
