@@ -115,3 +115,5 @@ RESULT: DONE
 M09-c183: Unused deps + dead exports. knip: no removable deps (flagged capacitor/lighthouse/mdx are config/script-used). Removed 7 unreferenced src files (VendorDetailClient, CategorySort, store/CategoryNav, store/CategorySidebar, store/PromoBanners, db/schema/order-items, revslider-authored). Kept r2-migration.ts (BACKLOG #3). Exports/types left: public API/tested surface. tsc, vitest (6954 pass), biome green. No rendered-UI change; build/compare not re-run.
 RESULT: DONE
 המשך מ: M09-c183 DONE
+המשך מ: M11-c183 DONE (sitemap.xml 200 on www, 75 urls, lastmod 2026-10-24; locs use apex host which 308s to www - env NEXT_PUBLIC_APP_URL note)
+המשך מ: M17-c183 DONE (RTL probe on /, /product/barbecue, /product/pampers-* at 380/768/1440: html dir=rtl lang=he, 0 overflow, 0 LTR-Hebrew leaks, 0 text-align:left; only intentional dir=ltr = hero Latin promo text + email/tel inputs)
