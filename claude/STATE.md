@@ -263,3 +263,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c204 DONE (pnpm type-check green, tsc --noEmit 0 errors; drift limited to docs/UI-PARITY-REPORT.md compare log rows, committed; no src change)
 המשך מ: M06-c204 DONE (2026-10-26): pnpm build exit 0 (273 routes), working tree clean, no drift, no code change.
 המשך מ: M07-c204 DONE (2026-10-26): TODO/FIXME scan: only 3 groups in src/ (cardcom.ts:249, :312, r2-migration.ts:103-106), all >7d and already filed in docs/BACKLOG.md; blocked on Cardcom prod creds / Supabase service key; no code change, no forbidden files touched)
+המשך מ: M08-c204 DONE (2026-10-26): Lighthouse mobile sampled, / simulate 78 / provided 100, product simulate 81 / provided 100; logged in docs/LIGHTHOUSE-STATUS.md; G23 95+ not yet met under simulate (LCP 4.8-5.4s); no code change)
