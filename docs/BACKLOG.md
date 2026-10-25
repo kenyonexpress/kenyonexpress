@@ -1,6 +1,6 @@
 # Backlog
 
-**Status:** 4 open items (filed by M07-c183 / M07-c187 TODO/FIXME scans, re-verified by M07-c188, 2026-10-25)
+**Status:** 4 open items (filed by M07-c183 / M07-c187 TODO/FIXME scans, re-verified by M07-c191, 2026-10-25)
 
 All earlier items were processed (C47, 2026-10-24).
 

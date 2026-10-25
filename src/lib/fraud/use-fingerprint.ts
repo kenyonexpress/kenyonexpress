@@ -23,8 +23,8 @@ export function useDeviceFingerprint() {
           setFingerprint(result.visitorId)
           setLoading(false)
         }
-      } catch (error) {
-        console.error('Failed to get device fingerprint:', error)
+      } catch {
+        // Fingerprint is a best-effort fraud signal; orders proceed without it.
         if (mounted) {
           setFingerprint(null)
           setLoading(false)

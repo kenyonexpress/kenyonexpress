@@ -1,4 +1,5 @@
 import { requireSection } from '@/lib/admin/rbac'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -27,22 +28,28 @@ export default async function FraudAlertDetailPage({
   // Fetch user email if user_id exists
   let userEmail: string | null = null
   if (alert.user_id) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('email')
       .eq('id', alert.user_id)
       .maybeSingle()
+    if (profileError) {
+      log.warn('fraud_alert.user_read_failed', { alertId: id, reason: profileError.message })
+    }
     userEmail = profile?.email ?? null
   }
 
   // Fetch reviewer name if reviewed
   let reviewerName: string | null = null
   if (alert.reviewed_by) {
-    const { data: reviewer } = await supabase
+    const { data: reviewer, error: reviewerError } = await supabase
       .from('profiles')
       .select('full_name, email')
       .eq('id', alert.reviewed_by)
       .maybeSingle()
+    if (reviewerError) {
+      log.warn('fraud_alert.reviewer_read_failed', { alertId: id, reason: reviewerError.message })
+    }
     reviewerName = reviewer?.full_name ?? reviewer?.email ?? null
   }
 

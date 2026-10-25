@@ -1025,11 +1025,17 @@ export async function finalizeOrder(input: {
       intent.sendAt = raw ? new Date(raw) : null
     }
     if (intent) {
-      const { data: buyer } = await admin
+      const { data: buyer, error: buyerError } = await admin
         .from('profiles')
         .select('full_name')
         .eq('id', order.user_id)
         .maybeSingle()
+      if (buyerError) {
+        log.warn('finalize.gift_buyer_read_failed', {
+          orderId: order.id,
+          reason: buyerError.message,
+        })
+      }
       await sendOrderGifts(admin, {
         orderId: order.id,
         buyerUserId: order.user_id,
