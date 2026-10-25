@@ -227,3 +227,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c199 DONE (pnpm build green, route table generated; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
 המשך מ: M09-c199 DONE (knip --dependencies: only @capacitor/android flagged, kept — needed for cap sync android; storybook/supabase are CLI binaries; no removable deps; dead exports are public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
 המשך מ: M03-c200 BLOCKED gate-fail (compare.mjs --page=category /category/hot-deals vs refs/localized/ke_live_category.html, first 2600px: 380=21.31%, 768=17.25%, 1440=9.58%; 380+768 over 11%; needed COMPARE_ALLOW_GRID_MISMATCH=1 since local page renders 0 product cards vs live 2 (Supabase catalogue unavailable), so numbers include a content gap; no code changes)
+המשך מ: M05-c200 DONE (pnpm test green: 615 files / 7062 tests passed, 28 skipped; no drift; no code changes)
