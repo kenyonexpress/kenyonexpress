@@ -24,6 +24,8 @@ Continue from MAINTENANCE_LOOP_6 DONE (2026-10-26 00:00 UTC): Mobile gate score 
 
 ## המשך מ:
 NEXT GOAL: Coupon redemption + QR (item 2 from GOALS-QUEUE.md). 
+Branch: feat/coupon-redemption. Read docs/ARCHITECTURE-COUPON-REDEMPTION-UX.md first.
+Requirements: Supplier scan page, QR per coupon, single-scan expiry, redemption status in order_items, RTL per refs/ke_live_singlefile.html, Vitest, compare.mjs under 11 percent.
 NOTE: MOBILE-GATE-FIX (item 1) already marked SKIPPED per two prior attempts (see סיום MOBILE-GATE-FIX INVESTIGATION above).
 
 ---
