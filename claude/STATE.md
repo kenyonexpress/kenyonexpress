@@ -198,3 +198,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M05-c195 DONE (pnpm test: 614 files passed, 2 skipped; 7055 tests passed, 28 skipped; 0 failures, no drift; no code changes)
 המשך מ: M06-c195 DONE (pnpm build passes clean; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no code changes)
 המשך מ: M07-c195 DONE (TODO/FIXME scan of src/scripts/migrations: 7 markers, all already filed as 4 items in docs/BACKLOG.md, no new ones; 3 need Cardcom prod creds, service-role key or a build+email test; BACKLOG stamp refreshed; no code changes)
+המשך מ: M09-c195 DONE (knip deps: only @capacitor/android flagged, false positive: required by android/ cap sync gradle; no unused deps. Unused exports: 176, nearly all CLI script/e2e module exports plus locked HeroSlider.tsx; src remainder left as-is, risk > gain; no code changes)
