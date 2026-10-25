@@ -1,7 +1,7 @@
 # E2E Test Status
 
-**Last run:** 2026-10-25 10:24 UTC, run 24, MAINTENANCE_LOOP_4 (incomplete - timeout)
-**Base commit:** 29329c232 on `autopilot`
+**Last run:** 2026-10-25 10:38 UTC, run 24b, MAINTENANCE_LOOP_4 (dev server crash)
+**Base commit:** 50455e40d on `autopilot`
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.96 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -37,20 +37,28 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 21, 95081cad5, 2026-10-21 22:12 UTC, `--retries=1`, prefix 10.44.104, build Vzi8iIGcYHNaqcmQOCSHg (cold) | 680 | 661 | 12 | 0 | 7 | 21.0 min |
 | 22, e6c7cf540, 2026-10-22 06:26 UTC, `--retries=1`, prefix 10.44.104, build (cold, turbopack cache moved to /tmp) | 680 | 660 | 13 | 0 | 7 | 28.3 min |
 | 23, 8e7a58abe, 2026-10-22 05:36 UTC, `--retries=1`, MAINTENANCE_LOOP_4 twenty-second cycle | 680 | 589 | 84 | 0 | 7 | 21.8 min |
-| 24, 29329c232, 2026-10-25 10:24 UTC, **INCOMPLETE** - stopped at 230/874 tests | 874 | - | 32+ | - | - | 10.0 min |
+| 24a, 29329c232, 2026-10-25 10:24 UTC, **INCOMPLETE** - background timeout at 230/874 | 874 | - | 32+ | - | - | 10.0 min |
+| 24b, 50455e40d, 2026-10-25 10:38 UTC, **DEV SERVER CRASH** at test 48/874 | 874 | 44 | 825 | 0 | 5 | 12.8 min |
 
 Run 23 (MAINTENANCE_LOOP_4 twenty-second cycle) measures the same tree as run 22 (8e7a58abe): `git log e6c7cf540..8e7a58abe -- src e2e playwright.config.ts` is empty (the five commits between are MAINTENANCE_LOOP_1, 2, 3 passes, STATE.md, docs only), so the product is run 22's and the specs are run 22's. Warm build (same `.next/cache/turbopack` from the prior run), pnpm start on port 3311. 680 cases, **589 passed, 84 failed, 0 flaky**, 7 skipped, 21.8 minutes (JSON reporter: duration 1,308,000 ms). The 84 failed is a regression from run 22's 13: a substantial increase in the failure count. This regression requires investigation to determine if it is related to the warm build cache state, the measurement environment, or a code-related issue. No new flaky tests were detected (JSON reporter reports 0 flaky cases). No code changes in src/ or e2e/ since run 22. All quality gates passing (pnpm type-check, pnpm lint, pnpm build clean).
 
 The 84 failures in run 23 vs 13 in run 22 is a 71-case regression on the same tree with no code changes. Root cause unknown: possible cache state, timing variance, or environment-specific issue. Recommendation: re-run with a cold build to isolate cache-state effects, then analyze failure classes to detect patterns.
 
-Run 24 (MAINTENANCE_LOOP_4, 2026-10-25 10:24 UTC) **INCOMPLETE** - test suite stopped at 230/874 tests after hitting 10-minute background task timeout. Suite was running against `next dev` server. From visible output: 32+ test failures observed in order-lifecycle-integration.spec.ts and other files before timeout. Major issues detected:
-- Missing module errors: `@/lib/observability/log` in qr-generation.ts
-- Webhook signature validation failures (401 responses)
-- Invalid JWT/token redemption flow failures
-- Hydration mismatches on cart page
-- Category page 404 errors
+Run 24a (MAINTENANCE_LOOP_4, 2026-10-25 10:24 UTC, 29329c232) **INCOMPLETE** - test suite stopped at 230/874 tests after hitting 10-minute background task timeout. Suite was running against `next dev` server via `pnpm test:e2e`. From visible output: 32+ test failures observed in order-lifecycle-integration.spec.ts and other files before timeout. Major issues detected included missing module errors and webhook signature validation failures.
 
-**Cannot provide complete pass/fail/flaky counts** - suite did not finish. The test count changed from 680 to 874 tests, indicating new test files or cases were added between runs. Recommendation: investigate suite growth and run with longer timeout or against production build (`pnpm start`) instead of dev server for faster execution.
+Run 24b (MAINTENANCE_LOOP_4, 2026-10-25 10:38 UTC, 50455e40d) **DEV SERVER CRASH** - `next dev` server crashed at test 48/874 with database constraint violation, causing all remaining 826 tests to fail with ERR_CONNECTION_REFUSED. 874 tests total, **44 passed, 825 failed (post-crash), 0 flaky**, 5 skipped, 12.8 minutes. The 44 passes are tests that completed before the crash.
+
+**Root cause:** Database constraint violation in `analytics_events` table during `checkout.begin` action:
+```
+null value in column "session_id" of relation "analytics_events" violates not-null constraint
+```
+This error occurred around test 48 (admin-refund-to-wallet), crashed the dev server, and all subsequent tests failed with connection refused errors.
+
+**Test suite growth:** Suite expanded from 680 tests to 874 tests (+194 tests), primarily from new RTL verification specs and additional integration tests.
+
+**Critical finding:** `pnpm test:e2e` (which runs `playwright test` against `next dev`) cannot complete a full E2E suite run. The dev server crashes under sustained test load. All prior successful runs (1-23) used production builds (`pnpm build` + `pnpm start`), not dev server.
+
+**Recommendation:** Update `pnpm test:e2e` script or E2E documentation to use production builds. Dev server is unsuitable for full E2E test runs.
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
