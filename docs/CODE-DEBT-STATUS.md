@@ -1,14 +1,14 @@
 # Code Debt Status Report
 
-Last updated: 2026-10-22 00:30 UTC
+Last updated: 2026-10-25 00:00 UTC
 Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 
 ## Summary
 
-**Total code debt comments: 8**
-- Previous scan: 8 (2026-10-20 16:00 UTC)
-- Current scan: 8 (2026-10-22 00:30 UTC via MAINTENANCE_LOOP_8)
-- Delta: 0 (stable, no growth detected)
+**Total code debt comments: 7**
+- Previous scan (M07): 8 (2026-10-22 00:30 UTC)
+- Current scan (M08): 7 (2026-10-25 00:00 UTC via MAINTENANCE_LOOP_8)
+- Delta: -1 (decreased — cleanup occurred)
 
 ## Findings
 
@@ -16,19 +16,17 @@ Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 
 | File | Line | Comment |
 |------|------|---------|
-| src/app/api/cron/stock-notifications/route.ts | 125 | revalidateTag may require different API in Next.js 16 |
+| src/app/api/cron/stock-notifications/route.ts | 126 | revalidateTag may require different API in Next.js 16 |
 | src/lib/payments/cardcom.ts | 249 | confirm the exact legacy refund endpoint + field names against |
 | src/lib/payments/cardcom.ts | 312 | confirm endpoint + field names against the live terminal |
-| src/lib/images/r2-migration.ts | 102 | Query database for all product images |
-| src/lib/images/r2-migration.ts | 103 | Batch upload to R2 |
-| src/lib/images/r2-migration.ts | 104 | Update product.images URLs to point to R2 |
-| src/lib/images/r2-migration.ts | 105 | Verify uploads and delete from source |
+| src/lib/images/r2-migration.ts | 103 | Query database for all product images |
+| src/lib/images/r2-migration.ts | 104 | Batch upload to R2 |
+| src/lib/images/r2-migration.ts | 105 | Update product.images URLs to point to R2 |
+| src/lib/images/r2-migration.ts | 106 | Verify uploads and delete from source |
 
-### Test Stubs (1)
+### Removed Since Last Scan
 
-| File | Line | Comment |
-|------|------|---------|
-| src/lib/whatsapp.test.ts | 91 | process.env.NEXT_PUBLIC_WHATSAPP_PHONE = 'TODO' |
+- `src/lib/whatsapp.test.ts:91` — test stub env var (`process.env.NEXT_PUBLIC_WHATSAPP_PHONE = 'TODO'`) has been cleaned up
 
 ## Notes
 
@@ -36,6 +34,7 @@ Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 - cardcom.ts: 2 related TODOs for payment endpoint confirmation (legacy API dependencies)
 - No FIXME or HACK comments found
 - All TODOs are legitimate pending work, not indicative of broken state
+- **No cleanup goal needed** — count decreased by 1 since M07
 
 ## Supabase MCP Requirement
 
@@ -54,4 +53,4 @@ Scanned: src/ (TypeScript, TSX, JavaScript, JSX)
 
 Run: `grep -rn "TODO\|FIXME\|HACK" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.mts" --include="*.mjs"`
 
-Expected: Count should remain ≤ 8 unless new work is queued.
+Expected: Count should remain ≤ 7 unless new work is queued.
