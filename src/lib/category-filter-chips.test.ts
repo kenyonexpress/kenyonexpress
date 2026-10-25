@@ -83,9 +83,9 @@ describe('anyFilter', () => {
 
 describe('matchesCategoryFilters', () => {
   const baseProduct: CategoryFilterable = {
-    weekend_only: false,
+    supplier: { open_weekends: false },
     shipping_price_agorot: 1000,
-    price_agorot: 15000,
+    kenyon_price: 150, // in shekels
   }
 
   it('matches everything when all filters are off', () => {
@@ -93,23 +93,28 @@ describe('matchesCategoryFilters', () => {
   })
 
   describe('weekend filter', () => {
-    it('matches when weekend_only is true and filter is on', () => {
-      const product = { ...baseProduct, weekend_only: true }
+    it('matches when supplier.open_weekends is true and filter is on', () => {
+      const product = { ...baseProduct, supplier: { open_weekends: true } }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, weekend: true })).toBe(true)
     })
 
-    it('rejects when weekend_only is false and filter is on', () => {
-      const product = { ...baseProduct, weekend_only: false }
+    it('rejects when supplier.open_weekends is false and filter is on', () => {
+      const product = { ...baseProduct, supplier: { open_weekends: false } }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, weekend: true })).toBe(false)
     })
 
-    it('rejects when weekend_only is null and filter is on', () => {
-      const product = { ...baseProduct, weekend_only: null }
+    it('rejects when supplier.open_weekends is null and filter is on', () => {
+      const product = { ...baseProduct, supplier: { open_weekends: null } }
+      expect(matchesCategoryFilters(product, { ...NO_FILTERS, weekend: true })).toBe(false)
+    })
+
+    it('rejects when supplier is null and filter is on', () => {
+      const product = { ...baseProduct, supplier: null }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, weekend: true })).toBe(false)
     })
 
     it('matches when filter is off regardless of value', () => {
-      const product = { ...baseProduct, weekend_only: false }
+      const product = { ...baseProduct, supplier: { open_weekends: false } }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, weekend: false })).toBe(true)
     })
   })
@@ -125,12 +130,9 @@ describe('matchesCategoryFilters', () => {
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, freeShipping: true })).toBe(false)
     })
 
-    it('works with shipping_price in shekels', () => {
-      const product = { ...baseProduct, shipping_price: 0, shipping_price_agorot: null }
-      expect(matchesCategoryFilters(product, { ...NO_FILTERS, freeShipping: true })).toBe(true)
-
-      const paid = { ...baseProduct, shipping_price: 10, shipping_price_agorot: null }
-      expect(matchesCategoryFilters(paid, { ...NO_FILTERS, freeShipping: true })).toBe(false)
+    it('rejects when shipping_price_agorot is null and filter is on', () => {
+      const product = { ...baseProduct, shipping_price_agorot: null }
+      expect(matchesCategoryFilters(product, { ...NO_FILTERS, freeShipping: true })).toBe(false)
     })
 
     it('matches when filter is off regardless of shipping price', () => {
@@ -140,43 +142,40 @@ describe('matchesCategoryFilters', () => {
   })
 
   describe('price_100 filter', () => {
-    it('matches when price is exactly 100₪', () => {
-      const product = { ...baseProduct, price_agorot: 10000 }
+    it('matches when kenyon_price is exactly 100₪', () => {
+      const product = { ...baseProduct, kenyon_price: 100 }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, price100: true })).toBe(true)
     })
 
-    it('matches when price is under 100₪', () => {
-      const product = { ...baseProduct, price_agorot: 9999 }
+    it('matches when kenyon_price is under 100₪', () => {
+      const product = { ...baseProduct, kenyon_price: 99.99 }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, price100: true })).toBe(true)
     })
 
-    it('rejects when price is over 100₪', () => {
-      const product = { ...baseProduct, price_agorot: 10001 }
+    it('rejects when kenyon_price is over 100₪', () => {
+      const product = { ...baseProduct, kenyon_price: 100.01 }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, price100: true })).toBe(false)
     })
 
-    it('works with price in shekels', () => {
-      const product = { ...baseProduct, price: 99, price_agorot: null }
+    it('treats null kenyon_price as 0 and matches', () => {
+      const product = { ...baseProduct, kenyon_price: null }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, price100: true })).toBe(true)
-
-      const expensive = { ...baseProduct, price: 101, price_agorot: null }
-      expect(matchesCategoryFilters(expensive, { ...NO_FILTERS, price100: true })).toBe(false)
     })
   })
 
   describe('price_500 filter', () => {
-    it('matches when price is exactly 500₪', () => {
-      const product = { ...baseProduct, price_agorot: 50000 }
+    it('matches when kenyon_price is exactly 500₪', () => {
+      const product = { ...baseProduct, kenyon_price: 500 }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, price500: true })).toBe(true)
     })
 
-    it('matches when price is under 500₪', () => {
-      const product = { ...baseProduct, price_agorot: 49999 }
+    it('matches when kenyon_price is under 500₪', () => {
+      const product = { ...baseProduct, kenyon_price: 499.99 }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, price500: true })).toBe(true)
     })
 
-    it('rejects when price is over 500₪', () => {
-      const product = { ...baseProduct, price_agorot: 50001 }
+    it('rejects when kenyon_price is over 500₪', () => {
+      const product = { ...baseProduct, kenyon_price: 500.01 }
       expect(matchesCategoryFilters(product, { ...NO_FILTERS, price500: true })).toBe(false)
     })
   })
@@ -184,9 +183,9 @@ describe('matchesCategoryFilters', () => {
   describe('multiple filters', () => {
     it('matches only when ALL active filters pass', () => {
       const product: CategoryFilterable = {
-        weekend_only: true,
+        supplier: { open_weekends: true },
         shipping_price_agorot: 0,
-        price_agorot: 8000, // 80₪
+        kenyon_price: 80, // 80₪
       }
       const filters: CategoryFilterChips = {
         weekend: true,
@@ -199,9 +198,9 @@ describe('matchesCategoryFilters', () => {
 
     it('rejects when any active filter fails', () => {
       const product: CategoryFilterable = {
-        weekend_only: true,
+        supplier: { open_weekends: true },
         shipping_price_agorot: 1000, // not free
-        price_agorot: 8000,
+        kenyon_price: 80,
       }
       const filters: CategoryFilterChips = {
         weekend: true,

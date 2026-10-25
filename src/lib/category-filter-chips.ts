@@ -43,25 +43,25 @@ export function anyFilter(filters: CategoryFilterChips): boolean {
 }
 
 export interface CategoryFilterable {
-  weekend_only?: boolean | null
-  shipping_price?: number | null
+  supplier?: { open_weekends?: boolean | null } | null
   shipping_price_agorot?: number | null
-  price?: number | null
-  price_agorot?: number | null
+  /** kenyon_price is in shekels, not agorot */
+  kenyon_price?: number | null
 }
 
 export function matchesCategoryFilters(
   product: CategoryFilterable,
   filters: CategoryFilterChips,
 ): boolean {
-  if (filters.weekend && product.weekend_only !== true) return false
+  if (filters.weekend && product.supplier?.open_weekends !== true) return false
 
   if (filters.freeShipping) {
-    const shipPrice = product.shipping_price ?? (product.shipping_price_agorot ?? 0) / 100
-    if (shipPrice !== 0) return false
+    const shipPriceAgorot = product.shipping_price_agorot ?? null
+    if (shipPriceAgorot !== 0) return false
   }
 
-  const priceShekels = product.price ?? (product.price_agorot ?? 0) / 100
+  // kenyon_price is already in shekels
+  const priceShekels = product.kenyon_price ?? 0
   if (filters.price100 && priceShekels > 100) return false
   if (filters.price500 && priceShekels > 500) return false
 
