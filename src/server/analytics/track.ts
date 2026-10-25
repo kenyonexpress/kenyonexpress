@@ -119,7 +119,10 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
           source: 'server',
           source_app: 'shop',
           anonymous_id: anonymousId,
-          session_id: anonymousId,
+          // session_id is NOT NULL in analytics_events. For server events without a
+          // guest session cookie (E2E tests, API calls), generate a synthetic ID.
+          // This ID won't match client sessions but satisfies the constraint.
+          session_id: anonymousId ?? `server_${crypto.randomUUID()}`,
           path: input.path ?? null,
           utm: attribution?.last ?? null,
           props: input.props,
