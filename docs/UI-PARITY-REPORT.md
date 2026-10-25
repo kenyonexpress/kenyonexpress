@@ -305,3 +305,8 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-25 06:20 | product | 380 | 53.74% | **FAIL** | `51dc640eb-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
 | 2026-10-25 06:22 | product | 768 | 41.96% | **FAIL** | `51dc640eb-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
 | 2026-10-25 06:24 | product | 1440 | 26.32% | **FAIL** | `51dc640eb-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-25 11:24 | home | 380 | n/a | **UNMEASURED** | `567ea0e5f-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3311/ Call log: [2m - navigating to "http://localhost:3311/", waiting until "domc |
+| 2026-10-25 11:24 | home | 380 | 49.89% | **FAIL** | `3cd6110ce-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-25 11:26 | home | 768 | 42.76% | **FAIL** | `027853ec1-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-25 11:28 | home | 1440 | 31.72% | **FAIL** | `027853ec1-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-25 11:43 | home | 380 | 46.14% | **FAIL** | `a6f361664-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 10 script (unhydrated, not a fidelity score); baseline refs/electro_v7_380.png (froz |
