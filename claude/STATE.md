@@ -106,3 +106,6 @@ M10-c199 BLOCKED supabase MCP unauthenticated: cannot apply migrations/pending (
 
 M11-c199 DONE sitemap.xml verified 2026-10-25: www.kenyonexpress.co.il/sitemap.xml 200 application/xml, 75 urls, newest lastmod 2026-10-24, sampled urls 200, robots.ts points at it. Finding: locs use apex host (siteUrl() fallback, NEXT_PUBLIC_APP_URL unset) and apex 308-redirects to www; fix is env NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il in Vercel (layout.tsx fallback is locked, no code change).
 המשך מ: M11-c199 DONE
+
+M04-c200 DONE 2026-10-26 pnpm type-check clean (tsc --noEmit exit 0), working tree clean, no drift to fix.
+המשך מ: M04-c200 DONE
