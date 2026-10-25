@@ -141,6 +141,46 @@ BLOCKED C56 (2026-10-24): Cloudflare Turnstile site creation requires Cloudflare
 
 ## החלטות שהתקבלו אוטומטית
 
+### MAINTENANCE_LOOP_9 - SKIPPED: Cannot Verify DB Performance (2026-10-25)
+
+**Goal condition:** "Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist."
+
+**Blocker:** Live database verification impossible in non-interactive session:
+- Supabase MCP requires OAuth authentication (unavailable per system-reminder)
+- `supabase db query --linked` times out after 30s+ (exit code 144)
+- psql not installed in environment
+- Node.js scripts fail: exec_sql RPC function does not exist (PGRST202), env var loading issues
+
+**Evidence of failures (two attempts):**
+1. First attempt: `supabase db query --linked "SELECT...pg_stat_activity..."` → timeout, backgrounded, killed
+2. Second attempt: Node.js script → "Could not find the function public.exec_sql" → PGRST202
+3. Alternative attempts: Management API requires access token (unavailable), direct module imports fail
+
+**What was attempted:**
+- ToolSearch for Supabase MCP tools → "No matching deferred tools found"
+- Supabase CLI linked query → Command timeout (30s+), failed exit 144
+- Node.js createClient + exec_sql RPC → Function not found PGRST202
+- Management API with curl → Access token unavailable
+- Script adaptations from existing verify scripts → Module resolution failures
+
+**Per CLAUDE.md autonomous rules:** "goal שנתקע פעמיים: לדלג"
+
+**Conservative decision:** Skip MAINTENANCE_LOOP_9. Cannot obtain live pg_stat_activity or pg_stat_statements data without:
+- Interactive session with MCP OAuth
+- PostgreSQL client (`brew install postgresql`)
+- OR manual Supabase dashboard access
+
+**Last successful verification:** 2026-10-21 08:23 UTC (docs/DB-STATUS.md) showed:
+- Connection pool healthy (0-8 active, 0-44% utilization)
+- No slow queries detected (>500ms)
+- All application-level monitoring clean
+
+**Recommendation:** Run MAINTENANCE_LOOP_9 in interactive session with Supabase MCP OAuth, or use Supabase dashboard: https://app.supabase.com/project/ixvwfbuvfxxsjiywhbbb/database/pooler
+
+**Timestamp:** 2026-10-25 20:45 UTC
+
+---
+
 ### C56|F19 - Skipped: Cannot Create Cloudflare Resources (2026-10-24)
 
 **Goal condition:** "Cloudflare site + secret. Vercel env TURNSTILE_SITE_KEY + TURNSTILE_SECRET_KEY"
