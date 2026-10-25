@@ -64,3 +64,4 @@ M05-c188 DONE: pnpm test green (584 files / 6876 tests), tsc clean. Root cause: 
 M08-c189 DONE: Lighthouse mobile x3 on / and /product, medians 91 / 93 (logs/lighthouse-m08-c189.txt). Below G23 95 target; render-blocking CSS 450-900 ms is the lever.
 
 המשך מ: M08-c189 DONE
+המשך מ: M16-c189 DONE
