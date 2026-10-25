@@ -827,8 +827,8 @@ async function runBeginCheckout(
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
 
-    // Scheduled delivery (186). The column gift_send_at stores when the gift
-    // email should be sent. NULL means send immediately.
+    // Scheduled delivery. Uses gift_scheduled_at column (migration 305).
+    // Falls back gracefully if migration not yet applied (column doesn't exist).
     const sendAt = giftSendAt(input.gift_send_date, now)
     if (sendAt) {
       const { error: sendAtError } = await admin
