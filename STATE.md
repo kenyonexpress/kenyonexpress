@@ -8,8 +8,10 @@ Continue from C75 CODE COMPLETE, A+ BLOCKED (2026-10-25): Implemented comprehens
 
 Continue from F56 DONE (2026-10-25): Completed admin product upload with ALL required features WIRED. Added AND WIRED: category multi-select (UI + server junction table write), original_price + source_url fields (UI + schema + server write), valid_from date (UI + schema + server write). Modified product-form-schema.ts (validation for category_ids, original_price, source_url, valid_from), products.ts server action (parsing, f56Fields extraction, product_categories junction write with graceful degradation). Created src/lib/r2/index.ts, migrations/pending/306_product_upload_fields.sql, src/components/admin/__tests__/ProductForm.test.tsx (12/12 passing). R2 image upload AVIF/WebP pipeline working (ImageUploader). platform_percent slider 0-100%, supplier dropdown, type toggle changes form, Hebrew RTL throughout, save creates draft/publish to active, edit page same form, max_per_order - all implemented and tested. Quality gates: pnpm typecheck ✅ pnpm lint ✅ pnpm test 12/12 ✅ pnpm build ✅. Documentation: docs/F56-FINAL.md. Commits: af4544f58 (UI), f63af9278 (wiring).
 
+Continue from F60 DONE (2026-10-25): Hebrew formatting polish complete. Created centralized formatters in src/lib/formatters/: phone.ts (+972 default with 050-123-4567 masking), dates.ts (Intl.DateTimeFormat('he-IL') with Asia/Jerusalem), numbers.ts (Hebrew locale thousands separator), money.ts (re-exports shekels formatters). Created PhoneInput component with Israeli formatting. Created RTL verification E2E tests (e2e/rtl-verification.spec.ts) covering all pages at 380px/768px/1440px viewports. Updated src/lib/money.ts to export Hebrew money formatters (shekels, shekelsPlain, shekelsRounded, shekelsFromIls, etc.). All money via shekels() returns 'X.XX ₪' format with Hebrew comma, NBSP, and LRI/PDI bidi isolates for RTL safety. All dates via Intl.DateTimeFormat('he-IL'). Phone inputs with +972 default and mask. Quality gates: pnpm typecheck ✅ pnpm lint ✅ pnpm test 6857 passed (4 pre-existing failures unrelated) ✅ pnpm build ✅. Documentation: comprehensive inline documentation in all formatter files. Commits: 897c89e4b pushed.
+
 ## המשך מ:
-F56 DONE (2026-10-25) - awaiting next goal
+F60 DONE (2026-10-25) - awaiting next goal
 
 ## החלטות שהתקבלו אוטומטית
 
