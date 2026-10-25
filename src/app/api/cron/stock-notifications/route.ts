@@ -1,8 +1,10 @@
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidateTag } from 'next/cache'
 
 /**
  * Process stock notifications: find products that are back in stock and
@@ -123,8 +125,8 @@ async function handlePOST(request: Request) {
         }
       }
 
-      // Invalidate product cache (TODO: revalidateTag may require different API in Next.js 16)
-      // revalidateTag(`product_${productId}`)
+      // Invalidate catalogue cache so storefront reflects stock changes
+      revalidateTag(CATALOGUE_TAG, 'max')
     }
 
     // Send alert if any notifications were sent
