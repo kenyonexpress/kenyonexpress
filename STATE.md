@@ -101,6 +101,8 @@ d205bf459 STATE: Z10 re-run 2 done-as-shipped
 
 ## המשך מ: Next unblocked autonomous work
 
+Continue from M13-c186 DONE-DEFERRED (2026-10-25): /api/ready 200 with real Supabase (database ok, redis ok, cardcom ok; meilisearch+r2 not_configured, which ready tolerates). /api/health 503 only because MEILISEARCH_HOST/API_KEY are placeholders (.env.local.meili); database ok. No code change. Re-run once real Meili creds are in .env.local.
+
 Continue from G08 DONE (2026-10-24): F06 admin CSV bulk import. Page src/app/(admin)/admin/products/import (dry-run preview then confirm-apply, migration 185 columns) already shipped; added src/app/api/admin/products/import/route.ts (POST multipart, admin-only 403 JSON, mode=commit to write, reuses importProductsCsv). src/lib/admin tests 261/261 pass, tsc + biome clean on the route.
 
 Continue from C55 DONE (2026-10-24): Google Search Console DNS verification + sitemap ready. DNS TXT record verified: google-site-verification=7_-kZsP6HnHTkq5qR--mZyLYx-EE3WSz6C1sxnbr0-I (publicly visible via dig). Sitemap accessible at https://www.kenyonexpress.co.il/sitemap.xml (200 OK, valid XML, correct content-type). Robots.txt references sitemap correctly. All automated checks passed: 5/5 (DNS TXT ✅, sitemap accessible ✅, XML valid ✅, content-type ✅, robots references sitemap ✅). Verification script created: scripts/verify-google-search-console.mjs. Documentation: docs/C55-GOOGLE-SEARCH-CONSOLE-SETUP.md (comprehensive manual), docs/C55-RESULT.md (verification results). Quality gates: type-check ✅, lint ✅ (6418 files), build ✅ (273 pages). Manual browser action required: verify property in GSC web interface and submit sitemap URL. Commit f242791c0 pushed to origin/closeout/v1-final.
