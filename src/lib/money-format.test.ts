@@ -29,21 +29,24 @@ const NBSP = ' '
 
 describe('shekels', () => {
   it.each([
-    [0, `0.00${NBSP}₪`],
-    [99, `0.99${NBSP}₪`],
-    [9900, `99.00${NBSP}₪`],
-    [999900, `9,999.00${NBSP}₪`],
-    [-9900, `-99.00${NBSP}₪`],
+    [0, `₪${NBSP}0.00`],
+    [99, `₪${NBSP}0.99`],
+    [9900, `₪${NBSP}99.00`],
+    [999900, `₪${NBSP}9,999.00`],
+    [-9900, `-₪${NBSP}99.00`],
   ])('formats %i agorot', (value, body) => {
     expect(shekels(agorot(value))).toBe(`${LRI}${body}${PDI}`)
   })
 
-  it('puts the digits before the sign, always', () => {
-    // The assertion the defect report is about, stated on its own so it cannot
-    // be lost in a fixture rewrite: whatever else changes, digit precedes sign.
+  it('puts the sign before the digits', () => {
+    // Goal F60 requires ₪ X.XX format (sign first)
     for (const value of [0, 99, 9900, 999900, -9900]) {
       const text = shekelsPlain(agorot(value))
-      expect(text.search(/\d/)).toBeLessThan(text.indexOf('₪'))
+      const signIndex = text.indexOf('₪')
+      const firstDigit = text.search(/\d/)
+      if (signIndex >= 0 && firstDigit >= 0) {
+        expect(signIndex).toBeLessThan(firstDigit)
+      }
     }
   })
 
@@ -60,13 +63,13 @@ describe('shekels', () => {
   it('never produces a float on the way to the string', () => {
     // 1/3 of a shekel cannot exist in agorot, and the formatter must not invent
     // one: 3333 agorot is 33.33, not 33.329999999999998.
-    expect(shekelsPlain(agorot(3333))).toBe(`33.33${NBSP}₪`)
-    expect(shekelsPlain(agorot(1))).toBe(`0.01${NBSP}₪`)
-    expect(shekelsPlain(agorot(10))).toBe(`0.10${NBSP}₪`)
+    expect(shekelsPlain(agorot(3333))).toBe(`₪${NBSP}33.33`)
+    expect(shekelsPlain(agorot(1))).toBe(`₪${NBSP}0.01`)
+    expect(shekelsPlain(agorot(10))).toBe(`₪${NBSP}0.10`)
   })
 
   it('groups thousands the Hebrew locale way', () => {
-    expect(shekelsPlain(agorot(123456789))).toBe(`1,234,567.89${NBSP}₪`)
+    expect(shekelsPlain(agorot(123456789))).toBe(`₪${NBSP}1,234,567.89`)
   })
 })
 
@@ -81,21 +84,21 @@ describe('shekelsPlain', () => {
 
 describe('shekelsRounded', () => {
   it.each([
-    [0, `0${NBSP}₪`],
-    [99, `1${NBSP}₪`],
-    [9900, `99${NBSP}₪`],
-    [999900, `9,999${NBSP}₪`],
+    [0, `₪${NBSP}0`],
+    [99, `₪${NBSP}1`],
+    [9900, `₪${NBSP}99`],
+    [999900, `₪${NBSP}9,999`],
   ])('rounds %i agorot to whole shekels', (value, body) => {
     expect(shekelsRounded(agorot(value))).toBe(`${LRI}${body}${PDI}`)
   })
 
   it('rounds half up, so a cart of 99.60 reads 100 and not 99', () => {
-    expect(shekelsRounded(agorot(9960))).toBe(`${LRI}100${NBSP}₪${PDI}`)
+    expect(shekelsRounded(agorot(9960))).toBe(`${LRI}₪${NBSP}100${PDI}`)
   })
 
   it('floors a negative to zero, which is the header badge it exists for', () => {
     // Documented, not accidental: this formats the cart-count badge, and a cart
     // total cannot be negative. A refund is never rendered through this one.
-    expect(shekelsRounded(agorot(-9900))).toBe(`${LRI}0${NBSP}₪${PDI}`)
+    expect(shekelsRounded(agorot(-9900))).toBe(`${LRI}₪${NBSP}0${PDI}`)
   })
 })

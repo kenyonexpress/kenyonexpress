@@ -71,7 +71,7 @@ function shekelBody(value: Agorot, withFraction: boolean): string {
   const fraction = absolute % AGOROT_PER_ILS
   const grouped = whole.toLocaleString('he-IL', { useGrouping: true })
   const digits = withFraction ? `${grouped}.${String(fraction).padStart(2, '0')}` : grouped
-  return `${negative ? '-' : ''}${digits}${NBSP}₪`
+  return `${negative ? '-' : ''}₪${NBSP}${digits}`
 }
 
 /** Wrap a price so no surrounding text can reorder it. See the note above. */
@@ -96,9 +96,9 @@ export function shekelsPlain(value: Agorot): string {
 }
 
 export function shekelsRounded(value: Agorot): string {
-  if (value <= 0) return isolate(`0${NBSP}₪`)
+  if (value <= 0) return isolate(`₪${NBSP}0`)
   const whole = Math.floor((value + AGOROT_PER_ILS / 2) / AGOROT_PER_ILS)
-  return isolate(`${whole.toLocaleString('he-IL', { useGrouping: true })}${NBSP}₪`)
+  return isolate(`₪${NBSP}${whole.toLocaleString('he-IL', { useGrouping: true })}`)
 }
 
 /**
@@ -128,14 +128,14 @@ export function shekelsFromIls(value: number | string | null | undefined): strin
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
-  return isolate(`${digits}${NBSP}₪`)
+  return isolate(`₪${NBSP}${digits}`)
 }
 
 /** `shekelsFromIls` with no agorot: whole shekels, for dense admin tables. */
 export function shekelsFromIlsRounded(value: number | string | null | undefined): string {
   const n = typeof value === 'string' ? Number(value) : (value ?? 0)
   const safe = Number.isFinite(n) ? Math.round(n) : 0
-  return isolate(`${safe.toLocaleString('he-IL', { useGrouping: true })}${NBSP}₪`)
+  return isolate(`₪${NBSP}${safe.toLocaleString('he-IL', { useGrouping: true })}`)
 }
 
 /**
@@ -171,7 +171,7 @@ export function shekelsFromIlsCompact(value: number | string | null | undefined)
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   })
-  return isolate(`${digits}${NBSP}₪`)
+  return isolate(`₪${NBSP}${digits}`)
 }
 
 /** `shekelsFromIlsCompact` with no isolate, for an RSS body or an OG canvas. */
