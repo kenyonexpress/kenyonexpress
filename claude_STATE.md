@@ -33,3 +33,4 @@ MAINTENANCE_LOOP_10: Appended cycles 1-10 to ~/ke-goals/queue.txt
 
 
 המשך מ: M13-c185 DONE-DEFERRED (repo .env.local Supabase service key returns 401; /api/health + /api/ready 503 database=down on repo code)
+המשך מ: M11-c201 DONE (live /sitemap.xml + /robots.txt 200 application/xml, robots points to sitemap; live 75 URLs lastmod 2026-10-24, age ~23h, local build 79 URLs; no code change)

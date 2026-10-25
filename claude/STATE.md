@@ -2,37 +2,39 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
-**המשך מ: M15-c201 DONE / and /product/[slug] (2 products) show zero console errors/warnings/failed requests at 380/768/1440 on fresh build + restarted server; earlier chunk 404/500s were a stale next-server process, no src change**
-**המשך מ: M18-c200 DONE STATE.md already under 300 lines (claude/STATE.md 235, root STATE.md 243), remainder in docs/STATE-ARCHIVE.md; no trim needed**
-**המשך מ: M16-c200 DONE product page /product/[slug] emits Product + BreadcrumbList JSON-LD (buildProductJsonLd/buildBreadcrumbJsonLd, 26 json-ld tests pass); /product/[slug]/gift is noindex so excluded; no src change**
-**המשך מ: M09-c200 DONE no unused deps (4 scan false positives are peer/native deps); 534 dead-export candidates (types/schema/ui surface) logged to logs/m09-c200-dead-exports.log, none removed; no src change**
-**המשך מ: M06-c200 DONE pnpm build passes (exit 0); only drift was docs/M-CYCLE-STATUS.md timestamp, committed; no src change**
-**המשך מ: M08-c199 DONE Lighthouse mobile sample logged to logs/lighthouse-m08-c199.log: home perf 78, product perf 82 (a11y/BP/SEO 100, CLS ≤0.006, TBT ≤30ms); LCP-bound, G23 95+ not yet met; no src change**
-**המשך מ: M16-c197 DONE re-verified: only indexable product route (store)/product/[slug] emits Product + BreadcrumbList JSON-LD (one script each); /product/[slug]/gift is noindex, no JSON-LD needed; json-ld.test.ts 26/26 pass; no code change**
-**המשך מ: M12-c197 DONE robots.ts production-safe: live www robots.txt serves allow / + disallow redeem/coupon/account/supplier/admin/cart/checkout/auth/api, sitemap declared, no site-wide block, robots.test.ts 6/6; no code change**
-**המשך מ: M04-c197 DONE pnpm type-check clean (tsc --noEmit, 0 errors); no drift to commit besides STATE line**
-**המשך מ: M16-c196 DONE product page (store)/product/[slug] emits Product + BreadcrumbList JSON-LD (buildProductJsonLd/buildBreadcrumbJsonLd, one script each); json-ld.test.ts 26/26 pass; no code change**
-**המשך מ: M18-c195 DONE STATE.md already under 300 lines (claude/STATE.md 205), remainder in docs/STATE-ARCHIVE.md; no trim needed**
-**המשך מ: M15-c195 DONE no console errors on / and /product/barbecue + /product/samsung-galaxy-s22 at 380/768/1440 (fresh next start, Playwright); stale :3311 server + cached /product/עוזרת-אישית route-cache referenced missing chunks (build artifact, not source)**
-**המשך מ: M18-c193 DONE STATE.md already under 300 lines (claude/STATE.md 188, root STATE.md 190); no trim needed, docs/STATE-ARCHIVE.md untouched**
-**המשך מ: M05-c193 DONE pnpm test clean (614 files pass, 7055 tests pass, 28 skipped); drift committed (docs/M-CYCLE-STATUS.md)**
-**המשך מ: M09-c192 DONE removed unused @mdx-js/react + dead FaLinkedin/FaPinterest icons; other deps verified in use; knip dead-export list left (test-only/API surface); tsc clean, vitest 7055 pass**
-**המשך מ: M04-c193 DONE pnpm type-check clean (tsc --noEmit, 0 errors); drift committed (docs/M-CYCLE-STATUS.md, docs/UI-PARITY-REPORT.md)**
-**המשך מ: M04-c192 DONE pnpm type-check clean (tsc --noEmit, 0 errors); drift committed (UI-PARITY-REPORT rows, migration-310/fraud-table helper scripts)**
-**המשך מ: M18-c191 DONE STATE.md already under 300 lines (claude/STATE.md 178), remainder in docs/STATE-ARCHIVE.md**
-**המשך מ: M16-c191 DONE /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test 26/26); no code change**
-**המשך מ: M06-c190 DONE pnpm build clean (all routes generated), no drift, nothing to fix**
-**המשך מ: M18-c190 DONE STATE.md already under 300 lines (claude/STATE.md 168), remainder in docs/STATE-ARCHIVE.md**
-**המשך מ: M18-c189 DONE STATE.md already under 300 lines (claude/STATE.md 161), remainder in docs/STATE-ARCHIVE.md**
-**המשך מ: M10-c194 DONE-DEFERRED migrations/pending has 45 numbered .sql files (000,162,169-177,184,188-196,200,276-310) none in applied/; cannot verify or apply: Supabase MCP unauthorized (OAuth), apply once auth is back, one at a time on ixvwfbuvfxxsjiywhbbb**
-**המשך מ: M11-c189 DONE sitemap.xml live: www 200 application/xml, 75 URLs, lastmod 2026-10-24, sitemap/robots tests 17/17; note locs+robots use apex which 308s to www (Vercel primary-domain setting, not code)**
-**המשך מ: M18-c188 DONE STATE.md already under 300 lines (claude/STATE.md 154, root 182), remainder in docs/STATE-ARCHIVE.md**
-**המשך מ: M15-c188 DONE-DEFERRED console check / and /product: / clean (only dev img-aspect warnings at 1440); /product logs suppliers.verification_status missing (42703) until migrations/pending/301 applied via Supabase MCP (auth unavailable)**
-**המשך מ: M16-c187 DONE all product pages (/product/[slug], single template) emit JSON-LD Product + BreadcrumbList via lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; gift sub-route noindex**
-**המשך מ: M04-c187 DONE pnpm type-check clean (tsc --noEmit, 0 errors), no drift**
-**המשך מ: M18-c186 DONE STATE.md already under 300 lines (claude/STATE.md 139, root 180), remainder in docs/STATE-ARCHIVE.md**
-**המשך מ: M04-c186 DONE pnpm type-check clean (tsc --noEmit, 0 errors), no drift**
-**המשך מ: M05-c184 DONE pnpm test 602 files passed, 6954 tests, no drift**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
+**המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
 
 Last goal: F43, home parity gate on the rebuilt tree, by the goal's literal
 `pnpm run compare` command and by a fresh archive shot: 380px 8.53% PASS,
@@ -240,3 +242,6 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M09-c201 DONE (knip --dependencies flagged drizzle-orm, postgres, pg, @capacitor/android; knip failed loading drizzle.config.ts without SUPABASE_DB_URL, grep confirms drizzle-orm in src/db/schema, postgres/pg in scripts, @capacitor/android needed for cap sync android; no removable deps; dead exports are public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
 המשך מ: M13-c201 DONE (health+ready 200 w/ real Supabase + local Meili; r2 not_configured, no code change)
 המשך מ: M16-c201 DONE (product page emits Product + BreadcrumbList JSON-LD via buildProductJsonLd/buildBreadcrumbJsonLd; json-ld.test.ts 26/26 pass; live next start: 7/7 linked product pages 200 with both nodes, 2 linked slugs restaurants-meat-2/-3 return 404 so no page to check; raw HTML repeats nodes site-wide due to React streaming hidden segment, not product-specific; no code changes)
+המשך מ: M05-c202 DONE (pnpm test green: 615 files / 7062 tests passed, 28 skipped; no drift; no code changes)
+המשך מ: M06-c202 DONE (pnpm build green, all routes generated; drift limited to state/status docs, committed; no src change)
+המשך מ: M09-c202 DONE (re-scan of all deps/devDeps by import grep: every dep referenced; capacitor native pkgs + @mdx-js/loader + @types/* are implicit/CLI use; dead exports are public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
