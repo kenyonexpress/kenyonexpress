@@ -47,7 +47,7 @@ export function canonicalJson(value: unknown): string {
   return JSON.stringify(sortKeys(value))
 }
 
-export function sortKeys(value: unknown): unknown {
+function sortKeys(value: unknown): unknown {
   if (typeof value === 'number' && !Number.isFinite(value)) {
     throw new TypeError('cannot canonicalize a non-finite number')
   }

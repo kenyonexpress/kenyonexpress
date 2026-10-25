@@ -206,3 +206,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M05-c196 DONE (pnpm test: 614 files passed, 2 skipped, 7055 tests passed, 0 failed; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no code changes)
 המשך מ: M06-c196 DONE (pnpm build exit 0, all routes compiled; working tree clean after build, no drift to fix or commit; no code changes)
 המשך מ: M08-c196 DONE (Lighthouse mobile local prod build, 2 runs each: / perf 79-82 a11y 100 bp 100 seo 100 LCP 4.8-5.3s; /product perf 80-81 a11y 100 bp 100 seo 100 LCP 4.9s; logged in logs/lighthouse-m08-c196.log; G23 95+ still open)
+המשך מ: M09-c196 DONE (knip: no removable deps — capacitor native pkgs + lighthouse binary kept; removed dead parseCity, un-exported sortKeys/isolate; tsc clean, biome clean, vitest src/lib 3475 passed; no UI change)

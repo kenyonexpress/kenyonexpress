@@ -75,7 +75,7 @@ export function shekelBody(value: Agorot, withFraction: boolean): string {
 }
 
 /** Wrap a price so no surrounding text can reorder it. See the note above. */
-export function isolate(body: string): string {
+function isolate(body: string): string {
   return `${LRI}${body}${PDI}`
 }
 
