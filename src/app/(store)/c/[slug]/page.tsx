@@ -1,5 +1,5 @@
+import CategoryFilterChips from '@/components/CategoryFilterChips'
 import ChipFilteredCityGrid from '@/components/catalog/ChipFilteredCityGrid'
-import DealChips from '@/components/catalog/DealChips'
 import CategoryBreadcrumb from '@/components/category/CategoryBreadcrumb'
 import CategoryProductCard, {
   type CategoryProduct,
@@ -99,7 +99,7 @@ export default async function CombinedSlugPage({ params }: Props) {
             <h1 className="category-page__title">דילים ב{city.name}</h1>
           </header>
           <Suspense fallback={null}>
-            <DealChips />
+            <CategoryFilterChips />
           </Suspense>
           <Suspense
             fallback={

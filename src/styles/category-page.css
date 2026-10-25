@@ -1368,3 +1368,53 @@
     transform: rotate(360deg);
   }
 }
+
+/* F63: Category filter chips row. Mobile sticky at top, scrolls sideways on
+   narrow viewports. Same visual style as deal-chips but distinct class. */
+.category-filter-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-block: 12px;
+}
+
+@media (max-width: 767px) {
+  .category-filter-chips {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--cat-surface);
+    padding-inline: 12px;
+  }
+}
+
+.category-filter-chips__chip {
+  flex: none;
+  border: 1px solid var(--cat-line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cat-ink);
+  background: var(--cat-surface);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.category-filter-chips__chip:hover {
+  background: var(--cat-bar);
+}
+
+.category-filter-chips__chip--on {
+  background: var(--cat-brand);
+  border-color: var(--cat-brand);
+  color: var(--cat-ink);
+}
+
+.category-filter-chips__chip--on:hover {
+  background: var(--cat-brand-hover);
+  border-color: var(--cat-brand-hover);
+}

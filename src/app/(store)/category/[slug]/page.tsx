@@ -1,10 +1,10 @@
+import CategoryFilterChips from '@/components/CategoryFilterChips'
 import ViewTracker from '@/components/analytics/ViewTracker'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
+import CategoryFilteredGrid from '@/components/category/CategoryFilteredGrid'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
-import CategoryGridWithInfiniteScroll from '@/components/category/CategoryGridWithInfiniteScroll'
-import CategoryGridWithPagination from '@/components/category/CategoryGridWithPagination'
 import CategoryHeroBanner from '@/components/category/CategoryHeroBanner'
 import type { CategoryProduct } from '@/components/category/CategoryProductCard'
 import {
@@ -208,32 +208,17 @@ async function ResultGrid({
 
   const { totalPages, currentPage } = pageWindow(total, args.page)
 
-  if (usePagination) {
-    return (
-      <>
-        <CategoryGridWithPagination
-          items={items as CategoryProduct[]}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          categorySlug={args.category.slug}
-          params={linkParams}
-        />
-        <p className="category-page__count category-page__count--bottom">
-          {resultCountText(total, from, to)}
-        </p>
-      </>
-    )
-  }
-
   return (
     <>
-      <CategoryGridWithInfiniteScroll
-        initialItems={items as CategoryProduct[]}
-        totalCount={total}
+      <CategoryFilteredGrid
+        items={items as CategoryProduct[]}
+        total={total}
         currentPage={currentPage}
+        totalPages={totalPages}
         pageSize={CATEGORY_PAGE_SIZE}
         categorySlug={args.category.slug}
         params={linkParams}
+        usePagination={usePagination}
       />
     </InfiniteProductGrid>
   )
@@ -423,6 +408,10 @@ async function CategoryPageBody({
         </header>
 
         <CategoryControlBar value={sort} />
+
+        <Suspense fallback={null}>
+          <CategoryFilterChips />
+        </Suspense>
 
         <div className="category-page__body">
           <div className="category-page__main">
