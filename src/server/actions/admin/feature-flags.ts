@@ -29,6 +29,27 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
     redirect(`${back}?error=forbidden`)
   }
   const on = formData.get('maintenance_mode') === 'on'
+
+  // Update Vercel environment variable MAINTENANCE_MODE via CLI
+  // Uses authenticated vercel CLI - no API token needed
+  try {
+    const { exec } = await import('node:child_process')
+    const { promisify } = await import('node:util')
+    const execAsync = promisify(exec)
+
+    const value = on ? 'on' : 'off'
+
+    // Remove existing var from all targets, then add with new value
+    await execAsync(
+      `vercel env rm MAINTENANCE_MODE production --yes; vercel env rm MAINTENANCE_MODE preview --yes; vercel env rm MAINTENANCE_MODE development --yes; vercel env add MAINTENANCE_MODE production --value="${value}" --type=config; vercel env add MAINTENANCE_MODE preview --value="${value}" --type=config; vercel env add MAINTENANCE_MODE development --value="${value}" --type=config`,
+      { cwd: process.cwd(), shell: '/bin/bash' },
+    )
+  } catch (vercelError) {
+    // Log but don't fail - DB write below is the fallback
+    console.error('Vercel env update failed:', vercelError)
+  }
+
+  // Write to DB as fallback (instant updates via cache)
   const { error } = await createAdminClient()
     .from('feature_flags' as never)
     .upsert({
