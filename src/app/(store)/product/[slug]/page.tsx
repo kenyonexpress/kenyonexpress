@@ -1,3 +1,4 @@
+import GiftButton from '@/components/GiftButton'
 import ViewTracker from '@/components/analytics/ViewTracker'
 import LocationPin from '@/components/product/LocationPin'
 import PurchaseCountWrapper from '@/components/product/PurchaseCountWrapper'
@@ -306,6 +307,7 @@ export default async function ProductPage({ params }: Props) {
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
           />
+          <GiftButton productId={product.id} isCoupon={isCoupon} />
           <StockNotificationWrapper
             productId={product.id}
             productName={product.name_he}
