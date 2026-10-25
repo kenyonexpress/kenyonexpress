@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M18-c186 DONE STATE.md already under 300 lines (claude/STATE.md 139, root 180), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M04-c186 DONE pnpm type-check clean (tsc --noEmit, 0 errors), no drift**
 **המשך מ: M05-c184 DONE pnpm test 602 files passed, 6954 tests, no drift**
 
@@ -136,3 +137,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c186 DONE (pnpm build passes; drift committed: not-found title, M-CYCLE-STATUS, claude_STATE, F59 status doc)
 המשך מ: M10-c186 DONE-DEFERRED (85 files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session and anon key 401; 301_supplier_verification_status.sql known unapplied via product_detail.supplier_load_failed; apply one at a time via apply_migration once Supabase access is restored)
 המשך מ: M14-c186 DONE-DEFERRED (SENTRY_AUTH_TOKEN is placeholder/absent in .env.local, .env.production, .env.vercel; Sentry release vs HEAD not verified; re-run once real token set)
+המשך מ: M17-c186 DONE (RTL live probe on / and /product sample at 380/768/1440: html lang=he dir=rtl, 0 horizontal overflow, 0 LTR-direction Hebrew containers, 0 text-align:left or float leaks; no code changes)
