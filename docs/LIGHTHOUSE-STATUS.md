@@ -31,3 +31,8 @@
 
 ### Action
 No optimization goal queued. Scores healthy and stable.
+
+### M08-c206 sample (2026-10-26, prod build `next start` :3111, mobile)
+- / : simulate 89 (LCP 3.5s, TBT 30ms, CLS 0.028) | provided 100 (LCP 0.5s)
+- /product/אוזניות-איירפודס-3 : simulate 82 (LCP 4.7s, TBT 20ms, CLS 0.001) | provided 100 (LCP 0.1s)
+- Note: `/product` alone is 404 (route is /product/[slug]); a :3000 dev server gives invalid scores (48 / 0).
