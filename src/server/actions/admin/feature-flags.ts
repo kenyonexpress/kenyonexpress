@@ -8,58 +8,42 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 /**
- * Turns the storefront's maintenance mode on or off by setting MAINTENANCE_MODE
- * Vercel env var. Admin only: it takes every customer-facing page offline.
- * Also writes to DB as fallback. Changes take effect on next middleware invocation.
+ * Turns the storefront's maintenance mode on or off (feature_flags, migration
+ * 286). Admin only: it takes every customer-facing page offline. The proxy
+ * picks the change up within 30 seconds on each instance.
  */
+const MAINTENANCE_RETURN_PATHS = ['/admin/feature-flags', '/admin/settings']
+
 async function runSetMaintenance(formData: FormData): Promise<void> {
+  // Both /admin/settings and /admin/feature-flags host the toggle; send the
+  // admin back to the one they used (allowlisted, never an open redirect).
+  const requested = formData.get('return_to')
+  const back =
+    typeof requested === 'string' && MAINTENANCE_RETURN_PATHS.includes(requested)
+      ? requested
+      : '/admin/feature-flags'
   let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
     session = await requireAdminSession()
   } catch {
-    redirect('/admin/feature-flags?error=forbidden')
+    redirect(`${back}?error=forbidden`)
   }
   const on = formData.get('maintenance_mode') === 'on'
 
-  // Update Vercel environment variable MAINTENANCE_MODE (always attempted)
-  const vercelToken = process.env.VERCEL_API_TOKEN || ''
-  const vercelProjectId = process.env.VERCEL_PROJECT_ID || 'kenyonexpress'
-  const vercelTeamId = process.env.VERCEL_TEAM_ID
-
+  // Update Vercel environment variable MAINTENANCE_MODE via CLI
+  // Uses authenticated vercel CLI - no API token needed
   try {
-    // Find existing MAINTENANCE_MODE env var ID
-    const listUrl = vercelTeamId
-      ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env?teamId=${vercelTeamId}`
-      : `https://api.vercel.com/v9/projects/${vercelProjectId}/env`
+    const { exec } = await import('node:child_process')
+    const { promisify } = await import('node:util')
+    const execAsync = promisify(exec)
 
-    const listRes = await fetch(listUrl, {
-      headers: { Authorization: `Bearer ${vercelToken}` },
-    })
+    const value = on ? 'on' : 'off'
 
-    if (listRes.ok) {
-      const { envs } = (await listRes.json()) as { envs: Array<{ id: string; key: string }> }
-      const existing = envs.find((e) => e.key === 'MAINTENANCE_MODE')
-
-      if (existing) {
-        // Update existing env var
-        const updateUrl = vercelTeamId
-          ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}?teamId=${vercelTeamId}`
-          : `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}`
-
-        await fetch(updateUrl, {
-          method: 'PATCH',
-          headers: {
-            Authorization: `Bearer ${vercelToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            value: on ? 'on' : 'off',
-            type: 'plain',
-            target: ['production', 'preview', 'development'],
-          }),
-        })
-      }
-    }
+    // Remove existing var from all targets, then add with new value
+    await execAsync(
+      `vercel env rm MAINTENANCE_MODE production --yes; vercel env rm MAINTENANCE_MODE preview --yes; vercel env rm MAINTENANCE_MODE development --yes; vercel env add MAINTENANCE_MODE production --value="${value}" --type=config; vercel env add MAINTENANCE_MODE preview --value="${value}" --type=config; vercel env add MAINTENANCE_MODE development --value="${value}" --type=config`,
+      { cwd: process.cwd(), shell: '/bin/bash' },
+    )
   } catch (vercelError) {
     // Log but don't fail - DB write below is the fallback
     console.error('Vercel env update failed:', vercelError)
@@ -73,7 +57,7 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
       bool_value: on,
       updated_at: new Date().toISOString(),
     } as never)
-  if (error) redirect('/admin/feature-flags?error=save_failed')
+  if (error) redirect(`${back}?error=save_failed`)
 
   await writeAuditLog({
     actorId: session.userId,
@@ -83,8 +67,8 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
     entityId: 'maintenance_mode',
     changes: { old: null, new: { maintenance_mode: on } },
   })
-  revalidatePath('/admin/feature-flags')
-  redirect(`/admin/feature-flags?maintenance=${on ? 'on' : 'off'}`)
+  revalidatePath(back)
+  redirect(`${back}?maintenance=${on ? 'on' : 'off'}`)
 }
 
 export async function setMaintenanceMode(formData: FormData): Promise<void> {
