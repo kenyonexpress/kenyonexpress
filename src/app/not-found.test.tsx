@@ -96,7 +96,7 @@ describe('NotFound Page', () => {
   })
 
   it('has proper metadata for SEO', () => {
-    expect(metadata.title).toBe('הדף לא נמצא')
+    expect(metadata.title).toBe('404 - הדף לא נמצא')
     expect(metadata.robots.index).toBe(false)
     expect(metadata.robots.follow).toBe(true)
   })
