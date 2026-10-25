@@ -1,7 +1,6 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
-import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
 import { createPublicClient } from '@/lib/supabase/anon'
@@ -231,18 +230,6 @@ export function productTypeFilter(productType: ProductTypeFilter): {
   return productType === 'coupon'
     ? { column: 'or', value: 'type.eq.coupon,is_coupon_enabled.is.true' }
     : { column: 'and', value: 'type.neq.coupon,is_coupon_enabled.is.false' }
-}
-
-/**
- * The city slug from the URL, or undefined.
- *
- * Validated against the city table rather than passed through: an unknown slug
- * becomes "no filter" instead of an empty page, and nothing user-controlled
- * reaches a query.
- */
-export function parseCity(raw: string | string[] | undefined): string | undefined {
-  const value = Array.isArray(raw) ? raw[0] : raw
-  return typeof value === 'string' && cityBySlug(value) ? value : undefined
 }
 
 export function parseProductType(
