@@ -325,12 +325,14 @@ describe('the welcome mail, which is (21) closing', () => {
     expect(buildNotification('welcome', {}, SITE)?.text).toContain('שלום,')
   })
 
-  it('carries no offer and no coupon', () => {
-    // The same sender address has to carry voucher codes and refund
-    // confirmations later. Opening with a discount trains the reader to
-    // file it as marketing.
+  it('mentions signup bonus but no other promotional offers', () => {
+    // The sender address is operational, not marketing: voucher and refund
+    // confirmations later. The 10₪ signup bonus is operational credit, not
+    // a promotional discount.
     const built = buildNotification('welcome', {}, SITE)
-    for (const forbidden of ['הנחה', 'קופון מתנה', '₪', '%']) {
+    expect(built?.text).toContain('10₪')
+    expect(built?.text).toContain('מתנת כניסה')
+    for (const forbidden of ['הנחה', 'קופון מתנה', '%']) {
       expect(built?.text).not.toContain(forbidden)
     }
   })
