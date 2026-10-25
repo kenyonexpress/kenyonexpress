@@ -172,3 +172,8 @@ Same cause as M02-c202: kenyonexpress.co.il serves our own build. refs/ has Elec
 Sitemap check. Local build artifact .next/server/app/sitemap.xml.body: valid urlset, 79 <loc>, lastmod 2026-10-25T11:04Z, built 2026-10-25 20:19 (src/app/sitemap.ts, cacheLife hours, CATALOGUE_TAG).
 Live https://www.kenyonexpress.co.il/sitemap.xml: apex 308 -> www, then 403 "Vercel Security Checkpoint" (x-vercel-mitigated: challenge) for curl and Googlebot UA. Vercel MCP fetch denied (403 on aliases). Reachability and freshness of the live response NOT verified.
 **המשך מ: M11-c202 BLOCKED live-unreachable**
+
+## M03-c203 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (34/32/32 /_next/ refs, no wp-content), no diffs to record.
+Same cause as M03-c202: kenyonexpress.co.il serves our own build, and refs/ has no category capture of Electro v7. No percentage produced; guard not bypassed.
+**המשך מ: M03-c203 BLOCKED no-reference**
