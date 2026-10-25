@@ -183,3 +183,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M05-c192 DONE (pnpm test green: 614 files passed, 7055 tests passed, 28 skipped; committed only logs/lighthouse-m08-c191.log; left uncommitted src/app/(store)/page.tsx + 2 docs edits from a concurrent process, which remove CitiesRow/DealChips contrary to C24)
 המשך מ: M06-c192 DONE (pnpm build green; committed docs drift docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md; left uncommitted src/lib/product-detail.ts, a concurrent edit dropping verification_status from the suppliers select, not mine)
 המשך מ: M16-c192 DONE (verified: only indexable PDP src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList via src/lib/seo/json-ld.ts; gift sub-page is noindex; json-ld.test.ts 26/26 green; no code changes)
+המשך מ: M06-c193 DONE (pnpm build green exit 0; no drift in tree after build, nothing else to commit; no code changes)
