@@ -5,6 +5,9 @@
  * system alerts, threshold breaches). Rate-limited and fire-and-forget.
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { log } from '@/lib/observability/log'
+
 const NTFY_TOPIC = 'kenyon-ofir-limit'
 const NTFY_URL = `https://ntfy.sh/${NTFY_TOPIC}`
 
@@ -30,17 +33,17 @@ export async function notify(message: string, options: NotifyOptions = {}): Prom
     if (priority !== 'default') headers.Priority = priority
     if (tags.length > 0) headers.Tags = tags.join(',')
 
-    const response = await fetch(NTFY_URL, {
+    const response = await fetchWithTimeout(NTFY_URL, {
       method: 'POST',
       headers,
       body: message,
     })
 
     if (!response.ok) {
-      console.error('[notify] ntfy returned', response.status, await response.text())
+      log.warn('notify.ntfy_rejected', { status: response.status })
     }
   } catch (err) {
-    console.error('[notify] failed to send:', err)
+    log.warn('notify.send_failed', { err })
   }
 }
 

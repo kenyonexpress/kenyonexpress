@@ -3,6 +3,7 @@ import { AUDIT_ACTION_LABELS, PENDING_QUEUE_LABELS, labelFor } from '@/lib/admin
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { Coins, Package, RefreshCw, ShoppingCart, Store, Users } from 'lucide-react'
 import Link from 'next/link'
@@ -113,13 +114,15 @@ export default async function DashboardPage() {
   days90Ago.setDate(days90Ago.getDate() - 90)
   days90Ago.setHours(0, 0, 0, 0)
 
-  const { data: ordersData } = await supabase
+  const { data: ordersData, error: ordersError } = await supabase
     .from('orders')
     .select('created_at, status, total_ils_agorot')
     .gte('created_at', days90Ago.toISOString())
     .is('deleted_at', null)
     .in('status', ['paid', 'partially_fulfilled', 'fulfilled', 'platform_settled'])
     .order('created_at', { ascending: true })
+
+  if (ordersError) log.warn('admin_dashboard.orders_read_failed', { err: ordersError })
 
   // Group by day
   const dayMap = new Map<string, { orders: number; revenue: number }>()

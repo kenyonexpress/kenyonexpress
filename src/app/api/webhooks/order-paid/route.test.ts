@@ -3,13 +3,13 @@
  */
 
 import { notifyNewOrder } from '@/lib/notifications'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest } from 'next/server'
 import { POST } from './route'
 
 // Mock dependencies
 vi.mock('@/lib/notifications')
-vi.mock('@/lib/supabase/server')
+vi.mock('@/lib/supabase/admin')
 
 describe('POST /api/webhooks/order-paid', () => {
   const mockSupabase = {
@@ -18,13 +18,27 @@ describe('POST /api/webhooks/order-paid', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any)
+    process.env.CRON_SECRET = 'test-secret'
+    vi.mocked(createAdminClient).mockReturnValue(mockSupabase as any)
     vi.mocked(notifyNewOrder).mockResolvedValue()
+  })
+
+  it('returns 401 without the bearer secret', async () => {
+    const req = new NextRequest('http://localhost/api/webhooks/order-paid', {
+      method: 'POST',
+      body: JSON.stringify({ orderId: 'order-1' }),
+    })
+
+    const response = await POST(req)
+
+    expect(response.status).toBe(401)
+    expect(notifyNewOrder).not.toHaveBeenCalled()
   })
 
   it('returns 400 if orderId is missing', async () => {
     const req = new NextRequest('http://localhost/api/webhooks/order-paid', {
       method: 'POST',
+      headers: { authorization: 'Bearer test-secret' },
       body: JSON.stringify({}),
     })
 
@@ -46,6 +60,7 @@ describe('POST /api/webhooks/order-paid', () => {
 
     const req = new NextRequest('http://localhost/api/webhooks/order-paid', {
       method: 'POST',
+      headers: { authorization: 'Bearer test-secret' },
       body: JSON.stringify({ orderId: 'test-order-id' }),
     })
 
@@ -70,6 +85,7 @@ describe('POST /api/webhooks/order-paid', () => {
 
     const req = new NextRequest('http://localhost/api/webhooks/order-paid', {
       method: 'POST',
+      headers: { authorization: 'Bearer test-secret' },
       body: JSON.stringify({ orderId: 'order-1' }),
     })
 
@@ -107,6 +123,7 @@ describe('POST /api/webhooks/order-paid', () => {
 
     const req = new NextRequest('http://localhost/api/webhooks/order-paid', {
       method: 'POST',
+      headers: { authorization: 'Bearer test-secret' },
       body: JSON.stringify({ orderId: 'order-1' }),
     })
 
@@ -119,7 +136,7 @@ describe('POST /api/webhooks/order-paid', () => {
     expect(notifyNewOrder).toHaveBeenCalledWith({
       orderId: 'order-1',
       productTitle: 'קפה אספרסו',
-      amountShekels: expect.stringContaining('150'),
+      amountAgorot: 15000,
     })
   })
 })

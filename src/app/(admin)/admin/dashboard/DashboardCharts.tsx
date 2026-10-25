@@ -42,7 +42,7 @@ export default function DashboardCharts({ days7, days30, days90 }: ChartsProps) 
               onClick={() => setPeriod(p)}
               className={`rounded-lg px-3 py-1.5 transition-colors ${
                 period === p
-                  ? 'bg-brand-primary text-white'
+                  ? 'bg-brand-primary text-gray-900'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >

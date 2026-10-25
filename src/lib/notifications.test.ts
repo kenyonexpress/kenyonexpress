@@ -2,12 +2,13 @@
  * Tests for ntfy notification helpers.
  */
 
+import { log } from '@/lib/observability/log'
 import { notify, notifyNewOrder } from './notifications'
 
 describe('notify', () => {
   beforeEach(() => {
     global.fetch = vi.fn()
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(log, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -58,7 +59,7 @@ describe('notify', () => {
     vi.mocked(fetch).mockRejectedValue(new Error('Network error'))
 
     await expect(notify('Test')).resolves.toBeUndefined()
-    expect(console.error).toHaveBeenCalledWith('[notify] failed to send:', expect.any(Error))
+    expect(log.warn).toHaveBeenCalledWith('notify.send_failed', { err: expect.any(Error) })
   })
 
   it('logs error on non-ok response', async () => {
@@ -66,7 +67,7 @@ describe('notify', () => {
 
     await notify('Test')
 
-    expect(console.error).toHaveBeenCalledWith('[notify] ntfy returned', 500, 'Server error')
+    expect(log.warn).toHaveBeenCalledWith('notify.ntfy_rejected', { status: 500 })
   })
 })
 

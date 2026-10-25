@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateSignedJWT } from '@/lib/vouchers/qr-generation'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -111,9 +113,12 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
         // Trigger order-paid notification webhook
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/order-paid`, {
+          await fetchWithTimeout(`${siteUrl()}/api/webhooks/order-paid`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${process.env.CRON_SECRET ?? ''}`,
+            },
             body: JSON.stringify({ orderId: order_id }),
           })
         } catch (err) {

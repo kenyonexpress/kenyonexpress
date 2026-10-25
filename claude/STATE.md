@@ -57,4 +57,6 @@ M07-c186 DONE: TODO/FIXME scan, no FIXME; 8 TODOs older than 7 days all already 
 
 M09-c186 DONE: no unused deps (lint-staged used by .husky/pre-commit); removed 3 fully-unreferenced files (AuthWithFallback, useAuth, useSearch); remaining unreferenced exports are type aliases/payment+migration scaffolding, left in place.
 
-המשך מ: M09-c186 DONE
+M05-c188 DONE: pnpm test green (584 files / 6876 tests), tsc clean. Root cause: F60 flipped money-format.ts to sign-first, undoing the measured bidi fix (reverted 4fa43b33b for money-format.ts + test). F62 order-paid webhook brought under guards: withRequestLog, CRON_SECRET bearer gate, admin client, log not console, fetchWithTimeout, siteUrl(); dashboard read error handled; chart yellow button text-gray-900; not-found test title synced.
+
+המשך מ: M05-c188 DONE
