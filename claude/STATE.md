@@ -91,3 +91,7 @@ M07-c194 DONE: TODO/FIXME scan; all markers older than 7 days (cardcom.ts:249/:3
 M04-c195 DONE: pnpm type-check (tsc --noEmit) passes clean, no drift, working tree clean; no code changes.
 
 המשך מ: M04-c195 DONE
+
+M08-c198 DONE: Lighthouse mobile live, 3 runs each. Medians home 75 (runs 100/74/75, LCP variance 1.7-5.8s), product 97 (97/99/82). Log: logs/lighthouse-m08-c198.txt. No code changes.
+
+המשך מ: M08-c198 DONE
