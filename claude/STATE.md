@@ -221,3 +221,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M17-c197 BLOCKED locked-component (RTL / and /product at 380/768/1440: dir=rtl lang=he, 0 overflow; /product clean; on / 11 Hebrew <p dir="ltr"> LTR leaks from locked src/components/home/HeroSlider.tsx:555-628, not edited; no code changes)
 המשך מ: M04-c198 DONE (pnpm type-check green, tsc --noEmit 0 errors; no drift; no code changes)
 המשך מ: M05-c198 DONE (pnpm test green: 614 files / 7055 tests passed, 2 files skipped; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
+המשך מ: M09-c198 DONE (knip: 4 flagged deps all still used — drizzle-orm in src/db/schema + drizzle.config, postgres/pg in scripts, @capacitor/android needed for cap sync android; ~360 unused exports are mostly public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
