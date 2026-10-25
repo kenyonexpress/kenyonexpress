@@ -120,3 +120,6 @@ RESULT: DONE
 M09-c184: Unused deps + dead exports re-audit. knip: only unused dep is @capacitor/android (needed by android/ Capacitor platform, kept). Remaining src unused-file hits are entry/test/dynamic/backlog-kept (c183 already removed the safe ones); exports/types are tested public surface. No code change, no UI impact.
 RESULT: DONE
 המשך מ: M09-c184 DONE
+M18-c184: STATE.md trim check. claude/STATE.md is 123 lines (<300), docs/STATE-ARCHIVE.md already holds the archived history; nothing further to move. No code change.
+RESULT: DONE
+המשך מ: M18-c184 DONE
