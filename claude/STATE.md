@@ -171,3 +171,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c191 DONE (pnpm build exit 0; committed M-CYCLE-STATUS.md timestamp drift; untracked 310/fraud scripts left uncommitted)
 המשך מ: M07-c191 DONE (TODO/FIXME scan: 4 markers older than 7 days, all already in docs/BACKLOG.md, none new or resolvable without Cardcom creds/feature work; BACKLOG header re-verified)
 המשך מ: M08-c191 DONE (Lighthouse mobile local prod build, 2 runs each: / perf 39-43 a11y 100 bp 92 seo 100; /product perf 51-55 a11y 100 bp 92 seo 100; logged in logs/lighthouse-m08-c191.log; G23 95+ still open)
+המשך מ: M09-c191 DONE (deps all in use incl. tooling/peer deps; un-exported 6 dead internal symbols; tsc, biome, vitest green)

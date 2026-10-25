@@ -42,7 +42,7 @@ function firstOf<T>(value: T | T[] | null): T | null {
 }
 
 /** Start of the window, as an ISO timestamp `days` before now. */
-export function windowStart(days: number, now: Date = new Date()): string {
+function windowStart(days: number, now: Date = new Date()): string {
   return new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString()
 }
 

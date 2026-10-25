@@ -140,7 +140,7 @@ export class RefundRequestRefusal extends Error {
  * statutory claim on a date we do not hold would be the one error here with a
  * legal cost, and the conservative direction is obvious.
  */
-export function isInsideWindow(paidAt: Date, now: Date, windowDays?: number): boolean {
+function isInsideWindow(paidAt: Date, now: Date, windowDays?: number): boolean {
   const days =
     typeof windowDays === 'number' && windowDays > STATUTORY_CANCELLATION_WINDOW_DAYS
       ? windowDays
