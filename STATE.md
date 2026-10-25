@@ -232,3 +232,8 @@ Same cause as M01-c193: kenyonexpress.co.il serves our own build (30-32 /_next/ 
 Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as M03-c193: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. No percentages produced.
 **המשך מ: M03-c194 BLOCKED no-reference**
+
+## M01-c196 (2026-10-25)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c194: LIVE_HOME (kenyonexpress.co.il) serves our own build, so build vs build. No local dev server on :3000. Script still not pointed at refs/electro-home-v7.html (see docs/PARITY-REFERENCE.md). No percentages produced; guard not bypassed.
+**המשך מ: M01-c196 BLOCKED no-reference**
