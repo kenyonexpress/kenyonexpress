@@ -74,10 +74,10 @@ export default function SupplierScanPage() {
         return
       }
 
-      // Also mark order item
+      // Also mark order item as issued (valid state for coupons)
       await supabase
         .from('order_items')
-        .update({ item_status: 'redeemed' })
+        .update({ item_status: 'issued' })
         .eq('id', data.order_item_id)
 
       setResult(`Successfully redeemed voucher ${verified.voucher_id}`)
