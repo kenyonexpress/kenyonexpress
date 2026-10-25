@@ -38,9 +38,9 @@ export default async function DashboardPage() {
   const [
     { count: ordersToday },
     { data: paymentsToday },
-    { count: couponsIssuedToday },
-    { count: couponsUsedToday },
-    { count: newCustomersToday },
+    { count: _couponsIssuedToday },
+    { count: _couponsUsedToday },
+    { count: _newCustomersToday },
     { count: activeProducts },
     { data: activeUserOrders },
     { count: pendingRefunds },
