@@ -1,7 +1,8 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-25 11:06:43 UTC (MAINTENANCE_LOOP_5 check; MCP `get_runtime_logs` returned 403 forbidden, CLI fallback used with `--scope team_TUMTPVDP8218QHwedSjmgJWl --project kenyonexpress`)
-**Status:** 🟡 PARTIAL - GitHub Actions scheduler is running but many jobs failing with connection errors (000). Mixed success/failure pattern observed.
+**Last check:** 2026-10-25 11:06:43 UTC (MAINTENANCE_LOOP_5 check)
+**Method:** Vercel MCP `get_runtime_logs` attempted with `group_by=requestPath` and returned **403 forbidden** (persistent authorization issue with claude.ai connector for team_TUMTPVDP8218QHwedSjmgJWl / prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP). Per MCP recovery guidance, CLI fallback used: `vercel --scope team_TUMTPVDP8218QHwedSjmgJWl logs --project kenyonexpress` plus GitHub Actions workflow run logs via `gh run view <id> --log` for all 30 runs since 2026-10-24T19:35:00Z.
+**Status:** 🔴 CRITICAL - Majority of cron routes failing with 000 (connection timeout). Scheduler is active but 12+ jobs consistently unreachable. Build verified: `✓ Compiled successfully in 7.8s`.
 
 ## Current Status Summary (2026-10-25 11:06 UTC)
 
@@ -15,44 +16,67 @@
 | affiliate-payouts | 2026-10-25T08:43:01Z | `40 3 * * *` | ✓ 200 OK |
 | stock-notifications | 2026-10-25T10:46:31Z | `0 * * * *` | ✓ 200 OK |
 
-### ✗ Failing Jobs (Connection Errors)
+### ✗ Failing Jobs - Connection Timeout (000)
 
-| Job | Last Attempt | Schedule | Error |
-|-----|--------------|----------|-------|
-| abandoned-cart | 2026-10-25T10:46:31Z | `0 * * * *` | **000** - connection/timeout (appears TWICE in schedule) |
-| reconcile | 2026-10-25T09:02:44Z | `0 4 * * *` | **000** - connection/timeout (appears TWICE in schedule) |
-| reap-carts | 2026-10-25T08:43:01Z | `40 3 * * *` | **000** - connection/timeout (appears TWICE in schedule) |
-| search-reindex | 2026-10-25T10:46:31Z | Unknown | **404** - route doesn't exist in scripts/cron-jobs.json |
+| Job | Last Attempt | Schedule | Status | In Manifest |
+|-----|--------------|----------|--------|-------------|
+| notifications | Every ~5min (latest 06:59:20Z) | `*/5 * * * *` | **000** - all attempts timeout (appears TWICE in schedule) | ✓ Yes |
+| health | Every ~5min (latest 06:59:20Z) | `*/5 * * * *` | **000** - all attempts timeout (appears TWICE in schedule) | ✓ Yes |
+| invoices | Every ~10min (latest 06:44:05Z) | `*/10 * * * *` | **000** - all attempts timeout (appears TWICE in schedule) | ✓ Yes |
+| stock | Every ~10min (latest 06:44:05Z) | `*/10 * * * *` | **000** - all attempts timeout (appears TWICE in schedule) | ✓ Yes |
+| stranded-payments | Every ~10min (latest 06:44:05Z) | `*/10 * * * *` | **000** - all attempts timeout (appears TWICE in schedule) | ✓ Yes |
+| fraud-monitor | Every ~10min (latest 06:44:05Z) | `*/10 * * * *` | **000** - all attempts timeout | ✓ Yes |
+| sms-broadcasts | Every ~10min (latest 06:44:05Z) | `*/10 * * * *` | **000** - all attempts timeout | ✓ Yes |
+| abandoned-cart | Hourly (latest 10:46:31Z) | `0 * * * *` | **000** - all attempts timeout (appears TWICE in schedule) | ✓ Yes |
+| subscriptions | 2026-10-25T07:45:33Z | `30 2 * * *` | **000** - connection timeout (appears TWICE in schedule) | ✓ Yes |
+| reap-carts | 2026-10-25T08:43:08Z | `40 3 * * *` | **000** - connection timeout (appears TWICE in schedule) | ✓ Yes |
+| reconcile | 2026-10-25T09:02:51Z | `0 4 * * *` | **000** - connection timeout (appears TWICE in schedule) | ✓ Yes |
+| expire-vouchers | 2026-10-25T01:05:22Z | `15 23 * * *` | **000** - connection timeout (appears TWICE in schedule) | ✓ Yes |
 
-### ❓ No Evidence in Last 24h (Should Have Run)
+**Total:** 12 jobs in manifest consistently failing with connection timeout (000).
 
-High-frequency jobs (every 5-10 min) with no observed runs:
-- `notifications` (*/5 * * * *)
-- `health` (*/5 * * * *)
-- `invoices` (*/10 * * * *)
-- `stock` (*/10 * * * *)
-- `stranded-payments` (*/10 * * * *)
-- `observability-check` (*/5 * * * *)
-- `fraud-monitor` (*/10 * * * *)
-- `sms-broadcasts` (*/10 * * * *)
+### ✗ Failing Jobs - 404 Not Found
 
-Jobs with lower frequency (awaiting next window):
-- `subscriptions` (30 2 * * *) - Daily 02:30
-- `expire-vouchers` (15 23 * * *) - Daily 23:15
-- `cart-abandonment` (0 * * * *) - Hourly (but might be duplicate of abandoned-cart)
-- `retention` (0 5 1 * *) - Monthly
-- `weekly-digest` (0 4 * * 5) - Fridays 04:00
-- `search-report` (0 6 * * 1) - Mondays 06:00
+These routes are called but don't exist in scripts/cron-jobs.json:
+
+| Job | Last Attempt | Status | In Manifest |
+|-----|--------------|--------|-------------|
+| search-reindex | Every hour (latest 10:46:31Z) | **404** - route doesn't exist | ✗ No |
+| whatsapp | Every ~5min (latest 06:59:20Z) | **404** - route doesn't exist | ✗ No |
+| webhook-dlq | Every ~10min (latest 06:44:05Z) | **404** - route doesn't exist | ✗ No |
+| job-dlq | Every ~10min (latest 06:44:05Z) | **404** - route doesn't exist | ✗ No |
+| search-outbox | Every ~10min (latest 06:44:05Z) | **404** - route doesn't exist | ✗ No |
+| expire-cashback | 2026-10-25T01:05:22Z | **404** - route doesn't exist | ✗ No |
+| expire-coupons | 2026-10-25T01:05:22Z | **404** - route doesn't exist | ✗ No |
+| scheduled-gifts | 2026-10-25T06:44:05Z | **404** - route doesn't exist | ✗ No |
+
+**Total:** 8 routes called but not in manifest (schedule corruption suspected).
+
+### ❓ Not Observed in Last 48h
+
+From the 22 routes in scripts/cron-jobs.json, these were not observed in workflow runs:
+
+| Job | Schedule | Expected Last Run | Status |
+|-----|----------|-------------------|--------|
+| cart-abandonment | `0 * * * *` | Hourly | Possibly duplicate of `abandoned-cart` |
+| retention | `0 5 1 * *` | Monthly, 1st at 05:00 | Next due ~2026-11-01 |
+| weekly-digest | `0 4 * * 5` | Fridays at 04:00 | Last would be 2026-10-25 04:00 (not in logs) |
+| search-report | `0 6 * * 1` | Mondays at 06:00 | Last would be 2026-10-21 or next 2026-10-28 |
 
 ### GitHub Actions Workflow Status
 
 **Last 30 runs (since 2026-10-24T19:35Z):**
-- Successful: 8 (27%)
-- Failed: 22 (73%)
+- Successful: 10 (33%)
+- Failed: 20 (67%)
 - Most recent success: 2026-10-25T09:35:46Z (deal-scraper → 200)
 - Most recent failure: 2026-10-25T10:46:31Z (abandoned-cart=000, search-reindex=404)
 
-**Pattern:** Scheduler is active and calling jobs, but many routes returning connection errors or 404.
+**Successful runs breakdown:**
+- deal-scraper: 4 runs (last 09:35:46Z)
+- p95-monitor: 5 runs (last 09:26:00Z)
+- rfm-segmentation: 1 run (06:13:03Z)
+
+**Pattern:** Scheduler is active and calling jobs, but 12 manifest routes + 8 non-manifest routes failing (000/404).
 
 ## Issues Requiring Action
 
