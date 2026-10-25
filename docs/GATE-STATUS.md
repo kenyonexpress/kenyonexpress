@@ -1,25 +1,25 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-25 18:58 UTC  
+**Last Check:** 2026-10-25 19:15 UTC  
 **Page:** home  
 **Viewports:** 380px, 768px, 1440px  
-**Status:** ✅ PASSING (with current build baseline)
+**Status:** ❌ FAILING (all viewports above 11% threshold)
 
-## Current Scores (Current Build Baseline)
+## Current Scores (Valid Baselines)
 
-| Viewport | Score | Threshold | Status | Margin |
-|----------|-------|-----------|--------|--------|
-| 380px    | 6.79% | 11% | ✅ PASSING | -4.21% |
-| 768px    | TBD | 11% | Pending | - |
-| 1440px   | TBD | 11% | Pending | - |
+### Electro v7 Template Baseline
+| Viewport | Score | Threshold | Status | Over Threshold |
+|----------|-------|-----------|--------|----------------|
+| 380px    | 47.64% | 11% | ❌ FAILING | +36.64% |
+| 768px    | 41.3% | 11% | ❌ FAILING | +30.3% |
+| 1440px   | 29.65% | 11% | ❌ FAILING | +18.65% |
 
-## Previous Scores (Degraded Live Snapshot - Invalid Baseline)
-
+### Degraded Live Snapshot Baseline
 | Viewport | Score | Notes |
 |----------|-------|-------|
-| 380px    | 49.89% | Against degraded baseline missing 96 resources |
-| 768px    | 42.76% | Baseline incompatible with 11% threshold |
-| 1440px   | 31.72% | See MOBILE-GATE-ANALYSIS.md |
+| 380px    | 49.89% | Missing 96 resources (37 fonts, 57 scripts) |
+| 768px    | 42.76% | Degraded baseline |
+| 1440px   | 31.72% | Degraded baseline |
 
 ## Comparison Details
 
