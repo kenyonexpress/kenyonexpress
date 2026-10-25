@@ -1,9 +1,85 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 22:38 to 22:40 UTC (MAINTENANCE_LOOP_5, seventeenth run; MCP `get_runtime_logs` 403 once through the claude.ai connector (`group_by=requestPath` 24h, request `gqjbk-1792622343814`), then **answered for real, nine calls, nine with data, no retry**, through `mcp.vercel.com` with the CLI token; CLI request log measured over 24h from `/tmp` with `--scope` and `--project`, exit 0 first time; the two sources agree on the one new 401 by request id; pg_cron read through the management API, read-only)
-**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (seventeenth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days (MCP: "No logs found" on 3d for every one of the five; `group_by=requestPath` over 7d lists 15 cron routes and none of them). The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), now **65h 44m** stale. Every other hit is 401 or 404; the 24h MCP pull holds 39 events, every one a 401 `request.completed`, newest `whatsapp` at 21:35:51 UTC (new since the sixteenth check); the three scheduler sweeps since the sixteenth check (GitHub runs `39680053866`, `39682349744`, `39684039276` at 21:35, 21:53 and 22:06 UTC) produced that 401, two 404s and six `000`s that never reached Vercel. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
+**Last check:** 2026-10-25 11:06:43 UTC (MAINTENANCE_LOOP_5 check; MCP `get_runtime_logs` returned 403 forbidden, CLI fallback used with `--scope team_TUMTPVDP8218QHwedSjmgJWl --project kenyonexpress`)
+**Status:** 🟡 PARTIAL - GitHub Actions scheduler is running but many jobs failing with connection errors (000). Mixed success/failure pattern observed.
 
-## How this was measured
+## Current Status Summary (2026-10-25 11:06 UTC)
+
+### ✓ Successfully Running Jobs (Observed in last 24h)
+
+| Job | Last Run | Schedule | Status |
+|-----|----------|----------|--------|
+| deal-scraper | 2026-10-25T09:35:46Z | `*/30 * * * *` | ✓ 200 OK |
+| p95-monitor | 2026-10-25T09:26:00Z | `*/15 * * * *` | ✓ 200 OK |
+| rfm-segmentation | 2026-10-25T06:13:03Z | `20 1 * * *` | ✓ 200 OK |
+| affiliate-payouts | 2026-10-25T08:43:01Z | `40 3 * * *` | ✓ 200 OK |
+| stock-notifications | 2026-10-25T10:46:31Z | `0 * * * *` | ✓ 200 OK |
+
+### ✗ Failing Jobs (Connection Errors)
+
+| Job | Last Attempt | Schedule | Error |
+|-----|--------------|----------|-------|
+| abandoned-cart | 2026-10-25T10:46:31Z | `0 * * * *` | **000** - connection/timeout (appears TWICE in schedule) |
+| reconcile | 2026-10-25T09:02:44Z | `0 4 * * *` | **000** - connection/timeout (appears TWICE in schedule) |
+| reap-carts | 2026-10-25T08:43:01Z | `40 3 * * *` | **000** - connection/timeout (appears TWICE in schedule) |
+| search-reindex | 2026-10-25T10:46:31Z | Unknown | **404** - route doesn't exist in scripts/cron-jobs.json |
+
+### ❓ No Evidence in Last 24h (Should Have Run)
+
+High-frequency jobs (every 5-10 min) with no observed runs:
+- `notifications` (*/5 * * * *)
+- `health` (*/5 * * * *)
+- `invoices` (*/10 * * * *)
+- `stock` (*/10 * * * *)
+- `stranded-payments` (*/10 * * * *)
+- `observability-check` (*/5 * * * *)
+- `fraud-monitor` (*/10 * * * *)
+- `sms-broadcasts` (*/10 * * * *)
+
+Jobs with lower frequency (awaiting next window):
+- `subscriptions` (30 2 * * *) - Daily 02:30
+- `expire-vouchers` (15 23 * * *) - Daily 23:15
+- `cart-abandonment` (0 * * * *) - Hourly (but might be duplicate of abandoned-cart)
+- `retention` (0 5 1 * *) - Monthly
+- `weekly-digest` (0 4 * * 5) - Fridays 04:00
+- `search-report` (0 6 * * 1) - Mondays 06:00
+
+### GitHub Actions Workflow Status
+
+**Last 30 runs (since 2026-10-24T19:35Z):**
+- Successful: 8 (27%)
+- Failed: 22 (73%)
+- Most recent success: 2026-10-25T09:35:46Z (deal-scraper → 200)
+- Most recent failure: 2026-10-25T10:46:31Z (abandoned-cart=000, search-reindex=404)
+
+**Pattern:** Scheduler is active and calling jobs, but many routes returning connection errors or 404.
+
+## Issues Requiring Action
+
+### 🔴 Critical
+
+1. **Connection timeouts (000)** - Three jobs consistently failing:
+   - abandoned-cart, reconcile, reap-carts
+   - All appear TWICE in their schedule runs (duplicate manifest entries suspected)
+   - Likely: function timeout, cold start issue, or network connectivity problem
+
+2. **search-reindex route missing** - Called but returns 404
+   - Not in scripts/cron-jobs.json manifest
+   - Action: Either create the route or remove from schedule
+
+3. **High-frequency jobs not observed**
+   - Jobs scheduled every 5-10 minutes have no evidence in logs
+   - Possible causes: failing silently, not being scheduled, or filtered from logs
+   - Affects: notifications, health, stock, invoices, stranded-payments, observability-check, fraud-monitor, sms-broadcasts
+
+### 🟡 Medium Priority
+
+4. **Duplicate job entries** - Some jobs listed multiple times in schedule output
+5. **cart-abandonment vs abandoned-cart** - Two similar job names, unclear if intentional
+
+## Historical Context (Previous Checks)
+
+## How this was measured (2026-10-21 check)
 
 Vercel MCP: at 13:15 UTC the connector was authenticated but every project-scoped read (`get_runtime_logs`,
 `get_runtime_errors`, `list_deployments`, `get_project`) returned **403 forbidden** for
