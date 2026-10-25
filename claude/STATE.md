@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M16-c187 DONE all product pages (/product/[slug], single template) emit JSON-LD Product + BreadcrumbList via lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; gift sub-route noindex**
 **המשך מ: M04-c187 DONE pnpm type-check clean (tsc --noEmit, 0 errors), no drift**
 **המשך מ: M18-c186 DONE STATE.md already under 300 lines (claude/STATE.md 139, root 180), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M04-c186 DONE pnpm type-check clean (tsc --noEmit, 0 errors), no drift**
@@ -141,3 +142,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M17-c186 DONE (RTL live probe on / and /product sample at 380/768/1440: html lang=he dir=rtl, 0 horizontal overflow, 0 LTR-direction Hebrew containers, 0 text-align:left or float leaks; no code changes)
 המשך מ: M07-c187 DONE (TODO/FIXME scan: 7 TODOs older than 7 days, all filed in docs/BACKLOG.md; stock-notifications revalidateTag added as #4; no source changes)
 המשך מ: M10-c187 DONE-DEFERRED (85 files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session; 301_supplier_verification_status.sql still known unapplied; apply one at a time via apply_migration once Supabase access is restored)
+המשך מ: M13-c187 DONE
