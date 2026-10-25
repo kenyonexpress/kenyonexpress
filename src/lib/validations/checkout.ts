@@ -110,6 +110,8 @@ const checkoutPaymentSchema = z.object({
   }),
   save_card: z.boolean().default(true),
   token_id: uuid.optional(),
+  // F66: Device fingerprint for fraud detection
+  device_fingerprint: z.string().optional(),
 })
 
 /**

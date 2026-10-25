@@ -211,6 +211,18 @@ export default async function FraudAlertsPage(props: {
       sortKey: 'created_at',
       cell: (alert) => new Date(alert.created_at).toLocaleString('he-IL'),
     },
+    {
+      id: 'actions',
+      header: 'פעולות',
+      cell: (alert) => (
+        <Link
+          href={`/admin/fraud-alerts/${alert.id}`}
+          className="text-sm text-link hover:underline"
+        >
+          צפה ופעל
+        </Link>
+      ),
+    },
   ]
 
   return (
