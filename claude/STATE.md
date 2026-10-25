@@ -98,3 +98,5 @@ M08-c198 DONE: Lighthouse mobile live, 3 runs each. Medians home 75 (runs 100/74
 המשך מ: M12-c198 DONE
 
 המשך מ: M16-c198 DONE (product page emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld.ts; 26 tests pass; no code change)
+
+המשך מ: M07-c199 DONE (TODO/FIXME scan: all >7d items already filed in docs/BACKLOG.md #8-11; wallet TODOs dated 2026-10-25 are <7d, left in place; whatsapp.test "TODO" is a string fixture; no code change)
