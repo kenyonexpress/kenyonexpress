@@ -83,3 +83,7 @@ M08-c193 DONE: Lighthouse mobile x3 on / and /product (live www), medians 94 / 9
 M16-c193 DONE: product page src/app/(store)/product/[slug]/page.tsx (only PDP route) emits JSON-LD Product (buildProductJsonLd) + BreadcrumbList (buildBreadcrumbJsonLd) via src/lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; no code changes.
 
 המשך מ: M16-c193 DONE
+
+M07-c194 DONE: TODO/FIXME scan; all markers older than 7 days (cardcom.ts:249/:312, r2-migration.ts:103-106, stock-notifications route:126, screenshot-all.mjs:42) already filed in docs/BACKLOG.md items 8-11; new markers in src/lib/wallet/{cardcom-refund,integration.test}.ts are dated 2026-10-25 (under 7 days), whatsapp.test.ts "TODO" is a fixture string; no code changes.
+
+המשך מ: M07-c194 DONE
