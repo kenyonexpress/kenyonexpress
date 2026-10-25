@@ -65,7 +65,6 @@ describe('GiftButton', () => {
   })
 
   it('handles add to cart errors gracefully', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     mockAddToCart.mockRejectedValueOnce(new Error('Cart error'))
 
     const user = userEvent.setup()
@@ -75,13 +74,11 @@ describe('GiftButton', () => {
     await user.click(button)
 
     await waitFor(() => {
-      expect(consoleError).toHaveBeenCalledWith('Failed to add gift to cart:', expect.any(Error))
+      expect(screen.getByRole('alert')).toBeInTheDocument()
     })
 
     // Button should be re-enabled after error
     expect(button).not.toBeDisabled()
     expect(button).toHaveTextContent('שלח כמתנה')
-
-    consoleError.mockRestore()
   })
 })

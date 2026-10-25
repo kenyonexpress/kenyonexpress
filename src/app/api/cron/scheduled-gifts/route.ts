@@ -76,13 +76,21 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
   for (const order of dueOrders) {
     // Find vouchers not yet sent (not_sent check via gift_sent_at IS NULL)
-    const { data: vouchers } = await admin
+    const { data: vouchers, error: vouchersError } = await admin
       .from('vouchers')
       .select('id, product_id, expires_at, gift_claim_token_hash')
       .eq('order_id', order.id)
       .is('gift_sent_at', null)
       .eq('status', 'issued')
 
+    if (vouchersError) {
+      failed++
+      log.error('scheduled_gifts.vouchers_failed', {
+        order_id: order.id,
+        reason: vouchersError.message,
+      })
+      continue
+    }
     if (!vouchers || vouchers.length === 0) continue
 
     for (const voucher of vouchers) {

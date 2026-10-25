@@ -108,6 +108,7 @@ file is in a repository.
 19 https://kenyonexpress.vercel.app/api/cron/sms-broadcasts       GET  */10 * * * *   Authorization: Bearer <CRON_SECRET>
 20 https://kenyonexpress.vercel.app/api/cron/rfm-segmentation     GET  20 1 * * *     Authorization: Bearer <CRON_SECRET>
 21 https://kenyonexpress.vercel.app/api/cron/search-report        GET  0 6 * * 1      Authorization: Bearer <CRON_SECRET>
+22 https://kenyonexpress.vercel.app/api/cron/scheduled-gifts       GET  */10 * * * *   Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -151,6 +152,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 19 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/sms-broadcasts` |
 | 20 | 01:20 daily | `20 1 * * *` | `https://kenyonexpress.vercel.app/api/cron/rfm-segmentation` |
 | 21 | Monday 06:00 | `0 6 * * 1` | `https://kenyonexpress.vercel.app/api/cron/search-report` |
+| 22 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/scheduled-gifts` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -181,6 +183,7 @@ timing changes with the scheduler.
 - **`sms-broadcasts`** sends the SMS broadcasts scheduled for now or earlier.
 - **`rfm-segmentation`** recalculates RFM scores and segments the customers.
 - **`search-report`** builds the weekly search report.
+- **`scheduled-gifts`** emails gift recipients once the order's scheduled send time has passed (migration 305).
 - **`affiliate-payouts`** pays matured affiliate commissions into wallets (migration 283).
 - **`expire-vouchers`** marks vouchers past their date as expired.
 - **`weekly-digest`** mails the operator the week's numbers (sales totals,

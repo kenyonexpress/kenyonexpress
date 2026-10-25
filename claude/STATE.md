@@ -132,3 +132,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M16-c185 DONE
 המשך מ: M17-c185 DONE (live RTL probe / and /product/עוזרת-אישית-שירותי-משרד at 380/768/1440: html dir=rtl lang=he, 0 overflow, 0 text-align:left, 0 LTR leaks on /product; on / only 11 dir=ltr hero promo paragraphs in locked hero, untouched; no code changes)
 המשך מ: M18-c185 DONE STATE.md trimmed 299 ->      178 lines, older log lines archived to docs/STATE-ARCHIVE.md
+המשך מ: M05-c186 DONE (pnpm test 6962 pass/0 fail; F59 drift fixed: scheduled-gifts cron registered, migration 305 listed, GiftButton console removed, cron voucher read handles error)
