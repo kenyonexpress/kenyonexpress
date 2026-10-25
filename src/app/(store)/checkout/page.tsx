@@ -75,7 +75,7 @@ function CheckoutBreadcrumb() {
 }
 
 export default function CheckoutPage(props: {
-  searchParams: Promise<{ resume?: string; channel?: string }>
+  searchParams: Promise<{ resume?: string; channel?: string; gift?: string }>
 }) {
   return (
     <Suspense
@@ -95,7 +95,7 @@ export default function CheckoutPage(props: {
 async function CheckoutPageBody({
   searchParams,
 }: {
-  searchParams: Promise<{ resume?: string; channel?: string }>
+  searchParams: Promise<{ resume?: string; channel?: string; gift?: string }>
 }) {
   const supabase = await createClient()
   const {
@@ -178,7 +178,7 @@ async function CheckoutPageBody({
       }))
   }
 
-  const { resume, channel } = await searchParams
+  const { resume, channel, gift } = await searchParams
 
   return (
     <div className="checkout-page">
@@ -195,6 +195,7 @@ async function CheckoutPageBody({
         isAuthenticated={Boolean(user) && user?.is_anonymous !== true}
         resuming={resume === '1'}
         channel={channel === 'app' ? 'app' : 'web'}
+        isGift={gift === 'true'}
       />
     </div>
   )
