@@ -38,3 +38,7 @@ M15-c183 BLOCKED locked-component: console on / and /product has ~1030 and ~116 
 M06-c184 pnpm build passes clean on autopilot @ 265f1b65b; no drift to fix (only untracked src/lib/supplier-onboarding.staging.test.ts from F57, live-staging test, left uncommitted).
 
 המשך מ: M06-c184 DONE
+
+M07-c184 TODO/FIXME scan: 1 new item (stock-notifications route.ts:126) filed as BACKLOG #11; other 8 hits already in BACKLOG #8-10 or test fixture (whatsapp.test.ts).
+
+המשך מ: M07-c184 DONE
