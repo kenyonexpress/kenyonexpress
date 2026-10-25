@@ -71,20 +71,25 @@ test.describe('Order Lifecycle Integration', () => {
   })
 
   test('manual JWT redemption flow via scan page', async ({ page }) => {
-    // Navigate to supplier scan page
-    await page.goto('/supplier/scan')
+    // Navigate to supplier scan page with waitUntil to ensure page is stable
+    await page.goto('/supplier/scan', { waitUntil: 'networkidle' })
 
     // Page should load (may redirect to auth)
     await expect(page).toHaveURL(/scan|login/)
 
     // If on scan page, verify manual entry form exists
     if (page.url().includes('/scan')) {
-      // Look for manual entry input
+      // Wait for page to be fully hydrated before checking for elements
+      await page.waitForLoadState('domcontentloaded')
+
+      // Look for manual entry input - wait for at least one to exist
       const manualInput = page.locator('input[name="token"], input[placeholder*="JWT"]')
+      await manualInput.first().waitFor({ state: 'visible', timeout: 10000 })
       await expect(manualInput.first()).toBeVisible()
 
       // Verify submit button exists
       const submitButton = page.getByRole('button', { name: /מימוש|Redeem/i })
+      await submitButton.first().waitFor({ state: 'visible', timeout: 10000 })
       await expect(submitButton.first()).toBeVisible()
     }
   })
