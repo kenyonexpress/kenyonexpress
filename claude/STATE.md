@@ -2,6 +2,8 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M18-c195 DONE STATE.md already under 300 lines (claude/STATE.md 205), remainder in docs/STATE-ARCHIVE.md; no trim needed**
+**המשך מ: M15-c195 DONE no console errors on / and /product/barbecue + /product/samsung-galaxy-s22 at 380/768/1440 (fresh next start, Playwright); stale :3311 server + cached /product/עוזרת-אישית route-cache referenced missing chunks (build artifact, not source)**
 **המשך מ: M18-c193 DONE STATE.md already under 300 lines (claude/STATE.md 188, root STATE.md 190); no trim needed, docs/STATE-ARCHIVE.md untouched**
 **המשך מ: M05-c193 DONE pnpm test clean (614 files pass, 7055 tests pass, 28 skipped); drift committed (docs/M-CYCLE-STATUS.md)**
 **המשך מ: M09-c192 DONE removed unused @mdx-js/react + dead FaLinkedin/FaPinterest icons; other deps verified in use; knip dead-export list left (test-only/API surface); tsc clean, vitest 7055 pass**
@@ -199,3 +201,5 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c195 DONE (pnpm build passes clean; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no code changes)
 המשך מ: M07-c195 DONE (TODO/FIXME scan of src/scripts/migrations: 7 markers, all already filed as 4 items in docs/BACKLOG.md, no new ones; 3 need Cardcom prod creds, service-role key or a build+email test; BACKLOG stamp refreshed; no code changes)
 המשך מ: M09-c195 DONE (knip deps: only @capacitor/android flagged, false positive: required by android/ cap sync gradle; no unused deps. Unused exports: 176, nearly all CLI script/e2e module exports plus locked HeroSlider.tsx; src remainder left as-is, risk > gain; no code changes)
+המשך מ: M16-c195 DONE (JSON-LD code audit: only product route /product/[slug] exists; page.tsx emits two separate ld+json scripts, Product via buildProductJsonLd + BreadcrumbList via buildBreadcrumbJsonLd [בית > category > product]; src/lib/seo/json-ld.test.ts 26/26 pass; live HTML not fetched (Vercel challenge 403 on curl); note: Product ld includes aggregateRating from getProductReviews, conflicts with no-reviews-UI rule, left unchanged; no code changes)
+המשך מ: M17-c195 DONE (RTL verify / and /product/[slug] at 380/768/1440 on live dev server: html dir=rtl lang=he, body direction rtl, 0 horizontal overflow, 0 Hebrew text nodes with ltr direction or left align; rtl-lint hits in home/product are comment text in BenefitBar.tsx and OG-image satori style, not DOM leaks; no code changes)
