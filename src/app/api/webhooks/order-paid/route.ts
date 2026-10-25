@@ -1,12 +1,3 @@
-/**
- * Internal webhook handler for paid order notifications.
- *
- * Called by the order finalization flow when an order transitions to 'paid'.
- * Sends an iPhone alert via ntfy with order details. This is an INTERNAL
- * endpoint, not exposed to external webhooks.
- */
-
-import { shekels } from '@/lib/money-format'
 import { notifyNewOrder } from '@/lib/notifications'
 import { createClient } from '@/lib/supabase/server'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -50,13 +41,12 @@ export async function POST(req: NextRequest) {
       .limit(1)
 
     const productTitle = items?.[0]?.product_title ?? 'מוצר'
-    const amountShekels = shekels(order.total_ils_agorot)
 
     // Send notification
     await notifyNewOrder({
       orderId: order.id,
       productTitle,
-      amountShekels,
+      amountAgorot: order.total_ils_agorot,
     })
 
     return NextResponse.json({

@@ -79,7 +79,7 @@ describe('notifyNewOrder', () => {
     await notifyNewOrder({
       orderId: '01234567-89ab-cdef-0123-456789abcdef',
       productTitle: 'קפה אספרסו',
-      amountShekels: '₪150.00',
+      amountAgorot: 15000,
     })
 
     expect(fetch).toHaveBeenCalledWith(
@@ -90,7 +90,7 @@ describe('notifyNewOrder', () => {
           Priority: 'high',
           Tags: 'moneybag,tada',
         }),
-        body: expect.stringContaining('New order #01234567'),
+        body: 'New order #01234567: קפה אספרסו ₪150.00',
       }),
     )
   })

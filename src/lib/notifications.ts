@@ -50,12 +50,17 @@ export async function notify(message: string, options: NotifyOptions = {}): Prom
 export async function notifyNewOrder(params: {
   orderId: string
   productTitle: string
-  amountShekels: string
+  amountAgorot: number
 }): Promise<void> {
-  const { orderId, productTitle, amountShekels } = params
+  const { orderId, productTitle, amountAgorot } = params
   const shortId = orderId.slice(0, 8)
 
-  await notify(`New order #${shortId}: ${productTitle} ${amountShekels}`, {
+  // Format as literal '₪{amount}' without Unicode control characters
+  const whole = Math.floor(amountAgorot / 100)
+  const fraction = amountAgorot % 100
+  const amount = `${whole}.${String(fraction).padStart(2, '0')}`
+
+  await notify(`New order #${shortId}: ${productTitle} ₪${amount}`, {
     title: 'New Order',
     priority: 'high',
     tags: ['moneybag', 'tada'],
