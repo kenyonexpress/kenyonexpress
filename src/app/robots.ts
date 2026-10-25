@@ -35,6 +35,8 @@ export default function robots(): MetadataRoute.Robots {
           '/cart',
           '/auth/',
           '/api/',
+          '/debug/', // Sentry debug panel, env-gated
+          '/voucher/', // per-customer voucher code pages
           '/reset-password',
           '/forgot-password',
         ],

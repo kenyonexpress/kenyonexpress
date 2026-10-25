@@ -44,6 +44,12 @@ describe('robots', () => {
     }
   })
 
+  it('disallows the debug and voucher routes', () => {
+    for (const path of ['/debug/', '/voucher/']) {
+      expect(disallowList()).toContain(path)
+    }
+  })
+
   it('still allows the storefront to be crawled', () => {
     const rules = robots().rules
     const first = Array.isArray(rules) ? rules[0] : rules
