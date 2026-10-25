@@ -173,3 +173,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M07-c191 DONE (TODO/FIXME scan: 4 markers older than 7 days, all already in docs/BACKLOG.md, none new or resolvable without Cardcom creds/feature work; BACKLOG header re-verified)
 המשך מ: M08-c191 DONE (Lighthouse mobile local prod build, 2 runs each: / perf 39-43 a11y 100 bp 92 seo 100; /product perf 51-55 a11y 100 bp 92 seo 100; logged in logs/lighthouse-m08-c191.log; G23 95+ still open)
 המשך מ: M09-c191 DONE (deps all in use incl. tooling/peer deps; un-exported 6 dead internal symbols; tsc, biome, vitest green)
+המשך מ: M10-c191 DONE-DEFERRED (87 sql files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session; 301_supplier_verification_status.sql still known unapplied; apply one at a time via apply_migration once Supabase access is restored)
