@@ -270,4 +270,5 @@ refs/electro-home-v7.html still absent from refs/, nothing listening on localhos
 
 ## M06-c185 (2026-10-25)
 pnpm build: passes. Drift committed: ntfy mutes (iron rule 23.10) in 2 workflows, nightly-health.sh, AUTOPILOT-PROMPT.md, CLAUDE.md, plus UI-PARITY-REPORT.md REFUSED rows.
-**המשך מ: M06-c185 DONE**
+Commit 4b2c7911 local only: push rejected (main ahead 11, behind 3960 vs origin), rebase conflicts, aborted, no force-push.
+**המשך מ: M06-c185 BLOCKED push-diverged**
