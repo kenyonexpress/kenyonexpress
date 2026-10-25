@@ -2,9 +2,9 @@
 
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
-import { type AuthState, signInWithGoogle, signUpWithEmail } from '@/server/actions/auth'
+import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import Link from 'next/link'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 
 function getError(state: AuthState): string | null {
   return state && 'error' in state ? state.error : null
@@ -15,7 +15,30 @@ interface Props {
 }
 
 export default function SignupForm({ next }: Props) {
-  const [state, action, pending] = useActionState<AuthState, FormData>(signUpWithEmail, null)
+  const [state, setState] = useState<AuthState>(null)
+  const [pending, setPending] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setPending(true)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const res = await fetch('/api/auth/signup', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (res.ok && data.redirect) {
+        window.location.href = data.redirect
+      } else if (res.ok) {
+        setState({ success: data.message })
+      } else {
+        setState({ error: data.error || 'שגיאה לא צפויה' })
+      }
+    } catch (_err) {
+      setState({ error: 'שגיאת רשת' })
+    } finally {
+      setPending(false)
+    }
+  }
   const [googleState, googleAction, googlePending] = useActionState<AuthState, FormData>(
     signInWithGoogle,
     null,
@@ -50,7 +73,7 @@ export default function SignupForm({ next }: Props) {
         <div className="flex-1 border-t border-gray-200" />
       </div>
 
-      <form action={action} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {next && <input type="hidden" name="next" value={next} />}
 
         <div>

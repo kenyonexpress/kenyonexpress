@@ -1,12 +1,33 @@
 'use client'
 
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
-import { type AuthState, sendPasswordReset } from '@/server/actions/auth'
+import type { AuthState } from '@/server/actions/auth'
 import Link from 'next/link'
-import { useActionState } from 'react'
+import { useState } from 'react'
 
 export default function ForgotPasswordForm() {
-  const [state, action, pending] = useActionState<AuthState, FormData>(sendPasswordReset, null)
+  const [state, setState] = useState<AuthState>(null)
+  const [pending, setPending] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setPending(true)
+    try {
+      const formData = new FormData(e.currentTarget)
+      const res = await fetch('/api/auth/forgot-password', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (res.ok) {
+        setState({ success: data.message || 'בדקו את תיבת הדואר' })
+      } else {
+        setState({ error: data.error || 'שגיאה לא צפויה' })
+      }
+    } catch (_err) {
+      setState({ error: 'שגיאת רשת' })
+    } finally {
+      setPending(false)
+    }
+  }
 
   const error = state && 'error' in state ? state.error : null
   const success = state && 'success' in state ? state.success : null
@@ -26,7 +47,7 @@ export default function ForgotPasswordForm() {
           </Link>
         </div>
       ) : (
-        <form action={action} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               אימייל
