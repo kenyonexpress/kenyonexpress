@@ -66,6 +66,7 @@ export const COLOUR_ALLOWLIST = new Set([
   'src/lib/ke-live-hero-data.ts',
   'src/components/shared/GoogleLogo.tsx',
   'src/app/global-error.tsx',
+  'src/lib/email/templates/supplier-verification.ts', // Email clients require inline styles
 ])
 
 /**

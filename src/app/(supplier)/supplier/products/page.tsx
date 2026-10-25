@@ -9,6 +9,8 @@ import {
 } from '@/lib/supplier/products'
 import { requireSupplierRole } from '@/lib/supplier/rbac'
 import { getSupplierProducts } from '@/server/queries/supplier'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
 
 export const metadata = { title: 'המוצרים שלי' }
 
@@ -111,11 +113,24 @@ export default async function SupplierProductsPage() {
   return (
     <div className="space-y-6">
       <section>
-        <h1 className="font-bold text-2xl text-heading">המוצרים שלי</h1>
-        <p className="mt-1 text-gray-500 text-sm">
-          כל מוצר והחלוקה שלו. בקופון הלקוח משלם באתר ואתם גובים את היתרה בעסק בזמן הסריקה; במוצר
-          פיזי העמלה נגבית לפי האחוז שהוגדר לאותו מוצר.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-bold text-2xl text-heading">המוצרים שלי</h1>
+            <p className="mt-1 text-gray-500 text-sm">
+              כל מוצר והחלוקה שלו. בקופון הלקוח משלם באתר ואתם גובים את היתרה בעסק בזמן הסריקה;
+              במוצר פיזי העמלה נגבית לפי האחוז שהוגדר לאותו מוצר.
+            </p>
+          </div>
+          {session.memberRole === 'owner' && (
+            <Link
+              href="/supplier/products/new"
+              className="inline-flex items-center gap-2 bg-brand hover:bg-brand-primary-hover text-brand-dark text-sm font-semibold rounded-lg px-4 py-2 transition-colors shrink-0"
+            >
+              <Plus size={16} />
+              מוצר חדש
+            </Link>
+          )}
+        </div>
       </section>
 
       {summary.needsAttention > 0 ? (

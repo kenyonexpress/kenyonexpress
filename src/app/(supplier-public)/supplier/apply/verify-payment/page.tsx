@@ -1,3 +1,4 @@
+import { CardcomProvider } from '@/lib/payments/cardcom'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { XCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -25,29 +26,40 @@ export default async function VerifyPaymentPage({ searchParams }: Props) {
 
   const admin = createAdminClient()
 
-  // Check payment result from Cardcom callback
-  const paymentSuccess = Operation === '1' && LowProfileCode
+  // SECURITY: Never trust query params for payment verification
+  // Must verify with Cardcom directly
+  if (Operation === '1' && LowProfileCode) {
+    const cardcom = new CardcomProvider()
 
-  if (paymentSuccess) {
-    // Update verification status to verified
-    const { error: updateError } = await admin
-      .from('supplier_agreements')
-      .update({
-        verification_status: 'verified',
-        verification_charge_id: LowProfileCode,
-      })
-      .eq('application_id', applicationId)
-      .eq('verification_token', token)
+    try {
+      // Verify the payment actually succeeded with Cardcom
+      const verification = await cardcom.verifyLowProfile(LowProfileCode)
 
-    if (updateError) {
-      console.error('Failed to update verification status:', updateError)
+      if (verification.success && verification.transactionId) {
+        // Payment verified - update status
+        const { error: updateError } = await admin
+          .from('supplier_agreements')
+          .update({
+            verification_status: 'verified',
+            verification_charge_id: verification.transactionId,
+          })
+          .eq('application_id', applicationId)
+          .eq('verification_token', token)
+
+        if (updateError) {
+          console.error('Failed to update verification status:', updateError)
+        }
+
+        // Redirect to email verification
+        redirect(`/supplier/verify-email?token=${token}`)
+      }
+    } catch (error) {
+      console.error('Cardcom verification failed:', error)
+      // Fall through to failure case
     }
-
-    // Redirect to email verification
-    redirect(`/supplier/verify-email?token=${token}`)
   }
 
-  // Payment failed or cancelled
+  // Payment failed, cancelled, or verification failed
   const { error: updateError } = await admin
     .from('supplier_agreements')
     .update({
