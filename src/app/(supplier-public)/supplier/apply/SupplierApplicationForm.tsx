@@ -46,7 +46,12 @@ export default function SupplierApplicationForm({ agreementText }: Props) {
       const result = await submitApplication(formData)
 
       if (result.success) {
-        router.push('/supplier/apply/success')
+        // If there's a redirect URL (Cardcom payment), redirect there
+        if (result.redirectUrl) {
+          window.location.href = result.redirectUrl
+        } else {
+          router.push('/supplier/apply/success')
+        }
       } else {
         setError(result.error || 'שגיאה בהגשת בקשה')
       }

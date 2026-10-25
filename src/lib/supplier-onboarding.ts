@@ -3,8 +3,10 @@
  */
 
 import crypto from 'node:crypto'
+import { agorot } from '@/lib/commerce/money'
 import { sendBuiltEmail } from '@/lib/email/templates'
 import { buildSupplierVerificationEmail } from '@/lib/email/templates/supplier-verification'
+import { CardcomProvider } from '@/lib/payments/cardcom'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
@@ -64,7 +66,7 @@ async function getClientIP(): Promise<string> {
  */
 export async function submitSupplierApplication(
   input: SupplierApplicationInput,
-): Promise<{ success: boolean; applicationId?: string; error?: string }> {
+): Promise<{ success: boolean; applicationId?: string; redirectUrl?: string; error?: string }> {
   try {
     const supabase = await createClient()
 
@@ -115,20 +117,41 @@ export async function submitSupplierApplication(
       return { success: false, error: 'שגיאה ביצירת בקשה' }
     }
 
-    // Card verification is marked as pending for admin manual verification
-    // To implement automatic 1 ILS charge: use Cardcom Low Profile flow:
-    // 1. Create Low Profile payment for 1 ILS
-    // 2. Redirect user to Cardcom payment page
-    // 3. Handle callback with payment result
-    // 4. Update verification_status to 'verified' or 'failed'
-    const chargeId: string | null = null
-    const verificationStatus: 'pending' | 'verified' | 'failed' = 'pending'
-
     // Get client IP
     const clientIP = await getClientIP()
 
     // Generate email verification token
     const verificationToken = crypto.randomBytes(32).toString('hex')
+
+    // Create Cardcom Low Profile payment for 1 ILS verification
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kenyonexpress.co.il'
+    const cardcom = new CardcomProvider()
+
+    let lowProfileId: string | null = null
+    let paymentRedirectUrl: string | null = null
+    let verificationStatus: 'pending' | 'verified' | 'failed' = 'pending'
+
+    try {
+      const lowProfileResult = await cardcom.createLowProfile({
+        paymentId: `supplier-verification-${application.id}`,
+        orderId: application.id,
+        orderNumber: application.id.slice(0, 8),
+        amountAgorot: agorot(100), // 1 ILS
+        currency: 'ILS',
+        saveToken: false,
+        successRedirectUrl: `${siteUrl}/supplier/apply/verify-payment?app=${application.id}&token=${verificationToken}&status=success`,
+        failedRedirectUrl: `${siteUrl}/supplier/apply/verify-payment?app=${application.id}&token=${verificationToken}&status=failed`,
+        webhookUrl: `${siteUrl}/api/webhooks/cardcom/supplier-verification`,
+        description: `Supplier Verification - ${input.businessName}`,
+      })
+
+      lowProfileId = lowProfileResult.lowProfileId
+      paymentRedirectUrl = lowProfileResult.redirectUrl
+    } catch (error) {
+      console.error('Failed to create Low Profile payment:', error)
+      verificationStatus = 'failed'
+      // Don't fail the application - mark as failed for manual verification
+    }
 
     // Create agreement record
     const agreementHash = hashAgreementText(AGREEMENT_TEXT_V1)
@@ -140,7 +163,7 @@ export async function submitSupplierApplication(
       agreement_version: AGREEMENT_VERSION,
       agreement_hash: agreementHash,
       accepted_ip: clientIP,
-      verification_charge_id: chargeId,
+      verification_charge_id: lowProfileId,
       verification_status: verificationStatus,
       verification_token: verificationToken,
     })
@@ -151,7 +174,6 @@ export async function submitSupplierApplication(
     }
 
     // Send verification email
-    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kenyonexpress.co.il'
     const verificationUrl = `${siteUrl}/supplier/verify-email?token=${verificationToken}`
 
     const emailTemplate = buildSupplierVerificationEmail({
@@ -167,6 +189,11 @@ export async function submitSupplierApplication(
     if (!emailResult.ok) {
       console.error('Failed to send verification email:', emailResult)
       // Don't fail the application - admin can resend
+    }
+
+    // If Low Profile was created successfully, return redirect URL
+    if (paymentRedirectUrl) {
+      return { success: true, applicationId: application.id, redirectUrl: paymentRedirectUrl }
     }
 
     return { success: true, applicationId: application.id }
