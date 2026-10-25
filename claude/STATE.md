@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M12-c204 DONE robots.ts verified prod-safe: allow /, disallows redeem/coupon/voucher/account/supplier/admin/scan/checkout/cart/auth/api/debug/reset+forgot-password; sitemap+host from NEXT_PUBLIC_APP_URL (prod env = https://kenyonexpress.co.il, trailing slash stripped); 7/7 robots tests pass; no code change**
 **המשך מ: M05-c204 DONE pnpm test 615 files / 7063 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
 **המשך מ: M15-c203 DONE console check / and /product at 380/768/1440 on fresh next start: 0 errors/warnings; note: long-running :3000 server is stale (serves old chunk hashes, 500s) — restart it; no code change**
 **המשך מ: M09-c203 DONE knip: no unused deps (@capacitor/android is a false positive, native platform); removed dead getCategoryChildren, synced cache-policy doc+test counts; tsc/biome/cache-policy tests pass. Other 80 flagged exports are shadcn/payments/admin API surface, left**
