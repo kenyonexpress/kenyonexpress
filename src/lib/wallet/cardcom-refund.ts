@@ -1,3 +1,5 @@
+import { log } from '@/lib/observability/log'
+
 export interface CardcomRefundParams {
   tokenId: string
   amountAgorot: number
@@ -31,10 +33,33 @@ export async function processCardcomRefund(
   // 4. Return result
 
   // Placeholder - in production this would call Cardcom API
-  console.warn('Cardcom refund not implemented - admin must process manually')
+  log.warn('cardcom_refund_not_implemented')
 
   return {
     success: false,
     error: 'Cardcom refund API not implemented - process manually via Cardcom dashboard',
   }
+}
+
+/**
+ * Refund a withdrawal request to its saved card, when it asked for one.
+ *
+ * Lives here, server-only, so the admin action that renders in the app tree
+ * never has to name the column that points at the stored card.
+ * Returns null when the request is not a card refund.
+ */
+export async function refundWithdrawalToCard(
+  request: {
+    payout_method: string
+    cardcom_token_id: string | null
+    amount_agorot: number
+  },
+  description: string,
+): Promise<CardcomRefundResult | null> {
+  if (request.payout_method !== 'cardcom_refund' || !request.cardcom_token_id) return null
+  return processCardcomRefund({
+    tokenId: request.cardcom_token_id,
+    amountAgorot: request.amount_agorot,
+    description,
+  })
 }

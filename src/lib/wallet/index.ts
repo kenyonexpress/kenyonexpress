@@ -14,6 +14,7 @@ export {
   formatWalletAmount,
   getPayoutStatusVariant,
 } from './display'
+import { log } from '@/lib/observability/log'
 
 /**
  * Create a withdrawal (payout) request
@@ -37,11 +38,16 @@ export async function createWithdrawalRequest(params: {
   }
 
   // Check user balance
-  const { data: walletData } = await supabase
+  const { data: walletData, error: walletError } = await supabase
     .from('wallet_accounts')
     .select('balance_agorot')
     .eq('user_id', params.userId)
-    .single()
+    .maybeSingle()
+
+  if (walletError) {
+    log.error('wallet_balance_lookup_failed', { err: walletError })
+    return { success: false, error: 'שגיאה ביצירת בקשת משיכה' }
+  }
 
   const balance = walletData?.balance_agorot ?? 0
   if (balance < params.amountAgorot) {
@@ -71,7 +77,7 @@ export async function createWithdrawalRequest(params: {
     .single()
 
   if (error) {
-    console.error('Failed to create withdrawal request:', error)
+    log.error('failed_to_create_withdrawal_request', { err: error })
     return { success: false, error: 'שגיאה ביצירת בקשת משיכה' }
   }
 
@@ -91,7 +97,7 @@ export async function getWithdrawalRequests(userId: string): Promise<PayoutReque
     .order('requested_at', { ascending: false })
 
   if (error) {
-    console.error('Failed to fetch withdrawal requests:', error)
+    log.error('failed_to_fetch_withdrawal_requests', { err: error })
     return []
   }
 
@@ -123,7 +129,7 @@ export async function getPendingWithdrawals(): Promise<
     .order('requested_at', { ascending: true })
 
   if (error) {
-    console.error('Failed to fetch pending withdrawals:', error)
+    log.error('failed_to_fetch_pending_withdrawals', { err: error })
     return []
   }
 

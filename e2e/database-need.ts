@@ -58,8 +58,12 @@ export const NEEDS_DATABASE_SPECS = {
   'admin-refund-to-wallet.spec.ts': 'refunds a seeded order to a seeded wallet',
   'auth.spec.ts': 'signs in as the fixture customer',
   'coupon-scan.spec.ts': 'redeems a seeded voucher as a supplier',
+  'full-order-lifecycle.spec.ts': 'guest checkout to voucher redemption, writes orders',
   'full-purchase-redeem.spec.ts': 'buys, then redeems what it bought',
   'guest-checkout-widths.spec.ts': 'anonymous checkout at three widths, writes orders',
+  'order-lifecycle-integration.spec.ts':
+    'posts signed webhooks for orders that must exist in the database',
+  'order-lifecycle.spec.ts': 'drives webhook state transitions against seeded orders',
   'physical-purchase.spec.ts': 'places an order against the mock terminal',
   'production-smoke.spec.ts': 'runs against a deployed origin, not localhost',
   'purchase-flow.spec.ts': 'places an order against the mock terminal',

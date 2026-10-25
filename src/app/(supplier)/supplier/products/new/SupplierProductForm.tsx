@@ -50,8 +50,7 @@ export default function SupplierProductForm({ supplierId }: Props) {
       } else {
         setError(result.error || 'שגיאה ביצירת מוצר')
       }
-    } catch (err) {
-      console.error('Submit error:', err)
+    } catch {
       setError('שגיאה ביצירת מוצר')
     } finally {
       setLoading(false)
@@ -140,6 +139,7 @@ export default function SupplierProductForm({ supplierId }: Props) {
       <div className="flex gap-3">
         <button
           type="submit"
+          aria-label="שלח לאישור"
           disabled={loading}
           className="bg-brand hover:bg-brand-primary-hover text-brand-dark font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >

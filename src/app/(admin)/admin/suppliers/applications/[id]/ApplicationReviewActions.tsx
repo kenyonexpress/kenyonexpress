@@ -34,8 +34,7 @@ export default function ApplicationReviewActions({ applicationId }: Props) {
       } else {
         setError(result.error || 'שגיאה באישור בקשה')
       }
-    } catch (err) {
-      console.error('Approval error:', err)
+    } catch {
       setError('שגיאה באישור בקשה')
     } finally {
       setLoading(false)
@@ -61,8 +60,7 @@ export default function ApplicationReviewActions({ applicationId }: Props) {
       } else {
         setError(result.error || 'שגיאה בדחיית בקשה')
       }
-    } catch (err) {
-      console.error('Rejection error:', err)
+    } catch {
       setError('שגיאה בדחיית בקשה')
     } finally {
       setLoading(false)
@@ -126,6 +124,7 @@ export default function ApplicationReviewActions({ applicationId }: Props) {
             <div className="flex gap-3">
               <button
                 type="button"
+                aria-label="דחה"
                 onClick={handleReject}
                 disabled={loading || !rejectionReason.trim()}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

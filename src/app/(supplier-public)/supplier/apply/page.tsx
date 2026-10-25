@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { AGREEMENT_TEXT_V1 } from '@/lib/supplier-onboarding'
 import { redirect } from 'next/navigation'
@@ -17,13 +18,17 @@ export default async function SupplierApplyPage() {
   }
 
   // Check if user already has a pending or approved application
-  const { data: existingApp } = await supabase
+  const { data: existingApp, error: existingAppError } = await supabase
     .from('supplier_applications')
     .select('id, status')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
+
+  if (existingAppError) {
+    log.error('supplier_application_lookup_failed', { err: existingAppError })
+  }
 
   if (existingApp) {
     if (existingApp.status === 'pending') {

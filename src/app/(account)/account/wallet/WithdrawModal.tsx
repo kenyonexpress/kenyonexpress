@@ -66,7 +66,7 @@ export default function WithdrawModal({
         formData.set('branch_code', branchCode)
         formData.set('reference_id', referenceId)
       } else if (payoutMethod === 'cardcom_refund') {
-        formData.set('cardcom_token_id', selectedCardToken)
+        formData.set('payment_method_id', selectedCardToken)
       }
 
       const result = await requestWithdrawal(formData)
@@ -87,7 +87,7 @@ export default function WithdrawModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
           <h2 className="text-xl font-bold mb-4 text-green-600">בקשה נשלחה בהצלחה!</h2>
-          <p className="text-gray-700">בקשת המשיכה שלך התקבלה ותטופל בהקדם.</p>
+          <p className="text-heading">בקשת המשיכה שלך התקבלה ותטופל בהקדם.</p>
         </div>
       </div>
     )
@@ -101,15 +101,15 @@ export default function WithdrawModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-muted hover:text-heading"
             aria-label="סגור"
           >
             ✕
           </button>
         </div>
 
-        <div className="mb-4 p-3 bg-gray-50 rounded">
-          <p className="text-sm text-gray-600">יתרה זמינה:</p>
+        <div className="mb-4 p-3 bg-surface-hover rounded">
+          <p className="text-sm text-heading">יתרה זמינה:</p>
           <p className="text-lg font-bold">{formatWalletAmount(balanceAgorot)}</p>
         </div>
 
@@ -130,7 +130,7 @@ export default function WithdrawModal({
               className="w-full border rounded-md px-3 py-2"
               placeholder="מינימום 50 ₪"
             />
-            <p className="text-xs text-gray-500 mt-1">מינימום משיכה: 50 ₪</p>
+            <p className="text-xs text-muted mt-1">מינימום משיכה: 50 ₪</p>
           </div>
 
           <div>
@@ -156,7 +156,7 @@ export default function WithdrawModal({
                     onChange={() => setPayoutMethod('cardcom_refund')}
                     disabled={savedPaymentMethods.length === 0}
                   />
-                  <span className={savedPaymentMethods.length === 0 ? 'text-gray-400' : ''}>
+                  <span className={savedPaymentMethods.length === 0 ? 'text-muted' : ''}>
                     החזר לכרטיס
                     {savedPaymentMethods.length === 0 && ' (אין כרטיסים שמורים)'}
                   </span>
@@ -166,7 +166,7 @@ export default function WithdrawModal({
           </div>
 
           {payoutMethod === 'bank_transfer' && (
-            <div className="space-y-3 p-3 bg-gray-50 rounded">
+            <div className="space-y-3 p-3 bg-surface-hover rounded">
               <div>
                 <label htmlFor="reference_id" className="block text-sm font-medium mb-1">
                   אסמכתא (ת.ז. / ח.פ.)
@@ -215,7 +215,7 @@ export default function WithdrawModal({
           )}
 
           {payoutMethod === 'cardcom_refund' && savedPaymentMethods.length > 0 && (
-            <div className="p-3 bg-gray-50 rounded">
+            <div className="p-3 bg-surface-hover rounded">
               <label htmlFor="card_select" className="block text-sm font-medium mb-2">
                 בחר כרטיס לקבלת החזר
               </label>
@@ -245,6 +245,7 @@ export default function WithdrawModal({
           <div className="flex gap-2">
             <button
               type="submit"
+              aria-label="שלח בקשה"
               disabled={isPending}
               className="flex-1 bg-brand-dark text-white rounded-md px-4 py-2 font-medium hover:bg-brand-darker disabled:opacity-50"
             >
@@ -254,14 +255,14 @@ export default function WithdrawModal({
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-2 border rounded-md hover:bg-surface-hover disabled:opacity-50"
             >
               ביטול
             </button>
           </div>
         </form>
 
-        <p className="text-xs text-gray-500 mt-4">
+        <p className="text-xs text-muted mt-4">
           הבקשה תיבדק ותאושר על ידי צוות האתר. התשלום יבוצע תוך 3-5 ימי עסקים.
         </p>
       </div>

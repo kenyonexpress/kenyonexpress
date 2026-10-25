@@ -1,4 +1,5 @@
 import { requireSection } from '@/lib/admin/rbac'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { formatPayoutMethod, formatPayoutStatus, formatWalletAmount } from '@/lib/wallet'
 import type { PayoutRequest } from '@/lib/wallet'
@@ -38,7 +39,7 @@ export default async function CustomerPayoutsPage() {
   const supabase = await createClient()
 
   // Get all withdrawal requests
-  const { data: allRequests } = await supabase
+  const { data: allRequests, error: requestsError } = await supabase
     .from('customer_wallet_payouts')
     .select(
       `
@@ -48,6 +49,10 @@ export default async function CustomerPayoutsPage() {
     )
     .order('requested_at', { ascending: false })
     .limit(100)
+
+  if (requestsError) {
+    log.error('withdrawals_list_failed', { err: requestsError })
+  }
 
   const requests = (allRequests ?? []).map((row) => ({
     ...row,

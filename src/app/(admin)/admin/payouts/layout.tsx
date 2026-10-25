@@ -1,6 +1,8 @@
+import { requireSection } from '@/lib/admin/rbac'
 import Link from 'next/link'
 
-export default function PayoutsLayout({ children }: { children: React.ReactNode }) {
+export default async function PayoutsLayout({ children }: { children: React.ReactNode }) {
+  await requireSection('payments')
   return (
     <div>
       <div className="mb-4 border-b border-gray-200">

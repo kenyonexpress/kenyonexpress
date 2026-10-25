@@ -1,4 +1,5 @@
 import { createHmac } from 'node:crypto'
+import { log } from '@/lib/observability/log'
 
 /**
  * Voucher QR generation with signed JWT payload.
@@ -96,7 +97,7 @@ export function verifySignedJWT(token: string): VoucherQRPayload | null {
       expiry: new Date(payload.exp * 1000),
     }
   } catch (error) {
-    console.error('JWT verification error:', error)
+    log.error('jwt_verification_error', { err: error })
     return null
   }
 }

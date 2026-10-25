@@ -554,4 +554,34 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '305',
+    file: '305_supplier_applications.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '306',
+    file: '306_product_upload_fields.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '306',
+    file: '306_supplier_agreements.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '307',
+    file: '307_wallet_cashback_withdrawals.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '308',
+    file: '308_order_lifecycle_transition_guards.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const

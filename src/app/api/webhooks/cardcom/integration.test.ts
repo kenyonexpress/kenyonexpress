@@ -14,57 +14,61 @@ const mockEq = vi.fn()
 const mockIn = vi.fn()
 const mockSingle = vi.fn()
 
+const VOUCHER_ROW = {
+  id: 'voucher-123',
+  code: 'TEST-VOUCHER',
+  user_id: 'user-456',
+  expires_at: new Date(Date.now() + 86400000).toISOString(),
+  supplier_id: 'supplier-789',
+  order_item_id: 'item-abc',
+  status: 'issued',
+}
+
+/** What a read of `table` resolves to. Writes resolve to a bare success. */
+function rowsFor(table: string): unknown[] {
+  if (table === 'vouchers') return [VOUCHER_ROW]
+  if (table === 'order_items') return [{ id: 'item-abc', product_type: 'coupon', quantity: 1 }]
+  return []
+}
+
+/**
+ * A PostgREST-shaped builder: every filter returns the builder, and awaiting it
+ * resolves to `{ data, error }`. The route chains `.eq().eq()` and `.eq().in()`
+ * freely, so the mock must not care about the order or the count.
+ */
+function chain(table: string, isRead: boolean) {
+  const result = isRead ? { data: rowsFor(table), error: null } : { error: null }
+  const builder: Record<string, unknown> = {
+    eq: (col: string, val: unknown) => {
+      mockEq(col, val)
+      return builder
+    },
+    in: (col: string, vals: unknown[]) => {
+      mockIn(col, vals)
+      return builder
+    },
+    single: () => {
+      mockSingle()
+      return { data: rowsFor(table)[0] ?? null, error: null }
+    },
+    // biome-ignore lint/suspicious/noThenProperty: awaiting a PostgREST builder resolves it, so the mock must be awaitable too
+    then: (resolve: (value: unknown) => unknown) => resolve(result),
+  }
+  return builder
+}
+
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
-    from: (table: string) => {
-      // Chain builder pattern
-      const builder = {
-        update: (data: any) => {
-          mockUpdate(table, data)
-          return {
-            eq: (col: string, val: any) => {
-              mockEq(col, val)
-              return {
-                in: (col: string, vals: any[]) => {
-                  mockIn(col, vals)
-                  return { error: null }
-                },
-              }
-            },
-          }
-        },
-        select: (cols: string) => {
-          mockSelect(table, cols)
-          return {
-            eq: (col: string, val: any) => {
-              mockEq(col, val)
-              return {
-                single: () => {
-                  mockSingle()
-                  // Return mock voucher data for QR generation
-                  if (table === 'vouchers') {
-                    return {
-                      data: {
-                        id: 'voucher-123',
-                        code: 'TEST-VOUCHER',
-                        user_id: 'user-456',
-                        expires_at: new Date(Date.now() + 86400000).toISOString(),
-                        supplier_id: 'supplier-789',
-                        order_item_id: 'item-abc',
-                        status: 'issued',
-                      },
-                      error: null,
-                    }
-                  }
-                  return { data: null, error: null }
-                },
-              }
-            },
-          }
-        },
-      }
-      return builder as any
-    },
+    from: (table: string) => ({
+      update: (data: unknown) => {
+        mockUpdate(table, data)
+        return chain(table, false)
+      },
+      select: (cols: string) => {
+        mockSelect(table, cols)
+        return chain(table, true)
+      },
+    }),
   }),
 }))
 

@@ -244,6 +244,11 @@ describe('the pending migration inventory', () => {
       '302_address_book.sql',
       '303_comprehensive_audit_triggers.sql',
       '304_soft_delete_consolidation.sql',
+      '305_supplier_applications.sql',
+      '306_product_upload_fields.sql',
+      '306_supplier_agreements.sql',
+      '307_wallet_cashback_withdrawals.sql',
+      '308_order_lifecycle_transition_guards.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -277,6 +282,10 @@ describe('the pending migration inventory', () => {
       'preflight_302.sql',
       'preflight_303.sql',
       'preflight_304.sql',
+      'preflight_305.sql',
+      'preflight_306.sql',
+      'preflight_307.sql',
+      'preflight_308.sql',
     ])
   })
 

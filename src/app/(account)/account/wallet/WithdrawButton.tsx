@@ -1,5 +1,6 @@
 'use client'
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { useEffect, useState } from 'react'
 import WithdrawModal from './WithdrawModal'
 
@@ -19,13 +20,13 @@ export default function WithdrawButton({
     // Fetch saved payment methods when component mounts
     async function fetchSavedCards() {
       try {
-        const response = await fetch('/api/payment-methods')
+        const response = await fetchWithTimeout('/api/payment-methods')
         if (response.ok) {
           const data = await response.json()
           setSavedCards(data.methods || [])
         }
-      } catch (error) {
-        console.error('Failed to fetch saved payment methods:', error)
+      } catch {
+        // No saved cards is a valid state; the modal falls back to bank transfer.
       }
     }
     fetchSavedCards()

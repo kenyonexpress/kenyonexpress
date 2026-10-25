@@ -26,42 +26,40 @@ export default function WithdrawalRequestsList({ requests }: { requests: PayoutR
       case 'rejected':
         return 'text-red-700 bg-red-50'
       default:
-        return 'text-gray-700 bg-gray-50'
+        return 'text-heading bg-surface-hover'
     }
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-border">
+        <thead className="bg-surface-hover">
           <tr>
-            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500">
+            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-muted">
               תאריך בקשה
             </th>
-            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500">
+            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-muted">
               סכום
             </th>
-            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500">
+            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-muted">
               שיטה
             </th>
-            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500">
+            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-muted">
               סטטוס
             </th>
-            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500">
+            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-muted">
               הערות
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-border">
           {requests.map((request) => (
             <tr key={request.id}>
-              <td className="px-4 py-3 text-sm text-gray-900">
-                {formatDate(request.requested_at)}
-              </td>
-              <td className="px-4 py-3 text-sm font-medium text-gray-900">
+              <td className="px-4 py-3 text-sm text-heading">{formatDate(request.requested_at)}</td>
+              <td className="px-4 py-3 text-sm font-medium text-heading">
                 {formatWalletAmount(request.amount_agorot)}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-700">
+              <td className="px-4 py-3 text-sm text-heading">
                 {formatPayoutMethod(request.payout_method)}
               </td>
               <td className="px-4 py-3 text-sm">
@@ -71,7 +69,7 @@ export default function WithdrawalRequestsList({ requests }: { requests: PayoutR
                   {formatPayoutStatus(request.status)}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">
+              <td className="px-4 py-3 text-sm text-heading">
                 {request.rejection_reason || request.admin_note || '-'}
               </td>
             </tr>

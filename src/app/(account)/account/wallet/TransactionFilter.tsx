@@ -18,7 +18,7 @@ export default function TransactionFilter({ currentFilter }: { currentFilter: st
           className={`px-3 py-1 text-xs font-medium rounded ${
             currentFilter === filter.key
               ? 'bg-brand-dark text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-surface-hover text-heading hover:bg-track'
           }`}
         >
           {filter.label}

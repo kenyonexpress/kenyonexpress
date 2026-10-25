@@ -1,4 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateSignedJWT } from '@/lib/vouchers/qr-generation'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -27,7 +29,7 @@ interface CardcomWebhookPayload {
 function validateSignature(payload: string, signature: string): boolean {
   const secret = process.env.CARDCOM_WEBHOOK_SECRET
   if (!secret) {
-    console.error('CARDCOM_WEBHOOK_SECRET not set')
+    log.error('cardcom_webhook_secret_not_set')
     return false
   }
 
@@ -40,7 +42,7 @@ function validateSignature(payload: string, signature: string): boolean {
   return timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expectedSignature, 'hex'))
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const admin = createAdminClient()
 
   try {
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Validate signature (calculated on payload without signature field)
     if (!signature) {
-      console.error('Missing webhook signature')
+      log.error('missing_webhook_signature')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const payloadForValidation = JSON.stringify(payloadWithoutSignature)
 
     if (!validateSignature(payloadForValidation, signature)) {
-      console.error('Invalid webhook signature')
+      log.error('invalid_webhook_signature')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           .in('status', ['initiated', 'redirected'])
 
         if (paymentError) {
-          console.error('Failed to update payment:', paymentError)
+          log.error('failed_to_update_payment', { err: paymentError })
           return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 })
         }
 
@@ -103,25 +105,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           .eq('status', 'pending')
 
         if (orderError) {
-          console.error('Failed to update order:', orderError)
+          log.error('failed_to_update_order', { err: orderError })
           return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
         }
 
         // Check if order has coupon items - generate voucher QR
-        const { data: orderItems } = await admin
+        const { data: orderItems, error: orderItemsError } = await admin
           .from('order_items')
           .select('id, product_type, quantity')
           .eq('order_id', order_id)
+
+        if (orderItemsError) {
+          log.error('order_items_read_failed', { err: orderItemsError })
+        }
 
         const hasCoupons = orderItems?.some((item) => item.product_type === 'coupon')
 
         if (hasCoupons) {
           // Generate voucher QR for the order
-          const { data: vouchers } = await admin
+          const { data: vouchers, error: vouchersError } = await admin
             .from('vouchers')
             .select('id, code, user_id, expires_at, supplier_id')
             .eq('order_id', order_id)
             .eq('status', 'issued')
+
+          if (vouchersError) {
+            log.error('vouchers_read_failed', { err: vouchersError })
+          }
 
           if (vouchers && vouchers.length > 0) {
             const voucher = vouchers[0]
@@ -155,7 +165,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           .in('status', ['initiated', 'redirected'])
 
         if (paymentError) {
-          console.error('Failed to update payment:', paymentError)
+          log.error('failed_to_update_payment', { err: paymentError })
           return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 })
         }
 
@@ -175,7 +185,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           .eq('status', 'succeeded')
 
         if (paymentError) {
-          console.error('Failed to update payment:', paymentError)
+          log.error('failed_to_update_payment', { err: paymentError })
           return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 })
         }
 
@@ -190,7 +200,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           .in('status', ['paid', 'fulfilled', 'partially_fulfilled'])
 
         if (orderError) {
-          console.error('Failed to update order:', orderError)
+          log.error('failed_to_update_order', { err: orderError })
           return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
         }
 
@@ -211,7 +221,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json({ error: `Unknown event type: ${event_type}` }, { status: 400 })
     }
   } catch (error) {
-    console.error('Webhook processing error:', error)
+    log.error('webhook_processing_error', { err: error })
     return NextResponse.json({ error: 'Internal server error processing webhook' }, { status: 500 })
   }
 }
+
+export const POST = withRequestLog('/api/webhooks/cardcom', handlePOST)

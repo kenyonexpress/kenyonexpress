@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { CardcomProvider } from '@/lib/payments/cardcom'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { XCircle } from 'lucide-react'
@@ -47,14 +48,14 @@ export default async function VerifyPaymentPage({ searchParams }: Props) {
           .eq('verification_token', token)
 
         if (updateError) {
-          console.error('Failed to update verification status:', updateError)
+          log.error('failed_to_update_verification_status', { err: updateError })
         }
 
         // Redirect to email verification
         redirect(`/supplier/verify-email?token=${token}`)
       }
     } catch (error) {
-      console.error('Cardcom verification failed:', error)
+      log.error('cardcom_verification_failed', { err: error })
       // Fall through to failure case
     }
   }
@@ -69,7 +70,7 @@ export default async function VerifyPaymentPage({ searchParams }: Props) {
     .eq('verification_token', token)
 
   if (updateError) {
-    console.error('Failed to update verification status:', updateError)
+    log.error('failed_to_update_verification_status', { err: updateError })
   }
 
   return (

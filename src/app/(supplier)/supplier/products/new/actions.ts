@@ -1,6 +1,8 @@
 'use server'
 
 import { agorot } from '@/lib/commerce/money'
+import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -12,7 +14,7 @@ interface SubmitProductInput {
   category: string | null
 }
 
-export async function submitProduct(
+async function runSubmitProduct(
   input: SubmitProductInput,
 ): Promise<{ success: boolean; productId?: string; error?: string }> {
   try {
@@ -28,13 +30,18 @@ export async function submitProduct(
     }
 
     // Verify user is member of this supplier
-    const { data: membership } = await supabase
+    const { data: membership, error: membershipError } = await supabase
       .from('supplier_members')
       .select('id')
       .eq('supplier_id', input.supplierId)
       .eq('user_id', user.id)
       .eq('is_active', true)
       .single()
+
+    if (membershipError && membershipError.code !== 'PGRST116') {
+      log.error('supplier_membership_lookup_failed', { err: membershipError })
+      return { success: false, error: 'שגיאה ביצירת מוצר' }
+    }
 
     if (!membership) {
       return { success: false, error: 'אין הרשאה ליצור מוצרים עבור ספק זה' }
@@ -58,13 +65,19 @@ export async function submitProduct(
       .single()
 
     if (productError || !product) {
-      console.error('Failed to create product:', productError)
+      log.error('failed_to_create_product', { err: productError })
       return { success: false, error: 'שגיאה ביצירת מוצר' }
     }
 
     return { success: true, productId: product.id }
   } catch (error) {
-    console.error('Product submission error:', error)
+    log.error('product_submission_error', { err: error })
     return { success: false, error: 'שגיאה ביצירת מוצר' }
   }
+}
+
+export async function submitProduct(
+  input: SubmitProductInput,
+): Promise<{ success: boolean; productId?: string; error?: string }> {
+  return withActionContext('supplier.products.submit', () => runSubmitProduct(input))
 }

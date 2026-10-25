@@ -1,5 +1,13 @@
 # `migrations/pending/`
 
+## 2026-10-25: 305, 306, 307 and 308 added (F55-F58)
+
+- `305_supplier_applications.sql` - PENDING (F57). Creates supplier_applications for onboarding requests, with owner read, admin all and audit trigger. Requires MCP apply_migration.
+- `306_product_upload_fields.sql` - PENDING (F56). Adds original_price, source_url and valid_from to products and creates the product_categories junction table. Apply 306 files after 305. Requires MCP apply_migration.
+- `306_supplier_agreements.sql` - PENDING (F57). Creates supplier_agreements for click-wrap acceptance records; references supplier_applications, so apply after 305. Shares number 306 with the product upload file; one preflight_306.sql covers both. Requires MCP apply_migration.
+- `307_wallet_cashback_withdrawals.sql` - PENDING (F58). Creates customer_wallet_payouts for wallet withdrawal requests. Requires MCP apply_migration.
+- `308_order_lifecycle_transition_guards.sql` - PENDING (F55). Adds orders.voucher_qr_url and the order and payment status transition guard triggers. F55 saved this as preflight_305.sql by mistake; renamed 2026-10-25 so nothing executes DDL as a preflight. Requires MCP apply_migration.
+
 ## 2026-10-25: 301, 302 and 304 added (G13, C66, C67)
 
 - `301_push_subscriptions.sql` - PENDING (G13). Creates push_subscriptions for browser push, written by /api/push/subscribe with the service role; users read and delete their own rows. Requires MCP apply_migration.

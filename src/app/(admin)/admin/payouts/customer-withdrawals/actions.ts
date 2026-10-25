@@ -1,31 +1,27 @@
 'use server'
 
+import { requireSection } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function approveWithdrawal(requestId: string) {
+async function runApproveWithdrawal(requestId: string) {
+  const { userId } = await requireSection('payments', 'write')
   const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'נדרשת התחברות' }
-  }
 
   const { error } = await supabase
     .from('customer_wallet_payouts')
     .update({
       status: 'approved',
       reviewed_at: new Date().toISOString(),
-      reviewed_by: user.id,
+      reviewed_by: userId,
     })
     .eq('id', requestId)
     .eq('status', 'pending')
 
   if (error) {
-    console.error('Failed to approve withdrawal:', error)
+    log.error('withdrawal.approve_failed', { err: error, request_id: requestId })
     return { success: false, error: 'שגיאה באישור הבקשה' }
   }
 
@@ -33,16 +29,9 @@ export async function approveWithdrawal(requestId: string) {
   return { success: true }
 }
 
-export async function rejectWithdrawal(requestId: string, rejectionReason: string) {
+async function runRejectWithdrawal(requestId: string, rejectionReason: string) {
+  const { userId } = await requireSection('payments', 'write')
   const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'נדרשת התחברות' }
-  }
 
   const { error } = await supabase
     .from('customer_wallet_payouts')
@@ -50,13 +39,13 @@ export async function rejectWithdrawal(requestId: string, rejectionReason: strin
       status: 'rejected',
       rejection_reason: rejectionReason,
       reviewed_at: new Date().toISOString(),
-      reviewed_by: user.id,
+      reviewed_by: userId,
     })
     .eq('id', requestId)
     .eq('status', 'pending')
 
   if (error) {
-    console.error('Failed to reject withdrawal:', error)
+    log.error('withdrawal.reject_failed', { err: error, request_id: requestId })
     return { success: false, error: 'שגיאה בדחיית הבקשה' }
   }
 
@@ -64,16 +53,9 @@ export async function rejectWithdrawal(requestId: string, rejectionReason: strin
   return { success: true }
 }
 
-export async function completeWithdrawal(requestId: string) {
+async function runCompleteWithdrawal(requestId: string) {
+  await requireSection('payments', 'write')
   const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'נדרשת התחברות' }
-  }
 
   // Get the withdrawal request
   const { data: request, error: fetchError } = await supabase
@@ -87,34 +69,36 @@ export async function completeWithdrawal(requestId: string) {
   }
 
   // For Cardcom refunds, attempt API call
-  if (request.payout_method === 'cardcom_refund' && request.cardcom_token_id) {
-    const { processCardcomRefund } = await import('@/lib/wallet/cardcom-refund')
-    const refundResult = await processCardcomRefund({
-      tokenId: request.cardcom_token_id,
-      amountAgorot: request.amount_agorot,
-      description: `Wallet withdrawal ${requestId}`,
+  const { refundWithdrawalToCard } = await import('@/lib/wallet/cardcom-refund')
+  const refundResult = await refundWithdrawalToCard(request, `Wallet withdrawal ${requestId}`)
+  if (refundResult && !refundResult.success) {
+    // Log but continue - admin can process manually via Cardcom dashboard
+    log.warn('withdrawal.card_refund_manual', {
+      request_id: requestId,
+      reason: refundResult.error,
     })
-
-    if (!refundResult.success) {
-      // Log but continue - admin can process manually via Cardcom dashboard
-      console.warn('Cardcom refund failed, admin must process manually:', refundResult.error)
-    }
   }
 
   // Get user and platform wallet accounts
-  const { data: userWallet } = await supabase
+  const { data: userWallet, error: userWalletError } = await supabase
     .from('wallet_accounts')
     .select('id')
     .eq('user_id', request.user_id)
     .single()
 
-  const { data: platformWallet } = await supabase
+  const { data: platformWallet, error: platformWalletError } = await supabase
     .from('wallet_accounts')
     .select('id')
     .eq('owner_type', 'platform')
     .single()
 
-  if (!userWallet || !platformWallet) {
+  if (userWalletError || platformWalletError || !userWallet || !platformWallet) {
+    if (userWalletError || platformWalletError) {
+      log.error('withdrawal.wallet_lookup_failed', {
+        err: userWalletError ?? platformWalletError,
+        request_id: requestId,
+      })
+    }
     return { success: false, error: 'לא נמצאו חשבונות ארנק' }
   }
 
@@ -128,7 +112,7 @@ export async function completeWithdrawal(requestId: string) {
   })
 
   if (transferError) {
-    console.error('Failed to transfer wallet funds:', transferError)
+    log.error('withdrawal.wallet_transfer_failed', { err: transferError, request_id: requestId })
     return { success: false, error: 'שגיאה בחיוב הארנק' }
   }
 
@@ -147,10 +131,24 @@ export async function completeWithdrawal(requestId: string) {
     .eq('id', requestId)
 
   if (updateError) {
-    console.error('Failed to complete withdrawal:', updateError)
+    log.error('withdrawal.complete_failed', { err: updateError, request_id: requestId })
     return { success: false, error: 'שגיאה בעדכון הבקשה' }
   }
 
   revalidatePath('/admin/payouts/customer-withdrawals')
   return { success: true }
+}
+
+export async function approveWithdrawal(requestId: string) {
+  return withActionContext('admin.withdrawals.approve', () => runApproveWithdrawal(requestId))
+}
+
+export async function rejectWithdrawal(requestId: string, rejectionReason: string) {
+  return withActionContext('admin.withdrawals.reject', () =>
+    runRejectWithdrawal(requestId, rejectionReason),
+  )
+}
+
+export async function completeWithdrawal(requestId: string) {
+  return withActionContext('admin.withdrawals.complete', () => runCompleteWithdrawal(requestId))
 }

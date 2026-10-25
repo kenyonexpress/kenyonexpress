@@ -1,7 +1,9 @@
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-export async function GET() {
+async function handleGET() {
   const supabase = await createClient()
 
   const {
@@ -20,9 +22,11 @@ export async function GET() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Failed to fetch payment methods:', error)
+    log.error('failed_to_fetch_payment_methods', { err: error })
     return NextResponse.json({ error: 'Failed to fetch payment methods' }, { status: 500 })
   }
 
   return NextResponse.json({ methods: methods || [] })
 }
+
+export const GET = withRequestLog('/api/payment-methods', handleGET)

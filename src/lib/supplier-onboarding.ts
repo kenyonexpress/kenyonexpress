@@ -6,6 +6,7 @@ import crypto from 'node:crypto'
 import { agorot } from '@/lib/commerce/money'
 import { sendBuiltEmail } from '@/lib/email/templates'
 import { buildSupplierVerificationEmail } from '@/lib/email/templates/supplier-verification'
+import { log } from '@/lib/observability/log'
 import { CardcomProvider } from '@/lib/payments/cardcom'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -81,12 +82,18 @@ export async function submitSupplierApplication(
     }
 
     // Check if user already has a pending application
-    const { data: existingApp } = await supabase
+    const { data: existingApp, error: existingAppError } = await supabase
       .from('supplier_applications')
       .select('id, status')
       .eq('user_id', user.id)
       .eq('status', 'pending')
       .single()
+
+    // PGRST116 is `.single()` finding no row, which is the answer we want here.
+    if (existingAppError && existingAppError.code !== 'PGRST116') {
+      log.error('existing_application_lookup_failed', { err: existingAppError })
+      return { success: false, error: 'שגיאה בהגשת בקשה' }
+    }
 
     if (existingApp) {
       return { success: false, error: 'כבר קיימת בקשה ממתינה עבור משתמש זה' }
@@ -113,7 +120,7 @@ export async function submitSupplierApplication(
       .single()
 
     if (appError || !application) {
-      console.error('Failed to create application:', appError)
+      log.error('failed_to_create_application', { err: appError })
       return { success: false, error: 'שגיאה ביצירת בקשה' }
     }
 
@@ -148,7 +155,7 @@ export async function submitSupplierApplication(
       lowProfileId = lowProfileResult.lowProfileId
       paymentRedirectUrl = lowProfileResult.redirectUrl
     } catch (error) {
-      console.error('Failed to create Low Profile payment:', error)
+      log.error('failed_to_create_low_profile_payment', { err: error })
       verificationStatus = 'failed'
       // Don't fail the application - mark as failed for manual verification
     }
@@ -169,7 +176,7 @@ export async function submitSupplierApplication(
     })
 
     if (agreementError) {
-      console.error('Failed to create agreement:', agreementError)
+      log.error('failed_to_create_agreement', { err: agreementError })
       // Don't fail - application was created
     }
 
@@ -187,7 +194,7 @@ export async function submitSupplierApplication(
     })
 
     if (!emailResult.ok) {
-      console.error('Failed to send verification email:', emailResult)
+      log.error('failed_to_send_verification_email', { err: emailResult })
       // Don't fail the application - admin can resend
     }
 
@@ -198,7 +205,7 @@ export async function submitSupplierApplication(
 
     return { success: true, applicationId: application.id }
   } catch (error) {
-    console.error('Supplier application error:', error)
+    log.error('supplier_application_error', { err: error })
     return { success: false, error: 'שגיאה בהגשת בקשה' }
   }
 }
@@ -235,13 +242,13 @@ export async function verifySupplierEmail(
       .eq('id', agreement.id)
 
     if (updateError) {
-      console.error('Failed to verify email:', updateError)
+      log.error('failed_to_verify_email', { err: updateError })
       return { success: false, error: 'שגיאה באימות אימייל' }
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Email verification error:', error)
+    log.error('email_verification_error', { err: error })
     return { success: false, error: 'שגיאה באימות אימייל' }
   }
 }
@@ -270,11 +277,15 @@ export async function getSupplierApplicationDetails(applicationId: string) {
 export async function getPendingSupplierApplications() {
   const admin = createAdminClient()
 
-  const { data: applications } = await admin
+  const { data: applications, error } = await admin
     .from('supplier_applications')
     .select('*, profiles:user_id(full_name, email)')
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
+
+  if (error) {
+    log.error('pending_applications_list_failed', { err: error })
+  }
 
   return applications ?? []
 }
@@ -294,13 +305,13 @@ export async function approveSupplierApplication(
     })
 
     if (error) {
-      console.error('Failed to approve application:', error)
+      log.error('failed_to_approve_application', { err: error })
       return { success: false, error: 'שגיאה באישור בקשה' }
     }
 
     return { success: true, supplierId: data }
   } catch (error) {
-    console.error('Approval error:', error)
+    log.error('approval_error', { err: error })
     return { success: false, error: 'שגיאה באישור בקשה' }
   }
 }
@@ -322,13 +333,13 @@ export async function rejectSupplierApplication(
     })
 
     if (error) {
-      console.error('Failed to reject application:', error)
+      log.error('failed_to_reject_application', { err: error })
       return { success: false, error: 'שגיאה בדחיית בקשה' }
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Rejection error:', error)
+    log.error('rejection_error', { err: error })
     return { success: false, error: 'שגיאה בדחיית בקשה' }
   }
 }
