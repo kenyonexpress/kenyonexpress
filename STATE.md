@@ -101,6 +101,8 @@ d205bf459 STATE: Z10 re-run 2 done-as-shipped
 
 ## המשך מ: Next unblocked autonomous work
 
+Continue from M08-c193 DONE (2026-10-25): Code debt scan MAINTENANCE_LOOP_8 complete. Total: 7 comments (was 8 in M07), delta: -1 (decreased). Removed: src/lib/whatsapp.test.ts test stub TODO. Remaining: 7 TODOs (r2-migration.ts: 4, cardcom.ts: 2, stock-notifications route: 1), zero FIXME/HACK. No cleanup goal needed (count decreased). Report updated: docs/CODE-DEBT-STATUS.md. Scan recipe: grep -rn "TODO\|FIXME\|HACK" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.mts" --include="*.mjs". Quality gates not run (documentation-only change). Commit 67f24c5ac pushed to origin/closeout/v1-final.
+
 Continue from M12-c192 DONE (2026-10-25): robots.txt production-safe. src/app/robots.ts allows /, disallows /redeem/ /coupon/ /account/ /supplier/ /scan /admin/ /checkout /cart /auth/ /api/ /reset-password /forgot-password; sitemap + host from siteUrl() (defaults https://kenyonexpress.co.il, trailing slash stripped); middleware excludes robots.txt. robots.test.ts 6/6 pass. No code change.
 
 **TODO - MOBILE_GATE_FIX (2026-10-25):** MAINTENANCE_LOOP_6 measured gate above 11% at all viewports with valid baselines: 380px 47.64% (Electro) / 49.89% (degraded), 768px 41.3% (Electro), 1440px 29.65% (Electro). Per condition requirement, mobile fix goal requeued at head of queue. Build error fixed: removed suppliers.verification_status select. Quality gates: typecheck ✅, lint ✅, build ✅. Mobile gate remains FAILING with valid baselines. Requires: layout adjustments to reduce diff vs Electro template, or alternative baseline definition. Measurements documented in docs/GATE-STATUS.md.
