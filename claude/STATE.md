@@ -217,3 +217,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c197 DONE (pnpm build green; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
 המשך מ: M07-c197 DONE (TODO/FIXME scan: 4 markers in 3 files, all >7 days old and already filed in docs/BACKLOG.md; none resolvable without Cardcom prod creds / Supabase service key; no code changes)
 המשך מ: M10-c197 DONE-DEFERRED (89 files in migrations/pending, 63 in applied/; not verified against production: Supabase MCP requires auth, non-interactive session; nothing applied; no code changes)
+המשך מ: M17-c197 BLOCKED locked-component (RTL / and /product at 380/768/1440: dir=rtl lang=he, 0 overflow; /product clean; on / 11 Hebrew <p dir="ltr"> LTR leaks from locked src/components/home/HeroSlider.tsx:555-628, not edited; no code changes)
