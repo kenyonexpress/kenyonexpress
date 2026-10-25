@@ -1,6 +1,6 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-25 23:55 UTC  
+**Last Check:** 2026-10-26 02:50 UTC (MAINTENANCE_LOOP_6 re-measurement)  
 **Page:** home  
 **Viewport:** 380px (mobile)  
 **Current Score:** 50.62%  
@@ -26,8 +26,18 @@
 
 ## Resource Loading
 
-- **Reference (live):** 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr)
+- **Reference (live):** 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr)
 - **Local:** 4 failed to load, all expected on a local origin
+
+## Assessment (2026-10-26 MAINTENANCE_LOOP_6)
+
+Score remains stable at **50.62%** (confirmed 2026-10-25 23:55 UTC and 2026-10-26 02:50 UTC).
+
+**Status:** ❌ **FAILS 11% GATE** by 39.62 percentage points.
+
+**Root Cause:** Structural page difference (height ratio 0.28x) indicates missing data on local build. Products are not rendering, causing page to be significantly shorter than live version. This is a **data loading issue**, not a styling/layout problem.
+
+**Recommendation:** Mobile fix goal should remain queued at head of queue per MAINTENANCE_LOOP_6 rules. Gate will not pass until product data loads correctly on local dev build.
 
 ## Root Causes
 
