@@ -771,7 +771,7 @@ export function buildWelcomeEmail(
   const site = trimSite(siteUrl)
   const name = asText(payload.full_name)
   const greeting = name ? `שלום ${name},` : 'שלום,'
-  const subject = 'ברוכים הבאים ל-KenyonExpress'
+  const subject = 'ברוכים הבאים לקניון EXPRESS'
 
   const text = [
     greeting,

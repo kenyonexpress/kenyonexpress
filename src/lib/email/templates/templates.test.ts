@@ -128,11 +128,14 @@ describe('welcome template', () => {
     }
   })
 
-  it('makes no offer and carries no coupon code', () => {
-    // The same sender address has to carry voucher codes and refund
-    // confirmations later; opening with a discount files it under marketing.
+  it('mentions the signup bonus but not other promotional offers', () => {
+    // The welcome email includes the one-time 10₪ signup bonus, which is
+    // operational credit rather than a promotional discount. It must not
+    // include other offers (הנחה, קופון מתנה, percentage discounts).
     const email = buildWelcomeEmail({ siteUrl: SITE })
-    expect(email?.text).not.toMatch(/הנחה|קופון מתנה|%|₪/)
+    expect(email?.text).toContain('10₪')
+    expect(email?.text).toContain('מתנת כניסה')
+    expect(email?.text).not.toMatch(/הנחה|קופון מתנה|%/)
   })
 
   it('links into the account area on the real origin', () => {

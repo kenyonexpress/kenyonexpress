@@ -108,7 +108,7 @@ file is in a repository.
 19 https://kenyonexpress.vercel.app/api/cron/sms-broadcasts       GET  */10 * * * *   Authorization: Bearer <CRON_SECRET>
 20 https://kenyonexpress.vercel.app/api/cron/rfm-segmentation     GET  20 1 * * *     Authorization: Bearer <CRON_SECRET>
 21 https://kenyonexpress.vercel.app/api/cron/search-report        GET  0 6 * * 1      Authorization: Bearer <CRON_SECRET>
-22 https://kenyonexpress.vercel.app/api/cron/cart-abandonment   GET  0 */12 * * *   Authorization: Bearer <CRON_SECRET>
+22 https://kenyonexpress.vercel.app/api/cron/cart-abandonment   GET  0 * * * *      Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all handlers export
@@ -152,7 +152,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 19 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/sms-broadcasts` |
 | 20 | 01:20 daily | `20 1 * * *` | `https://kenyonexpress.vercel.app/api/cron/rfm-segmentation` |
 | 21 | Monday 06:00 | `0 6 * * 1` | `https://kenyonexpress.vercel.app/api/cron/search-report` |
-| 22 | every 12 hours | `0 */12 * * *` | `https://kenyonexpress.vercel.app/api/cron/cart-abandonment` |
+| 22 | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/cart-abandonment` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
