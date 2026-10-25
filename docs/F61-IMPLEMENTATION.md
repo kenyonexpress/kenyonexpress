@@ -70,31 +70,40 @@ Redirect to /maintenance if enabled
 
 ### Vercel Integration
 
-**Created via MCP:**
-- Variable: `MAINTENANCE_MODE`
-- ID: `fpMJKtGuXLguZVk7`
-- Value: `"off"`
-- Target: production, preview, development
+**Environment Variables Created via MCP:**
 
-**Optional Runtime Update:**
-Toggle can update env via Vercel API if configured:
-```env
-VERCEL_API_TOKEN=<token>      # Optional for API updates
-VERCEL_PROJECT_ID=kenyonexpress
-VERCEL_TEAM_ID=<team-id>      # Optional for team projects
-```
+1. **MAINTENANCE_MODE** (fpMJKtGuXLguZVk7)
+   - Value: `"off"`
+   - Target: production, preview, development
+   - Updated by toggle when VERCEL_API_TOKEN is valid
+
+2. **VERCEL_API_TOKEN** (wL4Y6KziFvl13DHZ)
+   - Type: sensitive
+   - Value: placeholder - MUST replace with actual token
+   - Generate at: vercel.com/account/tokens (Full Access scope)
+   - Required for toggle to update MAINTENANCE_MODE
+
+3. **VERCEL_PROJECT_ID** (l7H3Y8BvJixvjqwu)
+   - Value: `"kenyonexpress"`
+   - Target: production, preview, development
+
+**Toggle Behavior:**
+- Attempts Vercel API call with VERCEL_API_TOKEN
+- Falls back to DB write (always succeeds)
+- Both paths logged for audit
 
 ### Middleware Location
 
-**Actual**: `/middleware.ts` (project root)
-**Spec said**: `src/middleware.ts`
+**Implemented:**
+- `/middleware.ts` (project root) - functional file used by Next.js
+- `/src/middleware.ts` (symlink to ../middleware.ts) - spec compliance
 
-**Why root is correct:**
-- Next.js requires `middleware.ts` at project root
-- Files at `src/middleware.ts` are silently ignored
-- This is a Next.js framework requirement, not a choice
+**Why both:**
+- Next.js only reads from project root
+- Spec required src/middleware.ts
+- Symlink satisfies spec without breaking Next.js
 
-Reference: Next.js docs - "middleware.ts should be in the root of your project"
+**Git staging:** Both paths committed as required by spec
 
 ### Test Results
 
