@@ -276,3 +276,6 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M18-c204 DONE (claude/STATE.md already 271 lines, under 300; nothing to archive; docs/STATE-ARCHIVE.md unchanged)
 המשך מ: M04-c205 DONE (pnpm type-check clean, tsc exit 0, no drift, no code changes)
 המשך מ: M09-c205 DONE (2026-10-26): re-scan of deps/devDeps: only unreferenced are implicit tooling (@mdx-js/loader, biome, capacitor native, vitest coverage, husky, lint-staged); none removable; dead exports are public type surfaces, kept; no code change, no forbidden files touched)
+המשך מ: M15-c205 DONE-DEFERRED (home clean after dup-key fix; /product blocked on invalid Supabase anon key)
+המשך מ: M16-c205 DONE (JSON-LD verified: single template src/app/(store)/product/[slug]/page.tsx emits Product (+Offer ILS, brand, aggregateRating only when count>0) and BreadcrumbList (בית > קטגוריה > מוצר) on every product page via buildProductJsonLd/buildBreadcrumbJsonLd; notFound() pages emit none; 26/26 json-ld tests pass; no code change, no forbidden files touched)
+המשך מ: M18-c205 DONE (claude/STATE.md 280 lines, under 300; nothing to archive; docs/STATE-ARCHIVE.md unchanged)
