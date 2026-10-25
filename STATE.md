@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M18-c202: STATE.md קוצר ל-<300 שורות; סעיפי M01-c183..M17-c200 הועברו ל-docs/STATE-ARCHIVE.md). לא נערכו קבצי קוד. המשך מ: M18-c202 DONE.
 Updated: 2026-10-26 (M18-c201: STATE.md נמדד ב-276 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c201 DONE.
 Updated: 2026-10-26 (M12-c200: אימות robots.txt בטוח לפרודקשן). src/app/robots.ts ללא שינוי: allow / ל-*, disallow לנתיבים הפרטיים (/redeem/, /coupon/, /account/, /supplier/, /scan, /admin/, /checkout, /cart, /auth/, /api/, /reset-password, /forgot-password); אין Disallow: /. robots.txt החי בפרודקשן תואם; Sitemap ו-host בלי סלאש כפול. robots.test.ts: 6/6 עברו. לא נערכו קבצי קוד. המשך מ: M12-c200 DONE.
 Updated: 2026-10-26 (M18-c199: STATE.md נמדד ב-260 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c199 DONE.
@@ -147,130 +148,6 @@ Updated: 2026-09-07 11:35 UTC (‏Passkeys: כניסה והרשמה עם WebAuth
 
 Entries older than the above were moved to docs/STATE-ARCHIVE.md (M18-c181).
 
-## M01-c183 (2026-10-25)
-compare.mjs --page=home at --width=380 / 768 / 1440: REFUSED at all three (exit 5, no diff produced).
-kenyonexpress.co.il now serves our own Vercel build, so the live-reference guard (scripts/live-reference.mjs)
-refuses to score build vs build. No percentage was recorded; nothing to diff. See docs/PARITY-REFERENCE.md.
-Needs a non-self reference (refs/electro-home-v7.html via --live=) to produce numbers.
-**המשך מ: M01-c183 BLOCKED no-reference**
-המשך מ: M10-c183 DONE-DEFERRED (25 files in migrations/pending/ unverifiable: Supabase 401 invalid key + MCP unauthenticated)
-
-## M01-c184 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: NOT RUN, no diffs to record.
-Same cause as c183: kenyonexpress.co.il serves our own build (live-reference guard refuses build vs build),
-refs/electro-home-v7.html is absent from refs/ (listed in docs/REFS-INDEX.md, noted missing in docs/MISSING-ASSETS.md),
-and nothing is listening on localhost:3000. No percentages produced.
-**המשך מ: M01-c184 BLOCKED no-reference**
-המשך מ: M12-c184 DONE (robots.ts verified: disallows voucher/auth/admin/api paths, sitemap+host from NEXT_PUBLIC_APP_URL=https://kenyonexpress.co.il, 6/6 tests pass, no edits)
-
-## M01-c185 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: NOT RUN, no diffs to record.
-Re-checked: refs/electro-home-v7.html still absent from refs/, nothing listening on localhost:3000,
-live site still serves our own build (guard refuses build vs build). No percentages produced.
-**המשך מ: M01-c185 BLOCKED no-reference**
-
-## M02-c185 (2026-10-25)
-Re-measure compare.mjs --page=product (sample product): NOT RUN to a number, no diffs to record.
-Ran --page=product --width=1440: guard REFUSED (kenyonexpress.co.il serves our own Next build, build vs build).
-refs/electro-home-v7.html still absent from refs/, nothing listening on localhost:3000. No percentages produced.
-**המשך מ: M02-c185 BLOCKED no-reference**
-
-## M06-c185 (2026-10-25)
-pnpm build: passes. Drift committed: ntfy mutes (iron rule 23.10) in 2 workflows, nightly-health.sh, AUTOPILOT-PROMPT.md, CLAUDE.md, plus UI-PARITY-REPORT.md REFUSED rows.
-Commit 4b2c7911 local only: push rejected (main ahead 11, behind 3960 vs origin), rebase conflicts, aborted, no force-push.
-**המשך מ: M06-c185 BLOCKED push-diverged**
-
-## M01-c187 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c186: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/. No percentages produced.
-**המשך מ: M01-c187 BLOCKED no-reference**
-
-## M02-c187 (2026-10-25)
-Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c187: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/ (only electro-checkout-text.json). No percentages produced.
-
-## M01-c190 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c189: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/ (only electro-checkout-text.json). No percentages produced.
-**המשך מ: M01-c190 BLOCKED no-reference**
-
-## M01-c191 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c190: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/ (only electro-checkout-text.json), nothing on localhost:3000. No percentages produced.
-**המשך מ: M01-c191 BLOCKED no-reference**
-
-## M02-c191 (2026-10-25)
-Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c191: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/. No percentages produced.
-
-## M03-c192 (2026-10-25)
-Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (exit 5), no diffs to record.
-Same cause as M01-c191 / M02-c191: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. No percentages produced.
-**המשך מ: M03-c192 BLOCKED no-reference**
-M07-c192: TODO/FIXME scan. 3 markers older than 7 days (cardcom.ts:254, :317, screenshot-all.mjs:42), all filed in docs/BACKLOG.md; no source edited.
-**המשך מ: M07-c192 DONE**
-M18-c192: STATE.md was at 299 lines; moved 94 older lines (FINAL-AUDIT and 17.09 entries) to docs/STATE-ARCHIVE.md. No source edited.
-**המשך מ: M18-c192 DONE**
-
-## M01-c193 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c191: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. refs/electro-home-v7.html now exists in refs/, but the script's reference is still the LIVE_HOME URL, not that file. No percentages produced.
-**המשך מ: M01-c193 BLOCKED no-reference**
-
-## M02-c193 (2026-10-25)
-Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (exit 5), no diffs to record.
-Same cause as M01-c193: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. refs/electro-product-fresh.html exists, but the script's reference is still the LIVE_PRODUCT URL. No percentages produced.
-**המשך מ: M02-c193 BLOCKED no-reference**
-
-## M03-c193 (2026-10-25)
-Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c193 / M02-c193: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. The script's reference is still the LIVE_CATEGORY URL, not a refs/ file. No percentages produced.
-**המשך מ: M03-c193 BLOCKED no-reference**
-
-## M01-c194 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c193: kenyonexpress.co.il serves our own build (30-32 /_next/ assets, no wp-content), so build vs build. The script's reference is still LIVE_HOME, not refs/electro-home-v7.html. No local dev server was up on :3000 either. No percentages produced; guard not bypassed.
-**המשך מ: M01-c194 BLOCKED no-reference**
-
-## M03-c194 (2026-10-25)
-Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M03-c193: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. No percentages produced.
-**המשך מ: M03-c194 BLOCKED no-reference**
-
-## M01-c196 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c194: LIVE_HOME (kenyonexpress.co.il) serves our own build, so build vs build. No local dev server on :3000. Script still not pointed at refs/electro-home-v7.html (see docs/PARITY-REFERENCE.md). No percentages produced; guard not bypassed.
-**המשך מ: M01-c196 BLOCKED no-reference**
-
-## M03-c196 (2026-10-25)
-Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M03-c194: kenyonexpress.co.il serves our own build (build vs build), so any number would be meaningless. No percentages produced; guard not bypassed.
-**המשך מ: M03-c196 BLOCKED no-reference**
-
-## M01-c197 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: no diffs to record. 768 and 1440 REFUSED by the live-reference guard (kenyonexpress.co.il serves our own build, build vs build). 380 crashed in shoot() (page.evaluate: target closed) before reaching a diff. No local dev server on :3000. No percentages produced; guard not bypassed.
-**המשך מ: M01-c197 BLOCKED no-reference**
-
-## M01-c198 (2026-10-26)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c196/c197: LIVE_HOME (kenyonexpress.co.il) serves our own build (27-30 /_next/ refs, no wp-content), so build vs build. Local dev server on :3000 is up this time (380 no longer crashes), but the reference is still not refs/electro-home-v7.html. No percentages produced; guard not bypassed.
-**המשך מ: M01-c198 BLOCKED no-reference**
-
-## M01-c199 (2026-10-26)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c196/c197/c198: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. No local dev server on :3000 this run. No percentages produced; guard not bypassed.
-**המשך מ: M01-c199 BLOCKED no-reference**
-
-## M01-c200 (2026-10-26)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c196..c199: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. No local dev server on :3000 this run. No percentages produced; guard not bypassed.
-
-## M17-c200 (2026-10-26)
-RTL check on / and /product, static (scripts/rtl-lint.mjs, 83 hits repo-wide, none edited). `<html lang="he" dir="rtl">` confirmed in layout.tsx:113.
-Hits reaching / and /product are all non-leaks: comments (BenefitBar, MastheadNav, CityTag, newsletter.css, ReviewForm, CartLineItem, mini-cart.css), test mocks (ProductGallery.test), or deliberate physical anchors (MobileDrawer right-0 slide-in, pdp-gallery nav arrows). HeroSlider/TopBar hits are in forbidden files, untouched.
-No source changed, so no compare.mjs run needed. No runtime browser pass (no server on :3000).
-**המשך מ: M17-c200 DONE**
-
 ## M01-c201 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard again, no diffs to record.
 Same cause as M01-c196..c200: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. Local dev server on :3000 was up this run (200), so the blocker is the reference, not the server. No percentages produced; guard not bypassed.
@@ -290,3 +167,8 @@ Same cause as M01-c196..c202: kenyonexpress.co.il serves our own build, so build
 Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (exit 5), no diffs to record.
 Same cause as M02-c202: kenyonexpress.co.il serves our own build. refs/ has Electro v7 home + product captures but no category capture, so no honest category reference exists. Guard not bypassed.
 **המשך מ: M03-c202 BLOCKED no-reference**
+
+## M11-c202 (2026-10-26)
+Sitemap check. Local build artifact .next/server/app/sitemap.xml.body: valid urlset, 79 <loc>, lastmod 2026-10-25T11:04Z, built 2026-10-25 20:19 (src/app/sitemap.ts, cacheLife hours, CATALOGUE_TAG).
+Live https://www.kenyonexpress.co.il/sitemap.xml: apex 308 -> www, then 403 "Vercel Security Checkpoint" (x-vercel-mitigated: challenge) for curl and Googlebot UA. Vercel MCP fetch denied (403 on aliases). Reachability and freshness of the live response NOT verified.
+**המשך מ: M11-c202 BLOCKED live-unreachable**
