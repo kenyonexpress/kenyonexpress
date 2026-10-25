@@ -14,6 +14,12 @@ import {
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
+import {
+  isDisposableEmail,
+  isDuplicateEmail,
+  isIpAccountCreationAbuse,
+  logIpSignup,
+} from '@/lib/fraud/signup-validation'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -241,8 +247,26 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
+  // F66: Check for disposable email
+  if (isDisposableEmail(parsed.data.email)) {
+    await logIpSignup(ip, null, parsed.data.email, true, 'disposable_email')
+    return { error: 'כתובת אימייל זמנית אינה מותרת' }
+  }
+
+  // F66: Check for duplicate email (case-insensitive)
+  if (await isDuplicateEmail(parsed.data.email)) {
+    await logIpSignup(ip, null, parsed.data.email, true, 'duplicate_email')
+    return { error: 'כתובת האימייל כבר רשומה במערכת' }
+  }
+
+  // F66: Check IP abuse (>3 accounts in 1h)
+  if (await isIpAccountCreationAbuse(ip)) {
+    await logIpSignup(ip, null, parsed.data.email, true, 'ip_abuse')
+    return { error: 'יותר מדי ניסיונות הרשמה מהכתובת הזו — נסו שוב מאוחר יותר' }
+  }
+
   const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -250,6 +274,12 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
     },
   })
   if (error) return { error: toHebrew(error.message) }
+
+  // F66: Log successful signup
+  if (data.user) {
+    await logIpSignup(ip, data.user.id, parsed.data.email, false, null)
+  }
+
   redirect('/signup/confirm')
 }
 
