@@ -1,5 +1,6 @@
 'use client'
 
+import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -37,17 +38,10 @@ export default function AppError({
   const [checkingHealth, setCheckingHealth] = useState(false)
 
   useEffect(() => {
-    // console, not the Sentry helpers in lib/observability: those run on
-    // @sentry/node and tag everything area=payments, so importing them into a
-    // client boundary would both fail to bundle and mislabel every UI error as
-    // a money-path one. Wiring a browser SDK is a separate decision.
-    //
-    // The same reasoning now covers `lib/observability/log.ts`, which took over
-    // the other 33 console call sites in src/ and deliberately did not take
-    // this one: it reads its request id from node:async_hooks, which is a build
-    // error in a client bundle. This line runs in the browser, where there is
-    // no server request to correlate to and `digest` is the only handle that
-    // ties it to the server-side event anyway.
+    // Report to Sentry - @sentry/nextjs works in client components
+    Sentry.captureException(error)
+
+    // Also log to console with digest for local debugging
     console.error('app error boundary:', error.digest ?? '', error)
 
     // Check system health on mount

@@ -21,6 +21,17 @@ export async function maintenanceFlagOn(
   env: NodeJS.ProcessEnv = process.env,
   fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
+  // Hard override: MAINTENANCE_MODE env takes precedence over DB
+  const envOverride = env.MAINTENANCE_MODE?.trim().toLowerCase()
+  if (
+    envOverride === '1' ||
+    envOverride === 'true' ||
+    envOverride === 'on' ||
+    envOverride === 'yes'
+  ) {
+    return true
+  }
+
   if (cached && now - cached.at < TTL_MS) return cached.value
   const url = env.NEXT_PUBLIC_SUPABASE_URL
   const key = env.NEXT_PUBLIC_SUPABASE_ANON_KEY
