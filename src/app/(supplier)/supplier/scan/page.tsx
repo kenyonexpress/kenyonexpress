@@ -1,56 +1,154 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
 import { verifySignedJWT } from '@/lib/vouchers/qr-generation'
-import { redirect } from 'next/navigation'
+import { useRef, useState } from 'react'
 
 /**
  * Supplier scan page with camera + JWT verification.
  * F55: Uses camera, verifies JWT, marks coupon as redeemed.
- *
- * The scan screen moved to /scan, which is short enough to type on a phone at a
- * till. This page now handles JWT verification and redemption logic before
- * redirecting to the main scan interface.
  */
 
-interface ScanPageProps {
-  searchParams: Promise<{ token?: string }>
-}
+export default function SupplierScanPage() {
+  const [scanning, setScanning] = useState(false)
+  const [result, setResult] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
-export default async function SupplierScanPage({ searchParams }: ScanPageProps) {
-  const params = await searchParams
-  const { token } = params
+  const supabase = createClient()
 
-  // If no token provided, redirect to main scan page
-  if (!token) {
-    redirect('/scan')
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+      })
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        streamRef.current = stream
+        setScanning(true)
+        setError(null)
+      }
+    } catch (err) {
+      setError('Failed to access camera')
+      console.error('Camera error:', err)
+    }
   }
 
-  // Verify JWT token from QR code
-  const verified = verifySignedJWT(token)
-
-  if (!verified) {
-    // Invalid or expired token - redirect with error
-    redirect('/scan?error=invalid_token')
+  const stopCamera = () => {
+    if (streamRef.current) {
+      for (const track of streamRef.current.getTracks()) {
+        track.stop()
+      }
+      streamRef.current = null
+    }
+    setScanning(false)
   }
 
-  const admin = createAdminClient()
+  const scanQRCode = async (token: string) => {
+    // Verify JWT
+    const verified = verifySignedJWT(token)
 
-  // Mark voucher as redeemed
-  const { data: voucher, error } = await admin
-    .from('vouchers')
-    .update({
-      status: 'redeemed',
-      redeemed_at: new Date().toISOString(),
-    })
-    .eq('id', verified.voucher_id)
-    .eq('status', 'issued')
-    .select()
-    .single()
+    if (!verified) {
+      setError('Invalid or expired QR code')
+      return
+    }
 
-  if (error || !voucher) {
-    // Voucher already redeemed or not found
-    redirect('/scan?error=already_redeemed')
+    try {
+      // Mark coupon/voucher as redeemed
+      const { data, error: redeemError } = await supabase
+        .from('vouchers')
+        .update({
+          status: 'redeemed',
+          redeemed_at: new Date().toISOString(),
+        })
+        .eq('id', verified.voucher_id)
+        .eq('status', 'issued')
+        .select()
+        .single()
+
+      if (redeemError || !data) {
+        setError('Coupon already redeemed or not found')
+        return
+      }
+
+      // Also mark order item
+      await supabase
+        .from('order_items')
+        .update({ item_status: 'redeemed' })
+        .eq('id', data.order_item_id)
+
+      setResult(`Successfully redeemed voucher ${verified.voucher_id}`)
+      stopCamera()
+    } catch (err) {
+      setError('Failed to redeem coupon')
+      console.error('Redemption error:', err)
+    }
   }
 
-  // Success - redirect to main scan page with success message
-  redirect(`/scan?success=redeemed&voucher_id=${verified.voucher_id}`)
+  const handleManualEntry = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const input = form.elements.namedItem('token') as HTMLInputElement
+    await scanQRCode(input.value)
+  }
+
+  return (
+    <div style={{ padding: '20px', direction: 'rtl' }}>
+      <h1>סריקת קופון</h1>
+
+      {!scanning && !result && (
+        <button
+          type="button"
+          onClick={startCamera}
+          style={{ padding: '10px 20px', fontSize: '16px' }}
+        >
+          הפעל מצלמה
+        </button>
+      )}
+
+      {scanning && (
+        <div>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{ width: '100%', maxWidth: '500px' }}
+          >
+            <track kind="captions" />
+          </video>
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <button
+            type="button"
+            onClick={stopCamera}
+            style={{ marginTop: '10px', padding: '10px 20px' }}
+          >
+            עצור סריקה
+          </button>
+        </div>
+      )}
+
+      <div style={{ marginTop: '20px' }}>
+        <h2>הזנה ידנית</h2>
+        <form onSubmit={handleManualEntry}>
+          <input
+            type="text"
+            name="token"
+            placeholder="הדבק JWT מהקופון"
+            style={{ padding: '10px', width: '100%', maxWidth: '500px' }}
+          />
+          <button type="submit" style={{ marginTop: '10px', padding: '10px 20px' }}>
+            מימוש
+          </button>
+        </form>
+      </div>
+
+      {error && <div style={{ marginTop: '20px', color: 'red' }}>שגיאה: {error}</div>}
+
+      {result && <div style={{ marginTop: '20px', color: 'green' }}>✓ {result}</div>}
+    </div>
+  )
 }
