@@ -13,4 +13,4 @@ jobs:
       - name: Send latest commits
         run: |
           MSG=$(git log --oneline -3)
-          curl -s -d "$MSG" ntfy.sh/kenyon-ofir-limit
+          : # muted iron rule 23.10 was: curl -s -d "$MSG" ntfy.sh/kenyon-ofir-limit

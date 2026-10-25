@@ -98,4 +98,4 @@ E. Steps 24-26 (Seed, Backup, Final sweep → GO/NO-GO)
 
 [COMPLETION NOTIFICATION]
 When PROJECT-DONE.flag is created, immediately run:
-curl -s -d "KenyonExpress DONE: פתח OFIR-RETURN-BRIEF.md לדו״ח מלא ושאלות" ntfy.sh/kenyon-ofir-limit
+: # muted iron rule 23.10 was: curl -s -d "KenyonExpress DONE: פתח OFIR-RETURN-BRIEF.md לדו״ח מלא ושאלות" ntfy.sh/kenyon-ofir-limit

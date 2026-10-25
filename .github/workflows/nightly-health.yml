@@ -92,4 +92,4 @@ jobs:
             --title "nightly-health failed $(date -u +%F)" \
             --label auto \
             --body "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" || true
-          curl -s -m 10 -d "nightly-health FAILED (CI)" "https://ntfy.sh/${{ vars.CRON_NTFY_TOPIC || 'kenyon-ofir-limit' }}" > /dev/null || true
+          : # muted iron rule 23.10 was: curl -s -m 10 -d "nightly-health FAILED (CI)" "https://ntfy.sh/${{ vars.CRON_NTFY_TOPIC || 'kenyon-ofir-limit' }}" > /dev/null || true

@@ -98,7 +98,7 @@
 4. עדכון `STATE.md`, כולל שורת `המשך מ:` שמצביעה על ה-goal הבא.
 5. התראה:
    ```bash
-   curl -d "סיים: [שם ה-goal]" ntfy.sh/kenyon-ofir-limit
+   : # muted iron rule 23.10 was: curl -d "סיים: [שם ה-goal]" ntfy.sh/kenyon-ofir-limit
    ```
 6. מיד להתחיל את ה-goal הבא, בלי להכריז ובלי לעצור.
 

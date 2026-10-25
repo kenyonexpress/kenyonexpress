@@ -39,6 +39,6 @@ if [ ${#FAILED[@]} -eq 0 ]; then
 fi
 echo "NIGHTLY HEALTH: FAILED -> ${FAILED[*]}"
 if [ "${NIGHTLY_NTFY:-0}" = "1" ]; then
-  curl -s -m 10 -d "nightly-health FAILED: ${FAILED[*]}" "https://ntfy.sh/kenyon-ofir-limit" > /dev/null || true
+  : # muted iron rule 23.10 was: curl -s -m 10 -d "nightly-health FAILED: ${FAILED[*]}" "https://ntfy.sh/kenyon-ofir-limit" > /dev/null || true
 fi
 exit 1
