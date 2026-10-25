@@ -46,3 +46,7 @@ M07-c184 TODO/FIXME scan: 1 new item (stock-notifications route.ts:126) filed as
 M05-c185 pnpm test drift: 13 failing files reduced to 2 (6840+ pass). Fixed: migrations 305-308 inventory/manifest/preflights (F55 had saved DDL as preflight_305.sql, now 308_order_lifecycle_transition_guards.sql), e2e classification, token colours in wallet, logger/withActionContext/withRequestLog wrappers, discarded Supabase errors, admin withdrawal + supplier-approval actions now role-guarded, /supplier/scan back to the guarded /scan redirect, cardcom integration test mock. Still red: wallet-internal-only (2) and account-labels (1): F58 customer withdrawals contradict WITHDRAWAL_RULE (wallet is non-withdrawable site credit, also in the published terms). Left as is: legal/product call, not drift.
 
 המשך מ: M05-c185 BLOCKED wallet withdrawal vs non-withdrawable wallet rule
+
+M10-c185 BLOCKED supabase MCP unauthenticated: cannot verify migrations/pending (79 files) vs project ixvwfbuvfxxsjiywhbbb
+
+המשך מ: M10-c185 BLOCKED supabase-mcp-auth
