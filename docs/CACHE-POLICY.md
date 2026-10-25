@@ -49,9 +49,9 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 ## 2. One lifetime and one tag, application-wide
 
 ```
-cacheLife('hours')        25
+cacheLife('hours')        24
 cacheLife('days')          1     CopyrightYear.tsx
-cacheTag(CATALOGUE_TAG)   24
+cacheTag(CATALOGUE_TAG)   23
 ```
 
 Every cached read in the product surface has the same one-hour life and the
