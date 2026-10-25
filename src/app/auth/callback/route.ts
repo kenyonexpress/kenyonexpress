@@ -46,6 +46,72 @@ async function enqueueWelcomeOnce(user: { id: string; email?: string }): Promise
   }
 }
 
+/**
+ * Credits a one-time 10₪ signup bonus to the user's wallet.
+ *
+ * Best-effort, just like the welcome email: a wallet failure must not break
+ * sign-in. The idempotency key ensures only the first successful exchange
+ * credits the bonus, even if this function is called on every login.
+ */
+async function creditSignupBonusOnce(userId: string): Promise<void> {
+  try {
+    const admin = createAdminClient()
+
+    // Get or create user's wallet account
+    const { data: userWallet } = await admin
+      .from('wallet_accounts')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    let userWalletId = userWallet?.id
+
+    if (!userWalletId) {
+      const { data: created, error: createError } = await admin
+        .from('wallet_accounts')
+        .insert({ user_id: userId })
+        .select('id')
+        .single()
+
+      if (createError) {
+        log.warn('auth.signup_bonus_wallet_create_failed', {
+          userId,
+          reason: createError.message,
+        })
+        return
+      }
+      userWalletId = created.id
+    }
+
+    // Get platform cashback reserve account
+    const { data: platformWallet } = await admin
+      .from('wallet_accounts')
+      .select('id')
+      .eq('code', 'platform:cashback_reserve')
+      .maybeSingle()
+
+    if (!platformWallet) {
+      log.warn('auth.signup_bonus_platform_wallet_missing', { userId })
+      return
+    }
+
+    // Transfer 10₪ from platform to user wallet (idempotent)
+    await admin.rpc('fn_wallet_transfer', {
+      p_debit_account: platformWallet.id,
+      p_credit_account: userWalletId,
+      p_amount_ils: 10,
+      p_reason: 'referral_bonus', // Using existing enum value for signup bonus
+      p_idempotency: `signup_bonus:${userId}`,
+      p_order_id: null,
+    })
+  } catch (error) {
+    log.warn('auth.signup_bonus_threw', {
+      userId,
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
   const code = searchParams.get('code')
@@ -60,6 +126,7 @@ export async function GET(request: NextRequest) {
 
     if (!error && session) {
       await enqueueWelcomeOnce(session.user)
+      await creditSignupBonusOnce(session.user.id)
       const cookieStore = await cookies()
       const sessionId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
 

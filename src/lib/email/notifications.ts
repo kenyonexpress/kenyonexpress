@@ -779,6 +779,8 @@ export function buildWelcomeEmail(
     'החשבון שלך מוכן. מכאן אפשר לקנות קופונים ומוצרים מעסקים בישראל,',
     'והקופונים שתקנו יחכו לך באזור האישי עם קוד לסריקה בבית העסק.',
     '',
+    'קיבלת מתנת כניסה: 10₪ בארנק הדיגיטלי שלך, אפשר להשתמש בהם בכל רכישה.',
+    '',
     `הקופונים שלי: ${site}/account/coupons`,
     `ההזמנות שלי: ${site}/account/orders`,
   ].join('\n')
@@ -788,6 +790,10 @@ export function buildWelcomeEmail(
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)} החשבון שלך מוכן.</div>
         <div style="font-size:14px;color:${MUTED};margin-top:8px">הקופונים שתקנו יחכו לך באזור האישי, עם קוד לסריקה בבית העסק.</div>
+        <div dir="rtl" style="background:${PANEL};border:1px solid ${BRAND};border-radius:10px;padding:14px;margin-top:12px">
+          <div style="font-size:15px;font-weight:700;color:${INK}">🎁 מתנת כניסה: 10₪</div>
+          <div style="font-size:13px;color:${MUTED};margin-top:4px">הזכות לך בארנק הדיגיטלי שלך. אפשר להשתמש בהם בכל רכישה.</div>
+        </div>
         <a href="${escapeHtml(`${site}/account/coupons`)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לקופונים שלי</a>
       </div>`,
     'קיבלת את המייל הזה כי נפתח חשבון ב-KenyonExpress עם כתובת המייל הזאת.',
