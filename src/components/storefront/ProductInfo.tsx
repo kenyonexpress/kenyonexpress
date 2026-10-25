@@ -15,6 +15,7 @@ import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
+import { buildShareMessage } from '@/lib/share/message'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useState } from 'react'
@@ -433,7 +434,19 @@ export default function ProductInfo({
             and this line used to send a friend "₪200" for a deal the page
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex items-center gap-4">
-          <WhatsAppShareButton productId={productId} message={`ראה דיל: ${productUrl}`} />
+          <WhatsAppShareButton
+            productId={productId}
+            message={[
+              buildShareMessage({
+                name,
+                priceIls: isCoupon ? null : basePrice,
+                offer: couponOffer ?? null,
+              }),
+              productUrl,
+            ]
+              .filter(Boolean)
+              .join('\n')}
+          />
           <FacebookShareButton />
           <ShareButton
             title={name}

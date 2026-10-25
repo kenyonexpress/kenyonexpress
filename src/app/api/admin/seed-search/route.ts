@@ -1,4 +1,7 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -7,11 +10,9 @@ import { type NextRequest, NextResponse } from 'next/server'
  * Protected by CRON_SECRET. Remove after use.
  */
 
-export async function POST(request: NextRequest) {
-  const auth = request.headers.get('authorization')
-  const token = auth?.replace('Bearer ', '')
-
-  if (!token || token !== process.env.CRON_SECRET) {
+async function handlePOST(request: NextRequest) {
+  const secret = process.env.CRON_SECRET
+  if (!secret || !bearerMatches(request.headers.get('authorization'), secret)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
@@ -54,10 +55,16 @@ export async function POST(request: NextRequest) {
     const names = new Map<string, string>()
 
     if (supplierIds.length > 0) {
-      const { data: suppliers } = await supabase
+      const { data: suppliers, error: suppliersError } = await supabase
         .from('suppliers')
         .select('id, name')
         .in('id', supplierIds)
+      if (suppliersError) {
+        return NextResponse.json(
+          { error: 'db_error', detail: suppliersError.message },
+          { status: 500 },
+        )
+      }
       for (const s of suppliers ?? []) names.set(s.id, s.name)
     }
 
@@ -89,7 +96,7 @@ export async function POST(request: NextRequest) {
     })
 
     const url = `${host.replace(/\/$/, '')}/indexes/${index}/documents`
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify(documents),
@@ -115,3 +122,5 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const POST = withRequestLog('/api/admin/seed-search', handlePOST)

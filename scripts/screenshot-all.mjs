@@ -39,7 +39,7 @@ const CONFIG = {
   LIVE_BASE: process.env.LIVE_BASE || 'https://kenyonexpress.co.il',
   LOCAL_BASE: process.env.LOCAL_BASE || 'http://localhost:3000',
 
-  // TODO: set these to real slugs that exist on each environment.
+  // NOTE: override these with real slugs that exist on each environment (env vars or argv).
   // Local routes are `/product/[first]` and `/category/[first]`; because the
   // first slug differs between live and local, adjust the defaults below.
   LIVE_PRODUCT_PATH: process.env.LIVE_PRODUCT_PATH || argv[0] || '/product/example-product',

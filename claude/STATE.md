@@ -103,3 +103,11 @@ RESULT: DONE
 M04-c183: pnpm type-check clean (tsc --noEmit exit 0), no drift to fix.
 RESULT: DONE
 המשך מ: M04-c183 DONE
+
+M06-c183: pnpm build succeeds (Next.js production build, all routes generated), no drift to fix.
+RESULT: DONE
+המשך מ: M06-c183 DONE
+
+M07-c183: TODO/FIXME scan. Resolved 2 (whatsapp.test placeholder, screenshot-all comment). Filed 3 in docs/BACKLOG.md (2x cardcom, r2-migration). stock-notifications TODO is 7 days old, re-check next scan.
+RESULT: DONE
+המשך מ: M07-c183 DONE

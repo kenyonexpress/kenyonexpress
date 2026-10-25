@@ -58,6 +58,11 @@ const EXEMPT: Record<string, { because: string; mustContain: string }> = {
     because: 'pure redirect to /admin/club-tiers, which is guarded; it reads nothing itself',
     mustContain: "permanentRedirect('/admin/club-tiers')",
   },
+  'src/app/api/admin/seed-search/route.ts': {
+    because:
+      'machine caller: a constant-time CRON_SECRET bearer check gates the one-time seeding POST',
+    mustContain: 'bearerMatches(',
+  },
   'src/app/api/supplier/redeem/route.ts': {
     because: 'alias that re-exports the guarded /api/supplier/vouchers/redeem handler',
     mustContain: "export { POST } from '@/app/api/supplier/vouchers/redeem/route'",
