@@ -4,7 +4,9 @@ The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
 
-**המשך מ: G15 DONE**
+**המשך מ: M07-c193 DONE**
+
+M07-c193: TODO/FIXME scan. Markers older than 7 days (cardcom.ts x2, r2-migration.ts x4, screenshot-all.mjs, stock-notifications route) are all already filed as docs/BACKLOG.md #8-11. Wallet TODOs were added 2026-10-25 (under 7 days); the whatsapp.test.ts 'TODO' is a test value. No FIXME. No code change.
 
 G15: `/supplier/redeem/<code>` page (short code, manual scan). Reuses RedeemConfirm + redeem_voucher() via /api/supplier/vouchers/redeem (not-redeemed, not-expired, voucher_redemptions row, unique success index locks re-redeem). Refusals: malformed, not found, read failure, rate limit; KEV1 token redirected to /redeem/<token>. No new migration.
 
