@@ -29,7 +29,7 @@ export type UnsubscribeScope = 'alerts' | 'digest' | 'all'
 
 const SCOPES: readonly UnsubscribeScope[] = ['alerts', 'digest', 'all']
 
-export const UNSUBSCRIBE_TOKEN_TTL_DAYS = 180
+const UNSUBSCRIBE_TOKEN_TTL_DAYS = 180
 
 function signingKey(): Buffer | null {
   const dedicated = process.env.WISHLIST_UNSUB_SECRET

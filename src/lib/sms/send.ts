@@ -49,7 +49,7 @@ const MISSING_TABLE = new Set(['42P01', 'PGRST205'])
  * no opt-out list yet because there is no SMS yet, so there is nobody to have
  * opted out.
  */
-export async function isOptedOut(admin: SupabaseClient, toE164: string): Promise<boolean | null> {
+async function isOptedOut(admin: SupabaseClient, toE164: string): Promise<boolean | null> {
   const { data, error } = await admin
     .from('sms_opt_outs' as never)
     .select('to_e164')

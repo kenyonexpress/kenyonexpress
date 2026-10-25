@@ -29,7 +29,7 @@ import { CASHBACK_LIFETIME_MONTHS, cashbackExpiresAt } from './expiry'
 /** The ledger reasons that are cashback credits. `order_cashback` is the
  *  per-item cashback finalize.ts posts; `cashback_bonus` is the order-count
  *  bonus 177 posts. Both lapse under 215's twelve-month rule. */
-export const CASHBACK_CREDIT_REASONS = new Set(['order_cashback', 'cashback_bonus'])
+const CASHBACK_CREDIT_REASONS = new Set(['order_cashback', 'cashback_bonus'])
 
 /** The bonus window: every fifth paid order. */
 export const BONUS_EVERY_N_PURCHASES = 5
@@ -150,7 +150,7 @@ export interface CashbackOverview {
 }
 
 /** How far ahead "expiring soon" looks. */
-export const EXPIRING_SOON_DAYS = 30
+const EXPIRING_SOON_DAYS = 30
 
 export function cashbackOverview(
   rows: LedgerRowLike[],

@@ -193,7 +193,7 @@ export async function detectNewProfileHighValue(
  * Detect VPN/proxy usage based on IP reputation
  * In production, this would integrate with a GeoIP/reputation service
  */
-export async function detectVpnProxyUsage(
+async function detectVpnProxyUsage(
   _order: OrderData,
   _userLocationCountry?: string,
 ): Promise<FraudSignal | null> {

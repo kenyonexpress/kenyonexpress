@@ -82,7 +82,7 @@ export class OrderNotPaidError extends Error {
   }
 }
 
-export function receiptReference(orderId: string): string {
+function receiptReference(orderId: string): string {
   return orderId.slice(0, 8).toUpperCase()
 }
 

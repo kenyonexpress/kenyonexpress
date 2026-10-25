@@ -85,7 +85,7 @@ export async function callSearchProductsRpc(
  * "this database has no FTS yet, use ILIKE" and "the search failed" must not
  * take the same branch, or a real outage silently halves search quality.
  */
-export function isMissingSearchRpc(error: { code?: string; message?: string } | null): boolean {
+function isMissingSearchRpc(error: { code?: string; message?: string } | null): boolean {
   if (!error) return false
   if (error.code === '42883' || error.code === 'PGRST202') return true
   const message = (error.message ?? '').toLowerCase()

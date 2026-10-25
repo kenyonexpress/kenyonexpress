@@ -58,7 +58,7 @@ export interface RankedDeal {
 }
 
 /** The homepage grid holds 32 cards; the day's set is sized to match. */
-export const DAILY_DEAL_LIMIT = 32
+const DAILY_DEAL_LIMIT = 32
 
 /**
  * The day's deals: active, in stock (or untracked), with a reference price

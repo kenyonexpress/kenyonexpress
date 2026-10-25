@@ -77,7 +77,7 @@ export type ClaimResult = 'claimed' | 'exists'
  * Try to claim (scope, key). Returns 'claimed' if this caller inserted the row
  * (it owns the work), 'exists' if the key was already present (replay).
  */
-export async function claim(
+async function claim(
   client: SupabaseClient,
   scope: string,
   key: string,
@@ -100,7 +100,7 @@ export async function claim(
 }
 
 /** Record the response hash for a claimed key. */
-export async function record(
+async function record(
   client: SupabaseClient,
   scope: string,
   key: string,

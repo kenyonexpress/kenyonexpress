@@ -6,7 +6,7 @@ import {
 import { formatIsraeliPhoneDisplay, storeWhatsAppLink, storeWhatsAppNumber } from '@/lib/whatsapp'
 import Link from 'next/link'
 
-export const LEGAL_CONTACT_EMAIL = 'info@kenyonexpress.co.il'
+const LEGAL_CONTACT_EMAIL = 'info@kenyonexpress.co.il'
 
 /**
  * The one place a legal page prints how to reach us.

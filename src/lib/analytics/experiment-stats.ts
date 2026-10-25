@@ -42,7 +42,7 @@ export type VariantStat = VariantCounts & {
  */
 export const MIN_EXPOSURES_PER_VARIANT = 100
 
-export const SIGNIFICANCE_ALPHA = 0.05
+const SIGNIFICANCE_ALPHA = 0.05
 
 /** z for a two-sided 95% interval. */
 const Z_95 = 1.959963984540054

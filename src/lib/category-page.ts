@@ -425,7 +425,7 @@ function pageOf<T extends { full_price?: number | null; kenyon_price?: number | 
   return sort === 'discount_desc' ? sortByDiscountDesc(rows).slice(from, from + pageSize) : rows
 }
 
-export async function getCategoryProducts(opts: {
+async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
   sort: SortValue

@@ -10,7 +10,7 @@
 // Pure module: no crypto import at module scope beyond globalThis.crypto, no
 // database, no request. Everything here is testable with an injected RNG.
 
-export const UNIT_CODE_LENGTH = 8
+const UNIT_CODE_LENGTH = 8
 
 const UNIT_CODE_PATTERN = /^[0-9]{8}$/
 

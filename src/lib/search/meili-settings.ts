@@ -118,7 +118,7 @@ export const RANKING_RULES = [
  * way English does, but these conjunctions and fillers show up in product
  * titles often enough to dilute relevance.
  */
-export const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
+const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
 
 /**
  * Tokenizer locale hints (Meilisearch >= 1.10, `localizedAttributes`).
@@ -134,7 +134,7 @@ export const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הו
  * On a Meilisearch older than 1.10 the settings PATCH would reject the key,
  * so the setup script applies it separately and degrades to a warning.
  */
-export const HEBREW_LOCALES = ['heb'] as const
+const HEBREW_LOCALES = ['heb'] as const
 export const HEBREW_ATTRIBUTE_PATTERNS = [
   'name_he',
   'short_description_he',

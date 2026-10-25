@@ -7,7 +7,7 @@ import { type Agorot, agorot, sumAgorot } from '@/lib/money'
  */
 
 /** Order statuses whose money was actually collected. */
-export const REVENUE_ORDER_STATUSES = [
+const REVENUE_ORDER_STATUSES = [
   'paid',
   'partially_fulfilled',
   'fulfilled',

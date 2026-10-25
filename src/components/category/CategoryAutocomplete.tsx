@@ -52,7 +52,7 @@ type Props = {
 /** Keystrokes settle for this long before a request is sent. */
 export const SUGGEST_DEBOUNCE_MS = 150
 /** Mirrors MIN_QUERY in the suggest route; below it the route answers empty. */
-export const MIN_QUERY = 2
+const MIN_QUERY = 2
 
 export default function CategoryAutocomplete({ categorySlug, categoryName }: Props) {
   const router = useRouter()

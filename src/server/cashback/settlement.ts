@@ -26,10 +26,10 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  */
 
 /** Paid orders this far back are reconsidered every night. */
-export const SETTLEMENT_WINDOW_DAYS = 30
+const SETTLEMENT_WINDOW_DAYS = 30
 
 /** Orders per run; a larger backlog drains over consecutive nights. */
-export const SETTLEMENT_BATCH = 500
+const SETTLEMENT_BATCH = 500
 
 const RESERVE_CODE = 'platform:cashback_reserve'
 
@@ -138,7 +138,7 @@ async function reserveAccountId(admin: SupabaseClient): Promise<string> {
 }
 
 /** Builds the plan from production rows. Exported for the route's test. */
-export async function readSettlementPlan(
+async function readSettlementPlan(
   admin: SupabaseClient,
   now: Date,
   options: { windowDays?: number; batch?: number } = {},

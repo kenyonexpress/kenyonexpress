@@ -70,14 +70,13 @@ export function checkCompanyId(raw: string): CompanyIdCheck {
 }
 
 /** One Hebrew sentence per refusal, for the form. */
-export const COMPANY_ID_MESSAGES: Record<Extract<CompanyIdCheck, { ok: false }>['reason'], string> =
-  {
-    EMPTY: 'נא למלא מספר ח"פ או עוסק מורשה',
-    NOT_NINE_DIGITS: 'מספר ח"פ או עוסק מורשה הוא תשע ספרות',
-    // Names the likely mistake rather than the algorithm. "ספרת ביקורת שגויה"
-    // means nothing to somebody who has just copied a number off a certificate.
-    CHECK_DIGIT: 'המספר אינו תקין. בדקו שלא התחלפו ספרות והשלימו אפסים מובילים',
-  }
+const COMPANY_ID_MESSAGES: Record<Extract<CompanyIdCheck, { ok: false }>['reason'], string> = {
+  EMPTY: 'נא למלא מספר ח"פ או עוסק מורשה',
+  NOT_NINE_DIGITS: 'מספר ח"פ או עוסק מורשה הוא תשע ספרות',
+  // Names the likely mistake rather than the algorithm. "ספרת ביקורת שגויה"
+  // means nothing to somebody who has just copied a number off a certificate.
+  CHECK_DIGIT: 'המספר אינו תקין. בדקו שלא התחלפו ספרות והשלימו אפסים מובילים',
+}
 
 export function companyIdMessage(check: CompanyIdCheck): string | null {
   return check.ok ? null : COMPANY_ID_MESSAGES[check.reason]

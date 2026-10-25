@@ -19,7 +19,7 @@ const ROUTE_TEMPLATES: Array<[RegExp, string]> = [
   [/^\/account\/[^/]+$/, '/account/[section]'],
 ]
 
-export function routeTemplate(pathname: string): string {
+function routeTemplate(pathname: string): string {
   for (const [pattern, template] of ROUTE_TEMPLATES) {
     if (pattern.test(pathname)) return template
   }

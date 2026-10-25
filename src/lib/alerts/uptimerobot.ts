@@ -13,7 +13,7 @@
  */
 
 /** UptimeRobot's alertType codes. Anything else is refused, not guessed. */
-export const UPTIMEROBOT_ALERT_TYPES = {
+const UPTIMEROBOT_ALERT_TYPES = {
   '1': 'down',
   '2': 'up',
   '3': 'ssl_expiry',

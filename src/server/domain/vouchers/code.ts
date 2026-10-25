@@ -14,7 +14,7 @@ export const VOUCHER_CODE_LENGTH = 10
 const GROUP_SIZE = 5
 
 /** Matches the DB CHECK vouchers_code_format exactly. */
-export const VOUCHER_CODE_PATTERN = /^[0-9A-HJKMNP-TV-Z]{10}$/
+const VOUCHER_CODE_PATTERN = /^[0-9A-HJKMNP-TV-Z]{10}$/
 
 const ALPHABET_SIZE = VOUCHER_CODE_ALPHABET.length // 32
 // Largest multiple of 32 that fits in a byte. Bytes at or above it are

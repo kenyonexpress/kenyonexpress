@@ -4,7 +4,7 @@ import { z } from 'zod'
 const uuid = z.string().uuid()
 
 /** ILS as a non-negative decimal with at most 2 fraction digits (wire form). */
-export const ilsAmount = z
+const ilsAmount = z
   .union([z.string(), z.number()])
   .transform((value, ctx) => {
     const normalized = typeof value === 'number' ? value.toFixed(2) : value.trim()
@@ -16,7 +16,7 @@ export const ilsAmount = z
   })
   .pipe(z.number().nonnegative())
 
-export const checkoutCustomerSchema = z.object({
+const checkoutCustomerSchema = z.object({
   full_name: z.string().trim().min(2, 'שם מלא נדרש').max(120),
   email: z.string().trim().email('אימייל לא תקין').max(254),
   phone: z
@@ -27,7 +27,7 @@ export const checkoutCustomerSchema = z.object({
     .or(z.literal('').transform(() => undefined)),
 })
 
-export const checkoutAddressSchema = z.object({
+const checkoutAddressSchema = z.object({
   address_id: uuid.nullable().default(null),
   city: z.string().trim().min(2).max(80).optional(),
   street: z.string().trim().min(2).max(120).optional(),
@@ -51,7 +51,7 @@ export const checkoutAddressSchema = z.object({
  * always used (empty is fine, a present value must be a real 7-digit postal
  * code) and comes out normalized.
  */
-export const checkoutDetailsFormSchema = z.object({
+const checkoutDetailsFormSchema = z.object({
   first_name: z.string().trim().min(2, 'יש למלא שם פרטי'),
   last_name: z.string().trim().min(1, 'יש למלא שם משפחה'),
   city: z.string().trim().min(2, 'יש למלא עיר').max(80, 'שם עיר ארוך מדי'),
@@ -102,7 +102,7 @@ export function parseCheckoutDetails(raw: Record<string, unknown>): CheckoutDeta
   return { ok: false, fieldErrors }
 }
 
-export const checkoutPaymentSchema = z.object({
+const checkoutPaymentSchema = z.object({
   client_ref: uuid,
   apply_wallet_ils: ilsAmount.default(0),
   accept_terms: z.literal(true, {
@@ -124,7 +124,7 @@ export const checkoutPaymentSchema = z.object({
  * The greeting is capped because it is reproduced verbatim in an email, and an
  * unbounded field there is a payload, not a message.
  */
-export const giftSchema = z.object({
+const giftSchema = z.object({
   gift_recipient_email: z
     .string()
     .trim()
@@ -152,7 +152,7 @@ export const giftSchema = z.object({
  * it: both paths settle through the same webhook and the same `GetLpResult`
  * verification.
  */
-export const checkoutChannelSchema = z.enum(['web', 'app']).default('web')
+const checkoutChannelSchema = z.enum(['web', 'app']).default('web')
 
 export const beginCheckoutInputSchema = checkoutPaymentSchema
   .merge(
@@ -174,7 +174,7 @@ export const beginCheckoutInputSchema = checkoutPaymentSchema
     }
   })
 
-export const beginCheckoutOutputSchema = z.discriminatedUnion('kind', [
+const beginCheckoutOutputSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('redirect'),
     order_id: uuid,
@@ -212,7 +212,7 @@ export const calculateSplitInputSchema = z.object({
   idempotencyKey: z.string().min(1),
 })
 
-export const createOrderInputSchema = beginCheckoutInputSchema
+const createOrderInputSchema = beginCheckoutInputSchema
 
 export type CheckoutCustomer = z.infer<typeof checkoutCustomerSchema>
 export type CheckoutAddress = z.infer<typeof checkoutAddressSchema>

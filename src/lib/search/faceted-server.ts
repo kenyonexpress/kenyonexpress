@@ -255,7 +255,7 @@ export async function facetedSearch(input: FacetedSearchParams): Promise<Faceted
 }
 
 /** Which facets narrowed the query, by name; for the log line, not the UI. */
-export function activeFacetNames(params: FacetedSearchParams): string[] {
+function activeFacetNames(params: FacetedSearchParams): string[] {
   const names: string[] = []
   if (params.type) names.push('type')
   if (params.category) names.push('category')

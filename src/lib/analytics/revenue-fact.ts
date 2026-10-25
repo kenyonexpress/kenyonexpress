@@ -15,7 +15,7 @@
  * source anything reads money back from.
  */
 
-export const REVENUE_FACT_KINDS = ['purchase', 'refund'] as const
+const REVENUE_FACT_KINDS = ['purchase', 'refund'] as const
 export type RevenueFactKind = (typeof REVENUE_FACT_KINDS)[number]
 
 /** Axiom `event` names, alongside the log stream's `<area>.<what>` convention. */

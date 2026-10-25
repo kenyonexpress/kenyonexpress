@@ -23,7 +23,7 @@ import { type SupplierLeadPayload, alertTeam, createSupplierLead } from './lead-
  * reads the outcome.
  */
 
-export const VERIFICATION_AMOUNT_AGOROT = agorot(100)
+const VERIFICATION_AMOUNT_AGOROT = agorot(100)
 
 export type StartOutcome =
   | { kind: 'redirect'; url: string }

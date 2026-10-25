@@ -26,14 +26,14 @@ export const JOB_TYPES = ['search-index', 'search-outbox-drain', 'cache-warm'] a
 export type JobType = (typeof JOB_TYPES)[number]
 
 /** Warm a bounded list of same-site paths after a cache-wide invalidation. */
-export const cacheWarmPayloadSchema = z.object({
+const cacheWarmPayloadSchema = z.object({
   paths: z
     .array(z.string().regex(/^\/[^\s?#]*$/, 'a path, not a URL'))
     .min(1)
     .max(50),
 })
 
-export const JOB_PAYLOAD_SCHEMAS = {
+const JOB_PAYLOAD_SCHEMAS = {
   'search-index': searchIndexJobSchema,
   'search-outbox-drain': z.object({}).strict(),
   'cache-warm': cacheWarmPayloadSchema,

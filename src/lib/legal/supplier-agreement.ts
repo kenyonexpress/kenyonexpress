@@ -21,7 +21,7 @@ export const SUPPLIER_AGREEMENT_CLAUSES: readonly string[] = [
   'ההסכם כפוף לדין הישראלי, וסמכות השיפוט הבלעדית נתונה לבתי המשפט המוסמכים בתל אביב.',
 ]
 
-export function supplierAgreementText(): string {
+function supplierAgreementText(): string {
   return `${SUPPLIER_AGREEMENT_VERSION}\n${SUPPLIER_AGREEMENT_CLAUSES.join('\n')}`
 }
 

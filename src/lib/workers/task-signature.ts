@@ -16,7 +16,7 @@
  */
 
 export const SIGNATURE_HEADER = 'X-KE-Signature'
-export const DEFAULT_TOLERANCE_SECONDS = 300
+const DEFAULT_TOLERANCE_SECONDS = 300
 
 const encoder = new TextEncoder()
 

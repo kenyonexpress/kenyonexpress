@@ -561,7 +561,7 @@ const agorotAmountSchema = z
   .positive()
   .transform((n) => agorot(n))
 
-export const tokenizedChargeInputSchema = z.object({
+const tokenizedChargeInputSchema = z.object({
   /** Correlation id stored as payments.id / ReturnValue. */
   paymentId: z.string().min(1),
   orderId: z.string().min(1),
@@ -588,7 +588,7 @@ export async function createTokenizedCharge(
   return provider.chargeWithToken(tokenizedChargeInputSchema.parse(input))
 }
 
-export const refundChargeInputSchema = z
+const refundChargeInputSchema = z
   .object({
     /** Cardcom transaction id (InternalDealNumber) of the ORIGINAL charge. */
     transactionId: z.string().min(1),
@@ -621,7 +621,7 @@ export async function refundCharge(
   return provider.refundByTransactionId(refundChargeInputSchema.parse(input))
 }
 
-export const webhookSignatureInputSchema = z.object({
+const webhookSignatureInputSchema = z.object({
   /** The `?s=` value from the callback URL; null/absent when Cardcom's caller sent none. */
   providedSecret: z.string().nullish(),
   /** The active `CARDCOM_WEBHOOK_SECRET`. */

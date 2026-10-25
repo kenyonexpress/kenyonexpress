@@ -25,7 +25,7 @@ export const LOGO_FOOTER = '/images/logo-footer.webp'
  */
 
 /** Category image banners below hero — refs/content-map.md block 6 */
-export const HERO_CATEGORY_BANNERS = {
+const HERO_CATEGORY_BANNERS = {
   kids: '/images/hero/category/e-baby-d2.webp',
   courses: '/images/hero/category/student-849821_1280-600x600.webp',
   hotels: '/images/hero/category/maldives-2-600x488.webp',

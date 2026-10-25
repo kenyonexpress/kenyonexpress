@@ -43,7 +43,7 @@ const DEFAULT_DOWNLOAD_URL_TTL_SECONDS = 3600
  * fetched through short-lived signed URLs; `private` keeps a shared cache from
  * holding onto a response whose authorisation has expired.
  */
-export function r2DefaultCacheControl(purpose: R2BucketPurpose): string {
+function r2DefaultCacheControl(purpose: R2BucketPurpose): string {
   return isPublicR2Bucket(purpose) ? 'public, max-age=31536000, immutable' : 'private, max-age=3600'
 }
 
@@ -57,7 +57,7 @@ export function isR2StorageConfigured(): boolean {
 // get a client built from a previous stub.
 let cached: { key: string; client: S3Client } | null = null
 
-export function getR2Client(): S3Client {
+function getR2Client(): S3Client {
   const accountId = process.env.R2_ACCOUNT_ID
   const accessKeyId = process.env.R2_ACCESS_KEY_ID
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY

@@ -122,7 +122,7 @@ export async function callPendingReportRpc<Row>(
  * failed to load" must not look alike on an admin screen whose entire job is
  * to be believed.
  */
-export function isMissingReportSchema(
+function isMissingReportSchema(
   error: {
     code?: string
     message?: string

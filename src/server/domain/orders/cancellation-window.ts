@@ -30,7 +30,7 @@ export function effectiveCancellationWindowDays(
   return Math.max(STATUTORY_CANCELLATION_WINDOW_DAYS, shortest)
 }
 
-export function daysSince(from: Date, now: Date): number {
+function daysSince(from: Date, now: Date): number {
   return (now.getTime() - from.getTime()) / MS_PER_DAY
 }
 

@@ -26,7 +26,7 @@ import type { createAdminClient } from '@/lib/supabase/admin'
 export { DELETE_CONFIRM_WORD } from './deletion-confirm'
 
 /** Long enough to outlive the account. GoTrue has no permanent flag. */
-export const DELETION_BAN_DURATION = '87600h'
+const DELETION_BAN_DURATION = '87600h'
 
 export function anonymizedEmail(userId: string): string {
   // Unique per user (profiles.email is NOT NULL) and on a domain we control,
@@ -35,7 +35,7 @@ export function anonymizedEmail(userId: string): string {
 }
 
 /** Placeholder for NOT NULL text columns whose content must go. */
-export const SCRUB_PLACEHOLDER = 'נמחק'
+const SCRUB_PLACEHOLDER = 'נמחק'
 
 /** Rows deleted outright: preferences, devices, tracking. No money, ever. */
 export const PURGED_ROWS: ReadonlyArray<{ table: string; column: string }> = [

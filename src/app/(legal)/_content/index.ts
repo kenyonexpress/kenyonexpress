@@ -39,7 +39,7 @@ export type LegalSlug = LegalDoc['slug']
  * `/cancellation-policy`) and the old `/legal/*` stubs all 308 onto these, so
  * this map is the one place a link to a legal page is spelled.
  */
-export const LEGAL_DOC_PATHS: Readonly<Record<LegalSlug, string>> = {
+const LEGAL_DOC_PATHS: Readonly<Record<LegalSlug, string>> = {
   terms: '/terms',
   privacy: '/privacy',
   cookies: '/cookie-policy',

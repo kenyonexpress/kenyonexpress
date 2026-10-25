@@ -56,7 +56,7 @@ export function setRequestStore(store: RequestStore): void {
   ;(globalThis as GlobalWithStore)[HANDLE] ??= store
 }
 
-export function getRequestStore(): RequestStore | undefined {
+function getRequestStore(): RequestStore | undefined {
   return (globalThis as GlobalWithStore)[HANDLE]
 }
 

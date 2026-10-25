@@ -13,7 +13,7 @@ import { MAX_ORIGINAL_BYTES } from './validate'
 export const CLIENT_MAX_DIMENSION = 1600
 
 /** webp quality for the transport encode. Kept high: sharp re-encodes at 80 afterwards. */
-export const CLIENT_COMPRESS_QUALITY = 0.85
+const CLIENT_COMPRESS_QUALITY = 0.85
 
 /** Below this size the encode costs more than the bytes it saves. */
 export const COMPRESS_THRESHOLD_BYTES = 300 * 1024
@@ -23,7 +23,7 @@ export const COMPRESS_THRESHOLD_BYTES = 300 * 1024
  * (animation would be flattened to one frame) and avif originals are already
  * small; both go up as-is.
  */
-export const COMPRESSIBLE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+const COMPRESSIBLE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
 /**
  * Compressible originals may exceed the server's 8MB cap because they shrink

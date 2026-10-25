@@ -118,7 +118,7 @@ export const CROSS_LANGUAGE_GROUPS: readonly (readonly string[])[] = [
 ] as const
 
 /** Everything the index is configured with: the Hebrew groups and the bridges. */
-export const ALL_SYNONYM_GROUPS: readonly (readonly string[])[] = [
+const ALL_SYNONYM_GROUPS: readonly (readonly string[])[] = [
   ...SYNONYM_GROUPS,
   ...CROSS_LANGUAGE_GROUPS,
 ]

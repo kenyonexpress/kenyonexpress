@@ -34,7 +34,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  */
 
 /** How far back a dead row may date from and still be worth another go. */
-export const RESURRECT_MAX_AGE_DAYS = 3
+const RESURRECT_MAX_AGE_DAYS = 3
 
 /**
  * The attempt count a resurrected row restarts from. `MAX_ATTEMPTS` in the
@@ -43,7 +43,7 @@ export const RESURRECT_MAX_AGE_DAYS = 3
 export const RESURRECT_ATTEMPTS = 3
 
 /** Ceiling per run. A larger backlog drains over consecutive runs. */
-export const RESURRECT_BATCH = 200
+const RESURRECT_BATCH = 200
 
 const TRANSIENT_PATTERNS: readonly RegExp[] = [
   /^http_5\d\d$/,

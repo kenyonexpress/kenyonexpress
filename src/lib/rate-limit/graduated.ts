@@ -96,20 +96,20 @@ export const GRADUATED_POLICIES = {
 
 export type GraduatedPolicyName = keyof typeof GRADUATED_POLICIES
 
-export function graduatedPolicy(name: GraduatedPolicyName): GraduatedPolicy {
+function graduatedPolicy(name: GraduatedPolicyName): GraduatedPolicy {
   return GRADUATED_POLICIES[name]
 }
 
 /** `rl:v1:g:` so the graduated keys can never collide with a flat policy's bucket. */
-export function graduatedKey(name: string, tier: string, identifier: string): string {
+function graduatedKey(name: string, tier: string, identifier: string): string {
   return `rl:v1:g:${name}:${tier}:${identifier}`
 }
 
-export function penaltyKey(name: string, identifier: string): string {
+function penaltyKey(name: string, identifier: string): string {
   return `rl:v1:g:${name}:penalty:${identifier}`
 }
 
-export function strikeKey(name: string, identifier: string): string {
+function strikeKey(name: string, identifier: string): string {
   return `rl:v1:g:${name}:strikes:${identifier}`
 }
 

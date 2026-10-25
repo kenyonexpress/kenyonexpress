@@ -9,7 +9,7 @@ import { cancellationFee, isWithinCancellationWindow } from '@/lib/vouchers/canc
  * Physical: refunds the per-product policy share of the price, default 100%.
  * Integer agorot and basis points only. Moves no money; the payment path does.
  */
-export const DEFAULT_PHYSICAL_REFUND_BP = bp(BP_WHOLE)
+const DEFAULT_PHYSICAL_REFUND_BP = bp(BP_WHOLE)
 
 export type RefundKind = 'coupon' | 'physical'
 

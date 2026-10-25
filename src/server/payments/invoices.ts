@@ -85,7 +85,7 @@ export interface InvoiceRow {
 }
 
 /** Attempts before a row is parked as dead rather than retried forever. */
-export const MAX_ATTEMPTS = 5
+const MAX_ATTEMPTS = 5
 
 /** 2, 8, 32, 128 minutes, matching the notification outbox. */
 export function backoffMinutes(attempts: number): number {

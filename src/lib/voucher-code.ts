@@ -14,11 +14,11 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
  * throws rather than retrying.
  */
 
-export const REDEMPTION_CODE_LENGTH = 8
+const REDEMPTION_CODE_LENGTH = 8
 const CODE_MAX = 100_000_000 // 10^8
 
 /** Matches 8 ASCII digits exactly */
-export const REDEMPTION_CODE_PATTERN = /^[0-9]{8}$/
+const REDEMPTION_CODE_PATTERN = /^[0-9]{8}$/
 
 export function isValidRedemptionCode(code: string): boolean {
   return REDEMPTION_CODE_PATTERN.test(code)
@@ -50,7 +50,7 @@ export function generateRedemptionCode(): string {
   return num.toString().padStart(REDEMPTION_CODE_LENGTH, '0')
 }
 
-export class VoucherCodeSecretMissingError extends Error {
+class VoucherCodeSecretMissingError extends Error {
   constructor() {
     super('VOUCHER_QR_SECRET is not set; refusing to sign or verify redemption codes')
     this.name = 'VoucherCodeSecretMissingError'
@@ -112,7 +112,7 @@ export function createSignedRedemptionCode(voucherId: string): {
   return { code, signature }
 }
 
-export class RedemptionCodeCollisionError extends Error {
+class RedemptionCodeCollisionError extends Error {
   constructor(attempts: number) {
     super(`Could not generate a unique redemption code after ${attempts} attempts`)
     this.name = 'RedemptionCodeCollisionError'

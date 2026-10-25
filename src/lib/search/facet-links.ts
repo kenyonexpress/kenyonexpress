@@ -20,7 +20,7 @@ import {
  */
 
 /** URL parameter per facet, the same names `parseFacetedParams` reads. */
-export const FACET_PARAM: Record<FacetName, string> = {
+const FACET_PARAM: Record<FacetName, string> = {
   type: 'type',
   category_slug: 'category',
   discount_bp: 'discount_min',
@@ -42,7 +42,7 @@ export type FacetName =
   | 'in_stock'
 
 /** Section headings, in the order the navigation renders them. */
-export const FACET_LABELS: readonly { name: FacetName; label: string }[] = [
+const FACET_LABELS: readonly { name: FacetName; label: string }[] = [
   { name: 'type', label: 'סוג' },
   { name: 'category_slug', label: 'קטגוריה' },
   { name: 'discount_bp', label: 'הנחה' },
@@ -70,11 +70,7 @@ const VALUE_LABELS: Record<string, Record<string, string>> = {
   in_stock: { true: 'במלאי', false: 'אזל מהמלאי' },
 }
 
-export function facetValueLabel(
-  name: FacetName,
-  value: string,
-  context: FacetContext = {},
-): string {
+function facetValueLabel(name: FacetName, value: string, context: FacetContext = {}): string {
   if (name === 'discount_bp') return `${value}% ומעלה`
   if (name === 'supplier_id') return context.supplierNames?.[value] ?? 'ספק'
   if (name === 'category_slug') {
@@ -131,7 +127,7 @@ export function clearFacetsHref(current: URLSearchParams, pathname = '/search'):
  * order. Labels are the listing pages' wording (`category-tokens.ts`), so the
  * same order reads the same on /search as on a category.
  */
-export const SORT_LABELS: readonly { value: FacetedSort | null; label: string }[] = [
+const SORT_LABELS: readonly { value: FacetedSort | null; label: string }[] = [
   { value: null, label: 'סידור ברירת מחדל' },
   { value: 'newest', label: 'למיין לפי המעודכן ביותר' },
   { value: 'price_asc', label: 'למיין מהזול ליקר' },
@@ -207,7 +203,7 @@ export type FacetSection = {
 export const MAX_OPTIONS_PER_FACET = 12
 
 /** How many nodes the category tree shows. */
-export const MAX_TREE_OPTIONS = 24
+const MAX_TREE_OPTIONS = 24
 
 type FacetEntry = { value: string; count: number; depth: number }
 

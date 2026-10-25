@@ -146,7 +146,7 @@ export function mapCsvToForms(csv: ParsedCsv): CsvMapResult {
  * every problem and a commit never half-imports a file on a typo. The product
  * schema re-checks on write; this is the early, per-row answer.
  */
-export function validateRow(form: FormData): string | null {
+function validateRow(form: FormData): string | null {
   const logistics = parseLogisticsFields(form)
   if (!logistics.ok) return logistics.error
 

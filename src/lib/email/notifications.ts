@@ -243,7 +243,7 @@ export function buildOrderPaidEmail(
  * courier's business, and a named day generates a support ticket on that day,
  * the same rule the refund mail follows about the card issuer.
  */
-export function buildOrderShippedEmail(
+function buildOrderShippedEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification {
@@ -665,7 +665,7 @@ export function buildCashbackCreditedEmail(
  * The provider's raw error is included here and NOT shown to customers
  * anywhere. That asymmetry is the point of an operator channel.
  */
-export function buildInvoiceDeadEmail(
+function buildInvoiceDeadEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -713,7 +713,7 @@ export function buildInvoiceDeadEmail(
  * only "3 in stock" while all three are inside payment sessions will conclude
  * the alert is wrong.
  */
-export function buildLowStockEmail(
+function buildLowStockEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -766,7 +766,7 @@ export function buildLowStockEmail(
  * line: `missing_locally` means a customer was charged and has no order, which
  * no support ticket will ever report because there is no order number to cite.
  */
-export function buildReconciliationGapEmail(
+function buildReconciliationGapEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -944,7 +944,7 @@ function unsubscribeFooterText(payload: Record<string, unknown>): string[] {
  * cron at the moment it compared them, so the mail states the drop that was
  * detected even if the price moves again before the queue drains.
  */
-export function buildPriceDropEmail(
+function buildPriceDropEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -989,7 +989,7 @@ export function buildPriceDropEmail(
  * unsubscribe URL because a one-shot mail they explicitly asked for has
  * nothing to unsubscribe from.
  */
-export function buildBackInStockEmail(
+function buildBackInStockEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -1033,7 +1033,7 @@ export function buildBackInStockEmail(
  * `amount_agorot`, `expires_at`, and optionally `recipient_name` and
  * `gift_message` when the order named a recipient.
  */
-export function buildGiftCardIssuedEmail(
+function buildGiftCardIssuedEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {

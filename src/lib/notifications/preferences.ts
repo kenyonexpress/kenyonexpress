@@ -71,7 +71,7 @@ export type RequiredKind = (typeof REQUIRED_KINDS)[number]
 export type OptionalKind = (typeof OPTIONAL_KINDS)[number]
 export type PreferenceKind = RequiredKind | OptionalKind
 
-export function isRequiredKind(kind: string): kind is RequiredKind {
+function isRequiredKind(kind: string): kind is RequiredKind {
   return (REQUIRED_KINDS as readonly string[]).includes(kind)
 }
 

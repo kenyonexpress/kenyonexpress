@@ -37,7 +37,7 @@ export const SERVER_EVENT_NAMES = [
 ] as const
 export type ServerEventName = (typeof SERVER_EVENT_NAMES)[number]
 
-export const CHECKOUT_STEPS = ['identity', 'address', 'payment_redirect'] as const
+const CHECKOUT_STEPS = ['identity', 'address', 'payment_redirect'] as const
 export type CheckoutStep = (typeof CHECKOUT_STEPS)[number]
 
 export const WEB_VITAL_METRICS = ['LCP', 'CLS', 'INP', 'TTFB', 'FCP'] as const
@@ -58,7 +58,7 @@ export const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
 }
 
 export const MAX_BATCH_SIZE = 20
-export const PROPS_MAX_BYTES = 4096
+const PROPS_MAX_BYTES = 4096
 
 const utmSchema = z
   .object({
@@ -82,7 +82,7 @@ const propsSchema = z
     message: 'props exceeds 4KB',
   })
 
-export const clientEventSchema = z.object({
+const clientEventSchema = z.object({
   event_id: z.string().uuid(),
   event_name: z.enum(CLIENT_EVENT_NAMES),
   occurred_at: z.string().datetime({ offset: true }),

@@ -11,7 +11,7 @@ import { z } from 'zod'
  * Asia/Jerusalem. `now` is a parameter so "must be in the future" is
  * testable without a clock.
  */
-export const qrBatchInputSchema = z.object({
+const qrBatchInputSchema = z.object({
   campaign_id: z.string().uuid(),
   label: z
     .string()

@@ -41,7 +41,7 @@ async function cacheWarm(payload: JobPayload<'cache-warm'>): Promise<string> {
   return `warmed ${warmed}/${payload.paths.length}`
 }
 
-export const JOB_HANDLERS: { [T in JobType]: JobHandler<T> } = {
+const JOB_HANDLERS: { [T in JobType]: JobHandler<T> } = {
   'search-index': (payload) => runSearchIndexJob(payload),
   'search-outbox-drain': async () => {
     if (!isMeilisearchConfigured()) return 'skipped: meilisearch not configured'

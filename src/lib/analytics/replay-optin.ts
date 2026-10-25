@@ -28,7 +28,7 @@ export const REPLAY_OPTIN_VALUE = '1'
  * opt-in given for one support case should quietly lapse, not follow the
  * account around for a year.
  */
-export const REPLAY_OPTIN_MAX_AGE_SECONDS = 60 * 60 * 24 * 180
+const REPLAY_OPTIN_MAX_AGE_SECONDS = 60 * 60 * 24 * 180
 
 /** Window event the toggle dispatches so a mounted recorder reacts in-page. */
 export const REPLAY_OPTIN_CHANGED_EVENT = 'ke:replay-optin-changed'

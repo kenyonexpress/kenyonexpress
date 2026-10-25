@@ -13,13 +13,7 @@ import { z } from 'zod'
  * run, while a cancellation means the statement was abandoned.
  */
 
-export const PAYOUT_STATUSES = [
-  'draft',
-  'pending_approval',
-  'approved',
-  'paid',
-  'cancelled',
-] as const
+const PAYOUT_STATUSES = ['draft', 'pending_approval', 'approved', 'paid', 'cancelled'] as const
 
 export type PayoutStatus = (typeof PAYOUT_STATUSES)[number]
 

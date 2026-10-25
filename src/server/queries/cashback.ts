@@ -44,7 +44,7 @@ export interface CashbackTracker {
   history: CashbackHistoryRow[]
 }
 
-export async function getCashbackHistory(limit = 100): Promise<CashbackHistoryRow[]> {
+async function getCashbackHistory(limit = 100): Promise<CashbackHistoryRow[]> {
   const supabase = await createClient()
   const {
     data: { user },

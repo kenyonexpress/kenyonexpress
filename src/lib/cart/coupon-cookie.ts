@@ -23,7 +23,7 @@ export const COUPON_COOKIE_MAX_AGE = CART_EXPIRY_DAYS * 24 * 60 * 60
  * one-element list and nothing else changes). The cookie still holds CODES and
  * nothing else; every render re-resolves and re-prices them.
  */
-export const COUPON_STACK_SEPARATOR = '|'
+const COUPON_STACK_SEPARATOR = '|'
 
 export function parseCouponCookieCodes(value: string | undefined): string[] {
   if (!value) return []

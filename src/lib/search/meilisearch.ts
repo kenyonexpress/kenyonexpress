@@ -28,7 +28,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * would silently break site-wide search.
  */
 
-export const COUPONS_INDEX = process.env.MEILISEARCH_COUPONS_INDEX ?? 'coupons'
+const COUPONS_INDEX = process.env.MEILISEARCH_COUPONS_INDEX ?? 'coupons'
 
 /** A coupon document is the coupon subset of the catalogue, same row shape. */
 export type CouponDocument = ProductDocument & { type: 'coupon' }
@@ -66,7 +66,7 @@ export interface MeiliIndexSettings {
  * (name_he/name_en), so detection is at best redundant and at worst wrong on
  * short all-digit or mixed fields.
  */
-export const HEBREW_TOKENIZATION = {
+const HEBREW_TOKENIZATION = {
   nonSeparatorTokens: ['"', '״', "'", '׳'],
   localizedAttributes: [{ attributePatterns: ['*'], locales: ['heb', 'eng'] }],
 } as const
@@ -77,7 +77,7 @@ export interface MeiliTokenizationSettings {
 }
 
 /** Products: exactly the reviewed settings from meili-settings.ts. */
-export const PRODUCTS_INDEX_SETTINGS: MeiliIndexSettings = {
+const PRODUCTS_INDEX_SETTINGS: MeiliIndexSettings = {
   searchableAttributes: [...INDEX_SETTINGS.searchableAttributes],
   filterableAttributes: [...INDEX_SETTINGS.filterableAttributes],
   sortableAttributes: [...INDEX_SETTINGS.sortableAttributes],
@@ -96,7 +96,7 @@ export const PRODUCTS_INDEX_SETTINGS: MeiliIndexSettings = {
  * coupon, the facet would have one value) and with `in_stock:desc` kept —
  * a sold-out deal is exactly as unbuyable as a sold-out product.
  */
-export const COUPONS_INDEX_SETTINGS: MeiliIndexSettings = {
+const COUPONS_INDEX_SETTINGS: MeiliIndexSettings = {
   ...PRODUCTS_INDEX_SETTINGS,
   filterableAttributes: (PRODUCTS_INDEX_SETTINGS.filterableAttributes ?? []).filter(
     (attribute) => attribute !== 'type',
@@ -319,7 +319,7 @@ export async function syncCatalogue(): Promise<SyncResult> {
  * server-side; the returned task uids are the handle for anyone who wants to
  * poll completion, and the counts are what was enqueued, not yet confirmed.
  */
-export async function reindexAll(): Promise<ReindexResult> {
+async function reindexAll(): Promise<ReindexResult> {
   if (!meiliEnv()) {
     return { skipped: true, products: 0, coupons: 0, taskUids: [] }
   }
