@@ -109,3 +109,4 @@ Continue from M05-c183 DONE (2026-10-25): pnpm test green (602 files, 6955 tests
 Continue from M05-c187 DONE (2026-10-25): pnpm test green (603 files, 6962 tests). Fixed drift: not-found.test.tsx metadata title expectation now matches shipped "404 - הדף לא נמצא".
 Continue from M06-c187 DONE (2026-10-25): pnpm build green (273 pages, exit 0). No drift found, no code change.
 >>>>>>> 8956cd3c2 ([autopilot] F61 FINAL: Toggle test passing, middleware committed)
+Continue from M07-c189 DONE (2026-10-25): TODO/FIXME scan. All 4 stale markers (>7d) already filed in docs/BACKLOG.md #8-11 with matching line refs. 5 newer markers (wallet/cardcom-refund.ts, wallet/integration.test.ts, created 2026-10-25) are under 7 days, left in place. No code change.
