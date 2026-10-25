@@ -10,8 +10,10 @@ Continue from F56 DONE (2026-10-25): Completed admin product upload with ALL req
 
 Continue from F60 DONE (2026-10-25): Hebrew formatting polish complete. Created centralized formatters in src/lib/formatters/: phone.ts (+972 default with 050-123-4567 masking), dates.ts (Intl.DateTimeFormat('he-IL') with Asia/Jerusalem), numbers.ts (Hebrew locale thousands separator), money.ts (re-exports shekels formatters). Created PhoneInput component with Israeli formatting. Created RTL verification E2E tests (e2e/rtl-verification.spec.ts) covering all pages at 380px/768px/1440px viewports. Updated src/lib/money.ts to export Hebrew money formatters (shekels, shekelsPlain, shekelsRounded, shekelsFromIls, etc.). All money via shekels() returns 'X.XX ₪' format with Hebrew comma, NBSP, and LRI/PDI bidi isolates for RTL safety. All dates via Intl.DateTimeFormat('he-IL'). Phone inputs with +972 default and mask. Quality gates: pnpm typecheck ✅ pnpm lint ✅ pnpm test 6857 passed (4 pre-existing failures unrelated) ✅ pnpm build ✅. Documentation: comprehensive inline documentation in all formatter files. Commits: 897c89e4b pushed.
 
+Continue from F61 DONE (2026-10-25): Error pages + maintenance mode complete. Created middleware.ts (global middleware enforcing maintenance mode with 30s cache, fails open, exempts /admin /api/webhooks /maintenance). Updated not-found.tsx title to '404 - הדף לא נמצא'. error.tsx already had 500 Hebrew '500 - שגיאה' retry button with Sentry reporting via console.error. maintenance page already exists with brand design. feature-flags page MaintenanceToggle already working, toggles feature_flags.maintenance_mode in DB. All routes redirect to /maintenance when flag is on except admin/webhooks/maintenance. Quality gates: pnpm typecheck ✅ pnpm lint ✅ pnpm build ✅. Commits: 9f58350d2 pushed.
+
 ## המשך מ:
-F60 DONE (2026-10-25) - awaiting next goal
+F61 DONE (2026-10-25) - awaiting next goal
 
 ## החלטות שהתקבלו אוטומטית
 
