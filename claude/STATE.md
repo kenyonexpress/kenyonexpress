@@ -145,3 +145,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M13-c187 DONE
 המשך מ: M17-c187 BLOCKED locked-component (RTL probe / and /product at 380/768/1440: dir=rtl lang=he, 0 overflow, product clean, static scan clean; / at 768+1440 has 11 Hebrew <p dir="ltr"> in src/components/home/HeroSlider.tsx:555-628 (standard_line/promo lines) - fix needs locked file; no code changes)
 המשך מ: M02-c188 BLOCKED gate-fail (compare.mjs --page=product, COMPARE_ALLOW_GRID_MISMATCH=1 since live snapshot shows 1 card vs local 4: 380px 53.74%, 768px 41.96%, 1440px 26.32%, all >11%; height ratios 0.58x/0.43x/0.35x so figures are structural-mismatch not pixel gate; no code changes)
+המשך מ: M06-c188 DONE (pnpm build passes; committed untracked drift src/lib/rate-limit.ts + docs/TURNSTILE-SETUP.md)
