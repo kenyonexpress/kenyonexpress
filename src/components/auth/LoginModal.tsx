@@ -3,6 +3,7 @@
 import PasskeySignIn from '@/components/auth/PasskeySignIn'
 import WhatsappOtpForm from '@/components/auth/WhatsappOtpForm'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   type AuthState,
@@ -40,17 +41,12 @@ function PhoneOtpForm({ next }: { next?: string }) {
         <label htmlFor="otp-phone" className="block text-sm font-medium text-gray-700">
           מספר טלפון נייד
         </label>
-        <input
+        <PhoneInput
           id="otp-phone"
           name="phone"
-          type="tel"
           required
-          dir="ltr"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="050-1234567"
           value={phone}
-          onChange={(event) => setPhone(event.target.value)}
+          onChange={setPhone}
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-start placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
         />
         {getError(sendState) && (

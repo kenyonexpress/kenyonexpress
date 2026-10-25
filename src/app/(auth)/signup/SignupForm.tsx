@@ -2,9 +2,10 @@
 
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import { type AuthState, signInWithGoogle, signUpWithEmail } from '@/server/actions/auth'
 import Link from 'next/link'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 
 function getError(state: AuthState): string | null {
   return state && 'error' in state ? state.error : null
@@ -20,6 +21,7 @@ export default function SignupForm({ next }: Props) {
     signInWithGoogle,
     null,
   )
+  const [phone, setPhone] = useState('')
 
   const topError = getError(googleState)
 
@@ -91,16 +93,15 @@ export default function SignupForm({ next }: Props) {
               *
             </span>
           </label>
-          <input
+          <PhoneInput
             id="phone"
             name="phone"
-            type="tel"
             required
-            autoComplete="tel"
-            placeholder="050-1234567"
-            dir="ltr"
+            value={phone}
+            onChange={setPhone}
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-start"
           />
+          <input type="hidden" name="phone" value={phone} />
           <p className="mt-1 text-xs text-gray-500">מספר ישראלי (050, 052, 054 וכו׳)</p>
         </div>
 
