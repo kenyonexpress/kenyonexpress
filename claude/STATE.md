@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M15-c195 DONE no console errors on / and /product/barbecue + /product/samsung-galaxy-s22 at 380/768/1440 (fresh next start, Playwright); stale :3311 server + cached /product/עוזרת-אישית route-cache referenced missing chunks (build artifact, not source)**
 **המשך מ: M18-c193 DONE STATE.md already under 300 lines (claude/STATE.md 188, root STATE.md 190); no trim needed, docs/STATE-ARCHIVE.md untouched**
 **המשך מ: M05-c193 DONE pnpm test clean (614 files pass, 7055 tests pass, 28 skipped); drift committed (docs/M-CYCLE-STATUS.md)**
 **המשך מ: M09-c192 DONE removed unused @mdx-js/react + dead FaLinkedin/FaPinterest icons; other deps verified in use; knip dead-export list left (test-only/API surface); tsc clean, vitest 7055 pass**
