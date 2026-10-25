@@ -21,50 +21,48 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
   }
   const on = formData.get('maintenance_mode') === 'on'
 
-  // Update Vercel environment variable MAINTENANCE_MODE
-  const vercelToken = process.env.VERCEL_API_TOKEN
+  // Update Vercel environment variable MAINTENANCE_MODE (always attempted)
+  const vercelToken = process.env.VERCEL_API_TOKEN || ''
   const vercelProjectId = process.env.VERCEL_PROJECT_ID || 'kenyonexpress'
   const vercelTeamId = process.env.VERCEL_TEAM_ID
 
-  if (vercelToken) {
-    try {
-      // Find existing MAINTENANCE_MODE env var ID
-      const listUrl = vercelTeamId
-        ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env?teamId=${vercelTeamId}`
-        : `https://api.vercel.com/v9/projects/${vercelProjectId}/env`
+  try {
+    // Find existing MAINTENANCE_MODE env var ID
+    const listUrl = vercelTeamId
+      ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env?teamId=${vercelTeamId}`
+      : `https://api.vercel.com/v9/projects/${vercelProjectId}/env`
 
-      const listRes = await fetch(listUrl, {
-        headers: { Authorization: `Bearer ${vercelToken}` },
-      })
+    const listRes = await fetch(listUrl, {
+      headers: { Authorization: `Bearer ${vercelToken}` },
+    })
 
-      if (listRes.ok) {
-        const { envs } = (await listRes.json()) as { envs: Array<{ id: string; key: string }> }
-        const existing = envs.find((e) => e.key === 'MAINTENANCE_MODE')
+    if (listRes.ok) {
+      const { envs } = (await listRes.json()) as { envs: Array<{ id: string; key: string }> }
+      const existing = envs.find((e) => e.key === 'MAINTENANCE_MODE')
 
-        if (existing) {
-          // Update existing env var
-          const updateUrl = vercelTeamId
-            ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}?teamId=${vercelTeamId}`
-            : `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}`
+      if (existing) {
+        // Update existing env var
+        const updateUrl = vercelTeamId
+          ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}?teamId=${vercelTeamId}`
+          : `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}`
 
-          await fetch(updateUrl, {
-            method: 'PATCH',
-            headers: {
-              Authorization: `Bearer ${vercelToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              value: on ? 'on' : 'off',
-              type: 'plain',
-              target: ['production', 'preview', 'development'],
-            }),
-          })
-        }
+        await fetch(updateUrl, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${vercelToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            value: on ? 'on' : 'off',
+            type: 'plain',
+            target: ['production', 'preview', 'development'],
+          }),
+        })
       }
-    } catch (vercelError) {
-      // Log but don't fail - DB write below is the fallback
-      console.error('Vercel env update failed:', vercelError)
     }
+  } catch (vercelError) {
+    // Log but don't fail - DB write below is the fallback
+    console.error('Vercel env update failed:', vercelError)
   }
 
   // Write to DB as fallback (instant updates via cache)
