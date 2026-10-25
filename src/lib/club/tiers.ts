@@ -60,25 +60,11 @@ export function isClubTierId(value: unknown): value is ClubTierId {
   return typeof value === 'string' && (CLUB_TIER_IDS as readonly string[]).includes(value)
 }
 
-export interface ClubTier {
-  id: ClubTierId
-  /** Twelve-month spend, in agorot, from which the tier applies. */
-  minAgorot: Agorot
-}
-
-/** The floor: applies to everybody, including a customer with no orders. */
-const CLUB_FLOOR_TIER: ClubTier = { id: 'member', minAgorot: agorot(0) }
-
-/**
- * The compiled defaults: what 243 seeds, and what every reader falls back to
- * when the table is absent or its rows do not pass `tiersFromRows`. Ascending.
- * The first entry is the floor.
- */
-export const CLUB_TIERS: readonly ClubTier[] = [
-  CLUB_FLOOR_TIER,
-  { id: 'silver', minAgorot: agorot(100_000) }, // ₪1,000
-  { id: 'gold', minAgorot: agorot(300_000) }, // ₪3,000
-  { id: 'platinum', minAgorot: agorot(1_000_000) }, // ₪10,000
+const CLUB_TIERS: readonly ClubTier[] = [
+  { key: 'basic', labelHe: 'חבר', minSpendAgorot: agorot(0) },
+  { key: 'silver', labelHe: 'כסף', minSpendAgorot: agorot(100_000) },
+  { key: 'gold', labelHe: 'זהב', minSpendAgorot: agorot(300_000) },
+  { key: 'platinum', labelHe: 'פלטינה', minSpendAgorot: agorot(750_000) },
 ]
 
 /** One row of `club_tiers` as it comes back from the database. */

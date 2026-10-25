@@ -35,7 +35,7 @@ export function generateNonce(): string {
  * Cached per request so multiple components reading the nonce don't pay for
  * multiple header lookups.
  */
-export const getNonce = cache(async (): Promise<string | null> => {
+const getNonce = cache(async (): Promise<string | null> => {
   const headersList = await nextHeaders()
   return headersList.get(CSP_NONCE_HEADER)
 })

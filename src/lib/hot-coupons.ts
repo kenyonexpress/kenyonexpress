@@ -18,7 +18,7 @@ export type HotCoupon = Database['public']['Tables']['products']['Row'] & {
  * at the business location. Limited to active, non-deleted products with
  * valid pricing.
  */
-export async function getHotCoupons(): Promise<HotCoupon[]> {
+async function getHotCoupons(): Promise<HotCoupon[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)

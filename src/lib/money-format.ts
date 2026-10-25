@@ -151,7 +151,7 @@ export function shekelsFromIlsPlain(value: number | string | null | undefined): 
 }
 
 /** Whole shekels, no agorot, no isolate. `399 ₪`, not `399.00 ₪`. */
-export function shekelsFromIlsPlainRounded(value: number | string | null | undefined): string {
+function shekelsFromIlsPlainRounded(value: number | string | null | undefined): string {
   return shekelsFromIlsRounded(value).replaceAll(LRI, '').replaceAll(PDI, '')
 }
 

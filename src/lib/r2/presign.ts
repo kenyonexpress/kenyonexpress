@@ -126,9 +126,9 @@ export async function presignR2Url(opts: {
 }
 
 /** Short-lived link to a private object. Default 5 minutes. */
-export const signedGetUrl = (key: string, expiresSeconds = 300) =>
+const signedGetUrl = (key: string, expiresSeconds = 300) =>
   presignR2Url({ method: 'GET', key, expiresSeconds })
 
 /** Short-lived upload URL for the browser. Default 10 minutes. */
-export const signedPutUrl = (key: string, expiresSeconds = 600) =>
+const signedPutUrl = (key: string, expiresSeconds = 600) =>
   presignR2Url({ method: 'PUT', key, expiresSeconds })

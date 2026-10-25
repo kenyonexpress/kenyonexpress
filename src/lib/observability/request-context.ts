@@ -65,7 +65,7 @@ export function getRequestContext(): RequestContext | undefined {
 }
 
 /** Null outside a request, which is the honest answer for a script or a test. */
-export function getRequestId(): string | null {
+function getRequestId(): string | null {
   return getRequestContext()?.requestId ?? null
 }
 

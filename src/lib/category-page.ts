@@ -219,7 +219,7 @@ export async function getCategoryParent(
   return data
 }
 
-export async function getCategoryChildren(
+async function getCategoryChildren(
   categoryId: string,
 ): Promise<{ id: string; slug: string; name_he: string }[]> {
   'use cache'
@@ -288,7 +288,7 @@ export function productTypeFilter(productType: ProductTypeFilter): {
  * becomes "no filter" instead of an empty page, and nothing user-controlled
  * reaches a query.
  */
-export function parseCity(raw: string | string[] | undefined): string | undefined {
+function parseCity(raw: string | string[] | undefined): string | undefined {
   const value = Array.isArray(raw) ? raw[0] : raw
   return typeof value === 'string' && cityBySlug(value) ? value : undefined
 }
@@ -400,33 +400,6 @@ async function newestProductIds(
     { limit },
   )
   return (data ?? []).map((row) => row.id)
-}
-
-/**
- * The window a sort needs from the database.
- *
- * Every sort but one is an `.order()` and takes exactly its page. The discount
- * sort has no column to order by (see `catalogue/discount-sort.ts`), so it
- * reads a bounded set and `pageOf` orders and slices it.
- */
-function paged<Q extends { range(from: number, to: number): Q }>(
-  query: Q,
-  sort: SortValue,
-  from: number,
-  pageSize: number,
-): Q {
-  return sort === 'discount_desc'
-    ? query.range(0, DISCOUNT_SORT_CAP - 1)
-    : query.range(from, from + pageSize - 1)
-}
-
-function pageOf<T extends { full_price?: number | null; kenyon_price?: number | null }>(
-  rows: T[],
-  sort: SortValue,
-  from: number,
-  pageSize: number,
-): T[] {
-  return sort === 'discount_desc' ? sortByDiscountDesc(rows).slice(from, from + pageSize) : rows
 }
 
 async function getCategoryProducts(opts: {

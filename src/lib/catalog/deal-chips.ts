@@ -10,7 +10,7 @@ export interface DealChips {
   freeShipping: boolean
 }
 
-export const NO_CHIPS: DealChips = { weekend: false, freeShipping: false }
+const NO_CHIPS: DealChips = { weekend: false, freeShipping: false }
 
 type Params = Record<string, string | string[] | undefined> | URLSearchParams
 
@@ -27,7 +27,7 @@ export function parseDealChips(params: Params): DealChips {
   }
 }
 
-export function anyChip(chips: DealChips): boolean {
+function anyChip(chips: DealChips): boolean {
   return chips.weekend || chips.freeShipping
 }
 

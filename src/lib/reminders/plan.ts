@@ -17,7 +17,7 @@ const REMINDER_OFFSETS_DAYS = [7, 1] as const
 export type ReminderOffset = (typeof REMINDER_OFFSETS_DAYS)[number]
 
 /** Validity a product may carry. 90 is the default when none is set. */
-const ALLOWED_VALIDITY_DAYS = [30, 60, 90] as const
+export const ALLOWED_VALIDITY_DAYS = [30, 60, 90] as const
 const DEFAULT_VALIDITY_DAYS = 90
 
 const DAY_MS = 24 * 60 * 60 * 1000

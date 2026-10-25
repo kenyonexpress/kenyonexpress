@@ -67,7 +67,7 @@ export function toPushMessages(tokens: readonly string[], content: PushContent):
  * Disables the tokens Expo reported as gone. Never deletes: the row, with its
  * reason, is the answer to "why did this customer stop getting notifications".
  */
-export async function disableDeadTokens(
+async function disableDeadTokens(
   admin: SupabaseClient,
   tokens: readonly string[],
   reason = 'DeviceNotRegistered',
@@ -80,7 +80,7 @@ export async function disableDeadTokens(
   return error ? 0 : tokens.length
 }
 
-export async function loadPushTargets(
+async function loadPushTargets(
   admin: SupabaseClient,
   userId: string | null,
   email: string | null,
@@ -148,28 +148,7 @@ async function expoLeg(
  *                           registers a device tomorrow must not find the
  *                           retries already spent on the days they had none.
  */
-export function combinePushLegs(expo: PushLegResult, web: WebPushLegResult): PushLegResult {
-  const expoSent = expo.outcome === 'sent' ? expo.recipients : 0
-  const delivered = expoSent + web.sent
-  if (delivered > 0) return { outcome: 'sent', recipients: delivered }
-
-  if (expo.outcome === 'retry') return { outcome: 'retry', reason: `expo: ${expo.reason}` }
-  if (web.retry > 0) return { outcome: 'retry', reason: `web push: ${web.retry} transient` }
-
-  // Nothing delivered, nothing worth retrying. A rejection is permanent and
-  // ours, so it settles rather than burning attempts, but it is named
-  // separately from "no device" because one is a bug and the other is a fact
-  // about the customer.
-  if (web.rejected > 0) return { outcome: 'skipped', reason: `web push rejected ${web.rejected}` }
-  if (web.gone > 0) return { outcome: 'skipped', reason: 'every browser unsubscribed' }
-
-  const reasons = [expo.outcome === 'skipped' ? expo.reason : null, web.reason]
-    .filter((r): r is string => r !== null)
-    .join('; ')
-  return { outcome: 'skipped', reason: reasons || 'nothing to send to' }
-}
-
-export async function pushOutboxRow(
+async function pushToBrowsers(
   admin: SupabaseClient,
   row: {
     id?: string

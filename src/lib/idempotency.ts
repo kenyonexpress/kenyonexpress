@@ -117,7 +117,7 @@ async function record(
 }
 
 /** Read the previously recorded response hash, or null if none yet. */
-export async function getRecordedHash(
+async function getRecordedHash(
   client: SupabaseClient,
   scope: string,
   key: string,
@@ -139,7 +139,7 @@ export async function getRecordedHash(
  * record, return { replayed:false, result }. On replay: return
  * { replayed:true, result:null } (caller re-reads the durable result by key).
  */
-export async function withIdempotency<T>(
+async function withIdempotency<T>(
   client: SupabaseClient,
   scope: string,
   key: string,

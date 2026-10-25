@@ -51,10 +51,7 @@ export function decideRefund(input: RefundPolicyInput): RefundDecision {
   }
 }
 
-export const REFUND_REASON_HE: Record<
-  Extract<RefundDecision, { refundable: false }>['reason'],
-  string
-> = {
+const REFUND_REASON_HE: Record<Extract<RefundDecision, { refundable: false }>['reason'], string> = {
   redeemed: 'הקופון מומש, אין החזר',
   window_closed: 'עברו יותר מ-14 ימים, אין החזר',
   cancelled: 'כבר בוטל',
