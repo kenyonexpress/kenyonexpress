@@ -19,7 +19,7 @@ Continue from F61 DONE + VERIFIED (2026-10-25): Toggle sets Vercel env via CLI, 
 Continue from MAINTENANCE_LOOP_6 DONE (2026-10-26 00:00 UTC): Mobile gate score rechecked via scripts/compare.mjs. Score: 50.62% at 380px viewport (above 11% threshold by +39.62%). Started fresh production server (PORT=3311, BUILD_ID Emu3JIx56cghdPOyQBKwB), ran comparison showing structural difference (height ratio 0.28x, local 380x5151px vs live 380x18146px). Mobile fix goal requeued at head of GOALS-QUEUE.md. Updated docs/GATE-STATUS.md with measurement details, root causes (structural page differences, possible data loading issues), and priority flag. Quality gates: typecheck ✅ lint ✅ build ✅. Commit e638ed457 [autopilot] chore: qa mobile gate check pushed.
 
 ## המשך מ:
-MAINTENANCE_LOOP_8
+MAINTENANCE_LOOP_8 (MAINTENANCE_LOOP_5 marked impossible 2026-10-25 — MCP connector grant missing, documented in החלטות שהתקבלו אוטומטית)
 
 Continue from MAINTENANCE_LOOP_7 DONE (2026-10-26 03:25 UTC): Lighthouse CI audit via pnpm lhci:autorun. 9 runs across 2 pages (homepage, /products). Results: Homepage (Perf 99, Access 100, SEO 100, BP 96), /products (Perf 99, Access 100, SEO 100, BP 96). All scores above 90% threshold (no optimization goal needed). Improvement from prior run (BP improved 93→96). Updated docs/LIGHTHOUSE-STATUS.md with current results and comparison. Quality gates: typecheck ✅ lint ✅. Commit 5ec5809f7 [autopilot] chore: qa lighthouse check 2026-10-26 pushed.
 
@@ -36,6 +36,30 @@ Previous: Continue from MAINTENANCE_LOOP_3 DONE (2026-10-26 02:15 UTC): Backlog 
 Previous: MAINTENANCE_LOOP_7 DONE (2026-10-26 00:21 UTC) - Lighthouse CI check completed via pnpm lhci:autorun. Ran 9 total audits (3 runs × 2 URLs) on localhost:3000. Results: All scores above 90 threshold. Homepage (/) Performance 97, Accessibility 96, SEO 100, Best Practices 93. Products (/products) Performance 99, Accessibility 99, SEO 100, Best Practices 93. Overall: Performance 98, Accessibility 98, SEO 100, Best Practices 93. No optimization goal required. Minor variance from previous run (2026-10-25) within normal fluctuation range. Updated docs/LIGHTHOUSE-STATUS.md with full run distribution, comparison, and assessment. Quality gates: all scores ≥90. Commit 7642a999b [autopilot] chore: qa lighthouse check pushed.
 
 ## החלטות שהתקבלו אוטומטית
+
+### MAINTENANCE_LOOP_5 - IMPOSSIBLE, MCP GRANT MISSING (2026-10-25)
+
+**Goal**: Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
+
+**Diagnosis**: MCP connector lacks access to project `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`.
+- `get_runtime_logs` call: 403 forbidden
+- `get_project` call: 404 not found
+- `list_projects` for team: returned 0 projects (project exists but not visible to MCP)
+- CLI (`vercel project inspect`): succeeds (project exists, CLI has access)
+
+**Root cause**: Vercel MCP connector's grant scope in claude.ai settings does not include this project. MCP can list the team but cannot see any projects in it.
+
+**Recovery attempted**: 
+1. MCP `list_teams` → successful, team visible
+2. MCP `list_projects` for team → 0 results
+3. MCP `get_project` for specific ID → 404 not found
+4. Verified CLI access works fine
+
+**Conclusion**: The required method (Vercel MCP) cannot succeed due to connector grant configuration outside this session's control. The goal cannot be satisfied in a non-interactive session.
+
+**What was delivered**: CLI measurement + docs update (3a081341b, 1d86bd519), but the required MCP method was not used as specified. Staleness >24h was not established.
+
+**Mark**: IMPOSSIBLE — MCP connector auth required, non-interactive session cannot fix it. Skip and move to next goal.
 
 ### MAINTENANCE_LOOP_2 - FIRST ATTEMPT BLOCKED (npm registry state, 2026-10-25)
 
