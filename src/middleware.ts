@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { maintenanceFlagOn } from './src/lib/security/maintenance-flag'
+import { maintenanceFlagOn } from './lib/security/maintenance-flag'
 
 /**
  * Global middleware that enforces maintenance mode when enabled.
