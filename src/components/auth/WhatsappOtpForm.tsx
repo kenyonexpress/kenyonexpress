@@ -1,5 +1,6 @@
 'use client'
 
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { useState } from 'react'
 
@@ -68,16 +69,13 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
 
   return step === 'phone' ? (
     <form onSubmit={send} className="space-y-3">
-      <label className="block text-sm">
+      <label htmlFor="wa-phone" className="block text-sm">
         מספר נייד
-        <input
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          dir="ltr"
+        <PhoneInput
+          id="wa-phone"
           required
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={setPhone}
           className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
         />
       </label>

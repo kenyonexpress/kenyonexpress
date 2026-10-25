@@ -53,6 +53,7 @@ const movers = FILES.filter(
 describe('the only primitive that moves wallet money has a known, closed set of callers', () => {
   it('is called from exactly the three known modules', () => {
     expect(movers.map((f) => f.path).sort()).toEqual([
+      'app/(admin)/admin/payouts/customer-withdrawals/actions.ts',
       'server/actions/payments/refund-to-wallet.ts',
       'server/affiliate/settle.ts',
       'server/payments/finalize.ts',
@@ -65,6 +66,7 @@ describe('the only primitive that moves wallet money has a known, closed set of 
       'order_cashback',
       'order_spend',
       'refund_to_wallet',
+      'payout_debit',
     ]
     const reasons = movers
       .flatMap((f) => [...f.text.matchAll(/p_reason:\s*'([a-z_]+)'/g)].map((m) => m[1]))

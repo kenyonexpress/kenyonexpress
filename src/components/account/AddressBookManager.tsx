@@ -1,5 +1,6 @@
 'use client'
 
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import {
   type AddressBookActionState,
   deleteAddressBook,
@@ -30,6 +31,7 @@ function AddressBookForm({
   onDone: () => void
 }) {
   const [state, action, pending] = useActionState(saveAddressBook, INITIAL)
+  const [phone, setPhone] = useState(address?.phone ?? '')
 
   const succeeded = state !== null && 'success' in state
   useEffect(() => {
@@ -74,14 +76,12 @@ function AddressBookForm({
           <label className="account-field__label" htmlFor="ab_phone">
             טלפון
           </label>
-          <input
+          <PhoneInput
             className="account-field__input"
             id="ab_phone"
             name="phone"
-            type="tel"
-            inputMode="tel"
-            dir="ltr"
-            defaultValue={address?.phone ?? ''}
+            value={phone}
+            onChange={setPhone}
             required
           />
         </div>

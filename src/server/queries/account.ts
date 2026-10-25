@@ -101,6 +101,7 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   refund_to_wallet: 'זיכוי לארנק',
   affiliate_commission: 'עמלת שותפים',
   admin_credit: 'זיכוי ידני',
+  payout_debit: 'משיכה לבנק',
   // Written by fn_pay_referral and by credit_expired_vouchers, in the DATABASE.
   // Both were missing here until 2026-09-07 and both are reachable by a
   // customer: a referral that pays out and a voucher that lapses are the two
