@@ -1,20 +1,33 @@
 # Mobile Gate Status
 
-**Last Check:** 2026-10-25 19:15 UTC  
+**Last Check:** 2026-10-26 09:45 UTC  
 **Page:** home  
-**Viewports:** 380px, 768px, 1440px  
-**Status:** ❌ FAILING (all viewports above 11% threshold)
+**Viewports:** 380px (measured)
+**Status:** ❌ FAILING (380px at 49.89%, above 11% threshold)
 
-## Current Scores (Valid Baselines)
+## Latest Measurement (2026-10-26)
 
-### Electro v7 Template Baseline
+**380px Mobile Viewport**
+- **Score:** 49.89% (vs 11% threshold)
+- **Over Threshold:** +38.89 percentage points
+- **Status:** ❌ FAILING
+- **Height Ratio:** 0.31x (structurally different pages)
+- **Local Height:** 5433px (rendered only 1/3 of live)
+- **Live Height:** 17790px
+- **Build:** Fresh build via `pnpm build` completed successfully
+- **Server:** `pnpm start` on PORT=3311 with new BUILD_ID
+- **Resources:** Local loaded all resources, Live missing 96 (57 scripts, 37 fonts, 1 stylesheet, 1 xhr)
+
+## Historical Scores (Prior Measurements)
+
+### Electro v7 Template Baseline (2026-10-25)
 | Viewport | Score | Threshold | Status | Over Threshold |
 |----------|-------|-----------|--------|----------------|
 | 380px    | 47.64% | 11% | ❌ FAILING | +36.64% |
 | 768px    | 41.3% | 11% | ❌ FAILING | +30.3% |
 | 1440px   | 29.65% | 11% | ❌ FAILING | +18.65% |
 
-### Degraded Live Snapshot Baseline
+### Degraded Live Snapshot Baseline (2026-10-25)
 | Viewport | Score | Notes |
 |----------|-------|-------|
 | 380px    | 49.89% | Missing 96 resources (37 fonts, 57 scripts) |
