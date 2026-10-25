@@ -16785,3 +16785,16 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
   עמוד מוצר ודף הבית מראה את הכפתור הצף ואת כפתור השיתוף.
 
 ## Previous Last Completed
+
+**המשך מ: M02-c187 BLOCKED no-reference**
+
+## M01-c188 (2026-10-25)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c187: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/ (only electro-checkout-text.json). No percentages produced.
+**המשך מ: M01-c188 BLOCKED no-reference**
+
+## M03-c188 (2026-10-25)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c188: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/. No percentages produced.
+**המשך מ: M03-c188 BLOCKED no-reference**
+

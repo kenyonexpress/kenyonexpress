@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-25 (M12-c188: אימות robots.txt). src/app/robots.ts: allow / ל-*, אין Disallow: / כללי, חוסם redeem/coupon/account/supplier/scan/admin/checkout/cart/auth/api/reset-password/forgot-password; אין public/robots.txt סותר; sitemap+host מ-siteUrl() (ברירת מחדל https://kenyonexpress.co.il, ללא סלאש כפול). robots.test.ts 6/6 עברו. לא נערכו קבצי קוד. המשך מ: M12-c188 DONE.
 Updated: 2026-10-25 (M12-c187: אימות robots.txt). robots.ts + build output .next/server/app/robots.txt.body: User-Agent * Allow /, אין Disallow: / כללי, חוסם redeem/coupon/account/supplier/scan/admin/checkout/cart/auth/api/reset-password/forgot-password; Sitemap+Host=https://kenyonexpress.co.il (ברירת מחדל בייצור, ללא סלאש כפול). robots.test.ts 6/6 עברו. לא נערכו קבצי קוד. המשך מ: M12-c187 DONE.
 Updated: 2026-10-25 (M12-c182: אימות robots.txt). src/app/robots.ts: allow / ל-*, חוסם redeem/coupon/account/supplier/scan/admin/checkout/cart/auth/api/reset-password/forgot-password; sitemap+host מ-siteUrl() ללא סלאש כפול. robots.test.ts+sitemap.test.ts: 10/10 עברו. /debug/sentry מוגן ב-notFound. לא נערכו קבצי קוד. המשך מ: M12-c182 DONE.
 Updated: 2026-10-25 (M18-c182: STATE.md נמדד ב-240 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c182 DONE.
@@ -292,14 +293,3 @@ Same cause as M01-c186: kenyonexpress.co.il serves our own build (build vs build
 ## M02-c187 (2026-10-25)
 Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as M01-c187: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/ (only electro-checkout-text.json). No percentages produced.
-**המשך מ: M02-c187 BLOCKED no-reference**
-
-## M01-c188 (2026-10-25)
-Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c187: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/ (only electro-checkout-text.json). No percentages produced.
-**המשך מ: M01-c188 BLOCKED no-reference**
-
-## M03-c188 (2026-10-25)
-Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
-Same cause as M01-c188: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/. No percentages produced.
-**המשך מ: M03-c188 BLOCKED no-reference**
