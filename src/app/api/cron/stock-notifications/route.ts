@@ -123,8 +123,9 @@ async function handlePOST(request: Request) {
         }
       }
 
-      // Invalidate product cache (TODO: revalidateTag may require different API in Next.js 16)
-      // revalidateTag(`product_${productId}`)
+      // No cache invalidation here: this job only sends emails and never writes stock or
+      // price, and no cache is tagged `product_<id>` (catalogue caches use CATALOGUE_TAG,
+      // invalidated by the writers that change product data).
     }
 
     // Send alert if any notifications were sent
