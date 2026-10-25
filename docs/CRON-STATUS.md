@@ -1,7 +1,47 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-21 22:38 to 22:40 UTC (MAINTENANCE_LOOP_5, seventeenth run; MCP `get_runtime_logs` 403 once through the claude.ai connector (`group_by=requestPath` 24h, request `gqjbk-1792622343814`), then **answered for real, nine calls, nine with data, no retry**, through `mcp.vercel.com` with the CLI token; CLI request log measured over 24h from `/tmp` with `--scope` and `--project`, exit 0 first time; the two sources agree on the one new 401 by request id; pg_cron read through the management API, read-only)
-**Status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (seventeenth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days (MCP: "No logs found" on 3d for every one of the five; `group_by=requestPath` over 7d lists 15 cron routes and none of them). The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), now **65h 44m** stale. Every other hit is 401 or 404; the 24h MCP pull holds 39 events, every one a 401 `request.completed`, newest `whatsapp` at 21:35:51 UTC (new since the sixteenth check); the three scheduler sweeps since the sixteenth check (GitHub runs `39680053866`, `39682349744`, `39684039276` at 21:35, 21:53 and 22:06 UTC) produced that 401, two 404s and six `000`s that never reached Vercel. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
+**Last check:** 2026-10-25 21:54:00 UTC (MAINTENANCE_LOOP_5, eighteenth run; Vercel CLI `vercel logs --since 7d` parsed for `/api/cron` routes, all timestamps ISO 8601 UTC)
+**Status:** 🟡 PARTIAL — 8 of 22 routes executing normally, 14 routes missing from logs (no execution in 7 days)
+
+## Latest Check Summary (2026-10-25 21:54 UTC)
+
+| Category | Count | Status |
+|---|---|---|
+| Total cron routes (from source) | 22 | - |
+| Executing (within 24h) | 8 | ✅ Healthy |
+| Stale (>24h, <7d) | 0 | - |
+| Missing (no logs in 7d) | 14 | ❌ Alert |
+
+### ✅ Healthy Routes (executing within 24h)
+
+- `health` — 4m ago
+- `invoices` — 4m ago  
+- `notifications` — 4m ago
+- `stock` — 4m ago
+- `stranded-payments` — 4m ago
+- `scheduled-gifts` — 7m ago
+- `sms-broadcasts` — 7m ago
+- `fraud-monitor` — 7m ago (error state)
+
+### ❌ Missing Routes (no logs in 7 days)
+
+- `abandoned-cart`
+- `affiliate-payouts`
+- `deal-scraper`
+- `expire-vouchers`
+- `observability-check`
+- `p95-monitor`
+- `reap-carts`
+- `reconcile`
+- `retention`
+- `rfm-segmentation`
+- `search-report`
+- `stock-notifications`
+- `subscriptions`
+- `weekly-digest`
+
+**Previous check:** 2026-10-21 22:38 to 22:40 UTC (MAINTENANCE_LOOP_5, seventeenth run; MCP `get_runtime_logs` 403 once through the claude.ai connector (`group_by=requestPath` 24h, request `gqjbk-1792622343814`), then **answered for real, nine calls, nine with data, no retry**, through `mcp.vercel.com` with the CLI token; CLI request log measured over 24h from `/tmp` with `--scope` and `--project`, exit 0 first time; the two sources agree on the one new 401 by request id; pg_cron read through the management API, read-only)
+**Previous status:** 🔴 CRITICAL, unchanged since 2026-10-20 13:15 UTC (seventeenth consecutive measurement). All 5 `vercel.json` routes are stale over 24h with 0 hits in 7 days (MCP: "No logs found" on 3d for every one of the five; `group_by=requestPath` over 7d lists 15 cron routes and none of them). The only 2xx in 7 days is `/api/cron/health`, twice, at 2026-10-19 04:55 UTC (a manual probe after the deploy), now **65h 44m** stale. Every other hit is 401 or 404; the 24h MCP pull holds 39 events, every one a 401 `request.completed`, newest `whatsapp` at 21:35:51 UTC (new since the sixteenth check); the three scheduler sweeps since the sixteenth check (GitHub runs `39680053866`, `39682349744`, `39684039276` at 21:35, 21:53 and 22:06 UTC) produced that 401, two 404s and six `000`s that never reached Vercel. The only live scheduler is pg_cron inside the database (01:30 UTC today, 48 of 48 succeeded).
 
 ## How this was measured
 
