@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M15-c200 DONE zero console errors/warnings/failed requests on / and 2 /product samples at 380/768/1440; initial 404/500 on stale chunk was a clobbered .next (concurrent build), fixed by clean pnpm build + server restart; no src change**
 **המשך מ: M09-c200 DONE no unused deps (4 scan false positives are peer/native deps); 534 dead-export candidates (types/schema/ui surface) logged to logs/m09-c200-dead-exports.log, none removed; no src change**
 **המשך מ: M06-c200 DONE pnpm build passes (exit 0); only drift was docs/M-CYCLE-STATUS.md timestamp, committed; no src change**
 **המשך מ: M08-c199 DONE Lighthouse mobile sample logged to logs/lighthouse-m08-c199.log: home perf 78, product perf 82 (a11y/BP/SEO 100, CLS ≤0.006, TBT ≤30ms); LCP-bound, G23 95+ not yet met; no src change**
