@@ -642,6 +642,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '310',
     file: '310_fraud_detection_tables.sql',
     state: 'pending',
-    hasPreflight: false,
+    hasPreflight: true,
   },
 ] as const
