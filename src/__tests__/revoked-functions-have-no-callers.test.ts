@@ -62,7 +62,15 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   // it delegates. This test failed on that move, which is correct behaviour: it
   // refuses to let a caller relocate without a person saying which role it
   // arrives as.
-  check_rate_limit: ['src/lib/health/checks.ts', 'src/lib/rate-limit/limiter.ts'],
+  //
+  // CLASSIFIED 2026-10-25: F64 added `lib/rate-limit.ts` (the `rateLimit()` used
+  // by the public form routes). Its call is `createAdminClient().rpc(...)`, so
+  // it too arrives as service_role and is untouched by the revoke.
+  check_rate_limit: [
+    'src/lib/health/checks.ts',
+    'src/lib/rate-limit.ts',
+    'src/lib/rate-limit/limiter.ts',
+  ],
   // `143_revoke_unused_definer_execute.sql` takes EXECUTE away from PUBLIC,
   // anon and authenticated, and leaves service_role. The single caller builds
   // its client with `createAdminClient()`, so it arrives as service_role and is

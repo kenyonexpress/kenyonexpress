@@ -1087,3 +1087,4 @@ site. The two have to change together.
 - `298_admin_users_rls.sql` - C72 enables RLS on `admin_users`. Shares number 298 with `298_voucher_8digit_redemption_codes.sql`; preflight_298 covers both.
 - `299_payment_card_verifications_rls.sql` - C72 enables RLS on `payment_card_verifications`. Shares number 299 with the applied `299_cookie_consent.sql`.
 - `305_add_gift_scheduled_at_column.sql` - F59 additive `orders.gift_scheduled_at timestamptz` column read by the scheduled-gifts cron. Timestamp, no money.
+- `306_suppliers_open_weekends.sql` - F63 additive nullable `suppliers.open_weekends boolean` read by the weekend filter chip. Boolean, no money.

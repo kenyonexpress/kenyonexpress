@@ -392,7 +392,7 @@ async function runBeginCheckout(
     return { ok: false, error: 'יש להתחבר לפני התשלום', code: 'UNAUTHENTICATED' }
   }
 
-  const allowed = await checkRateLimit(`begin_checkout:user:${userId}`, 10, 60)
+  const allowed = await checkRateLimit(`begin_checkout:user:${user.id}`, 10, 3600)
   if (!allowed) {
     return { ok: false, error: 'יותר מדי ניסיונות תשלום, המתינו דקה', code: 'RATE_LIMITED' }
   }

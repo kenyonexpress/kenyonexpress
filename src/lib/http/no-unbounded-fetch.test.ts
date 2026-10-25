@@ -74,6 +74,16 @@ const ALLOWED: Record<string, string> = {
     'Browser, and it opens a payment page: a client timeout cannot cancel the server-side verification row, only invite a second one.',
   'components/checkout/ShippingPhoneVerification.tsx':
     'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'app/(auth)/forgot-password/ForgotPasswordForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'app/(auth)/login/LoginForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'app/(auth)/signup/SignupForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'components/storefront/ContactForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'components/storefront/SupplierLeadForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
   'components/push/PushPrompt.tsx':
     'Browser, fire-and-forget subscribe to our own origin after the permission prompt; a hang costs the page nothing.',
   'lib/offline/sync.ts':

@@ -63,6 +63,11 @@ const EXEMPT: Record<string, { because: string; mustContain: string }> = {
       'machine caller: a constant-time CRON_SECRET bearer check gates the one-time seeding POST',
     mustContain: 'bearerMatches(',
   },
+  'src/app/api/supplier/apply/route.ts': {
+    because:
+      'public lead form for prospective suppliers, who have no session yet; gated by a 2-per-24h IP rate limit and Turnstile',
+    mustContain: "rateLimit('supplier-lead'",
+  },
   'src/app/api/supplier/redeem/route.ts': {
     because: 'alias that re-exports the guarded /api/supplier/vouchers/redeem handler',
     mustContain: "export { POST } from '@/app/api/supplier/vouchers/redeem/route'",
