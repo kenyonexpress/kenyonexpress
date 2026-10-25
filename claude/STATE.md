@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M18-c191 DONE STATE.md already under 300 lines (claude/STATE.md 178), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M16-c191 DONE /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test 26/26); no code change**
 **המשך מ: M06-c190 DONE pnpm build clean (all routes generated), no drift, nothing to fix**
 **המשך מ: M18-c190 DONE STATE.md already under 300 lines (claude/STATE.md 168), remainder in docs/STATE-ARCHIVE.md**
@@ -174,3 +175,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M08-c191 DONE (Lighthouse mobile local prod build, 2 runs each: / perf 39-43 a11y 100 bp 92 seo 100; /product perf 51-55 a11y 100 bp 92 seo 100; logged in logs/lighthouse-m08-c191.log; G23 95+ still open)
 המשך מ: M09-c191 DONE (deps all in use incl. tooling/peer deps; un-exported 6 dead internal symbols; tsc, biome, vitest green)
 המשך מ: M10-c191 DONE-DEFERRED (87 sql files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session; 301_supplier_verification_status.sql still known unapplied; apply one at a time via apply_migration once Supabase access is restored)
+המשך מ: M17-c191 BLOCKED locked-component (RTL check on / and 2 /product samples at 380/768/1440: dir=rtl, lang=he, 0 overflow, 0 LTR leaks on /product; on / the only leak is hero slide copy under dir=ltr wrappers in src/components/home/HeroSlider.tsx:555-628, locked file, not edited)
