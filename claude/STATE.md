@@ -28,3 +28,7 @@ M09-c181 Removed unused dep html5-qrcode (+lockfile), deleted dead src/lib/geogr
 M13-c182 BLOCKED: /api/ready 200; /api/health 503 (MEILI_* env unset, search not_configured; DB ok)
 
 המשך מ: C14 BLOCKED (flags unwired, see docs/L13-FLAGS-REPORT.md)
+
+M08-c183 Lighthouse mobile (local next start, 3 runs): / perf 86/90/87 (LCP 3.3-4.1s); /product perf 98/98/98 (LCP 2.2s). Log: logs/lighthouse-m08-c183.txt
+
+המשך מ: M08-c183 DONE

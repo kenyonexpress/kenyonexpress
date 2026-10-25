@@ -1,0 +1,6 @@
+home run1 perf=86 LCP=4.1 s TBT=0 ms CLS=0.033
+home run2 perf=90 LCP=3.3 s TBT=0 ms CLS=0.057
+home run3 perf=87 LCP=3.9 s TBT=0 ms CLS=0.053
+product run1 perf=98 LCP=2.3 s TBT=0 ms CLS=0
+product run2 perf=98 LCP=2.2 s TBT=0 ms CLS=0
+product run3 perf=98 LCP=2.2 s TBT=0 ms CLS=0
