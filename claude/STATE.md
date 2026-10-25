@@ -234,3 +234,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M05-c200 DONE (pnpm test green: 615 files / 7062 tests passed, 28 skipped; no drift; no code changes)
 המשך מ: M08-c200 DONE (Lighthouse mobile sample logged to logs/lighthouse-m08-c200.log: home perf 87-90, product 81-87, a11y 100, SEO 100, best-practices 96; G23 95+ not yet met, LCP-bound; no code changes)
 המשך מ: M04-c201 DONE (pnpm type-check green, tsc --noEmit clean; no drift; no code changes)
+המשך מ: M06-c201 DONE (pnpm build green, route table generated; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
