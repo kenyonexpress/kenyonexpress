@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M18-c200 DONE STATE.md already under 300 lines (claude/STATE.md 235, root STATE.md 243), remainder in docs/STATE-ARCHIVE.md; no trim needed**
 **המשך מ: M16-c200 DONE product page /product/[slug] emits Product + BreadcrumbList JSON-LD (buildProductJsonLd/buildBreadcrumbJsonLd, 26 json-ld tests pass); /product/[slug]/gift is noindex so excluded; no src change**
 **המשך מ: M09-c200 DONE no unused deps (4 scan false positives are peer/native deps); 534 dead-export candidates (types/schema/ui surface) logged to logs/m09-c200-dead-exports.log, none removed; no src change**
 **המשך מ: M06-c200 DONE pnpm build passes (exit 0); only drift was docs/M-CYCLE-STATUS.md timestamp, committed; no src change**
