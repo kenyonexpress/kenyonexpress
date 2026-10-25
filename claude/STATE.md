@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M04-c197 DONE pnpm type-check clean (tsc --noEmit, 0 errors); no drift to commit besides STATE line**
 **המשך מ: M16-c196 DONE product page (store)/product/[slug] emits Product + BreadcrumbList JSON-LD (buildProductJsonLd/buildBreadcrumbJsonLd, one script each); json-ld.test.ts 26/26 pass; no code change**
 **המשך מ: M18-c195 DONE STATE.md already under 300 lines (claude/STATE.md 205), remainder in docs/STATE-ARCHIVE.md; no trim needed**
 **המשך מ: M15-c195 DONE no console errors on / and /product/barbecue + /product/samsung-galaxy-s22 at 380/768/1440 (fresh next start, Playwright); stale :3311 server + cached /product/עוזרת-אישית route-cache referenced missing chunks (build artifact, not source)**
@@ -210,3 +211,5 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M09-c196 DONE (knip: no removable deps — capacitor native pkgs + lighthouse binary kept; removed dead parseCity, un-exported sortKeys/isolate; tsc clean, biome clean, vitest src/lib 3475 passed; no UI change)
 המשך מ: M10-c196 DONE-DEFERRED (89 files in migrations/pending, 63 in applied/; not verified against production: Supabase MCP unauthenticated in this session; nothing applied; apply one at a time via apply_migration once Supabase access is restored; no code changes)
 המשך מ: M15-c196 DONE (console clean on / and /product/אוזניות-איירפודס-3 at 380/768/1440 on local prod build, 0 console error/warning/pageerror/requestfailed; no code changes. Note: auto-merger main has /c/[code] vs /c/[slug] route clash + missing @aws-sdk deps, not present on closeout/v1-final)
+המשך מ: M05-c197 DONE (pnpm test green: 614 files passed, 2 skipped; 7055 tests passed, 28 skipped; no drift found, no code changes)
+המשך מ: M06-c197 DONE (pnpm build green; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
