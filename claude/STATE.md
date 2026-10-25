@@ -192,3 +192,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c194 DONE (pnpm build green exit 0; no tracked drift after build, nothing to commit; untracked scripts/db-check.mjs pre-existing, left alone; no code changes)
 המשך מ: M09-c194 DONE (knip re-audit: drizzle-orm/postgres/pg flagged only because drizzle.config.ts needs SUPABASE_DB_URL, all imported in src/scripts; @capacitor/android is native platform dep; 0 removable deps, dead exports already pruned in c190/c191; no code changes)
 המשך מ: M15-c194 DONE (Playwright 1440px on / and /product/<slug> via next dev: HTTP 200, 0 console errors, 0 pageerrors; only /api/cart ERR_ABORTED request abort on navigation, not a console error; no code changes)
+המשך מ: M16-c194 DONE (/product/[slug] is the only product template; emits Product + BreadcrumbList JSON-LD via src/lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; no code changes)
