@@ -213,3 +213,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M15-c196 DONE (console clean on / and /product/אוזניות-איירפודס-3 at 380/768/1440 on local prod build, 0 console error/warning/pageerror/requestfailed; no code changes. Note: auto-merger main has /c/[code] vs /c/[slug] route clash + missing @aws-sdk deps, not present on closeout/v1-final)
 המשך מ: M05-c197 DONE (pnpm test green: 614 files passed, 2 skipped; 7055 tests passed, 28 skipped; no drift found, no code changes)
 המשך מ: M06-c197 DONE (pnpm build green; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
+המשך מ: M07-c197 DONE (TODO/FIXME scan: 4 markers in 3 files, all >7 days old and already filed in docs/BACKLOG.md; none resolvable without Cardcom prod creds / Supabase service key; no code changes)
