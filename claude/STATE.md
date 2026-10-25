@@ -31,4 +31,6 @@ M13-c182 BLOCKED: /api/ready 200; /api/health 503 (MEILI_* env unset, search not
 
 M08-c183 Lighthouse mobile (local next start, 3 runs): / perf 86/90/87 (LCP 3.3-4.1s); /product perf 98/98/98 (LCP 2.2s). Log: logs/lighthouse-m08-c183.txt
 
-המשך מ: M08-c183 DONE
+M15-c183 BLOCKED locked-component: console on / and /product has ~1030 and ~116 errors (380/768/1440, fresh next start). Cause: prerendered (PPR) HTML emits 19 async chunk <script src> + inline scripts with no nonce, blocked by strict-dynamic CSP (src/proxy.ts). Fix needs dynamic rendering in src/app/layout.tsx (forbidden).
+
+המשך מ: M15-c183 BLOCKED
