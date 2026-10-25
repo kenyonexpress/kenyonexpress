@@ -4,14 +4,17 @@ import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
-import { Coins, FileText, Package, QrCode, ShoppingCart, UserPlus } from 'lucide-react'
+import { Coins, Package, RefreshCw, ShoppingCart, Store, Users } from 'lucide-react'
 import Link from 'next/link'
+import DashboardCharts from './DashboardCharts'
 
 export const metadata = { title: 'לוח בקרה' }
 
 // The daily cockpit (V2 section 2, live-tables subset): today's numbers,
 // pending queues from v_admin_pending_queues (049), and the latest audit
 // events. Zero client fetching; support sees everything except money.
+// F62: Added active users (24h), pending refunds, suppliers awaiting approval,
+// and revenue/orders charts for 7/30/90 days.
 
 const QUEUE_LINKS: Record<string, string> = {
   product_approvals: '/admin/approvals',
@@ -29,6 +32,8 @@ export default async function DashboardPage() {
   todayStart.setHours(0, 0, 0, 0)
   const todayIso = todayStart.toISOString()
 
+  const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
   const [
     { count: ordersToday },
     { data: paymentsToday },
@@ -36,6 +41,9 @@ export default async function DashboardPage() {
     { count: couponsUsedToday },
     { count: newCustomersToday },
     { count: activeProducts },
+    { data: activeUserOrders },
+    { count: pendingRefunds },
+    { count: suppliersAwaitingApproval },
     { data: queues },
     { data: auditFeed },
   ] = await Promise.all([
@@ -67,6 +75,22 @@ export default async function DashboardPage() {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'active')
       .is('deleted_at', null),
+    // Active users: fetch user_ids from orders in last 24h, count distinct in JS
+    supabase
+      .from('orders')
+      .select('user_id')
+      .gte('created_at', last24h)
+      .not('user_id', 'is', null),
+    // Pending refunds: requested, approved, executing
+    supabase
+      .from('refunds')
+      .select('id', { count: 'exact', head: true })
+      .in('state', ['requested', 'approved', 'executing']),
+    // Supplier applications awaiting approval
+    supabase
+      .from('supplier_applications')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
     supabase.from('v_admin_pending_queues').select('*'),
     supabase
       .from('audit_log')
@@ -75,11 +99,52 @@ export default async function DashboardPage() {
       .limit(10),
   ])
 
+  // Count distinct active users
+  const activeUsers24h = new Set(activeUserOrders?.map((o) => o.user_id) ?? []).size
+
   const cashInToday = (paymentsToday ?? [])
     .filter((p) => p.kind === 'charge')
     .reduce((sum, p) => sum + p.amount_ils, 0)
 
   const pendingQueues = (queues ?? []).filter((q) => (q.n ?? 0) > 0)
+
+  // Fetch chart data for last 90 days
+  const days90Ago = new Date()
+  days90Ago.setDate(days90Ago.getDate() - 90)
+  days90Ago.setHours(0, 0, 0, 0)
+
+  const { data: ordersData } = await supabase
+    .from('orders')
+    .select('created_at, status, total_ils_agorot')
+    .gte('created_at', days90Ago.toISOString())
+    .is('deleted_at', null)
+    .in('status', ['paid', 'partially_fulfilled', 'fulfilled', 'platform_settled'])
+    .order('created_at', { ascending: true })
+
+  // Group by day
+  const dayMap = new Map<string, { orders: number; revenue: number }>()
+  for (let i = 0; i < 90; i++) {
+    const d = new Date(days90Ago)
+    d.setDate(d.getDate() + i)
+    const key = d.toISOString().split('T')[0]!
+    dayMap.set(key, { orders: 0, revenue: 0 })
+  }
+
+  for (const order of ordersData ?? []) {
+    const dateKey = order.created_at.split('T')[0]!
+    const existing = dayMap.get(dateKey)
+    if (existing) {
+      existing.orders += 1
+      existing.revenue += order.total_ils_agorot ?? 0
+    }
+  }
+
+  const days90 = Array.from(dayMap.entries())
+    .map(([date, data]) => ({ date, ...data }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+
+  const days30 = days90.slice(-30)
+  const days7 = days90.slice(-7)
 
   return (
     <div className="space-y-6">
@@ -95,7 +160,7 @@ export default async function DashboardPage() {
         />
         {showMoney ? (
           <StatsCard
-            label="נגבה באתר היום"
+            label="הכנסות היום"
             value={shekelsFromIlsRounded(cashInToday)}
             icon={Coins}
             variant="admin"
@@ -106,21 +171,21 @@ export default async function DashboardPage() {
           </div>
         )}
         <StatsCard
-          label="קופונים הונפקו היום"
-          value={(couponsIssuedToday ?? 0).toLocaleString('he-IL')}
-          icon={FileText}
+          label="משתמשים פעילים (24 שעות)"
+          value={(activeUsers24h ?? 0).toLocaleString('he-IL')}
+          icon={Users}
           variant="admin"
         />
         <StatsCard
-          label="מימושים היום"
-          value={(couponsUsedToday ?? 0).toLocaleString('he-IL')}
-          icon={QrCode}
+          label="החזרים ממתינים"
+          value={(pendingRefunds ?? 0).toLocaleString('he-IL')}
+          icon={RefreshCw}
           variant="admin"
         />
         <StatsCard
-          label="לקוחות חדשים היום"
-          value={(newCustomersToday ?? 0).toLocaleString('he-IL')}
-          icon={UserPlus}
+          label="ספקים לאישור"
+          value={(suppliersAwaitingApproval ?? 0).toLocaleString('he-IL')}
+          icon={Store}
           variant="admin"
         />
         <StatsCard
@@ -130,6 +195,9 @@ export default async function DashboardPage() {
           variant="admin"
         />
       </div>
+
+      {/* Row 1.5: Charts */}
+      {showMoney && <DashboardCharts days7={days7} days30={days30} days90={days90} />}
 
       {/* Row 2: pending queues */}
       <section>

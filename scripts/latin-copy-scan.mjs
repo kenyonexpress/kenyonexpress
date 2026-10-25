@@ -53,6 +53,9 @@ const FILE_ALLOWLIST = new Set([
   // Partner API documentation: technical reference for developers, not customer-facing
   // marketing copy. English is required for API documentation and code examples.
   'src/app/(store)/developers/page.tsx',
+  // Admin-only push notifications via ntfy.sh. Goes to Ofir's iPhone, not customers.
+  // English notification titles ('New Order') are per requirement F62.
+  'src/lib/notifications.ts',
 ])
 
 /**
