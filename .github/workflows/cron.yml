@@ -1,17 +1,17 @@
-# The twenty-one scheduled jobs, run from Actions.
+# The twenty-two scheduled jobs, run from Actions.
 #
 # `vercel.json` deliberately has no `crons` key: Hobby registers two jobs at
-# daily granularity and silently ignores the rest, so four of the ten - three on
-# the money path plus the only sender of voucher email - were believed scheduled
-# and were not. docs/CRON-EXTERNAL.md is the full account and names cron-job.org
-# as the intended scheduler. It is the better one, and it needs a person to
-# create ten jobs in a browser, which had not happened; this file needs one
-# repository secret and nothing else, so the jobs start running before that.
+# daily granularity and silently ignores the rest, so several - three on the
+# money path plus the only sender of voucher email - were believed scheduled and
+# were not. docs/CRON-EXTERNAL.md is the full account and names cron-job.org as
+# the intended scheduler. It is the better one, and it needs a person to create
+# jobs in a browser, which had not happened; this file needs one repository
+# secret and nothing else, so the jobs start running before that.
 #
 # WHAT THIS SCHEDULER IS WORSE AT, stated here rather than discovered later:
 # GitHub's cron is best effort. Runs are delayed under load, routinely by five
 # to fifteen minutes, and a run can be dropped entirely. That is acceptable for
-# ten sweeps with wide windows and would not be for an appointment. `*/5` means
+# sweeps with wide windows and would not be for an appointment. `*/5` means
 # "usually every five minutes", not every five minutes.
 #
 # It also stops on its own: GitHub disables scheduled workflows in a repository
@@ -25,25 +25,26 @@
 # The variable is the master switch and it is checked before a runner starts, so
 # while it is unset these schedules cost nothing and call nothing. The secret is
 # checked inside the run. Both are needed because either one alone is a way to
-# be wrong quietly: the switch without the secret would answer 401 ten times
-# every five minutes, and the secret without the switch would start calling
+# be wrong quietly: the switch without the secret would answer 401 repeatedly
+# every few minutes, and the secret without the switch would start calling
 # production the moment somebody added a secret for another reason.
 #
 # Set the variable to anything but `true` to stop it again - which is what to do
 # the day cron-job.org is set up, because running both schedulers calls every
-# job twice. All ten handlers are idempotent so a double run is not a
-# correctness problem, but `notifications` sending twice is customer-visible if
-# the outbox dedupe ever regresses.
+# job twice. All handlers are idempotent so a double run is not a correctness
+# problem, but `notifications` sending twice is customer-visible if the outbox
+# dedupe ever regresses.
 name: Scheduled jobs
 
 on:
   schedule:
-    # These seven are the distinct expressions in scripts/cron-jobs.json, which
+    # These are the distinct expressions in scripts/cron-jobs.json, which
     # maps each one to the jobs due on it. A run knows which schedule fired it
-    # (`github.event.schedule`), so one workflow covers all ten jobs.
+    # (`github.event.schedule`), so one workflow covers all jobs.
     - cron: '*/5 * * * *'
     - cron: '*/10 * * * *'
     - cron: '0 * * * *'
+    - cron: '0 */12 * * *'
     - cron: '30 2 * * *'
     - cron: '40 3 * * *'
     - cron: '0 4 * * *'

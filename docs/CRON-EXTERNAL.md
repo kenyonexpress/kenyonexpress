@@ -9,29 +9,29 @@
 > `CRON_SCHEDULER_ENABLED` off first -- two schedulers call every job twice.
 > `scripts/setup-cron-jobs.mjs` remains ready for that day.
 
-Ten jobs. All ten are `GET`, all ten authenticate with the same header, and all
-ten are wired to be run by a scheduler that is not Vercel.
+Twenty-two jobs. All twenty-two are `GET`, all authenticate with the same header, and all
+are wired to be run by a scheduler that is not Vercel.
 
 **Which scheduler, as of 2026-09-01.** Two are written down here and only one is
 set up. `.github/workflows/cron.yml` is in this repository and needs two
 settings; cron-job.org is the better scheduler and needs a person in a browser.
 Neither is running yet: `gh secret list` on `kenyonexpress/kenyonexpress`
 returns nothing, so `CRON_SECRET` is not set in Actions, and no variable enables
-the workflow. **Until one of them is switched on, none of the ten runs at all.**
+the workflow. **Until one of them is switched on, none of them run at all.**
 
 ## Why they left `vercel.json`
 
 Vercel's cron allowance is a plan feature, not a code one. On Hobby it is two
-jobs at daily granularity; this project needs ten, and four of them at five or
-ten minute intervals. `vercel.json` declared all ten anyway, which does not
+jobs at daily granularity; this project needs twenty-two, and several at five or
+ten minute intervals. `vercel.json` declared them all anyway, which does not
 fail the build and does not warn: the platform silently runs the ones the plan
 covers and ignores the rest, so the failure mode is a payment reconciler that
 everyone believes is running.
 
-Three of the ten are on the money path (`invoices`, `reconcile`,
-`stranded-payments`) and one is the only thing that ever sends a customer their
-voucher email (`notifications`). "Silently not scheduled" is not an acceptable
-state for any of the four, so the schedule moved somewhere it can be seen.
+Three are on the money path (`invoices`, `reconcile`, `stranded-payments`) and
+one is the only thing that ever sends a customer their voucher email
+(`notifications`). "Silently not scheduled" is not an acceptable state for any
+of the four, so the schedule moved somewhere it can be seen.
 
 Nothing in the build depends on the `crons` key. It is read by the platform at
 deploy time to register schedules; the route handlers are ordinary route
@@ -49,7 +49,7 @@ Authorization: Bearer <CRON_SECRET>
 and no fallback: `bearerMatches(request.headers.get('authorization'), secret ?? '')`
 compares against the empty string when the variable is missing, which never
 matches, so **an unset `CRON_SECRET` closes every job rather than opening it**.
-That is the safe direction and it is also a silent one: the symptom is ten
+That is the safe direction and it is also a silent one: the symptom is all
 schedules returning 401 forever, not an error at deploy.
 
 Generate it once:
@@ -61,7 +61,7 @@ openssl rand -hex 32
 **The real value is deliberately not written in this file.** It is set in Vercel
 and it is a credential: a doc in a public repository is the one place it must
 not be. Verified live on 2026-09-01 instead, which proves it is set without
-disclosing it: all ten routes answer **401** to an unauthenticated GET.
+disclosing it: all routes answer **401** to an unauthenticated GET.
 
 ```
 /api/cron/health 401   /api/cron/notifications 401   /api/cron/invoices 401
@@ -74,12 +74,12 @@ is `Bearer <64 hex characters>`.
 Set it in **Vercel > Project Settings > Environment Variables > Production**,
 and paste the same value into the scheduler.
 
-## The ten lines, ready to paste
+## The twenty-two lines, ready to paste
 
 One line per job, in the order they matter if you are setting them up under
 time pressure. Every line is the same four fields: **URL**, **method**,
-**schedule**, **header**. The method is `GET` on all ten and the header is
-byte-identical on all ten, so the only thing that changes row to row is the URL
+**schedule**, **header**. The method is `GET` on all and the header is
+byte-identical on all, so the only thing that changes row to row is the URL
 and the cron expression.
 
 Replace `<CRON_SECRET>` with the value from Vercel > Project Settings >
@@ -108,20 +108,21 @@ file is in a repository.
 19 https://kenyonexpress.vercel.app/api/cron/sms-broadcasts       GET  */10 * * * *   Authorization: Bearer <CRON_SECRET>
 20 https://kenyonexpress.vercel.app/api/cron/rfm-segmentation     GET  20 1 * * *     Authorization: Bearer <CRON_SECRET>
 21 https://kenyonexpress.vercel.app/api/cron/search-report        GET  0 6 * * 1      Authorization: Bearer <CRON_SECRET>
+22 https://kenyonexpress.vercel.app/api/cron/cart-abandonment   GET  0 */12 * * *   Authorization: Bearer <CRON_SECRET>
 ```
 
-Verified against the code at HEAD, not from memory: all ten handlers export
+Verified against the code at HEAD, not from memory: all handlers export
 `GET` and nothing else (`export const GET = withRequestLog(...)` in each
-`route.ts`), so a POST gets 405. The ten cron expressions are the ones
+`route.ts`), so a POST gets 405. The cron expressions are the ones
 `vercel.json` carried before commit `21342fc4`, kept byte for byte.
 
-## The ten jobs
+## The twenty-two jobs
 
 Base URL is `https://kenyonexpress.vercel.app`, the Vercel production origin.
 It is deliberately NOT the apex domain: `kenyonexpress.co.il` still points at
 the old WordPress install, so a job pointed there today would be calling
 WordPress and getting a 404 that looks like a broken route. **After the DNS
-cutover, change all ten to `https://kenyonexpress.co.il/...`** (the Vercel URL
+cutover, change all to `https://kenyonexpress.co.il/...`** (the Vercel URL
 keeps working, but the apex is the canonical origin and is what the redirects,
 the sitemap and the cookies are scoped to). Times are UTC, which
 is what every scheduler means by default; Israel is UTC+2 in winter and UTC+3
@@ -151,6 +152,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 19 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/sms-broadcasts` |
 | 20 | 01:20 daily | `20 1 * * *` | `https://kenyonexpress.vercel.app/api/cron/rfm-segmentation` |
 | 21 | Monday 06:00 | `0 6 * * 1` | `https://kenyonexpress.vercel.app/api/cron/search-report` |
+| 22 | every 12 hours | `0 */12 * * *` | `https://kenyonexpress.vercel.app/api/cron/cart-abandonment` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -170,7 +172,8 @@ timing changes with the scheduler.
 - **`health`** runs the internal checks and raises the alert. It is what tells
   you the other nine stopped.
 - **`stock`** releases reservations that were never consumed.
-- **`abandoned-cart`** queues the recovery nudge.
+- **`abandoned-cart`** queues the recovery nudge (newsletter subscribers).
+- **`cart-abandonment`** sends cart reminder emails with product thumbnails to all authenticated users with carts abandoned >24h.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
 - **`observability-check`** evaluates endpoint SLA metrics and sends the ntfy alert.
@@ -191,7 +194,7 @@ timing changes with the scheduler.
 
 ## Setting it up from this repository, in two settings
 
-`.github/workflows/cron.yml` fires on the seven distinct cron expressions and
+`.github/workflows/cron.yml` fires on the distinct cron expressions and
 hands `github.event.schedule` to `scripts/run-cron-jobs.sh`, which looks up the
 jobs due on that expression in `scripts/cron-jobs.json` and calls them. The
 schedule is written once, in the JSON; the workflow, this document and the route
@@ -235,7 +238,7 @@ It also stops on its own. GitHub disables scheduled workflows in a repository
 with 60 days of no commits, and the only symptom is an email.
 
 **Do not run both schedulers.** Set `CRON_SCHEDULER_ENABLED` to anything but
-`true` on the day cron-job.org is set up. All ten handlers are idempotent so a
+`true` on the day cron-job.org is set up. All handlers are idempotent so a
 double run is not a correctness problem, but `notifications` sending twice is
 customer-visible if the outbox dedupe ever regresses.
 
@@ -246,7 +249,7 @@ named here rather than a platform cron. It is the better of the two: it fires on
 time, it does not switch itself off after a quiet 60 days, and its failure
 notifications go to an inbox rather than to a list of workflow runs.
 
-For each of the ten rows:
+For each job:
 
 1. **Create cronjob**
 2. **Title**: the job name from the table (`notifications`, `health`, ...).
@@ -288,10 +291,10 @@ show a 200. Everything else is downstream of that.
 ## Rolling back to Vercel cron
 
 If the plan is upgraded and platform cron becomes the better answer, the `crons`
-key goes back into `vercel.json` with the same ten paths and the same ten
-schedules, and Vercel signs its own requests with `CRON_SECRET` automatically.
-Delete the ten jobs at the scheduler, and set `CRON_SCHEDULER_ENABLED` to
-`false`, in the same change, or every job runs twice. All ten handlers are idempotent, so a double run is not a correctness
-problem, but `notifications` sending twice would be visible to customers if the
-outbox dedupe ever regressed, and paying twice for the same work is not a habit
-worth acquiring.
+key goes back into `vercel.json` with the paths and schedules, and Vercel signs
+its own requests with `CRON_SECRET` automatically. Delete the jobs at the
+scheduler, and set `CRON_SCHEDULER_ENABLED` to `false`, in the same change, or
+every job runs twice. All handlers are idempotent, so a double run is not a
+correctness problem, but `notifications` sending twice would be visible to
+customers if the outbox dedupe ever regressed, and paying twice for the same
+work is not a habit worth acquiring.
