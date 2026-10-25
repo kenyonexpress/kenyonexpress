@@ -2,7 +2,9 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M05-c193 DONE pnpm test clean (614 files pass, 7055 tests pass, 28 skipped); drift committed (docs/M-CYCLE-STATUS.md)**
 **המשך מ: M09-c192 DONE removed unused @mdx-js/react + dead FaLinkedin/FaPinterest icons; other deps verified in use; knip dead-export list left (test-only/API surface); tsc clean, vitest 7055 pass**
+**המשך מ: M04-c193 DONE pnpm type-check clean (tsc --noEmit, 0 errors); drift committed (docs/M-CYCLE-STATUS.md, docs/UI-PARITY-REPORT.md)**
 **המשך מ: M04-c192 DONE pnpm type-check clean (tsc --noEmit, 0 errors); drift committed (UI-PARITY-REPORT rows, migration-310/fraud-table helper scripts)**
 **המשך מ: M18-c191 DONE STATE.md already under 300 lines (claude/STATE.md 178), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M16-c191 DONE /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test 26/26); no code change**
@@ -181,3 +183,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M05-c192 DONE (pnpm test green: 614 files passed, 7055 tests passed, 28 skipped; committed only logs/lighthouse-m08-c191.log; left uncommitted src/app/(store)/page.tsx + 2 docs edits from a concurrent process, which remove CitiesRow/DealChips contrary to C24)
 המשך מ: M06-c192 DONE (pnpm build green; committed docs drift docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md; left uncommitted src/lib/product-detail.ts, a concurrent edit dropping verification_status from the suppliers select, not mine)
 המשך מ: M16-c192 DONE (verified: only indexable PDP src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList via src/lib/seo/json-ld.ts; gift sub-page is noindex; json-ld.test.ts 26/26 green; no code changes)
+המשך מ: M06-c193 DONE (pnpm build green exit 0; no drift in tree after build, nothing else to commit; no code changes)
