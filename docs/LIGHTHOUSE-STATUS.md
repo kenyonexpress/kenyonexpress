@@ -34,3 +34,16 @@
 ## Notes
 
 Previous comprehensive audit (2026-10-20) showed variance across 10 pages. Current smoke test confirms home page is fully optimized. No action required.
+
+## M08-c204 sample (2026-10-26, mobile, local `next start`, build e9539169f)
+
+`/product` alone is 404 by design; sampled the live product route from the home page links.
+
+| Page | Throttling | Perf | FCP | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|
+| `/` | simulate | 78 | 2.0 s | 5.4 s | 20 ms | 0.006 |
+| `/` | provided | 100 | 0.1 s | 0.1 s | 0 ms | 0.006 |
+| `/product/<slug>` | simulate | 81 | 1.7 s | 4.8 s | 50 ms | 0 |
+| `/product/<slug>` | provided | 100 | 0.1 s | 0.1 s | 0 ms | 0 |
+
+Simulated scores on localhost are unstable (see scripts/lighthouse-smoke.mjs header; 88 on a first run). Simulated LCP is the gap to the G23 95+ target. No code changed.

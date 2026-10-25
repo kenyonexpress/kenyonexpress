@@ -82,6 +82,19 @@ describe('/api/health', () => {
     })
   })
 
+  it('answers 200 when search is unconfigured rather than down', async () => {
+    meiliHealthCheck.mockResolvedValue({ ok: false, code: 'not_configured' })
+
+    const res = await GET(probe())
+
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toMatchObject({
+      ok: true,
+      database: 'ok',
+      search: 'not_configured',
+    })
+  })
+
   it('is never cached', async () => {
     const res = await GET(probe())
 
