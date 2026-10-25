@@ -1,0 +1,6 @@
+# M08-c203 Lighthouse mobile sample 2026-10-25T21:21:44Z (local prod build, simulate throttling, 2 runs/page, performance category only via scripts/_lh-runs.mjs)
+http://localhost:3000/ performance=82 FCP=2.0 s LCP=4.4 s TBT=0 ms CLS=0.062 render-blocking=840 ms unusedJS=153 KiB
+http://localhost:3000/ performance=83 FCP=2.0 s LCP=4.4 s TBT=0 ms CLS=0.006 render-blocking=870 ms unusedJS=153 KiB
+http://localhost:3000/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90 performance=87 FCP=1.8 s LCP=3.9 s TBT=0 ms CLS=0 render-blocking=1050 ms unusedJS=153 KiB
+http://localhost:3000/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90 performance=87 FCP=1.8 s LCP=3.9 s TBT=0 ms CLS=0 render-blocking=1010 ms unusedJS=153 KiB
+Note: G23 target 95+ not met (home 82-83, product 87). Home is down from c200 (87-90); product flat (81-87 in c200). LCP-bound (3.9-4.4 s simulated). Sample-only item, no code changes.
