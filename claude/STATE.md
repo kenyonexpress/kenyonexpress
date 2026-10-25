@@ -236,3 +236,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c201 DONE (pnpm type-check green, tsc --noEmit clean; no drift; no code changes)
 המשך מ: M06-c201 DONE (pnpm build green, route table generated; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no UI change)
 המשך מ: M07-c201 DONE (TODO/FIXME scan: 3 open, all >7d and blocked on Cardcom creds / R2 feature work, filed in docs/BACKLOG.md; stock-notifications TODO already resolved in 46217252e, removed from backlog; no forbidden files touched)
+המשך מ: M09-c201 DONE (knip --dependencies flagged drizzle-orm, postgres, pg, @capacitor/android; knip failed loading drizzle.config.ts without SUPABASE_DB_URL, grep confirms drizzle-orm in src/db/schema, postgres/pg in scripts, @capacitor/android needed for cap sync android; no removable deps; dead exports are public type surfaces/generated database.ts, not removed to avoid churn/locked-file risk; no code changes)
