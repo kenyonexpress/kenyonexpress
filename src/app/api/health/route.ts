@@ -39,9 +39,15 @@ async function handleGET() {
   }
 
   const meiliCheck = await meiliHealthCheck()
-  const search = meiliCheck.ok ? 'ok' : ('down' as const)
+  // Unconfigured is not down: /api/ready already treats it as honestly absent,
+  // and a 503 here would page for a dependency nobody has provisioned.
+  const search = meiliCheck.ok
+    ? 'ok'
+    : meiliCheck.code === 'not_configured'
+      ? ('not_configured' as const)
+      : ('down' as const)
 
-  const ok = database === 'ok' && search === 'ok'
+  const ok = database === 'ok' && search !== 'down'
 
   const response: Record<string, unknown> = {
     ok,
