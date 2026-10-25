@@ -109,3 +109,6 @@ M11-c199 DONE sitemap.xml verified 2026-10-25: www.kenyonexpress.co.il/sitemap.x
 
 M04-c200 DONE 2026-10-26 pnpm type-check clean (tsc --noEmit exit 0), working tree clean, no drift to fix.
 המשך מ: M04-c200 DONE
+
+M07-c200 DONE 2026-10-26 TODO/FIXME rescan: 4 markers older than 7d (screenshot-all.mjs:42, cardcom.ts:249/:312, r2-migration.ts:103-106, stock-notifications/route.ts:126) all filed in docs/BACKLOG.md #8-11, line refs still match. wallet/cardcom-refund.ts + wallet/integration.test.ts markers dated 2026-10-25 (<7d) left in place. whatsapp.test.ts:91 is a deliberate test input, not a marker. No code change.
+המשך מ: M07-c200 DONE
