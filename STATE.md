@@ -23,7 +23,8 @@ Continue from F61 DONE + VERIFIED (2026-10-25): Toggle sets Vercel env via CLI, 
 Continue from MAINTENANCE_LOOP_6 DONE (2026-10-26 00:00 UTC): Mobile gate score rechecked via scripts/compare.mjs. Score: 50.62% at 380px viewport (above 11% threshold by +39.62%). Started fresh production server (PORT=3311, BUILD_ID Emu3JIx56cghdPOyQBKwB), ran comparison showing structural difference (height ratio 0.28x, local 380x5151px vs live 380x18146px). Mobile fix goal requeued at head of GOALS-QUEUE.md. Updated docs/GATE-STATUS.md with measurement details, root causes (structural page differences, possible data loading issues), and priority flag. Quality gates: typecheck ✅ lint ✅ build ✅. Commit e638ed457 [autopilot] chore: qa mobile gate check pushed.
 
 ## המשך מ:
-NEXT GOAL: MOBILE-GATE-FIX (item 1 from GOALS-QUEUE.md). Reduce 380px score from 50.62% to below 11%.
+NEXT GOAL: Coupon redemption + QR (item 2 from GOALS-QUEUE.md). 
+NOTE: MOBILE-GATE-FIX (item 1) already marked SKIPPED per two prior attempts (see סיום MOBILE-GATE-FIX INVESTIGATION above).
 
 ---
 
