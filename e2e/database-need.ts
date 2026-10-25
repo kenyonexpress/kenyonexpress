@@ -41,6 +41,7 @@ export const NO_DATABASE_SPECS = [
   'render-mode.spec.ts',
   'rtl-mobile.spec.ts',
   'rtl-three-widths.spec.ts',
+  'rtl-verification.spec.ts',
   'smoke-all-routes.spec.ts',
   'touch-targets.spec.ts',
 ] as const

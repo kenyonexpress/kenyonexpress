@@ -1,8 +1,9 @@
 'use client'
 
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import type { AccountActionState } from '@/lib/validations/account'
 import { updateProfileDetails } from '@/server/actions/account'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 
 const INITIAL: AccountActionState = null
 
@@ -16,6 +17,7 @@ export default function ProfileDetailsForm({
   email: string
 }) {
   const [state, action, pending] = useActionState(updateProfileDetails, INITIAL)
+  const [phoneValue, setPhoneValue] = useState(phone ?? '')
 
   return (
     <form action={action} className="account-form">
@@ -47,17 +49,13 @@ export default function ProfileDetailsForm({
           <label className="account-field__label" htmlFor="phone">
             טלפון
           </label>
-          <input
+          <PhoneInput
             className="account-field__input"
             id="phone"
             name="phone"
-            type="tel"
-            inputMode="tel"
-            dir="ltr"
-            defaultValue={phone ?? ''}
+            value={phoneValue}
+            onChange={setPhoneValue}
             required
-            autoComplete="tel"
-            placeholder="050-0000000"
           />
         </div>
       </div>

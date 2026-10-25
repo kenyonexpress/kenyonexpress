@@ -29,6 +29,11 @@ for (const viewport of VIEWPORTS) {
       test(`${page.name} has correct RTL attributes`, async ({ page: p }) => {
         await p.goto(page.url)
 
+        // Prove where we landed (checkout bounces to cart when empty)
+        if (page.url === '/checkout') {
+          await p.waitForURL(/\/(checkout|cart)/)
+        }
+
         // Root html element should have dir="rtl"
         const htmlDir = await p.locator('html').getAttribute('dir')
         expect(htmlDir).toBe('rtl')
