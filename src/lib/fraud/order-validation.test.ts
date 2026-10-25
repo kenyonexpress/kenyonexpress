@@ -1,14 +1,31 @@
-import { describe, expect, it } from 'vitest'
-import {
-  getDeviceOrderCount24h,
-  getUserOrderCount24h,
-  isOrderRateExceeded,
-} from './order-validation'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+// Mock the Supabase admin client
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({
+    from: (table: string) => ({
+      select: () => ({
+        eq: () => ({
+          gte: () => Promise.resolve({ data: [], error: null }),
+        }),
+      }),
+      insert: () => Promise.resolve({ error: null }),
+    }),
+  }),
+}))
+
+// Import after mocks are set up
+const { getUserOrderCount24h, isOrderRateExceeded, getDeviceOrderCount24h } = await import(
+  './order-validation'
+)
 
 describe('order-validation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('getUserOrderCount24h', () => {
     it('returns 0 for user with no orders', async () => {
-      // This will call the database, which should return 0 for non-existent user
       const count = await getUserOrderCount24h('00000000-0000-0000-0000-000000000000')
       expect(count).toBe(0)
     })
@@ -46,7 +63,6 @@ describe('order-validation', () => {
   describe('fraud alert creation', () => {
     it('does not throw when creating alert with valid data', async () => {
       // createFraudAlert is best-effort and logs errors
-      // Testing that it doesn't throw is enough for unit test
       expect(true).toBe(true)
     })
   })
