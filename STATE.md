@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M18-c201: STATE.md נמדד ב-276 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c201 DONE.
 Updated: 2026-10-26 (M12-c200: אימות robots.txt בטוח לפרודקשן). src/app/robots.ts ללא שינוי: allow / ל-*, disallow לנתיבים הפרטיים (/redeem/, /coupon/, /account/, /supplier/, /scan, /admin/, /checkout, /cart, /auth/, /api/, /reset-password, /forgot-password); אין Disallow: /. robots.txt החי בפרודקשן תואם; Sitemap ו-host בלי סלאש כפול. robots.test.ts: 6/6 עברו. לא נערכו קבצי קוד. המשך מ: M12-c200 DONE.
 Updated: 2026-10-26 (M18-c199: STATE.md נמדד ב-260 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c199 DONE.
 Updated: 2026-10-26 (M18-c198: STATE.md נמדד ב-254 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c198 DONE.
