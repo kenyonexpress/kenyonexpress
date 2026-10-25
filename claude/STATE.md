@@ -189,3 +189,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c194 DONE (pnpm type-check green, no TS errors; committed docs drift docs/DB-STATUS.md + docs/M-CYCLE-STATUS.md; no code changes)
 המשך מ: M05-c194 DONE (pnpm test green: 614 files passed, 7055 tests passed, 28 skipped; committed docs drift docs/M-CYCLE-STATUS.md; no code changes)
 המשך מ: M06-c194 DONE (pnpm build green exit 0; no tracked drift after build, nothing to commit; untracked scripts/db-check.mjs pre-existing, left alone; no code changes)
+המשך מ: M09-c194 DONE (knip re-audit: drizzle-orm/postgres/pg flagged only because drizzle.config.ts needs SUPABASE_DB_URL, all imported in src/scripts; @capacitor/android is native platform dep; 0 removable deps, dead exports already pruned in c190/c191; no code changes)
