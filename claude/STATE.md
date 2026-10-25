@@ -141,3 +141,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M17-c186 DONE (RTL live probe on / and /product sample at 380/768/1440: html lang=he dir=rtl, 0 horizontal overflow, 0 LTR-direction Hebrew containers, 0 text-align:left or float leaks; no code changes)
 המשך מ: M07-c187 DONE (TODO/FIXME scan: 7 TODOs older than 7 days, all filed in docs/BACKLOG.md; stock-notifications revalidateTag added as #4; no source changes)
 המשך מ: M10-c187 DONE-DEFERRED (85 files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session; 301_supplier_verification_status.sql still known unapplied; apply one at a time via apply_migration once Supabase access is restored)
+המשך מ: M13-c187 DONE
