@@ -37,13 +37,13 @@ export type RateLimitPolicy = {
 export const RATE_LIMIT_POLICIES = {
   // -- Authentication. The smallest numbers in the table, because every one of
   // these paths either sends a message to a real person or guesses a secret.
-  login: { limit: 10, windowSeconds: 3600, reason: 'password guessing, per IP' },
+  login: { limit: 5, windowSeconds: 900, reason: 'password guessing, per IP (F64: 5/15min)' },
   'login-account': {
     limit: 20,
     windowSeconds: 3600,
     reason: 'password guessing on one account from rotating IPs',
   },
-  signup: { limit: 5, windowSeconds: 3600, reason: 'account flooding, per IP' },
+  signup: { limit: 3, windowSeconds: 3600, reason: 'account flooding, per IP (F64: 3/hour)' },
   magic: { limit: 5, windowSeconds: 3600, reason: 'magic-link mail sent to a real inbox' },
   'phone-otp': { limit: 5, windowSeconds: 3600, reason: 'OTP SMS costs money, per IP' },
   'phone-otp-number': {
@@ -52,11 +52,11 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'OTP SMS to one number: the measured lockout vector',
   },
   'phone-verify': { limit: 20, windowSeconds: 3600, reason: 'OTP code guessing' },
-  reset: { limit: 5, windowSeconds: 3600, reason: 'reset mail, per IP' },
+  reset: { limit: 3, windowSeconds: 3600, reason: 'reset mail, per IP (F64: 3/hour)' },
   'reset-address': {
-    limit: 5,
+    limit: 3,
     windowSeconds: 3600,
-    reason: 'reset mail to one address from rotating IPs',
+    reason: 'reset mail to one address from rotating IPs (F64: 3/hour)',
   },
   'checkout-otp-send': {
     limit: 5,
@@ -89,7 +89,11 @@ export const RATE_LIMIT_POLICIES = {
   // -- Commerce. Higher, because a real shopper trips these by shopping.
   cart_write: { limit: 120, windowSeconds: 3600, reason: 'cart mutation, user or IP' },
   coupon: { limit: 10, windowSeconds: 3600, reason: 'coupon code guessing' },
-  begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
+  begin_checkout: {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'Cardcom checkout creation (F64: 10/hour)',
+  },
 
   // Added when this layer was rebased onto main: `referral-code` landed on main
   // after the table was first written, and the static audit below is what
@@ -140,8 +144,8 @@ export const RATE_LIMIT_POLICIES = {
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
   // -- Public write forms. Five an hour, because these reach a human inbox.
-  contact: { limit: 5, windowSeconds: 3600, reason: 'contact form mail' },
-  'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
+  contact: { limit: 5, windowSeconds: 3600, reason: 'contact form mail (F64: 5/hour)' },
+  'supplier-lead': { limit: 2, windowSeconds: 86400, reason: 'supplier lead mail (F64: 2/24h)' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
 
   // Admin voucher console. Keyed on the staff user, never on IP: the panel sits
