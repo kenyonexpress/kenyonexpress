@@ -99,6 +99,39 @@ d205bf459 STATE: Z10 re-run 2 done-as-shipped
 111ccbfa3 state: Z09 re-run 3 verified
 ```
 
+## החלטות שהתקבלו אוטומטית
+
+### MOBILE_GATE_FIX - SKIPPED: Height Ratio Blocks Visual Fix (2026-10-26)
+
+**Goal condition:** "Emergency mobile gate fix required (12.83% > 11% threshold on 380px). Fix highest-impact bands first: y200-300 (55.3%), y1700-1800 (45%), y300-400 (33.1%)."
+
+**Status:** ⏭️ SKIPPED - Structural blocker not a visual defect
+
+**Finding:** Fresh build + clean .next with full rebuild confirms HEIGHT RATIO 0.30x (local 5433px, live 17790px). The compare.mjs tool explicitly warns "These are structurally different pages, not the same page styled differently" and says "Do not chase the bands." 
+
+**Root cause:** Not styling — data/structure mismatch. Local page is missing ~12,300px of content. The goal targeted 12.83% from commit 826d67ac1, but later measurements all show 49.89%+ with severe height ratio issues.
+
+**Attempts made (2026-10-26):**
+1. Measured at 380px: 49.89% with height ratio 0.30x
+2. Rebuilt pnpm build from scratch
+3. Cleared .next and rebuilt (same result)
+4. Server logs show no data errors
+
+**Conservative decision per CLAUDE.md:** "goal שנתקע פעמיים: לדלג" — Three prior attempts (2026-10-25 MAINTENANCE_LOOP_6, and this session) show the same structural issue. This is not a visual refinement — it's a page rendering failure. Continuing to "chase the bands" violates the tool's own guidance.
+
+**What was verified:**
+- Fresh build (BUILD_ID recent)
+- No server-side data loading errors
+- Local HTML renders at ~5400px instead of ~17800px
+
+**Next decision point:** This needs root cause analysis (data loading verification, full content parity check) which cannot be done autonomously without Supabase MCP (unavailable, requires OAuth).
+
+**Commit:** 0d364d6a5 (autopilot residual, baseline)
+
+**Timestamp:** 2026-10-26 06:45 UTC+7
+
+---
+
 ## המשך מ: Next unblocked autonomous work
 
 BLOCKED MAINTENANCE_LOOP_9 (2026-10-26): Cannot verify DB performance - verification impossible, not completed. Supabase MCP requires OAuth (unavailable), Supabase CLI timed out (>120s, three attempts), background tasks killed. docs/DB-STATUS.md documents ❌ No slow queries verified, ❌ No connection pool stats. Goal requires actual verification evidence, not documentation of inability to verify. Per CLAUDE.md "goal שנתקע פעמיים: לדלג". Commits 1a35ec459, 251de2897 document attempt. BLOCKER: Interactive session with MCP OAuth or manual Supabase dashboard verification required.
