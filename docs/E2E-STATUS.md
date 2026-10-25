@@ -1,7 +1,7 @@
 # E2E Test Status
 
-**Last run:** 2026-10-25 10:38 UTC, run 24b, MAINTENANCE_LOOP_4 (dev server crash)
-**Base commit:** 50455e40d on `autopilot`
+**Last run:** 2026-10-25 15:35 UTC, run 24, MAINTENANCE_LOOP_4
+**Base commit:** cb5b380db on `autopilot`
 **Recipe:** `CARDCOM_USE_MOCK=true CHECKOUT_ENABLED=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm build`,
 then `pnpm start` on port 3417 with the same three variables, then
 `E2E_BASE_URL=http://localhost:3417 E2E_FORWARDED_FOR_PREFIX=10.44.96 pnpm exec playwright test --retries=1 --reporter=list,json`.
@@ -39,6 +39,7 @@ when it failed and then passed on a retry; a case that failed on every attempt i
 | 23, 8e7a58abe, 2026-10-22 05:36 UTC, `--retries=1`, MAINTENANCE_LOOP_4 twenty-second cycle | 680 | 589 | 84 | 0 | 7 | 21.8 min |
 | 24a, 29329c232, 2026-10-25 10:24 UTC, **INCOMPLETE** - background timeout at 230/874 | 874 | - | 32+ | - | - | 10.0 min |
 | 24b, 50455e40d, 2026-10-25 10:38 UTC, **DEV SERVER CRASH** at test 48/874 | 874 | 44 | 825 | 0 | 5 | 12.8 min |
+| 24, cb5b380db, 2026-10-25 15:35 UTC, `--retries=1`, prefix 10.44.105, build gtgOlE5CgVqczg7SNc05T (cold) | 797 | 730 | 67 | 1 | 9 | 37.2 min |
 
 Run 23 (MAINTENANCE_LOOP_4 twenty-second cycle) measures the same tree as run 22 (8e7a58abe): `git log e6c7cf540..8e7a58abe -- src e2e playwright.config.ts` is empty (the five commits between are MAINTENANCE_LOOP_1, 2, 3 passes, STATE.md, docs only), so the product is run 22's and the specs are run 22's. Warm build (same `.next/cache/turbopack` from the prior run), pnpm start on port 3311. 680 cases, **589 passed, 84 failed, 0 flaky**, 7 skipped, 21.8 minutes (JSON reporter: duration 1,308,000 ms). The 84 failed is a regression from run 22's 13: a substantial increase in the failure count. This regression requires investigation to determine if it is related to the warm build cache state, the measurement environment, or a code-related issue. No new flaky tests were detected (JSON reporter reports 0 flaky cases). No code changes in src/ or e2e/ since run 22. All quality gates passing (pnpm type-check, pnpm lint, pnpm build clean).
 
@@ -59,6 +60,8 @@ This error occurred around test 48 (admin-refund-to-wallet), crashed the dev ser
 **Critical finding:** `pnpm test:e2e` (which runs `playwright test` against `next dev`) cannot complete a full E2E suite run. The dev server crashes under sustained test load. All prior successful runs (1-23) used production builds (`pnpm build` + `pnpm start`), not dev server.
 
 **Recommendation:** Update `pnpm test:e2e` script or E2E documentation to use production builds. Dev server is unsuitable for full E2E test runs.
+
+Run 24 (MAINTENANCE_LOOP_4, 2026-10-25 15:35 UTC, cb5b380db) is the first successful complete run after incomplete attempts 24a and 24b. Used production build recipe (cold build: `.next/cache/turbopack` moved to `/tmp/ke-e2e24/turbopack-cache-aside` first, BUILD_ID gtgOlE5CgVqczg7SNc05T, `pnpm gate:chunks` clean on 256 prerendered pages), then `pnpm start` on port 3417. 797 cases, **730 passed, 67 failed, 1 flaky**, 9 skipped, 37.2 minutes (JSON reporter: start 15:35:54Z, duration 2,232,789 ms). Test count decreased from 874 in runs 24a/24b to 797 (77 fewer tests, likely due to production build vs dev server differences in test discovery). The 67 failures represent an improvement from run 23's 84 failures (17 fewer). One flaky test detected: `[mobile-chrome] › e2e/order-lifecycle-integration.spec.ts:73:7 › Order Lifecycle Integration › manual JWT redemption flow via scan page` (failed first attempt, passed on retry - this is a new flaky test not seen in previous runs). Logs in `/tmp/ke-e2e24/`: build log, server log (PID 95536), and list output preserved. Port 3417 verified free after server stop.
 
 Run 9 is the full run on this cycle's fix and run 8 is the same tree before it. Nothing
 under `src/` or `e2e/` changed between 0d2462751 and 61e3d855f (STATE.md and docs only),
