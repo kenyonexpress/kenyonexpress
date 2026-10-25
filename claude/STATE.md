@@ -120,3 +120,6 @@ RESULT: DONE
 M09-c184: Unused deps + dead exports re-audit. knip: only unused dep is @capacitor/android (needed by android/ Capacitor platform, kept). Remaining src unused-file hits are entry/test/dynamic/backlog-kept (c183 already removed the safe ones); exports/types are tested public surface. No code change, no UI impact.
 RESULT: DONE
 המשך מ: M09-c184 DONE
+M16-c184: JSON-LD audit. Single PDP route src/app/(store)/product/[slug]/page.tsx serves every product and always emits Product (buildProductJsonLd) + BreadcrumbList (buildBreadcrumbJsonLd, full category trail) via jsonLdScript; json-ld.test.ts 26/26 pass. No code change.
+RESULT: DONE
+המשך מ: M16-c184 DONE
