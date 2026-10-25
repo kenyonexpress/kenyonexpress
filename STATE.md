@@ -246,3 +246,24 @@ kenyonexpress.co.il now serves our own Vercel build, so the live-reference guard
 refuses to score build vs build. No percentage was recorded; nothing to diff. See docs/PARITY-REFERENCE.md.
 Needs a non-self reference (refs/electro-home-v7.html via --live=) to produce numbers.
 **המשך מ: M01-c183 BLOCKED no-reference**
+המשך מ: M10-c183 DONE-DEFERRED (25 files in migrations/pending/ unverifiable: Supabase 401 invalid key + MCP unauthenticated)
+
+## M01-c184 (2026-10-25)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: NOT RUN, no diffs to record.
+Same cause as c183: kenyonexpress.co.il serves our own build (live-reference guard refuses build vs build),
+refs/electro-home-v7.html is absent from refs/ (listed in docs/REFS-INDEX.md, noted missing in docs/MISSING-ASSETS.md),
+and nothing is listening on localhost:3000. No percentages produced.
+**המשך מ: M01-c184 BLOCKED no-reference**
+המשך מ: M12-c184 DONE (robots.ts verified: disallows voucher/auth/admin/api paths, sitemap+host from NEXT_PUBLIC_APP_URL=https://kenyonexpress.co.il, 6/6 tests pass, no edits)
+
+## M01-c185 (2026-10-25)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: NOT RUN, no diffs to record.
+Re-checked: refs/electro-home-v7.html still absent from refs/, nothing listening on localhost:3000,
+live site still serves our own build (guard refuses build vs build). No percentages produced.
+**המשך מ: M01-c185 BLOCKED no-reference**
+
+## M02-c185 (2026-10-25)
+Re-measure compare.mjs --page=product (sample product): NOT RUN to a number, no diffs to record.
+Ran --page=product --width=1440: guard REFUSED (kenyonexpress.co.il serves our own Next build, build vs build).
+refs/electro-home-v7.html still absent from refs/, nothing listening on localhost:3000. No percentages produced.
+**המשך מ: M02-c185 BLOCKED no-reference**
