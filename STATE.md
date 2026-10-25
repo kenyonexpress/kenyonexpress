@@ -258,3 +258,8 @@ Same cause as M01-c196/c197: LIVE_HOME (kenyonexpress.co.il) serves our own buil
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as M01-c196/c197/c198: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. No local dev server on :3000 this run. No percentages produced; guard not bypassed.
 **המשך מ: M01-c199 BLOCKED no-reference**
+
+## M01-c200 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c196..c199: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. No local dev server on :3000 this run. No percentages produced; guard not bypassed.
+**המשך מ: M01-c200 BLOCKED no-reference**
