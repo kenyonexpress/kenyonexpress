@@ -35,6 +35,7 @@ export default function robots(): MetadataRoute.Robots {
           '/cart',
           '/auth/',
           '/api/',
+          '/debug/', // Sentry test panel; page.tsx documents this exclusion
           '/reset-password',
           '/forgot-password',
         ],
