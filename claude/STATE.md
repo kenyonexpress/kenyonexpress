@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M15-c203 DONE console check / and /product at 380/768/1440 on fresh next start: 0 errors/warnings; note: long-running :3000 server is stale (serves old chunk hashes, 500s) — restart it; no code change**
 **המשך מ: M09-c203 DONE knip: no unused deps (@capacitor/android is a false positive, native platform); removed dead getCategoryChildren, synced cache-policy doc+test counts; tsc/biome/cache-policy tests pass. Other 80 flagged exports are shadcn/payments/admin API surface, left**
 **המשך מ: M08-c203 DONE Lighthouse mobile sample: home 82/83, product 87/87 (G23 95+ not met, LCP-bound 3.9-4.4s); logs/lighthouse-m08-c203.log, no code change**
 **המשך מ: M07-c203 DONE TODO/FIXME scan: 3 open items all >7d old, already filed in docs/BACKLOG.md (Cardcom creds / R2 stub); no new items**
@@ -256,3 +257,5 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c203 DONE (pnpm type-check green, tsc --noEmit 0 errors; drift limited to docs/UI-PARITY-REPORT.md compare log rows, committed; no src change)
 המשך מ: M06-c203 DONE (pnpm build green, all routes generated; working tree clean after build so no drift to commit; no src change)
 המשך מ: M10-c203 BLOCKED supabase-mcp-unauthenticated (REST spec of ixvwfbuvfxxsjiywhbbb shows many migrations/pending files NOT applied: tables missing for 189 affiliates, 190_partner_api, 287 sms_broadcasts, 294 group_deals, 295 subscription_invoices, 296 bookings, 297 user_verification_milestones, 310 fraud_alerts; 89 files pending vs 63 applied; claude.ai Supabase MCP needs OAuth in this non-interactive session so apply_migration cannot run; no code changes)
+המשך מ: M16-c203 DONE (product page src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD via src/lib/seo/json-ld.ts; live www /product/<slug> 200 shows both types; no code changes)
+המשך מ: M17-c203 BLOCKED locked-component M17 (RTL on live / and /product sample at 380/768/1440: html dir=rtl, no horizontal overflow, /product has 0 LTR leaks; / has 11 hero paragraphs (standard_line/promo_small/promo_large) with dir=ltr in locked src/components/home/HeroSlider.tsx:555-575 containing Hebrew; rtl-lint hits on home/product are comment false positives; no code changes)
