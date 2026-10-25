@@ -310,3 +310,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-25 11:26 | home | 768 | 42.76% | **FAIL** | `027853ec1-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-25 11:28 | home | 1440 | 31.72% | **FAIL** | `027853ec1-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-25 11:43 | home | 380 | 46.14% | **FAIL** | `a6f361664-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 10 script (unhydrated, not a fidelity score); baseline refs/electro_v7_380.png (froz |
+| 2026-10-25 11:50 | home | 380 | 49.90% | **FAIL** | `f4eee7698-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 10 script (unhydrated, not a fidelity score); ref 141 failed to load (101 script, 37 |
+| 2026-10-25 11:52 | home | 380 | 51.45% | **FAIL** | `3e25f0b33-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-25 11:54 | home | 380 | 47.64% | **FAIL** | `3e25f0b33-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); baseline refs/electro_v7_380.png (frozen PNG, 2026-10-12T18:00:34.479Z), not a fresh archive shot |
