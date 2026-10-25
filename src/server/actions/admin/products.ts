@@ -47,6 +47,7 @@ async function runUpsertProduct(
     id: formData.get('id') || undefined,
     supplier_id: formData.get('supplier_id') || null,
     category_id: formData.get('category_id') || null,
+    category_ids: formData.get('category_ids') || null,
     slug: formData.get('slug'),
     name_he: formData.get('name_he'),
     name_en: formData.get('name_en') || null,
@@ -54,11 +55,14 @@ async function runUpsertProduct(
     type: formData.get('type'),
     kenyon_price: formData.get('kenyon_price'),
     full_price: formData.get('full_price') || null,
+    original_price: formData.get('original_price') || null,
+    source_url: formData.get('source_url') || null,
     platform_percent: formData.get('platform_percent'),
     supplier_split_percent: formData.get('supplier_split_percent') || null,
     discount_percent: formData.get('discount_percent') || null,
     coupon_price_ils: formData.get('coupon_price_ils') || null,
     coupon_expiry_days: formData.get('coupon_expiry_days') || null,
+    valid_from: formData.get('valid_from') || null,
     offer_valid_until: formData.get('offer_valid_until') || null,
     is_coupon_enabled: formData.get('is_coupon_enabled') === 'true',
     sku: formData.get('sku') || null,
@@ -333,14 +337,22 @@ async function runUpsertProduct(
 
   let productId = id
 
+  // F56: Extract new fields that may not exist in schema yet
+  const { category_ids, original_price, source_url, valid_from, ...coreWriteFields } = writeFields
+  const f56Fields: Record<string, unknown> = {}
+  if (original_price !== undefined) f56Fields.original_price = original_price
+  if (source_url !== undefined) f56Fields.source_url = source_url
+  if (valid_from !== undefined) f56Fields.valid_from = valid_from
+
   if (id) {
     const { error } = await writeWithWhatsAppFallback(async (extra) =>
       supabase
         .from('products')
         .update({
-          ...writeFields,
+          ...coreWriteFields,
           ...logisticsWrite,
           ...moneyWrite,
+          ...f56Fields,
           ...extra,
           images,
           ...(isUploader ? { approval_status: 'pending' } : {}),
@@ -362,9 +374,10 @@ async function runUpsertProduct(
       supabase
         .from('products')
         .insert({
-          ...writeFields,
+          ...coreWriteFields,
           ...logisticsWrite,
           ...moneyWrite,
+          ...f56Fields,
           ...extra,
           images,
           created_by: user!.id,
@@ -414,6 +427,27 @@ async function runUpsertProduct(
       } else {
         await supabase.from('product_variants').insert({ ...vfields, product_id: productId })
       }
+    }
+  }
+
+  // F56: Update product_categories junction table if category_ids provided
+  // Gracefully degrades if migration 306 not applied yet
+  if (category_ids && Array.isArray(category_ids) && productId) {
+    try {
+      // Delete existing category associations
+      await supabase.from('product_categories').delete().eq('product_id', productId)
+
+      // Insert new category associations with sort_order
+      if (category_ids.length > 0) {
+        const categoryRows = category_ids.map((catId, index) => ({
+          product_id: productId,
+          category_id: catId,
+          sort_order: index,
+        }))
+        await supabase.from('product_categories').insert(categoryRows)
+      }
+    } catch {
+      // Silently ignore if table doesn't exist yet (migration pending)
     }
   }
 

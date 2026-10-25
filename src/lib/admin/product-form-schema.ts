@@ -21,6 +21,28 @@ export const productSchema = z
     id: z.string().uuid().optional(),
     supplier_id: z.string().uuid().nullable().optional(),
     category_id: z.string().uuid().nullable().optional(),
+    category_ids: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((val) => {
+        if (!val) return null
+        try {
+          const parsed = JSON.parse(val)
+          return Array.isArray(parsed) ? parsed : null
+        } catch {
+          return null
+        }
+      }),
+    original_price: z.preprocess(
+      emptyToNull,
+      z.coerce.number().nonnegative().nullable().optional(),
+    ),
+    source_url: z.preprocess(
+      emptyToNull,
+      z.string().url('כתובת URL לא תקינה').nullable().optional(),
+    ),
+    valid_from: z.preprocess(emptyToNull, z.string().nullable().optional()),
     /**
      * THIS RULE WAS STRICTER THAN THE CATALOGUE IT VALIDATES.
      *

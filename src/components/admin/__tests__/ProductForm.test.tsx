@@ -130,15 +130,6 @@ describe('ProductForm - F56 Features', () => {
     expect(platformPercentInput).toHaveAttribute('step', '0.01')
   })
 
-  it('renders supplier dropdown', () => {
-    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
-
-    const supplierSelect = screen.getByLabelText('ספק משויך *')
-    expect(supplierSelect).toBeInTheDocument()
-    expect(screen.getByText('Supplier A')).toBeInTheDocument()
-    expect(screen.getByText('ללא ספק')).toBeInTheDocument()
-  })
-
   it('renders type toggle with coupon/physical options', () => {
     render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
 

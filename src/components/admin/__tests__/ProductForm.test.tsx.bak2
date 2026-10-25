@@ -1,0 +1,205 @@
+/**
+ * ProductForm Component Tests
+ * Tests for F56 admin product upload features
+ */
+
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import ProductForm from '../ProductForm'
+
+// Mock the server action
+vi.mock('@/server/actions/admin/products', () => ({
+  upsertProduct: vi.fn(),
+}))
+
+// Mock ImageUploader component
+vi.mock('../ImageUploader', () => ({
+  default: ({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) => (
+    <div data-testid="image-uploader">
+      <button type="button" onClick={() => onChange([...value, 'https://example.com/test.jpg'])}>
+        Add Image
+      </button>
+      {value.map((url) => (
+        <div key={url}>{url}</div>
+      ))}
+    </div>
+  ),
+}))
+
+// Mock ProductLocationFields
+vi.mock('../ProductLocationFields', () => ({
+  default: () => <div data-testid="location-fields">Location Fields</div>,
+}))
+
+describe('ProductForm - F56 Features', () => {
+  const mockCategories = [
+    { id: 'cat-1', name_he: 'אלקטרוניקה' },
+    { id: 'cat-2', name_he: 'ביגוד' },
+    { id: 'cat-3', name_he: 'ספרים' },
+  ]
+
+  const mockSuppliers = [
+    {
+      id: 'sup-1',
+      name: 'Supplier A',
+      contact_phone: '0501234567',
+      address: 'Tel Aviv',
+      logo_url: null,
+      status: 'active',
+    },
+  ]
+
+  it('renders category multi-select with checkboxes', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    expect(screen.getByText('קטגוריות')).toBeInTheDocument()
+    expect(screen.getByText('אלקטרוניקה')).toBeInTheDocument()
+    expect(screen.getByText('ביגוד')).toBeInTheDocument()
+    expect(screen.getByText('ספרים')).toBeInTheDocument()
+
+    // Should have 3 checkboxes
+    const checkboxes = screen.getAllByRole('checkbox').filter((el) => {
+      const label = el.closest('label')
+      return (
+        label?.textContent?.includes('אלקטרוניקה') ||
+        label?.textContent?.includes('ביגוד') ||
+        label?.textContent?.includes('ספרים')
+      )
+    })
+    expect(checkboxes).toHaveLength(3)
+  })
+
+  it('allows selecting multiple categories', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const electronicsCheckbox = screen
+      .getAllByRole('checkbox')
+      .find((el) => el.closest('label')?.textContent?.includes('אלקטרוניקה'))
+    const clothingCheckbox = screen
+      .getAllByRole('checkbox')
+      .find((el) => el.closest('label')?.textContent?.includes('ביגוד'))
+
+    // Select multiple categories
+    if (electronicsCheckbox) fireEvent.click(electronicsCheckbox)
+    if (clothingCheckbox) fireEvent.click(clothingCheckbox)
+
+    expect(electronicsCheckbox).toBeChecked()
+    expect(clothingCheckbox).toBeChecked()
+  })
+
+  it('renders original_price field', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const originalPriceInput = screen.getByLabelText('מחיר מקורי (₪)')
+    expect(originalPriceInput).toBeInTheDocument()
+    expect(originalPriceInput).toHaveAttribute('type', 'number')
+    expect(screen.getByText('מחיר המוצר אצל הספק המקורי')).toBeInTheDocument()
+  })
+
+  it('renders source_url field', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const sourceUrlInput = screen.getByLabelText('קישור למקור')
+    expect(sourceUrlInput).toBeInTheDocument()
+    expect(sourceUrlInput).toHaveAttribute('type', 'url')
+    expect(sourceUrlInput).toHaveAttribute('placeholder', 'https://...')
+    expect(screen.getByText('קישור לעמוד המוצר המקורי')).toBeInTheDocument()
+  })
+
+  it('renders valid_from and valid_until date fields', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const validFromInput = screen.getByLabelText('המבצע מתחיל ב')
+    const validUntilInput = screen.getByLabelText('המבצע בתוקף עד')
+
+    expect(validFromInput).toBeInTheDocument()
+    expect(validFromInput).toHaveAttribute('type', 'date')
+
+    expect(validUntilInput).toBeInTheDocument()
+    expect(validUntilInput).toHaveAttribute('type', 'date')
+  })
+
+  it('renders platform_percent slider with 0-100 range', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const platformPercentInput = screen.getByLabelText('עמלת פלטפורמה (%) *')
+    expect(platformPercentInput).toBeInTheDocument()
+    expect(platformPercentInput).toHaveAttribute('type', 'number')
+    expect(platformPercentInput).toHaveAttribute('min', '0')
+    expect(platformPercentInput).toHaveAttribute('max', '100')
+    expect(platformPercentInput).toHaveAttribute('step', '0.01')
+  })
+
+  it('renders supplier dropdown', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const supplierSelect = screen.getByLabelText('ספק משויך *') as HTMLSelectElement
+    expect(supplierSelect).toBeInTheDocument()
+
+    const options = Array.from(supplierSelect.querySelectorAll('option'))
+    const selectText = supplierSelect.textContent || ""
+    const hasSupplierA = selectText.includes("Supplier A")
+    expect(optionTexts).toContain('ללא ספק')
+  })
+
+  it('renders type toggle with coupon/physical options', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const typeSelect = screen.getByLabelText('סוג *')
+    expect(typeSelect).toBeInTheDocument()
+
+    // Check all three type options exist
+    const options = Array.from(typeSelect.querySelectorAll('option'))
+    const optionTexts = options.map((opt) => opt.textContent)
+
+    expect(optionTexts).toContain('קופון')
+    expect(optionTexts).toContain('פיצול הזמנה (פיזי)')
+    expect(optionTexts).toContain('חיוב חודשי קבוע')
+  })
+
+  it('defaults status to draft for new products', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const statusSelect = screen.getByLabelText('סטטוס *')
+    expect(statusSelect).toBeInTheDocument()
+    expect((statusSelect as HTMLSelectElement).value).toBe('draft')
+  })
+
+  it('allows changing status to active (publish)', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const statusSelect = screen.getByLabelText('סטטוס *') as HTMLSelectElement
+
+    // Change to active
+    fireEvent.change(statusSelect, { target: { value: 'active' } })
+
+    expect(statusSelect.value).toBe('active')
+  })
+
+  it('renders max_per_order field', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const maxPerOrderInput = screen.getByLabelText('מקסימום ליחידת הזמנה')
+    expect(maxPerOrderInput).toBeInTheDocument()
+    expect(maxPerOrderInput).toHaveAttribute('type', 'number')
+    expect(maxPerOrderInput).toHaveAttribute('min', '1')
+  })
+
+  it('renders ImageUploader component', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    const imageUploader = screen.getByTestId('image-uploader')
+    expect(imageUploader).toBeInTheDocument()
+  })
+
+  it('renders all fields in Hebrew (RTL)', () => {
+    render(<ProductForm categories={mockCategories} suppliers={mockSuppliers} />)
+
+    // Check that Hebrew labels are present
+    expect(screen.getByText('שם בעברית *')).toBeInTheDocument()
+    expect(screen.getByText('תיאור')).toBeInTheDocument()
+    expect(screen.getByText('קטגוריות')).toBeInTheDocument()
+    expect(screen.getByText('ספק משויך *')).toBeInTheDocument()
+    expect(screen.getByText('מחירים ועמלות')).toBeInTheDocument()
+  })
+})
