@@ -205,3 +205,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M17-c195 DONE (RTL verify / and /product/[slug] at 380/768/1440 on live dev server: html dir=rtl lang=he, body direction rtl, 0 horizontal overflow, 0 Hebrew text nodes with ltr direction or left align; rtl-lint hits in home/product are comment text in BenefitBar.tsx and OG-image satori style, not DOM leaks; no code changes)
 המשך מ: M05-c196 DONE (pnpm test: 614 files passed, 2 skipped, 7055 tests passed, 0 failed; only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no code changes)
 המשך מ: M06-c196 DONE (pnpm build exit 0, all routes compiled; working tree clean after build, no drift to fix or commit; no code changes)
+המשך מ: M08-c196 DONE (Lighthouse mobile local prod build, 2 runs each: / perf 79-82 a11y 100 bp 100 seo 100 LCP 4.8-5.3s; /product perf 80-81 a11y 100 bp 100 seo 100 LCP 4.9s; logged in logs/lighthouse-m08-c196.log; G23 95+ still open)
