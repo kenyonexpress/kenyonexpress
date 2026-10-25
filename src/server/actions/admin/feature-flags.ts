@@ -8,9 +8,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 /**
- * Turns the storefront's maintenance mode on or off (feature_flags, migration
- * 286). Admin only: it takes every customer-facing page offline. The proxy
- * picks the change up within 30 seconds on each instance.
+ * Turns the storefront's maintenance mode on or off by setting MAINTENANCE_MODE
+ * Vercel env var. Admin only: it takes every customer-facing page offline.
+ * Also writes to DB as fallback. Changes take effect on next middleware invocation.
  */
 async function runSetMaintenance(formData: FormData): Promise<void> {
   let session: Awaited<ReturnType<typeof requireAdminSession>>
@@ -20,6 +20,54 @@ async function runSetMaintenance(formData: FormData): Promise<void> {
     redirect('/admin/feature-flags?error=forbidden')
   }
   const on = formData.get('maintenance_mode') === 'on'
+
+  // Update Vercel environment variable MAINTENANCE_MODE
+  const vercelToken = process.env.VERCEL_API_TOKEN
+  const vercelProjectId = process.env.VERCEL_PROJECT_ID || 'kenyonexpress'
+  const vercelTeamId = process.env.VERCEL_TEAM_ID
+
+  if (vercelToken) {
+    try {
+      // Find existing MAINTENANCE_MODE env var ID
+      const listUrl = vercelTeamId
+        ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env?teamId=${vercelTeamId}`
+        : `https://api.vercel.com/v9/projects/${vercelProjectId}/env`
+
+      const listRes = await fetch(listUrl, {
+        headers: { Authorization: `Bearer ${vercelToken}` },
+      })
+
+      if (listRes.ok) {
+        const { envs } = (await listRes.json()) as { envs: Array<{ id: string; key: string }> }
+        const existing = envs.find((e) => e.key === 'MAINTENANCE_MODE')
+
+        if (existing) {
+          // Update existing env var
+          const updateUrl = vercelTeamId
+            ? `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}?teamId=${vercelTeamId}`
+            : `https://api.vercel.com/v9/projects/${vercelProjectId}/env/${existing.id}`
+
+          await fetch(updateUrl, {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${vercelToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              value: on ? 'on' : 'off',
+              type: 'plain',
+              target: ['production', 'preview', 'development'],
+            }),
+          })
+        }
+      }
+    } catch (vercelError) {
+      // Log but don't fail - DB write below is the fallback
+      console.error('Vercel env update failed:', vercelError)
+    }
+  }
+
+  // Write to DB as fallback (instant updates via cache)
   const { error } = await createAdminClient()
     .from('feature_flags' as never)
     .upsert({
