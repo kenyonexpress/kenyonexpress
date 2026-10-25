@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M11-c189 DONE sitemap.xml live: www 200 application/xml, 75 URLs, lastmod 2026-10-24, sitemap/robots tests 17/17; note locs+robots use apex which 308s to www (Vercel primary-domain setting, not code)**
 **המשך מ: M18-c188 DONE STATE.md already under 300 lines (claude/STATE.md 154, root 182), remainder in docs/STATE-ARCHIVE.md**
 **המשך מ: M15-c188 DONE-DEFERRED console check / and /product: / clean (only dev img-aspect warnings at 1440); /product logs suppliers.verification_status missing (42703) until migrations/pending/301 applied via Supabase MCP (auth unavailable)**
 **המשך מ: M16-c187 DONE all product pages (/product/[slug], single template) emit JSON-LD Product + BreadcrumbList via lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; gift sub-route noindex**
@@ -156,3 +157,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c189 DONE (pnpm build green on closeout/v1-final at f22442efd, all routes compiled, no drift to fix; no code changes; docs/M-CYCLE-STATUS.md timestamp diff is cron-generated, left unstaged)
 המשך מ: M09-c189 DONE (deps re-audit: 12 packages with no direct source import, all implicit tooling/peers/types - @mdx-js/loader+react are @next/mdx peers, @capacitor core/android/ios are native platform deps, @biomejs/biome and @vitest/coverage-v8 are CLI/provider, @types/* feed tsc; 0 removable; dead lib exports are payment/ledger/R2/push/ops infra kept for launch; no code changes)
 המשך מ: M10-c189 DONE-DEFERRED (87 files in migrations/pending, not verified applied: Supabase MCP unauthorized in this session; 301_supplier_verification_status.sql still known unapplied; apply one at a time via apply_migration once Supabase access is restored)
+המשך מ: M15-c189 DONE (console check on prod build via next start: / and /product/עוזרת-אישית-שירותי-משרד at 1440 + 380, 0 console errors/warnings, 0 pageerrors, 0 failed requests, 0 HTTP >=400; no code changes)
