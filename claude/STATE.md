@@ -100,3 +100,9 @@ M08-c198 DONE: Lighthouse mobile live, 3 runs each. Medians home 75 (runs 100/74
 המשך מ: M16-c198 DONE (product page emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld.ts; 26 tests pass; no code change)
 
 המשך מ: M07-c199 DONE (TODO/FIXME scan: all >7d items already filed in docs/BACKLOG.md #8-11; wallet TODOs dated 2026-10-25 are <7d, left in place; whatsapp.test "TODO" is a string fixture; no code change)
+
+M10-c199 BLOCKED supabase MCP unauthenticated: cannot apply migrations/pending (81 files). REST probe (service key OK) of tables created by pending migrations: 12 exist, 12 missing (affiliates, partner_api_keys, sms_broadcasts, address_book, supplier_applications, customer_wallet_payouts, passkey_credentials, others); 53 files have no CREATE TABLE and cannot be checked over REST. Nothing applied.
+המשך מ: M10-c199 BLOCKED supabase-mcp-auth
+
+M11-c199 DONE sitemap.xml verified 2026-10-25: www.kenyonexpress.co.il/sitemap.xml 200 application/xml, 75 urls, newest lastmod 2026-10-24, sampled urls 200, robots.ts points at it. Finding: locs use apex host (siteUrl() fallback, NEXT_PUBLIC_APP_URL unset) and apex 308-redirects to www; fix is env NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il in Vercel (layout.tsx fallback is locked, no code change).
+המשך מ: M11-c199 DONE
