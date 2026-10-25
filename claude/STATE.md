@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M05-c204 DONE pnpm test 615 files / 7063 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
 **המשך מ: M15-c203 DONE console check / and /product at 380/768/1440 on fresh next start: 0 errors/warnings; note: long-running :3000 server is stale (serves old chunk hashes, 500s) — restart it; no code change**
 **המשך מ: M09-c203 DONE knip: no unused deps (@capacitor/android is a false positive, native platform); removed dead getCategoryChildren, synced cache-policy doc+test counts; tsc/biome/cache-policy tests pass. Other 80 flagged exports are shadcn/payments/admin API surface, left**
 **המשך מ: M08-c203 DONE Lighthouse mobile sample: home 82/83, product 87/87 (G23 95+ not met, LCP-bound 3.9-4.4s); logs/lighthouse-m08-c203.log, no code change**
