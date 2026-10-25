@@ -2,6 +2,8 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M07-c203 DONE TODO/FIXME scan: 3 open items all >7d old, already filed in docs/BACKLOG.md (Cardcom creds / R2 stub); no new items**
+**המשך מ: M05-c203 DONE pnpm test 615 files / 7063 tests pass; committed M-CYCLE-STATUS.md timestamp drift**
 **המשך מ: M16-c202 DONE all product pages (single /product/[slug] template) emit JSON-LD Product + BreadcrumbList; json-ld tests 26/26 pass, no code change**
 **המשך מ: M12-c202 DONE robots.txt verified production-safe; added missing /debug/ and /voucher/ disallows (7401732da)**
 **המשך מ: M07-c202 DONE TODO/FIXME scan: 7 markers in src/ (3 groups), all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds or Supabase service key**
@@ -249,3 +251,5 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M15-c202 DONE (Playwright console/pageerror/HTTP>=400 check on / and /product/<slug> at 380/768/1440 against fresh next start: 6/6 clean; the long-running :3000 server predates the 03:22 rebuild and serves stale chunk hashes (500 on 3-c503juuqoxp.js) so needs restart, not a code issue; no code changes)
 המשך מ: M17-c202 BLOCKED compare-gate (RTL probe on / and /product/<slug> at 380/768/1440: dir=rtl, no horizontal overflow, no LTR-direction or left/right-aligned Hebrew text; static scan of home+product components finds only comments and intentional dir=ltr on SKU/tel; compare.mjs home = structurally different (local fell back on data), product refuses on 1 vs 4 card mismatch; no code changes)
 המשך מ: M01-c203 BLOCKED gate-fail (compare.mjs --page=home --widths=380,768,1440 vs refs/localized/ke_live_home.html, first 2600px: 380=49.9% [best 30.26%, ref 17790px vs ours 5433px, height ratio 0.31x so structural not pixel], 768=42.77% [best 29%], 1440=31.72% [best 8.29%]; all >11% and worse than best known vs c195 (49.28/42.76/31.72) ie unchanged; ours dropped 2 scripts (unhydrated, :3000 server stale vs rebuild); no code changes)
+המשך מ: M04-c203 DONE (pnpm type-check green, tsc --noEmit 0 errors; drift limited to docs/UI-PARITY-REPORT.md compare log rows, committed; no src change)
+המשך מ: M06-c203 DONE (pnpm build green, all routes generated; working tree clean after build so no drift to commit; no src change)
