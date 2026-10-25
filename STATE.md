@@ -23,7 +23,19 @@ Continue from F61 DONE + VERIFIED (2026-10-25): Toggle sets Vercel env via CLI, 
 Continue from MAINTENANCE_LOOP_6 DONE (2026-10-26 00:00 UTC): Mobile gate score rechecked via scripts/compare.mjs. Score: 50.62% at 380px viewport (above 11% threshold by +39.62%). Started fresh production server (PORT=3311, BUILD_ID Emu3JIx56cghdPOyQBKwB), ran comparison showing structural difference (height ratio 0.28x, local 380x5151px vs live 380x18146px). Mobile fix goal requeued at head of GOALS-QUEUE.md. Updated docs/GATE-STATUS.md with measurement details, root causes (structural page differences, possible data loading issues), and priority flag. Quality gates: typecheck ✅ lint ✅ build ✅. Commit e638ed457 [autopilot] chore: qa mobile gate check pushed.
 
 ## המשך מ:
-NEXT GOAL: PERSONAL-AREA (from GOALS-QUEUE.md item 3). Per docs: Orders history page, my coupons section with QR display, internal wallet with integer agorot via money.ts (never leaves system), Google profile linking, full RTL support, Vitest test coverage. Read docs/ARCHITECTURE-PERSONAL-AREA.md if exists.
+NEXT GOAL: CODE_DEBT_CLEANUP_1 (queued from MAINTENANCE_LOOP_8). Retire ≥3 of 13 TODOs (target: ≤10 final count).
+
+---
+
+## סיום MAINTENANCE_LOOP_8 (2026-10-26 05:55 UTC)
+✅ Code debt scan completed via grep. 
+- Count: 13 (was 8 on 2026-10-22)
+- Delta: +5 (GROWTH DETECTED)
+- New markers: wallet/cardcom-refund.ts:29 + integration.test.ts:12,20,28,37
+- Cleanup goal queued: CODE_DEBT_CLEANUP_1
+- Updated docs/CODE-DEBT-STATUS.md
+- Quality gates: typecheck ✅ lint ✅ build ✅
+- Commit 87ee369a0 [autopilot] chore: maint code debt scan pushed.
 
 ---
 
