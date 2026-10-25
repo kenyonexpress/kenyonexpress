@@ -177,7 +177,7 @@ async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null
   const { data, error } = await createAdminClient()
     .from('suppliers')
-    .select('id, name, city, address, contact_phone, whatsapp, verification_status')
+    .select('id, name, city, address, contact_phone, whatsapp')
     .eq('id', supplierId)
     .maybeSingle()
   // The error was dropped, and dropping it is invisible in exactly the way that
