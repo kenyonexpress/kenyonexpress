@@ -129,7 +129,6 @@ export const productSchema = z
     // logistics (048)
     requires_shipping: z.coerce.boolean().default(true),
     is_physical_shipping: z.coerce.boolean().optional(),
-    city: z.string().nullable().optional(),
     full_address: z.string().nullable().optional(),
     whatsapp_enabled: z.coerce.boolean().default(false),
     weight_grams: z.coerce.number().int().min(0).nullable().optional(),

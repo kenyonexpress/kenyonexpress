@@ -205,14 +205,11 @@ export const RATE_LIMIT_POLICIES = {
   // rc5 F12. Keyed on the user: both act only on the caller's own affiliate row.
   'affiliate-join': { limit: 5, windowSeconds: 3600, reason: 'affiliate application, per user' },
   'affiliate-link': { limit: 30, windowSeconds: 3600, reason: 'affiliate link creation, per user' },
-  // rc5 F14. A browser re-subscribes when its keys rotate; 20 an hour is ample.
-  'push-subscribe': { limit: 20, windowSeconds: 3600, reason: 'browser push subscribe, per user' },
   // rc5 F15. Sign-in factors: per phone and per IP for sending, per phone for
   // guessing, per IP for passkey assertions.
   'wa-otp-send': { limit: 5, windowSeconds: 3600, reason: 'WhatsApp code send, per phone' },
   'wa-otp-send-ip': { limit: 20, windowSeconds: 3600, reason: 'WhatsApp code send, per IP' },
   'wa-otp-verify': { limit: 10, windowSeconds: 3600, reason: 'WhatsApp code guesses, per phone' },
-  'passkey-register': { limit: 20, windowSeconds: 3600, reason: 'passkey enrolment, per user' },
   'passkey-auth': { limit: 30, windowSeconds: 600, reason: 'passkey sign-in, per IP' },
   // rc5+ WhatsApp OTP (parallel to wa-otp-* for different auth flow)
   'whatsapp-otp': { limit: 5, windowSeconds: 3600, reason: 'WhatsApp OTP send, per IP' },
@@ -239,6 +236,12 @@ export const RATE_LIMIT_POLICIES = {
   // -- Read paths. Large, because they are cheap and a human browsing hits them.
   search: { limit: 120, windowSeconds: 300, reason: 'search queries hit Meilisearch' },
   'search-suggest': { limit: 300, windowSeconds: 300, reason: 'typeahead fires per keystroke' },
+  'search-facets': { limit: 60, windowSeconds: 300, reason: 'faceted search, filters + counts' },
+  'catalogue-listing': {
+    limit: 240,
+    windowSeconds: 300,
+    reason: 'listing pages appended by the infinite grid, one per scroll',
+  },
   'search-click': { limit: 600, windowSeconds: 300, reason: 'search result clicks, per IP' },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 

@@ -1,3 +1,4 @@
+import ReplayOptInToggle from '@/components/account/ReplayOptInToggle'
 import PasskeyManager from '@/components/auth/PasskeyManager'
 import { isStaffRole } from '@/lib/admin/roles'
 import { log } from '@/lib/observability/log'

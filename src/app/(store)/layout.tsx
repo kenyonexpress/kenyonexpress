@@ -1,3 +1,4 @@
+import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
@@ -62,6 +63,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <WhatsAppFloat />
       <CrispChat />
       <DeferredStoreChrome />
+      </WishlistProvider>
     </CartProvider>
   )
 }

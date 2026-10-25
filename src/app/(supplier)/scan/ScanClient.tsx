@@ -81,15 +81,6 @@ type BarcodeDetectorCtor = (new (opts?: { formats?: string[] }) => BarcodeDetect
   getSupportedFormats?: () => Promise<string[]>
 }
 
-/** `crypto.randomUUID` where it exists, and a time-plus-random string where it
- * does not. A till browser without it is old, not hostile: the key only has to
- * be unique among this user's recent scans for the database to tell them apart.
- */
-function newIdempotencyKey(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
-  return `${Date.now()}-${Math.round(Math.random() * 1e9)}`
-}
-
 export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [stage, setStage] = useState<Stage>('input')
   const [rawInput, setRawInput] = useState('')

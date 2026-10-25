@@ -38,6 +38,7 @@ const USER = { id: 'user-1', email: 'dana@example.com', phone: null, user_metada
 function paidOrder(overrides: Partial<OrderDetail> = {}): OrderDetail {
   return {
     id: ORDER_ID,
+    orderNumber: 'KE-20260910-00001',
     status: 'paid',
     settlementStatus: 'paid',
     createdAt: '2026-09-10T11:58:00Z',

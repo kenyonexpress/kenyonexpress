@@ -29,7 +29,7 @@ export const offloadTaskSchema = z.discriminatedUnion('type', [
         z.object({
           url: httpsUrl,
           body: z.string().max(64_000),
-          headers: z.record(z.string()).optional(),
+          headers: z.record(z.string(), z.string()).optional(),
         }),
       )
       .min(1)

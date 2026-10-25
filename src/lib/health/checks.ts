@@ -201,6 +201,71 @@ async function checkSearch(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
   }
 }
 
+/**
+ * The read replica, if one is configured at all. The same HEAD count as the
+ * primary check, through an ANON client bound to the replica endpoint: that is
+ * the client the catalogue actually reads with, so a replica that answers the
+ * service role but refuses anon would still be reported truthfully as down.
+ */
+async function checkReadReplica(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
+  const url = readReplicaUrl(env)
+  if (!url) {
+    return {
+      name: 'read_replica',
+      status: 'not_configured',
+      latencyMs: null,
+      detail: 'אין רפליקת קריאה; הקטלוג נקרא מהראשי',
+    }
+  }
+  const { value, ms } = await timed(async () => {
+    const key = env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!key) return 'down'
+    const client = createClient(url, key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+    const { error } = await client.from('categories').select('id', { count: 'exact', head: true })
+    return error ? 'down' : 'ok'
+  })
+  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
+  return {
+    name: 'read_replica',
+    status,
+    latencyMs: ms,
+    detail:
+      status === 'ok'
+        ? 'רפליקת קריאה עונה; הקטלוג נקרא ממנה'
+        : 'רפליקת הקריאה מוגדרת אך אינה עונה; הקטלוג ממשיך מהראשי',
+  }
+}
+
+/** The Cloudflare async-offload Worker, if configured. `/health` needs no auth and does nothing. */
+async function checkAsyncOffload(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
+  const config = offloadConfig(env)
+  if (!config) {
+    return {
+      name: 'async_offload',
+      status: 'not_configured',
+      latencyMs: null,
+      detail: 'ה-Worker לא מוגדר; עבודות רקע רצות בתור או inline',
+    }
+  }
+  const { value, ms } = await timed(async () => {
+    const response = await fetch(`${config.url}/health`, {
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    })
+    return response.ok ? 'ok' : 'down'
+  })
+  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
+  return {
+    name: 'async_offload',
+    status,
+    latencyMs: ms,
+    detail:
+      status === 'ok' ? 'Cloudflare Worker עונה' : 'ה-Worker מוגדר אך אינו עונה; נופלים ל-inline',
+  }
+}
+
 /** Configuration-only. See the header for why nothing is called. */
 function checkCardcom(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(env.CARDCOM_TERMINAL_NUMBER && env.CARDCOM_API_NAME)

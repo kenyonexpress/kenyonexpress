@@ -1,3 +1,4 @@
+import { resolveCarrier } from '@/lib/shipping/carriers'
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { legalEntityLine } from '@/lib/legal-entity'

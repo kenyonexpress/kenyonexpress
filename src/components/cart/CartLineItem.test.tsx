@@ -38,6 +38,7 @@ const mockCart: CartView = {
   platform_fee: agorot(0),
   supplier_due: agorot(0),
   coupon: null,
+  shipping: null,
 }
 
 function CartLineItemWrapper({ item }: { item: CartViewItem }) {

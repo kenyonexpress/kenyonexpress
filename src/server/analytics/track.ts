@@ -101,15 +101,18 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // Fired before the awaited RPC rather than after it, because `trackEvent`
     // returns synchronously and a slow or failing database round trip must not
     // decide whether the funnel event was sent.
+    const distinctId = serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
+      anonymousId,
+      userId: input.userId,
+    })
     if (isPostHogEnabled()) {
-      trackEvent(input.eventName, postHogProps(input), {
-        distinctId: serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
-          anonymousId,
-          userId: input.userId,
-        }),
-      })
+      trackEvent(input.eventName, postHogProps(input), { distinctId })
     }
 
+    // `analytics_events.session_id` is NOT NULL and a server event often has no
+    // session to name. The fallback is per EVENT, `server:` prefixed;
+    // `anonymous_id` stays honestly null.
+    const eventId = crypto.randomUUID()
     const admin = createAdminClient()
     const { data: accepted, error } = await admin.rpc('fn_ingest_analytics_events', {
       p_events: [
@@ -120,7 +123,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
           source: 'server',
           source_app: 'shop',
           anonymous_id: anonymousId,
-          session_id: anonymousId ?? crypto.randomUUID(),
+          session_id: anonymousId ?? `server:${eventId}`,
           path: input.path ?? null,
           utm: attribution?.last ?? null,
           props: input.props,

@@ -1,3 +1,4 @@
+import RecentlyViewedRail from '@/components/storefront/RecentlyViewedRail'
 import DealChips from '@/components/catalog/DealChips'
 import BenefitBar from '@/components/home/BenefitBar'
 import CitiesRow from '@/components/home/CitiesRow'

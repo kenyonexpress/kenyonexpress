@@ -1,3 +1,4 @@
+import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import PasskeyBanner from '@/components/auth/PasskeyBanner'
 import LocationPin from '@/components/product/LocationPin'
 import PushPrompt from '@/components/push/PushPrompt'

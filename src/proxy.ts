@@ -5,6 +5,7 @@ import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request
 import { edgeClientAddress, edgeShieldPolicyFor } from '@/lib/rate-limit/edge-shield'
 import { graduatedRateLimit } from '@/lib/rate-limit/graduated'
 import { tooManyRequests } from '@/lib/rate-limit/headers'
+import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { CSP_NONCE_HEADER, generateNonce } from '@/lib/security/csp-nonce'
@@ -193,7 +194,7 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    requireAnonKey(),
     {
       cookies: {
         getAll() {
@@ -221,7 +222,7 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
         },
       },
     },
-  })
+  )
 
   // Refresh the Supabase session — do not remove, required for cookie rotation.
   const {

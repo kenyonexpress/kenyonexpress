@@ -1,3 +1,4 @@
+import { createPublicClient } from '@/lib/supabase/anon'
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'

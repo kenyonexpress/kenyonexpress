@@ -25,6 +25,7 @@ import { mergeGuestCart } from '@/server/actions/cart'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import {
   type AuthenticationResponseJSON,
+  type AuthenticatorTransportFuture,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
   type RegistrationResponseJSON,
@@ -131,7 +132,7 @@ async function runBeginPasskeyRegistration(): Promise<PasskeyBeginState> {
     attestationType: 'none',
     excludeCredentials: (existing as Pick<PasskeyRow, 'id' | 'transports'>[]).map((row) => ({
       id: row.id,
-      transports: row.transports,
+      transports: row.transports as AuthenticatorTransportFuture[],
     })),
     authenticatorSelection: {
       // Discoverable and verified: the login flow is usernameless, and the
@@ -305,7 +306,7 @@ async function runFinishPasskeyLogin(
         id: row.id,
         publicKey: new Uint8Array(Buffer.from(row.public_key, 'base64url')),
         counter: row.counter,
-        transports: row.transports as never,
+        transports: row.transports as AuthenticatorTransportFuture[],
       },
     })
   } catch (cause) {

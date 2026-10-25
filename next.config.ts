@@ -45,6 +45,17 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // Static headers that don't need per-request dynamic values.
 // CSP, X-Frame-Options, and Permissions-Policy are now set dynamically in src/proxy.ts
 // with nonces and path-dependent values, so they're omitted here to avoid overwriting.
+// CSP violation reports go to Sentry when a DSN is configured at build time.
+// The CSP itself is set in src/proxy.ts, which derives the same endpoint
+// (cspReportUri), so its `report-to` group always has this header to point at.
+const CSP_REPORT_URI = sentrySecurityEndpoint(
+  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+  process.env.SENTRY_ENVIRONMENT ||
+    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
+    process.env.VERCEL_ENV,
+)
+const REPORTING_ENDPOINTS = reportingEndpointsHeader(CSP_REPORT_URI)
+
 const headersWithPolicy = (
   _csp: string,
   _frameOptions: 'DENY' | 'SAMEORIGIN',
@@ -52,6 +63,7 @@ const headersWithPolicy = (
 ) => [
   // CSP, X-Frame-Options, and Permissions-Policy are set in src/proxy.ts with nonces
   // and are NOT included here to avoid overwriting the dynamic middleware headers.
+  ...(REPORTING_ENDPOINTS ? [{ key: 'Reporting-Endpoints', value: REPORTING_ENDPOINTS }] : []),
   /*
    * `preload` REMOVED 2026-09-08, and this is not a downgrade of the policy.
    *

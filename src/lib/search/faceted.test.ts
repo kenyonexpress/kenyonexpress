@@ -27,6 +27,7 @@ function doc(overrides: Partial<ProductDocument>): ProductDocument {
     type: 'physical',
     kenyon_price: 1000,
     full_price: null,
+    discount_percent: null,
     discount_bp: 0,
     images: [],
     stock_quantity: null,

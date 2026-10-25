@@ -1,5 +1,6 @@
 'use client'
 
+import { useProductLive } from '@/lib/product-live/use-product-live'
 import { useCart } from '@/components/cart/CartProvider'
 import { EcAddToCart } from '@/components/icons/electro-icons'
 import ProductLocation from '@/components/product-card/ProductLocation'
@@ -51,6 +52,8 @@ interface Props {
    * page - out of the cache.
    */
   scarcitySlot?: ReactNode
+  /** The live "bought this week" line, streamed in by the page like the scarcity one. */
+  proofSlot?: ReactNode
   /**
    * Purchase count display with realtime updates. Passed as a node to avoid
    * dragging the page out of cache with a live read.
@@ -114,6 +117,7 @@ export default function ProductInfo({
   baseStock,
   productUrl = '',
   scarcitySlot = null,
+  proofSlot = null,
   purchaseCountSlot = null,
   sku,
   categoryName,

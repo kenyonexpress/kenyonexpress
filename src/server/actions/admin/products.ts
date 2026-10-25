@@ -76,7 +76,6 @@ async function runUpsertProduct(
     max_per_order: formData.get('max_per_order') || null,
     requires_shipping: formData.get('requires_shipping') === 'true',
     is_physical_shipping: formData.get('is_physical_shipping') === 'true',
-    city: formData.get('city') || null,
     full_address: formData.get('full_address') || null,
     whatsapp_enabled: formData.get('whatsapp_enabled') === 'true',
     weight_grams: formData.get('weight_grams') || null,

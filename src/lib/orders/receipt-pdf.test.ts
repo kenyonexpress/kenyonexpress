@@ -20,6 +20,7 @@ const CUSTOMER = { name: 'דנה כהן', email: 'dana@example.com', phone: '050
 function detail(overrides: Partial<OrderDetail> = {}): OrderDetail {
   return {
     id: '11111111-1111-4111-8111-111111111111',
+    orderNumber: 'KE-20260910-00001',
     status: 'paid',
     settlementStatus: 'paid',
     createdAt: '2026-09-10T11:58:00Z',

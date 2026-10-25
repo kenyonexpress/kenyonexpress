@@ -24,6 +24,14 @@ const pathname = vi.hoisted(() => ({ value: '/' }))
 vi.mock('@/lib/observability/posthog', () => ({
   trackEvent: (...args: unknown[]) => trackEvent(...args),
   isPostHogEnabled: () => isPostHogEnabled(),
+  identifyUser: () => {},
+}))
+
+// The provider identifies the user on login; no session exists in these tests.
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) },
+  }),
 }))
 
 vi.mock('@/lib/analytics/tracker', () => ({

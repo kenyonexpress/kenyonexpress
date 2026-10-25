@@ -4,8 +4,13 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
-import { type ProductTypeFilter, parseProductType } from '@/lib/category-page'
-import { searchProductsCached } from '@/lib/search-server'
+import SearchFacetNav from '@/components/search/SearchFacetNav'
+import SearchSortNav from '@/components/search/SearchSortNav'
+import { parseProductType } from '@/lib/category-page'
+import { loadFacetContext } from '@/lib/search/facet-labels'
+import { hasActiveFacets, toFacetSearchParams } from '@/lib/search/facet-links'
+import { parseFacetedParams } from '@/lib/search/faceted'
+import { type FacetHit, facetedSearchCached } from '@/lib/search/faceted-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
 import { createClient } from '@/lib/supabase/server'
 import { SITE } from '@/styles/tokens'
@@ -80,6 +85,7 @@ async function ResultCount({ params }: { params: URLSearchParams }) {
     await recordRecentSearch(await createClient(), q)
   }
 
+  const productType = parseProductType(params.get('type') ?? undefined)
   const filterLabel =
     productType === 'coupon' ? 'קופונים' : productType === 'physical' ? 'מוצרים פיזיים' : null
 

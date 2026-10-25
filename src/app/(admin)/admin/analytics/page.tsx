@@ -1,3 +1,7 @@
+import { computeOpsKpis, formatBp } from '@/lib/analytics/ops-kpis'
+import { parseIls } from '@/lib/money'
+import { shekelsRounded } from '@/lib/money-format'
+import { Ticket, QrCode, Banknote } from 'lucide-react'
 import StatsCard from '@/components/admin/StatsCard'
 import BarSeries, { type BarPoint } from '@/components/admin/analytics/BarSeries'
 import FunnelBars from '@/components/admin/analytics/FunnelBars'
@@ -17,7 +21,7 @@ import {
   shekelsFromIls as sharedShekelsFromIls,
   shekelsFromIlsRounded as sharedShekelsFromIlsRounded,
 } from '@/lib/money-format'
-import { loadFunnel, loadRateCounts, loadSalesLines } from '@/server/analytics/queries'
+import { loadFunnel, loadOpsKpis, loadRateCounts, loadSalesLines } from '@/server/analytics/queries'
 import { Coins, Receipt, RotateCcw, ShoppingCart, TicketCheck, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
@@ -88,10 +92,11 @@ export default async function AnalyticsPage({
   const { period: rawPeriod } = await searchParams
   const period = resolvePeriod(rawPeriod)
 
-  const [{ lines, truncated }, funnel, rateCounts] = await Promise.all([
+  const [{ lines, truncated }, funnel, rateCounts, ops] = await Promise.all([
     loadSalesLines(period.days),
     loadFunnel(period.days),
     loadRateCounts(period.days),
+    loadOpsKpis(period.days),
   ])
 
   const buckets = bucketSales(lines, period.value)

@@ -1,5 +1,6 @@
 'use client'
 
+import { CardVerificationStep } from '@/components/checkout/CardVerificationStep'
 import ShippingPhoneVerification from '@/components/checkout/ShippingPhoneVerification'
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
@@ -186,6 +187,7 @@ export default function CheckoutForm({
   const [step, setStep] = useState<CheckoutStep>('details')
   const [stepErrors, setStepErrors] = useState<StepErrors>({})
   const [cardVerified, setCardVerified] = useState(false)
+  const [cardVerificationRequired, setCardVerificationRequired] = useState(false)
 
   /**
    * A saved address is submitted by id, so its fields are never rendered. With
@@ -360,6 +362,83 @@ export default function CheckoutForm({
     const check = checkOptionalIsraeliPostalCode(value)
     setZipError(check && !check.ok ? check.message : null)
     return !check || check.ok
+  }
+
+  /**
+   * Postal-code autofill, both ways, and never over a typed value.
+   *
+   * `zipHint` is advice, not an error: it names the field that was filled in
+   * for the shopper, or the region a typed code belongs to when that is not
+   * the typed city. Neither blocks the step; `zipError` alone does that.
+   */
+  const [zipHint, setZipHint] = useState<string | null>(null)
+  const lookupRef = useRef<AbortController | null>(null)
+
+  const fieldByName = (name: string): HTMLInputElement | null => {
+    const field = formRef.current?.elements.namedItem(name)
+    return field instanceof HTMLInputElement ? field : null
+  }
+
+  /** Code -> city, on leaving the zip field. Fills an empty city, hints on a mismatch. */
+  const handleZipBlur = (value: string) => {
+    if (!validateZip(value)) {
+      setZipHint(null)
+      return
+    }
+    const region = cityFromPostalCode(value)
+    const city = fieldByName('city')
+    if (!region || !city) {
+      setZipHint(null)
+      return
+    }
+    if (city.value.trim() === '') {
+      city.value = region
+      setZipHint(`העיר הושלמה לפי המיקוד: ${region}. אפשר לערוך.`)
+      return
+    }
+    setZipHint(
+      postalCodeMatchesCity(value, city.value)
+        ? null
+        : `המיקוד שהוזן שייך לאזור ${region}. כדאי לבדוק.`,
+    )
+  }
+
+  /**
+   * City + street + house -> code, on leaving any of the three. Asks the
+   * server only when the zip is still empty, and drops a stale answer if the
+   * shopper moved on to another address before it arrived. Every failure is
+   * silence: the field is optional, and a lookup that did not work must not
+   * read as a checkout that did not.
+   */
+  const suggestZip = () => {
+    const zip = fieldByName('zip')
+    if (!zip || zip.value.trim() !== '') return
+    const city = fieldByName('city')?.value.trim() ?? ''
+    const street = fieldByName('street')?.value.trim() ?? ''
+    const house = fieldByName('street_number')?.value.trim() ?? ''
+    if (!city || !street || !house) return
+
+    lookupRef.current?.abort()
+    const controller = new AbortController()
+    lookupRef.current = controller
+    const params = new URLSearchParams({ city, street, house })
+    fetch(`/api/checkout/postal-code?${params.toString()}`, { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { zip?: string | null } | null) => {
+        if (controller.signal.aborted) return
+        const suggested = payload?.zip
+        if (typeof suggested !== 'string' || !suggested) return
+        // Re-read at arrival time, not at request time: the shopper may have
+        // typed the code themselves while the lookup was in flight.
+        const target = fieldByName('zip')
+        if (!target || target.value.trim() !== '') return
+        target.value = suggested
+        validateZip(suggested)
+        setZipHint('המיקוד הושלם אוטומטית לפי הכתובת. אפשר לערוך.')
+      })
+      .catch(() => {
+        // Aborted, offline, or a non-JSON answer. Nothing to fill.
+      })
   }
 
   // Guest-first: pressing "pay" never asks for Google. The server gives a
@@ -1033,6 +1112,11 @@ export default function CheckoutForm({
                     onError={() => setCardVerificationRequired(true)}
                     disabled={busy}
                   />
+                )}
+                {cardVerificationRequired && !cardVerified && (
+                  <span className="checkout-field__error" role="alert">
+                    אימות הכרטיס לא הושלם. נסו שוב.
+                  </span>
                 )}
 
                 {!usingSavedCard && (

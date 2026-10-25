@@ -5,6 +5,8 @@
 // that migration the original unindexed ILIKE (stage 1). All paths return the
 // ProductCard shape.
 
+import { log } from '@/lib/observability/log'
+import { type PendingSearchProductRow, pendingSearchRpc, type SearchProductsArgs, callSearchProductsRpc } from '@/lib/supabase/pending-search'
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { expandQueryWord } from '@/lib/search/db-expansion'

@@ -207,7 +207,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   //
   // Tighter than lookup's 300 because of that asymmetry, and still far above a
   // real till: 120 redemptions an hour from one member is a scan every thirty
-  // seconds, without pause, for an hour. `checkRateLimit` fails open, which is
+  // seconds, without pause, for an hour. `rateLimit` fails open, which is
   // the right direction with a customer waiting at the counter.
   const decision = await rateLimit('voucher-redeem', user.id)
   if (!decision.allowed) {
@@ -253,9 +253,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // from several tills (or by a guesser rotating accounts) hits its own bucket.
   // Ten an hour is far above a real counter, which scans a code once, maybe
   // twice on a retry; an idempotent replay of the same scan is one of those.
-  const codeAllowed = await checkRateLimit(`voucher-redeem-code:${shortCode}`, 10, 3600)
-  if (!codeAllowed) {
-    return respond({ outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited }, 429)
+  const codeDecision = await rateLimit('voucher-redeem-code', shortCode)
+  if (!codeDecision.allowed) {
+    return respond(
+      { outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited },
+      429,
+      rateLimitHeaders(codeDecision),
+    )
   }
 
   const { data, error } = await supabase.rpc('redeem_voucher', {

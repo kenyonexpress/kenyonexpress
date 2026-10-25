@@ -25,6 +25,14 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { isValidUnitCode } from '@/lib/coupons/unit-codes'
+import { couponStackingViolations } from '@/lib/fraud/coupon-stacking'
+import { enqueueFraudReview, hasBlockingFraudFlag } from '@/lib/fraud/review-queue'
+import {
+  checkCheckoutVelocity,
+  normalizeVelocityEmail,
+  normalizeVelocityPhone,
+} from '@/lib/fraud/velocity'
 import { giftSendAt } from '@/lib/gifts/send-at'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
@@ -45,6 +53,7 @@ import {
 import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
+import { DEFAULT_SHIPPING_METHOD_ID } from '@/lib/shipping/methods'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -68,6 +77,7 @@ import {
 } from '@/server/checkout/verified-shipping'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
+import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -362,20 +372,23 @@ async function runBeginCheckout(
   }
 
   // Ensure the shopper has an identity (authenticated or anonymous guest)
-  const identity = await ensureGuestIdentity()
+  const supabase = await createClient()
+  const identity = await ensureCheckoutUser(supabase, async (id) => {
+    const sessionId = await getGuestSessionId()
+    return sessionId ? mergeGuestCart(supabase, id, sessionId) : true
+  })
   if (!identity.ok) {
-    return { ok: false, error: identity.error, code: identity.code }
+    return { ok: false, error: identity.message, code: 'UNAUTHENTICATED' }
   }
 
   const userId = identity.userId
 
   // Re-fetch user for the rest of the flow
-  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    // This should not happen since ensureGuestIdentity succeeded, but guard anyway
+    // This should not happen since ensureCheckoutUser succeeded, but guard anyway
     return { ok: false, error: 'יש להתחבר לפני התשלום', code: 'UNAUTHENTICATED' }
   }
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { detectInstallSurface, readInstallEnvironment } from '@/lib/pwa/install-surface'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 

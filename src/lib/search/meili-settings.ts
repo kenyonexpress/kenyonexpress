@@ -75,6 +75,9 @@ export const FILTERABLE_ATTRIBUTES = [
   // "20% off and better" as a range filter rather than a set of buckets
   // somebody has to keep in step with the catalogue.
   'discount_percent',
+  // The same saving in basis points of the full price: the stored key the
+  // discount facet thresholds and the discount sort run over.
+  'discount_bp',
   'in_stock',
   // Enables `_geoRadius(lat, lng, metres)`. Filtering by distance and sorting
   // by it are separate permissions in Meilisearch, so `_geo` has to appear in
@@ -94,6 +97,7 @@ export const FILTERABLE_ATTRIBUTES = [
 export const SORTABLE_ATTRIBUTES = [
   'kenyon_price',
   'discount_percent',
+  'discount_bp',
   'created_at',
   '_geo',
 ] as const
@@ -423,6 +427,8 @@ export interface ProductDocument {
    * no saving to state.
    */
   discount_percent: number | null
+  /** discount_percent in basis points; 0 when there is no saving to state. */
+  discount_bp: number
   images: unknown
   stock_quantity: number | null
   in_stock: boolean
@@ -543,6 +549,7 @@ export function toProductDocument(
     // matters: deriveDiscountPercent returns null when the second exceeds the
     // first, which is exactly the "no saving to show" case.
     discount_percent: deriveDiscountPercent(row.full_price, row.kenyon_price),
+    discount_bp: Math.round((deriveDiscountPercent(row.full_price, row.kenyon_price) ?? 0) * 100),
     images: row.images ?? [],
     stock_quantity: row.stock_quantity ?? null,
     in_stock: row.stock_quantity == null || row.stock_quantity > 0,

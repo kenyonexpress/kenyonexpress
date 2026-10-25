@@ -220,7 +220,7 @@ async function ResultGrid({
         params={linkParams}
         usePagination={usePagination}
       />
-    </InfiniteProductGrid>
+    </>
   )
 }
 

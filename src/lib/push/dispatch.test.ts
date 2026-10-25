@@ -110,9 +110,13 @@ describe('the preference the account page has always been writing', () => {
       targets: [{ expo_token: 'ExponentPushToken[a]', platform: 'ios', locale: 'he' }],
       rpcError: null,
       disabled: [],
-      preferences: [{ kind: 'order_shipped', channel: 'push', enabled: false }],
+      preferences: [{ kind: 'cashback_credited', channel: 'push', enabled: false }],
     }
-    const result = await pushOutboxRow(fakeAdmin(state), { ...ROW, kind: 'order_shipped' }, SITE)
+    const result = await pushOutboxRow(
+      fakeAdmin(state),
+      { ...ROW, kind: 'cashback_credited', payload: { amount_agorot: 5000 } },
+      SITE,
+    )
 
     expect(result).toEqual({ outcome: 'skipped', reason: 'switched off by the customer' })
   })
@@ -124,9 +128,13 @@ describe('the preference the account page has always been writing', () => {
       targets: [],
       rpcError: null,
       disabled: [],
-      preferences: [{ kind: 'order_shipped', channel: 'push', enabled: false }],
+      preferences: [{ kind: 'cashback_credited', channel: 'push', enabled: false }],
     }
-    const result = await pushOutboxRow(fakeAdmin(state), { ...ROW, kind: 'order_shipped' }, SITE)
+    const result = await pushOutboxRow(
+      fakeAdmin(state),
+      { ...ROW, kind: 'cashback_credited', payload: { amount_agorot: 5000 } },
+      SITE,
+    )
     expect(result.outcome).not.toBe('none')
   })
 
@@ -137,12 +145,16 @@ describe('the preference the account page has always been writing', () => {
       targets: [{ expo_token: 'ExponentPushToken[a]', platform: 'ios', locale: 'he' }],
       rpcError: null,
       disabled: [],
-      preferences: [{ kind: 'order_shipped', channel: 'email', enabled: false }],
+      preferences: [{ kind: 'cashback_credited', channel: 'email', enabled: false }],
     }
     vi.stubEnv('PUSH_ENABLED', 'true')
     vi.stubGlobal('fetch', fetchReturning([{ status: 'ok', id: 'r1' }]))
 
-    const result = await pushOutboxRow(fakeAdmin(state), { ...ROW, kind: 'order_shipped' }, SITE)
+    const result = await pushOutboxRow(
+      fakeAdmin(state),
+      { ...ROW, kind: 'cashback_credited', payload: { amount_agorot: 5000 } },
+      SITE,
+    )
     expect(result).toMatchObject({ outcome: 'sent' })
   })
 

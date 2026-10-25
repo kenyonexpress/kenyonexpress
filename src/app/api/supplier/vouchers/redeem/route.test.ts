@@ -176,13 +176,11 @@ describe('supplier scan endpoint', () => {
 
     it('rate limits per voucher code as well as per member', async () => {
       await POST(request({ code: 'ABCD123456' }))
-      expect(checkRateLimit).toHaveBeenCalledWith('voucher-redeem-code:ABCD123456', 10, 3600)
+      expect(rateLimit).toHaveBeenCalledWith('voucher-redeem-code', 'ABCD123456')
     })
 
     it('answers 429 without redeeming when one voucher is over its own ceiling', async () => {
-      checkRateLimit.mockImplementation(
-        async (key: string) => !key.startsWith('voucher-redeem-code:'),
-      )
+      rateLimit.mockImplementation(async (name: string) => decision(name !== 'voucher-redeem-code'))
       const response = await POST(request({ code: 'ABCD123456' }))
       expect(response.status).toBe(429)
       expect(rpc).not.toHaveBeenCalled()

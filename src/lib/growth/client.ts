@@ -44,6 +44,38 @@ export type DiscountCampaignPerformance = {
   last_redeemed_at: string | null
 }
 
+export type CouponQrBatchRow = {
+  id: string
+  campaign_id: string
+  label: string
+  quantity: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CouponQrCodeRow = {
+  id: string
+  batch_id: string
+  campaign_id: string
+  code: string
+  redeemed_at: string | null
+  redeemed_order_id: string | null
+  /** Optional per-code deadline (217); null means the campaign window alone. */
+  expires_at: string | null
+  /** Stamped by the nightly sweep (217), split from redeemed_at. */
+  expired_at: string | null
+  created_at: string
+}
+
+/** What `redeem_coupon_qr` (217) returns. */
+export type CouponQrRedeemResult = {
+  ok: boolean
+  reason?: string
+  campaign_id?: string
+  amount_agorot?: number
+}
+
 type GrowthError = { message: string; code?: string }
 
 type Result<T> = Promise<{ data: T | null; error: GrowthError | null }>
@@ -59,11 +91,17 @@ type GrowthQuery<Row> = Result<Row[]> & {
   order(column: string, options: { ascending: boolean; nullsFirst?: boolean }): GrowthQuery<Row>
   eq(column: string, value: string): GrowthQuery<Row>
   is(column: string, value: null): GrowthQuery<Row>
+  or(filters: string): GrowthQuery<Row>
+  in(column: string, values: string[]): GrowthQuery<Row>
+  insert(values: object | object[]): GrowthQuery<Row>
   single(): Result<Row>
   maybeSingle(): Result<Row>
 }
 
-type GrowthDb = { from<Row>(table: string): GrowthQuery<Row> }
+type GrowthDb = {
+  from<Row = never>(table: string): GrowthQuery<Row>
+  rpc(fn: string, args?: Record<string, unknown>): Result<unknown>
+}
 
 /** Only the calls this feature makes. Anything else goes through the real client. */
 type GrowthClient = {
@@ -142,7 +180,7 @@ export function growthClient(): GrowthClient {
         // what redeem_coupon_qr checks under its lock; here it only keeps the
         // cart from pricing a discount the claim would refuse at the charge.
         const { data, error } = await db
-          .from('coupon_qr_codes')
+          .from<{ campaign: unknown }>('coupon_qr_codes')
           .select('redeemed_at, campaign:discount_campaigns(*)')
           .eq('code', code)
           .is('redeemed_at', null)
@@ -177,7 +215,11 @@ export function growthClient(): GrowthClient {
       // failed batch leaves zero codes rather than some.
       insertCodes: (
         rows: { batch_id: string; campaign_id: string; code: string; expires_at: string | null }[],
-      ) => db.from('coupon_qr_codes').insert(rows),
+      ) =>
+        db
+          .from('coupon_qr_codes')
+          .insert(rows)
+          .then(({ error }) => ({ data: null, error })),
       codesInventory: (campaignId: string) =>
         db
           .from('coupon_qr_codes')

@@ -1,5 +1,5 @@
+import { completeCardVerification } from '@/lib/payments/verify-card'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { completeCardVerification } from './route'
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => ({
@@ -9,9 +9,22 @@ vi.mock('@/lib/supabase/admin', () => ({
           single: vi.fn(() => Promise.resolve({ data: { id: 'test-id' }, error: null })),
         })),
       })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
+      // The claim is update(...).eq(id).eq(status).select(...).maybeSingle(); the
+      // fail/refund writes stop at .eq(...). One chain that is both awaitable
+      // and further chainable covers every shape without faking a row.
+      update: vi.fn(() => {
+        type Chain = Promise<{ error: null }> & {
+          maybeSingle: () => Promise<{ data: null; error: null }>
+          eq: () => Chain
+          select: () => Chain
+        }
+        const chain: Chain = Object.assign(Promise.resolve({ error: null }), {
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          eq: () => chain,
+          select: () => chain,
+        })
+        return chain
+      }),
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),

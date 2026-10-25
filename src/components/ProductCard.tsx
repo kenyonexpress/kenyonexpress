@@ -1,5 +1,8 @@
 'use client'
 
+import { cityByName } from '@/lib/geo/cities'
+import { MapPin } from 'lucide-react'
+import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
@@ -23,6 +26,8 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** Ships nationwide (a physical product); renders as nationwide regardless of city. */
+  is_physical_shipping?: boolean | null
   /** products.city; NULL renders as nationwide. */
   city?: string | null
   /** products.latitude for Waze navigation */

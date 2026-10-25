@@ -1,3 +1,4 @@
+import { createSubscriptionsForOrder, type RecurringProductBilling, type SubscriptionAdmin, planSubscriptions } from '@/server/payments/subscription-create'
 import { sendServerPurchase } from '@/lib/analytics/server-events'
 import { orFail } from '@/lib/catalogue-read'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
@@ -697,6 +698,7 @@ export async function finalizeOrder(input: {
     // seen by a browser that DID survive is still counted once.
     await reportPurchase(admin, order.id, order.user_id, items as OrderItemRow[])
 
+    let savedTokenId: string | null = null
     if (input.token) {
       // A shopper who buys again with "save my card" ticked re-tokenizes the
       // same card, and a plain insert accumulated one picker row per purchase,
@@ -739,8 +741,11 @@ export async function finalizeOrder(input: {
             cardcom_account_id: cardcomAccountId,
           })
           .eq('id', existingTokenRowId)
+        savedTokenId = existingTokenRowId
       } else {
-        await admin.from('payment_tokens').insert({
+        // Kept as a single from().insert( expression: saved-cards.test.ts pins
+        // this file as the ONLY payment_tokens writer by matching that literal.
+        const { data: tokenRow, error: tokenInsertError } = await admin.from('payment_tokens').insert({
           profile_id: order.user_id,
           cardcom_token: input.token.token,
           last_4: input.token.last4,
@@ -750,19 +755,18 @@ export async function finalizeOrder(input: {
           // A token is only chargeable on the terminal that minted it, so the
           // saved card is useless without knowing which account that was.
           cardcom_account_id: cardcomAccountId,
-        })
-        .select('id')
-        .maybeSingle()
-      if (tokenInsertError) {
-        // Not fatal to the order -- the charge is already verified -- but a
-        // recurring line below cannot become a subscription without this row,
-        // and the shopper asked for the card to be saved. Loud, not silent.
-        log.error('finalize.token_not_saved', {
-          orderId: order.id,
-          reason: tokenInsertError.message,
-        })
+        }).select('id').maybeSingle()
+        if (tokenInsertError) {
+          // Not fatal to the order -- the charge is already verified -- but a
+          // recurring line below cannot become a subscription without this row,
+          // and the shopper asked for the card to be saved. Loud, not silent.
+          log.error('finalize.token_not_saved', {
+            orderId: order.id,
+            reason: tokenInsertError.message,
+          })
+        }
+        savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
       }
-      savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
     }
 
     // THE SUBSCRIPTION IS BORN HERE, and only here. Renewal

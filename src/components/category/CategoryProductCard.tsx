@@ -1,5 +1,6 @@
 'use client'
 
+import CardOfferDeadline from '@/components/category/CardOfferDeadline'
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import LocationPin from '@/components/product/LocationPin'
@@ -55,7 +56,8 @@ export type CategoryProduct = {
   city?: string | null
   /** Normalised supplier join. Present once the query selects it. */
   supplier?: { city?: string | null } | null
-  city?: string | null
+  /** ISO timestamp the offer lapses at; drives the deadline countdown. */
+  offer_valid_until?: string | null
   latitude?: number | null
   longitude?: number | null
   /** Set by sortByDistance when the customer asked for "near me". */

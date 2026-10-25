@@ -103,11 +103,74 @@ function baseDirectives(nonce?: string) {
   ]
 }
 
-export function contentSecurityPolicyFor(pathname: string, nonce?: string): string {
+/**
+ * The CSP report group `report-to` names. A nonce is not the answer for the
+ * statically cached storefront, so the gap is made OBSERVABLE instead: with a
+ * Sentry DSN configured every CSP violation is reported.
+ */
+export const CSP_REPORT_GROUP = 'csp-endpoint'
+
+/**
+ * Sentry's security-report endpoint, derived from a DSN
+ * (`https://<key>@<host>/<project id>` ->
+ * `https://<host>/api/<project id>/security/?sentry_key=<key>`).
+ * Anything that does not parse yields null and no directive.
+ */
+export function sentrySecurityEndpoint(
+  dsn: string | null | undefined,
+  environment?: string | null,
+): string | null {
+  if (!dsn) return null
+  let parsed: URL
+  try {
+    parsed = new URL(dsn)
+  } catch {
+    return null
+  }
+  const key = parsed.username
+  const project = parsed.pathname.replace(/^\/+/, '').replace(/\/+$/, '')
+  if (!key || !/^\d+$/.test(project)) return null
+  const endpoint = new URL(`${parsed.protocol}//${parsed.host}/api/${project}/security/`)
+  endpoint.searchParams.set('sentry_key', key)
+  if (environment) endpoint.searchParams.set('sentry_environment', environment)
+  return endpoint.toString()
+}
+
+/**
+ * The `Reporting-Endpoints` header `report-to` refers to. Emitted beside the
+ * policy by next.config.ts; built from the same value as the directive.
+ */
+export function reportingEndpointsHeader(reportUri: string | null | undefined): string | null {
+  return reportUri ? `${CSP_REPORT_GROUP}="${reportUri}"` : null
+}
+
+export type ContentSecurityPolicyOptions = {
+  /**
+   * Where violation reports go. Absent means "derive from the Sentry DSN in
+   * the environment"; null means no reporting directive.
+   */
+  reportUri?: string | null
+}
+
+/** The report endpoint for this deployment's environment, or null. */
+export function cspReportUri(env: NodeJS.ProcessEnv = process.env): string | null {
+  return sentrySecurityEndpoint(
+    env.NEXT_PUBLIC_SENTRY_DSN || env.SENTRY_DSN,
+    env.SENTRY_ENVIRONMENT || env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || env.VERCEL_ENV,
+  )
+}
+
+export function contentSecurityPolicyFor(
+  pathname: string,
+  nonce?: string,
+  options: ContentSecurityPolicyOptions = {},
+): string {
   const frameAncestors = isPaymentFramePath(pathname)
     ? "frame-ancestors 'self'"
     : "frame-ancestors 'none'"
-  return [...baseDirectives(nonce), frameAncestors].join('; ')
+  const reportUri = options.reportUri === undefined ? cspReportUri() : options.reportUri
+  const reporting = reportUri ? [`report-uri ${reportUri}`, `report-to ${CSP_REPORT_GROUP}`] : []
+  return [...baseDirectives(nonce), frameAncestors, ...reporting].join('; ')
 }
 
 /**

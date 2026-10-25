@@ -8,10 +8,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * per-item ceiling is checked before anything burns, and order is preserved.
  */
 
-const { identityScopedClient, checkRateLimit, verifyVoucherQrPayload, canVerifyVoucherQr, rpc } =
+const { identityScopedClient, rateLimit, verifyVoucherQrPayload, canVerifyVoucherQr, rpc } =
   vi.hoisted(() => ({
     identityScopedClient: vi.fn(),
-    checkRateLimit: vi.fn(),
+    rateLimit: vi.fn(),
     verifyVoucherQrPayload: vi.fn(),
     canVerifyVoucherQr: vi.fn(),
     rpc: vi.fn(),
@@ -19,7 +19,10 @@ const { identityScopedClient, checkRateLimit, verifyVoucherQrPayload, canVerifyV
 
 /** `rateLimitHeaders` stays real, so a mocked 429 cannot fake its headers. */
 vi.mock('@/lib/supabase/bearer', () => ({ identityScopedClient }))
-vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit }))
+vi.mock('@/lib/rate-limit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
+  rateLimit,
+}))
 vi.mock('@/server/domain/vouchers/qr', () => ({
   verifyVoucherQrPayload,
   canVerifyVoucherQr,
@@ -37,6 +40,18 @@ function request(body: unknown): NextRequest {
     body: JSON.stringify(body),
     headers: { 'content-type': 'application/json' },
   })
+}
+
+/** What the limiter hands back. */
+function decision(allowed: boolean) {
+  return {
+    allowed,
+    limit: 40,
+    windowSeconds: 3600,
+    remaining: allowed ? 39 : 0,
+    resetAtMs: Date.now() + 3_600_000,
+    backend: 'upstash' as const,
+  }
 }
 
 function item(key: string, code: string = CODE_A) {

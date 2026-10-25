@@ -1,7 +1,7 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { completeCardVerification } from '@/lib/payments/verify-card'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { completeCardVerification } from '../route'
 
 async function handleCallback(request: NextRequest): Promise<NextResponse> {
   const verificationId = request.nextUrl.searchParams.get('v')
