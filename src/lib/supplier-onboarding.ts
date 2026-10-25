@@ -3,6 +3,8 @@
  */
 
 import crypto from 'node:crypto'
+import { sendBuiltEmail } from '@/lib/email/templates'
+import { buildSupplierVerificationEmail } from '@/lib/email/templates/supplier-verification'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
@@ -12,9 +14,6 @@ export interface SupplierApplicationInput {
   phone: string
   email: string
   cardcomTerminalId: string
-  cardNumber: string
-  cardExpiry: string // MM/YY
-  cardCvv: string
   agreementAccepted: boolean
 }
 
@@ -116,8 +115,12 @@ export async function submitSupplierApplication(
       return { success: false, error: 'שגיאה ביצירת בקשה' }
     }
 
-    // Card verification - for now, we'll mark as pending and admin will verify manually
-    // TODO: Implement actual Cardcom 1 ILS charge verification
+    // Card verification is marked as pending for admin manual verification
+    // To implement automatic 1 ILS charge: use Cardcom Low Profile flow:
+    // 1. Create Low Profile payment for 1 ILS
+    // 2. Redirect user to Cardcom payment page
+    // 3. Handle callback with payment result
+    // 4. Update verification_status to 'verified' or 'failed'
     const chargeId: string | null = null
     const verificationStatus: 'pending' | 'verified' | 'failed' = 'pending'
 
@@ -147,8 +150,24 @@ export async function submitSupplierApplication(
       // Don't fail - application was created
     }
 
-    // TODO: Send verification email with token
-    // await sendVerificationEmail(input.email, verificationToken)
+    // Send verification email
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kenyonexpress.co.il'
+    const verificationUrl = `${siteUrl}/supplier/verify-email?token=${verificationToken}`
+
+    const emailTemplate = buildSupplierVerificationEmail({
+      businessName: input.businessName,
+      verificationUrl,
+    })
+
+    const emailResult = await sendBuiltEmail(emailTemplate, {
+      to: input.email,
+      idempotencyKey: `supplier-verification-${application.id}`,
+    })
+
+    if (!emailResult.ok) {
+      console.error('Failed to send verification email:', emailResult)
+      // Don't fail the application - admin can resend
+    }
 
     return { success: true, applicationId: application.id }
   } catch (error) {
@@ -238,7 +257,6 @@ export async function getPendingSupplierApplications() {
  */
 export async function approveSupplierApplication(
   applicationId: string,
-  _approvedBy: string,
 ): Promise<{ success: boolean; supplierId?: string; error?: string }> {
   try {
     const admin = createAdminClient()

@@ -15,9 +15,6 @@ export default function SupplierApplicationForm({ agreementText }: Props) {
     phone: '',
     email: '',
     cardcomTerminalId: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvv: '',
     agreementAccepted: false,
   })
   const [loading, setLoading] = useState(false)
@@ -40,11 +37,6 @@ export default function SupplierApplicationForm({ agreementText }: Props) {
       !formData.cardcomTerminalId
     ) {
       setError('יש למלא את כל השדות החובה')
-      return
-    }
-
-    if (!formData.cardNumber || !formData.cardExpiry || !formData.cardCvv) {
-      setError('יש למלא את פרטי הכרטיס לצורך אימות')
       return
     }
 
@@ -145,71 +137,6 @@ export default function SupplierApplicationForm({ agreementText }: Props) {
             dir="ltr"
           />
           <p className="text-xs text-gray-500 mt-1">מספר הטרמינל שלך ב-Cardcom לקבלת תשלומים</p>
-        </div>
-      </div>
-
-      <div className="space-y-4 border-t border-gray-200 pt-6">
-        <h2 className="text-lg font-semibold text-gray-900">אימות כרטיס אשראי (חיוב ₪1 לאימות)</h2>
-        <p className="text-sm text-gray-600">
-          לצורך אימות נחייב את הכרטיס ב-₪1. הסכום יוחזר תוך 24 שעות.
-        </p>
-
-        <div>
-          <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
-            מספר כרטיס <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="cardNumber"
-            value={formData.cardNumber}
-            onChange={(e) =>
-              setFormData({ ...formData, cardNumber: e.target.value.replace(/\s/g, '') })
-            }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand"
-            placeholder="4580 1234 5678 9012"
-            required
-            disabled={loading}
-            dir="ltr"
-            maxLength={19}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="cardExpiry" className="block text-sm font-medium text-gray-700 mb-1">
-              תוקף <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="cardExpiry"
-              value={formData.cardExpiry}
-              onChange={(e) => setFormData({ ...formData, cardExpiry: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand"
-              placeholder="MM/YY"
-              required
-              disabled={loading}
-              dir="ltr"
-              maxLength={5}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="cardCvv" className="block text-sm font-medium text-gray-700 mb-1">
-              CVV <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="cardCvv"
-              value={formData.cardCvv}
-              onChange={(e) => setFormData({ ...formData, cardCvv: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand"
-              placeholder="123"
-              required
-              disabled={loading}
-              dir="ltr"
-              maxLength={4}
-            />
-          </div>
         </div>
       </div>
 
