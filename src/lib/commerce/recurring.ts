@@ -71,7 +71,7 @@ export function normalizeIntervalCount(value: unknown): number | null {
 }
 
 /** Last day of a month, in UTC. February is the only interesting case. */
-function daysInMonth(year: number, monthIndex: number): number {
+export function daysInMonth(year: number, monthIndex: number): number {
   return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate()
 }
 
@@ -84,7 +84,7 @@ function daysInMonth(year: number, monthIndex: number): number {
  * the year, and a customer billed on the 31st in January would be billed on the
  * 2nd of the following month by summer.
  */
-function addMonthsUtc(date: Date, months: number): Date {
+export function addMonthsUtc(date: Date, months: number): Date {
   const year = date.getUTCFullYear()
   const monthIndex = date.getUTCMonth()
   const anchorDay = date.getUTCDate()
@@ -411,7 +411,7 @@ export function isRecurringProduct(row: unknown): boolean {
 }
 
 /** Agorot, integer, for a row that stores its own amount. */
-function subscriptionChargeAgorot(sub: Pick<BillableSubscription, 'amount_agorot'>): Agorot {
+export function subscriptionChargeAgorot(sub: Pick<BillableSubscription, 'amount_agorot'>): Agorot {
   return agorot(sub.amount_agorot)
 }
 

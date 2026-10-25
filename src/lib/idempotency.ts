@@ -47,7 +47,7 @@ export function canonicalJson(value: unknown): string {
   return JSON.stringify(sortKeys(value))
 }
 
-function sortKeys(value: unknown): unknown {
+export function sortKeys(value: unknown): unknown {
   if (typeof value === 'number' && !Number.isFinite(value)) {
     throw new TypeError('cannot canonicalize a non-finite number')
   }
@@ -77,7 +77,7 @@ export type ClaimResult = 'claimed' | 'exists'
  * Try to claim (scope, key). Returns 'claimed' if this caller inserted the row
  * (it owns the work), 'exists' if the key was already present (replay).
  */
-async function claim(
+export async function claim(
   client: SupabaseClient,
   scope: string,
   key: string,
@@ -100,7 +100,7 @@ async function claim(
 }
 
 /** Record the response hash for a claimed key. */
-async function record(
+export async function record(
   client: SupabaseClient,
   scope: string,
   key: string,
@@ -117,7 +117,7 @@ async function record(
 }
 
 /** Read the previously recorded response hash, or null if none yet. */
-async function getRecordedHash(
+export async function getRecordedHash(
   client: SupabaseClient,
   scope: string,
   key: string,
@@ -139,7 +139,7 @@ async function getRecordedHash(
  * record, return { replayed:false, result }. On replay: return
  * { replayed:true, result:null } (caller re-reads the durable result by key).
  */
-async function withIdempotency<T>(
+export async function withIdempotency<T>(
   client: SupabaseClient,
   scope: string,
   key: string,

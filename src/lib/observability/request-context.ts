@@ -56,7 +56,7 @@ export function setRequestStore(store: RequestStore): void {
   ;(globalThis as GlobalWithStore)[HANDLE] ??= store
 }
 
-function getRequestStore(): RequestStore | undefined {
+export function getRequestStore(): RequestStore | undefined {
   return (globalThis as GlobalWithStore)[HANDLE]
 }
 
@@ -65,7 +65,7 @@ export function getRequestContext(): RequestContext | undefined {
 }
 
 /** Null outside a request, which is the honest answer for a script or a test. */
-function getRequestId(): string | null {
+export function getRequestId(): string | null {
   return getRequestContext()?.requestId ?? null
 }
 
