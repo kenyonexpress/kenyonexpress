@@ -43,7 +43,7 @@ export function anyFilter(filters: CategoryFilterChips): boolean {
 }
 
 export interface CategoryFilterable {
-  supplier?: { open_weekends?: boolean | null } | null
+  weekend_only?: boolean | null
   shipping_price?: number | null
   shipping_price_agorot?: number | null
   price?: number | null
@@ -54,7 +54,7 @@ export function matchesCategoryFilters(
   product: CategoryFilterable,
   filters: CategoryFilterChips,
 ): boolean {
-  if (filters.weekend && product.supplier?.open_weekends !== true) return false
+  if (filters.weekend && product.weekend_only !== true) return false
 
   if (filters.freeShipping) {
     const shipPrice = product.shipping_price ?? (product.shipping_price_agorot ?? 0) / 100
