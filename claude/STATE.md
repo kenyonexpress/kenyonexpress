@@ -261,3 +261,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M16-c203 DONE (product page src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD via src/lib/seo/json-ld.ts; live www /product/<slug> 200 shows both types; no code changes)
 המשך מ: M17-c203 BLOCKED locked-component M17 (RTL on live / and /product sample at 380/768/1440: html dir=rtl, no horizontal overflow, /product has 0 LTR leaks; / has 11 hero paragraphs (standard_line/promo_small/promo_large) with dir=ltr in locked src/components/home/HeroSlider.tsx:555-575 containing Hebrew; rtl-lint hits on home/product are comment false positives; no code changes)
 המשך מ: M04-c204 DONE (pnpm type-check green, tsc --noEmit 0 errors; drift limited to docs/UI-PARITY-REPORT.md compare log rows, committed; no src change)
+המשך מ: M06-c204 DONE (2026-10-26): pnpm build exit 0 (273 routes), working tree clean, no drift, no code change.
