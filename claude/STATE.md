@@ -123,3 +123,6 @@ RESULT: DONE
 M18-c184: STATE.md trim check. claude/STATE.md is 123 lines (<300), docs/STATE-ARCHIVE.md already holds the archived history; nothing further to move. No code change.
 RESULT: DONE
 המשך מ: M18-c184 DONE
+M09-c185: Unused deps + dead exports re-audit. knip: only unused dep is @capacitor/android (needed by android/ Capacitor platform, kept). Unused-file hits are entry/test/script/backlog-kept and locked components (untouched); exports are tested public surface, same as c183/c184. No code change, no UI impact.
+RESULT: DONE
+המשך מ: M09-c185 DONE
