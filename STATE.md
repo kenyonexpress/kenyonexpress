@@ -277,3 +277,8 @@ Commit 4b2c7911 local only: push rejected (main ahead 11, behind 3960 vs origin)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
 Same cause as c183-c185: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/, nothing on localhost:3000. No percentages produced.
 **המשך מ: M01-c186 BLOCKED no-reference**
+
+## M03-c186 (2026-10-25)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c186: kenyonexpress.co.il serves our own build (build vs build), refs/electro-home-v7.html absent from refs/. No percentages produced.
+**המשך מ: M03-c186 BLOCKED no-reference**
