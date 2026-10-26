@@ -118,3 +118,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 line only, and the full block for each goal is in the root file.
 **המשך מ: M18-c210 DONE (2026-10-26): claude/STATE.md trimmed 299 -> 118 lines (duplicates dropped, older resume lines moved to docs/STATE-ARCHIVE.md); no code change**
 **המשך מ: M06-c211 DONE (2026-10-26): pnpm build passes (waited out a concurrent build lock); only drift was docs/M-CYCLE-STATUS.md, committed**
+**המשך מ: M08-c211 DONE (2026-10-26): Lighthouse mobile sample logged to logs/lighthouse-m08-c211.log (home 60/72, product 74/81, contended, G23 95+ not met); no code change**
