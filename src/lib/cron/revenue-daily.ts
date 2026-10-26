@@ -1,5 +1,5 @@
 /**
- * Helpers for the pg_cron job `ke-revenue-daily` (migrations/pending/289).
+ * Helpers for the pg_cron job `ke-revenue-daily` (migrations/applied/289).
  * The job itself runs in the database; this is the app-side twin for a manual
  * backfill through `aggregate_daily_revenue(p_day)`.
  */

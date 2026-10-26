@@ -24,13 +24,13 @@ import { describe, expect, it } from 'vitest'
  * `begin_checkout`, `purchase`, `voucher_redeemed` and `order_refunded` are on
  * none of it. Every server-side money event the funnel emits goes nowhere.
  *
- * THAT PARAGRAPH IS NOW HISTORY. The widened function went to production on
- * 2026-09-08 as `analytics_server_event_names_169`, and the file moved to
- * `migrations/applied/` exactly as the previous revision of this comment said
- * it should. Proved with a rolled-back `DO` block against production: five
- * events in, `returned=4`, and the four rows written were `begin_checkout`,
- * `order_refunded`, `purchase`, `voucher_redeemed`, while a made-up name was
- * still skipped. The block raised, so it left nothing behind (`residue = 0`).
+ * `migrations/applied/169` is the fix and it needs approval before it touches
+ * production. This test does not assert the live database -- it cannot, and a
+ * test that needed production to be right would fail for the next month. What
+ * it pins is the thing that is actually in this repo's control: **the pending
+ * migration must cover every name the registry can emit.** If someone adds a
+ * ninth client event or a fifth server event and does not widen 169, this goes
+ * red at the moment the name is added rather than silently after it deploys.
  *
  * What was measured before applying, and what makes the whole thing worth
  * pinning: production held 4 orders, 2 of them paid, and `analytics_events`
@@ -50,7 +50,7 @@ import { describe, expect, it } from 'vitest'
  * be churn with no invariant behind it.
  */
 
-const MIGRATION = 'migrations/applied/180_analytics_server_event_names.sql'
+const MIGRATION = 'migrations/applied/169_analytics_server_event_names.sql'
 
 /**
  * The quoted names inside the whitelist of the `CREATE OR REPLACE` in 180.

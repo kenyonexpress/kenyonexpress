@@ -8,7 +8,7 @@ import { type Agorot, ilsToAgorot } from '@/lib/commerce/money'
  * Product" -- selling at ₪1 against a ₪400 compare-at, ten in stock, status
  * active. It renders on the homepage grid as a real buyable product wearing a
  * "-100%" badge. If anyone buys one, the order is real, the payment is real,
- * and there is nothing to fulfil. `migrations/pending/172` takes it out of the
+ * and there is nothing to fulfil. `migrations/applied/172` takes it out of the
  * catalogue and is the actual fix, but it needs approval before it touches
  * production, and until then the row is live and purchasable.
  *

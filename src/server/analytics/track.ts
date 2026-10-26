@@ -156,30 +156,17 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     //
     // 180 IS APPLIED AND THIS GUARD IS NO LONGER ABOUT THESE FOUR NAMES.
     //
-    // The comment here used to say the live whitelist held only the client
-    // names and that every server money event was going nowhere, and to point
-    // at `migrations/pending/180` -- in the log line itself, which shipped that
-    // path into production logs. MEASURED 2026-09-09 by reading the deployed
-    // `fn_ingest_analytics_events`: the whitelist now carries all four, and a
-    // rolled-back probe accepted 1 of 1 for each of `begin_checkout`,
-    // `purchase`, `voucher_redeemed` and `order_refunded`, and 0 of 1 for an
-    // invented name. The whitelist half is fixed; the loss that survived it was
-    // the NOT NULL `session_id` handled above.
-    //
-    // The guard stays, because it is the only signal that an event name was
-    // dropped at the door: the function `CONTINUE`s past an unknown name with
-    // no error, no log and HTTP 200. It now means what it says rather than
-    // naming a file that is no longer pending.
-    //
-    // NOT A PROOF OF A WRITE. The deployed function increments its counter
-    // after `ON CONFLICT (event_id) DO NOTHING`, so a duplicate `event_id`
-    // would return 1 with nothing inserted. Every id here is a fresh
-    // `randomUUID`, which is why that is recorded rather than worked around.
+    // `migrations/applied/169` adds the four names and is the actual fix; it
+    // needs approval before it touches production. This does not fix the loss.
+    // It makes the loss visible, which is the part that can be done without
+    // approval -- silent data loss on the money funnel is indistinguishable
+    // from no data at all, and the version of this that logs nothing is how it
+    // survived from 151 until now.
     if (typeof accepted === 'number' && accepted < 1) {
       log.error('analytics.event_rejected', {
         eventName: input.eventName,
         detail:
-          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded.',
+          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/applied/169.',
       })
     }
 
