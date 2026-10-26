@@ -124,11 +124,13 @@ Per CLAUDE.md rule: Same external blocker across multiple attempts → SKIP and 
 - Or: User manually provides pg_stat_statements query results via docs/DB-STATUS.md
 - Or: Enable Supabase MCP connector in claude.ai settings (requires user action)
 
-## המשך מ: MAINTENANCE_LOOP_4
+## המשך מ: MAINTENANCE_LOOP_5
 
 **MAINTENANCE_LOOP_3 DONE (2026-10-26 23:35 UTC+7):** Scanned docs/BACKLOG.md and docs/TODO.md (does not exist). Found 0 unblocked items (all 3 backlog items blocked by Cardcom credentials or Supabase key). No items queued. Updated docs/MAINT-LOG.md. Quality gates: typecheck ✅, lint ✅, build ✅. Commit 9bc2d4643 pushed.
 
-**Next:** MAINTENANCE_LOOP_4 — Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md.
+**MAINTENANCE_LOOP_4 BLOCKED (2026-10-26 23:35 UTC+7):** E2E suite timeout issue persists. Ran pnpm test:e2e with 10m foreground timeout. Completed 125/874 tests (14.3%) before timeout, recorded 14 failures in admin/checkout tests (auth timeout pattern). Full suite requires 25-40 minutes; session limit is 10m. Architectural blocker: cannot complete full run. Updated docs/E2E-STATUS.md with attempt #5. Commit 752d7dca7 pushed. Per CLAUDE.md skip rule (blocked on infrastructure, not code).
+
+**Next:** MAINTENANCE_LOOP_5 — Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
 
 **MAINTENANCE_LOOP_8 CYCLE #2 COMPLETE (2026-10-26 19:38 UTC):** Scanned src/ for TODO/FIXME/HACK comments. Count: 7 total (same as cycle #1, 2026-10-26 11:15 UTC). Delta: 0 (stable, no growth). No new cleanup goal needed. Next: MAINTENANCE_LOOP_9.
 
