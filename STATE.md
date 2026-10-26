@@ -1021,7 +1021,22 @@ Products (/products):
 
 ---
 
+## סיום MAINTENANCE_LOOP_8 (2026-10-26 22:00 UTC) - COMPLETE
+
+✅ **Code debt scan:** grep for TODO/FIXME/HACK markers in src/
+
+**Results:**
+- Current count: 7 (same as prior scans)
+- Prior count: 7 (2026-10-26 20:47 UTC per STATE.md)
+- **Delta: 0 — Stable, no growth detected**
+
+**Status:** No cleanup goal queued (count stable, no growth).
+
+**Quality gates:** typecheck ✅ lint ✅ build ✅
+
+---
+
 ## המשך מ:
 
-**MAINTENANCE_LOOP_8 (Item 19 of 22):** Scan src/ for TODO/FIXME/HACK markers. Compare count to prior scan. If grew, queue cleanup goal. Commit. Push. All quality gates green.
+**MAINTENANCE_LOOP_9 (Item 20 of 22):** Verify Supabase connection pool and query performance via code analysis. Check for slow queries, timeout configuration. Document in docs/DB-STATUS.md. Commit. Push. All quality gates green.
 
