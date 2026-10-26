@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M05-c207 DONE pnpm test: 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, no failures, no drift to fix; no code change**
 **המשך מ: M06-c206 DONE pnpm build passes (Next 16.4.3), working tree clean, no drift to commit; no code change**
 **המשך מ: M08-c205 DONE Lighthouse mobile sample / and /product/<slug>: simulate 69/67, provided 100/100 (localhost simulate unstable); logged in docs/LIGHTHOUSE-STATUS.md; no code change**
 **המשך מ: M07-c205 DONE TODO/FIXME scan: 6 markers in 3 items (cardcom.ts:249, :312, r2-migration.ts:103-106), all >7d old and already filed in docs/BACKLOG.md (Cardcom creds / R2 stub + service key); line numbers re-verified; no code change, no forbidden files touched**
