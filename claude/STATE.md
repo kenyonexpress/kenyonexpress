@@ -1,12 +1,12 @@
 
 The canonical state file on this branch is the root `STATE.md`. This file
+**המשך מ: M08-c210 DONE (2026-10-26): Lighthouse mobile sample, / 52/61, product 50/62 (CPU-contended by concurrent Playwright run, TBT ~3s; c209 uncontended was 78-81); logged in logs/lighthouse-m08-c210.log; G23 95+ not met; no code change**
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 **המשך מ: M12-c209 DONE robots.ts production-safe (allow /, disallows redeem/coupon/account/supplier/admin/checkout/cart/auth/api/debug/voucher; sitemap+host on kenyonexpress.co.il, no double slash); robots.test.ts 7/7 pass; no code change**
 **המשך מ: M06-c209 DONE pnpm build passes (exit 0), working tree clean, no drift to commit; no code change**
 **המשך מ: M04-c209 DONE pnpm type-check clean (tsc --noEmit exit 0); committed drifted deps (lucide-react 1.61, zod 4.6.7), lockfile and E2E status doc; no forbidden files touched**
 **המשך מ: M06-c207 DONE pnpm build passes (exit 0, Next 16.4.3), no drift to fix; no code change**
 **המשך מ: M05-c207 DONE pnpm test: 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, no failures, no drift to fix; no code change**
-**המשך מ: M06-c206 DONE pnpm build passes (Next 16.4.3), working tree clean, no drift to commit; no code change**
 **המשך מ: M08-c205 DONE Lighthouse mobile sample / and /product/<slug>: simulate 69/67, provided 100/100 (localhost simulate unstable); logged in docs/LIGHTHOUSE-STATUS.md; no code change**
 **המשך מ: M07-c205 DONE TODO/FIXME scan: 6 markers in 3 items (cardcom.ts:249, :312, r2-migration.ts:103-106), all >7d old and already filed in docs/BACKLOG.md (Cardcom creds / R2 stub + service key); line numbers re-verified; no code change, no forbidden files touched**
 **המשך מ: M05-c205 DONE pnpm test 615 files / 7064 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
