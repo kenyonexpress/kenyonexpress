@@ -132,7 +132,9 @@ Per CLAUDE.md rule: Same external blocker across multiple attempts → SKIP and 
 
 **MAINTENANCE_LOOP_5 BLOCKED (2026-10-26 23:40 UTC+7):** Goal requires Vercel MCP get_runtime_logs to check cron route timestamps. Vercel MCP requires authentication (unavailable in non-interactive sessions per system-reminder). Used baseline from 09:25 UTC: 1/23 cron routes healthy (affiliate-payouts), 22 missing from 7d logs (stale/non-functional). Documented alert in docs/CRON-STATUS.md. Commit 12868f36e pushed. Cannot re-check without MCP.
 
-**Next:** MAINTENANCE_LOOP_6 — Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal.
+**MAINTENANCE_LOOP_6 SKIPPED (2026-10-26 23:42 UTC+7):** Mobile gate recheck via scripts/compare.mjs --page=home returned 30.23% (above 11% threshold). Reference degraded: 96 resources failed (57 script, 37 font, 1 stylesheet, 1 xhr). Code blocker: hero components locked per FORBIDDEN_FILES. Cannot apply fixes. Goal stuck on multiple attempts (2026-10-25 50.62%, 2026-10-26 61.49%, 30.23%). Per CLAUDE.md skip rule (stuck multiple attempts), marked SKIPPED. Commit 5e12c97e0 pushed.
+
+**Next:** MAINTENANCE_LOOP_7 — Run Lighthouse CI via pnpm lhci:autorun. Report scores to docs/LIGHTHOUSE-STATUS.md.
 
 **MAINTENANCE_LOOP_8 CYCLE #2 COMPLETE (2026-10-26 19:38 UTC):** Scanned src/ for TODO/FIXME/HACK comments. Count: 7 total (same as cycle #1, 2026-10-26 11:15 UTC). Delta: 0 (stable, no growth). No new cleanup goal needed. Next: MAINTENANCE_LOOP_9.
 
