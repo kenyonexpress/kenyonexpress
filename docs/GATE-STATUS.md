@@ -1,11 +1,13 @@
 # Gate Status Report
 
-## Mobile Gate Score (2026-10-26 16:55 UTC) — MAINTENANCE_LOOP_6 RECHECK
+## Mobile Gate Score (2026-10-26 20:35 UTC) — MAINTENANCE_LOOP_6 RECHECK
 
 **Test:** scripts/compare.mjs --page=home --widths=380  
 **Threshold:** ≤ 11.00%  
 **Current Score:** 61.49% (first 2600px)  
 **Status:** 🔴 ABOVE THRESHOLD - MOBILE FIX GOAL REQUEUED AT HEAD OF QUEUE
+
+**Fresh measurement timestamp:** 2026-10-26 20:35 UTC (after MAINTENANCE_LOOP_4 completion)
 
 ### Page Structure: FIXED
 - **Reference (live):** 380x17790px
