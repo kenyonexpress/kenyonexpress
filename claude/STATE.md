@@ -1,6 +1,7 @@
 
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
+**המשך מ: M06-c207 DONE pnpm build passes (exit 0, Next 16.4.3), no drift to fix; no code change**
 line only, and the full block for each goal is in the root file.
 **המשך מ: M05-c207 DONE pnpm test: 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, no failures, no drift to fix; no code change**
 **המשך מ: M06-c206 DONE pnpm build passes (Next 16.4.3), working tree clean, no drift to commit; no code change**
