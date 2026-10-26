@@ -295,3 +295,5 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-26 02:22 | home | 380 | n/a | **UNMEASURED** | `22d6a794a-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/ Call log: [2m - navigating to "http://localhost:3001/", waiting until "domc |
 | 2026-10-26 02:23 | home | 380 | 51.38% | **FAIL** | `22d6a794a-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 96 failed to load (57 script, 37 fo |
 | 2026-10-26 02:25 | home | 380 | 50.62% | **FAIL** | `22d6a794a-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 153 failed to load (113 script, 37  |
+| 2026-10-26 04:26 | home | 380 | 50.62% | **FAIL** | `cf93912ee` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-26 04:29 | home | 380 | 50.62% | **FAIL** | `64e78cda6-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
