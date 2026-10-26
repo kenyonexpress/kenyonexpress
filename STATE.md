@@ -51,23 +51,50 @@ Final commit: 7c07225bd [chore deps bump patch versions - FINAL REPORT]
 ## סיום MAINTENANCE_LOOP_1 (2026-10-26 10:24 UTC)
 ✅ Security audit completed. pnpm audit report: 4 vulnerabilities found (all in fast-uri). Severity breakdown: 2 low + 2 moderate. **NO CRITICAL OR HIGH VULNERABILITIES DETECTED.** Per goal requirement "ONLY do what is explicitly requested" - fix critical and high vulnerabilities. Since none exist, no fixes needed. Goal complete. Documentation: pnpm audit output clean. Quality gates: typecheck ✅ lint ✅ build ✅.
 
-## סיום MAINTENANCE_LOOP_5 (2026-10-26 11:05 UTC)
-✅ Cron routes status check completed via Vercel CLI. All 22 routes measured:
-- **Executing (within 24h):** 2 routes (health, notifications)
-- **Stale (>24h):** 20 routes (all others have no logs in last 24h)
-- **Regression detected:** 6 of 8 previously healthy routes from 2026-10-25 are now stale
+## SKIPPED MAINTENANCE_LOOP_5 - CONDITION UNMET, EXTERNAL MCP BLOCKER (2026-10-26 11:05 UTC)
 
-Status breakdown:
-- health, notifications: fresh (executed 2026-10-26 11:05:01 UTC)
-- invoices, stock, stranded-payments, scheduled-gifts, sms-broadcasts, fraud-monitor: now stale (were healthy 24h ago)
-- abandoned-cart, affiliate-payouts, deal-scraper, expire-vouchers, observability-check, p95-monitor, reap-carts, reconcile, retention, rfm-segmentation, search-report, stock-notifications, subscriptions, weekly-digest: all stale
+**Goal condition:** "Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push. Use Supabase MCP for DB, RLS, migrations."
 
-Quality gates: typecheck ✅ lint ✅ build ✅ (all routes healthy).
-Documentation: docs/CRON-STATUS.md updated with today's measurement (2026-10-26 11:05 UTC).
-Commit ef821d749 [autopilot] chore: ops cron status check 2026-10-26 pushed to origin/closeout/v1-final.
+**Condition status:** ❌ UNMET
+- Vercel MCP `get_runtime_logs`: returned 403 forbidden (connector lacks project authorization)
+- Supabase MCP: not used (unavailable in non-interactive session per system-reminder; OAuth required)
+
+**What was delivered (core objective complete):**
+- ✅ Cron routes status check: 22 routes measured, 2 executing (health, notifications), 20 stale (>24h)
+- ✅ Regression detected: 6 of 8 previously healthy routes now stale
+- ✅ docs/CRON-STATUS.md updated with 2026-10-26 11:05 UTC measurement
+- ✅ Commit ef821d749 [autopilot] chore: ops cron status check 2026-10-26
+- ✅ Push to origin/closeout/v1-final
+- ✅ Quality gates: typecheck ✅ lint ✅ build ✅ test ✅ (7064 tests passed, 0 failures)
+
+**Why skipped (per CLAUDE.md "goal stuck twice: skip"):**
+- **First attempt:** 2026-10-25 21:54 UTC - Vercel MCP `get_runtime_logs` returned 403 forbidden, CLI fallback used
+- **Second attempt:** 2026-10-26 11:05 UTC - Identical 403 error, CLI fallback used again
+- **External blocker:** Vercel MCP connector in claude.ai settings lacks authorization for team_TUMTPVDP8218QHwedSjmgJWl / prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP (requires Ofir to update connector scope)
+- **Pattern:** Same unresolvable external constraint on both attempts → goal marked SKIPPED per conservative handling rule
+
+**Commits:** ef821d749, e51639460 (state update)
+
+## החלטות שהתקבלו אוטומטית
+
+### MAINTENANCE_LOOP_5 SKIPPED - SECOND ATTEMPT WITH SAME MCP BLOCKER (2026-10-26)
+
+**Goal condition:** "Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Use Supabase MCP for DB, RLS, migrations."
+
+**Status:** Goal condition unmet; external MCP authorization unavailable both attempts.
+
+**External blocker:** Vercel MCP connector 403 forbidden on both 2026-10-25 and 2026-10-26. Supabase MCP unavailable in non-interactive session (OAuth required). Neither can be resolved in this session.
+
+**Decision:** SKIPPED per CLAUDE.md "goal that got stuck twice: skip" rule. Core objective (cron status documentation) delivered; condition requirements (MCP tools) unmet due to external authorization beyond this session's scope.
+
+**What was delivered:** cron status check, docs/CRON-STATUS.md updated, commit ef821d749 + push, quality gates passing (typecheck/lint/build/test).
+
+**What requires user action:** Update Vercel MCP connector grant in claude.ai settings to include team_TUMTPVDP8218QHwedSjmgJWl and project prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP for runtime logs access.
+
+---
 
 ## המשך מ:
-MAINTENANCE_LOOP_6 (next maintenance check - full test suite, E2E validation, or next queued goal)
+Next maintenance loop (E2E test suite, Lighthouse audit, or next queued feature goal from docs/BACKLOG.md)
 NEXT GOAL: Coupon redemption + QR (item 2 from GOALS-QUEUE.md). 
 Branch: feat/coupon-redemption. Read docs/ARCHITECTURE-COUPON-REDEMPTION-UX.md first.
 Requirements: Supplier scan page, QR per coupon, single-scan expiry, redemption status in order_items, RTL per refs/ke_live_singlefile.html, Vitest, compare.mjs under 11 percent.
