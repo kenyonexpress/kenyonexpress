@@ -1,3 +1,4 @@
+**המשך מ: M17-c221 DONE (2026-10-26): RTL on / and /product sample: rtl-lint hits on those routes are comments only (BenefitBar 49/91, product OG image 82); only dir=ltr is Electro carousel arrows in forbidden HeroSlider; latin-field-direction 3/3 pass; no code change**
 **המשך מ: M05-c221 DONE (2026-10-26): pnpm test green (615 files / 7064 tests pass, 28 skipped); no test drift, no code change; committed only generated docs/UI-PARITY-REPORT.md; left src/app/(store)/page.tsx uncommitted (not mine)**
 **המשך מ: M04-c221 DONE (2026-10-26): pnpm type-check green (tsc --noEmit, 0 errors); committed only generated docs/UI-PARITY-REPORT.md drift; left uncommitted src/app/(store)/page.tsx (CitiesRow hidden sm:block, not mine, gate unverified); no code changes**
 **המשך מ: M18-c220 DONE (2026-10-26): claude/STATE.md already 185 lines (<300); full history already in docs/STATE-ARCHIVE.md (28274 lines); nothing to trim, no code change**
