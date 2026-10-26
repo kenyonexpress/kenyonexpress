@@ -358,3 +358,10 @@ Continue from MOBILE_FIX_GATE BLOCKED (2026-10-26 19:10 UTC): Goal condition spe
 ---
 
 Heroes measured at 380px will remain degraded until reference baseline is fixed. No code changes.
+
+Measurement Result - HeroMobile CSS Fix Test (2026-10-26 19:10 UTC):
+Attempted to fix hero background (yellow → white per Electro spec). Result: WORSE, not better.
+- Before fix: y 200-300 at 99.7%
+- After fix: y 200-300 at 100%
+- Overall: 61.5% (unchanged from previous measurement)
+Conclusion: CSS changes cannot bridge the fundamental structural gap. Pages differ by 5328px in height (live 18146px vs local 12818px). Reverted hero fix (commit 44ee0c2d6 discarded). Goal remains BLOCKED. Per CLAUDE.md "goal stuck twice: skip", no further retry authorized.
