@@ -295,3 +295,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M09-c207 DONE (2026-10-26): knip --dependencies: only @capacitor/android flagged (needed for cap sync android); no removable deps; remaining dead exports are public type surfaces, kept; no code change, no forbidden files touched)
 המשך מ: M18-c207 DONE (2026-10-26): claude/STATE.md already 293 lines (<300) and docs/STATE-ARCHIVE.md holds history; nothing further to archive; no code change, no forbidden files touched)
 המשך מ: M04-c208 DONE (2026-10-26): pnpm type-check clean (tsc --noEmit exit 0); committed drifted status docs only; no forbidden files touched)
+המשך מ: M09-c208 DONE (2026-10-26): knip --dependencies re-run: only @capacitor/android flagged (needed for cap sync android); no removable deps; dead exports are public type surfaces, kept; no forbidden files touched)
