@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-10-26 (M18-c218: STATE.md נמדד ב-220 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c218 DONE.
+Updated: 2026-10-26 (M18-c221: STATE.md נמדד ב-234 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c221 DONE.
 Updated: 2026-10-26 (M18-c216: STATE.md נמדד ב-191 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c216 DONE.
 Updated: 2026-10-26 (M12-c216: אימות robots.txt production-safe). src/app/robots.ts: Allow / ל-*, Disallow על נתיבים פרטיים/אימות בלבד, אין התנגשות קידומת עם נתיבים ציבוריים, Sitemap+host מ-NEXT_PUBLIC_APP_URL (.env.local = https://www.kenyonexpress.co.il); אין noindex גורף. robots.test.ts: 7/7 עברו. לא נערכו קבצי קוד. המשך מ: M12-c216 DONE.
 Updated: 2026-10-26 (M11-c214: אימות sitemap.xml). https://www.kenyonexpress.co.il/sitemap.xml מחזיר 200 application/xml, XML תקין, 75 כתובות, lastmod אחרון 2026-10-24 (נגזר מעדכון הקטלוג). דגימה של 7 כתובות: 7/7 מחזירות 200. **ממצא:** age=123963s (~34 שעות) למרות s-maxage=3600, כלומר ה-CDN מגיש עותק ישן (ב-M11-c192 היה ~15.5 שעות); וכל ה-<loc> וה-Sitemap ב-robots על האפקס kenyonexpress.co.il ולא www כי NEXT_PUBLIC_APP_URL לא מוגדר ל-www בפרודקשן (הגדרת Vercel, לא קוד). sitemap.test.ts: 4/4 עברו. לא נערכו קבצי קוד. המשך מ: M11-c214 DONE.
