@@ -106,3 +106,4 @@ M04-c212 DONE 2026-10-26 pnpm type-check clean (tsc --noEmit, 0 errors); no drif
 המשך מ: M04-c212 DONE
 
 המשך מ: M16-c212 DONE
+M04-c213 DONE 2026-10-26 pnpm type-check (tsc --noEmit) exit 0, tree clean, no drift to commit. המשך מ: M04-c213 DONE
