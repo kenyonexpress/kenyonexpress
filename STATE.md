@@ -212,4 +212,12 @@ Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=fi
 
 המשך מ: M12-c207 DONE (robots.ts verified: allow /, sitemap+host from NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il, trailing-slash safe; added /login /signup /mfa /admin-mfa /debug/ disallows + test; 7/7 pass)
 
+## M01-c208 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://refs/electro-home-v7.html (dev server on :3000, 200). Reference passes classifyReference (60 wp-content refs, woocommerce body class), but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c207. No locked files touched.
+**המשך מ: M01-c208 BLOCKED reference-images-not-loading**
+
 המשך מ: M07-c208 DONE (TODO/FIXME rescan: 3 markers from 2026-09-17, all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds)
+המשך מ: M15-c208 DONE-DEFERRED (console check on / and /product/<slug> @380/768/1440 against dev :3000: Supabase "Invalid API key" -> supplier_load_failed + 400s, cred-dependent; remaining dev-only noise: eval/CSP on va.vercel-scripts debug, Next Suspense prerender warning on / and /product/[slug], /api/cart reqfail; no files edited)
+המשך מ: M16-c208 DONE (JSON-LD audit: single template src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList for every product via src/lib/seo/json-ld.ts; json-ld.test.ts 17/17 pass; no files edited)
+
+המשך מ: M18-c208 DONE (STATE.md נמדד ב-221 שורות לפני העדכון, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר; no code files edited)
