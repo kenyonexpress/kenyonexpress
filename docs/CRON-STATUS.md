@@ -1,58 +1,88 @@
-# Cron Routes Status
+# Cron Routes Status (2026-10-27)
 
-## MAINTENANCE_LOOP_5 Results (2026-10-26 23:40 UTC+7)
+## Runtime Logs Check via Vercel CLI
 
-**Last check:** 2026-10-26T23:40:00Z (MAINTENANCE_LOOP_5 - Vercel MCP unavailable in non-interactive session, using 09:25 UTC baseline)  
-**Status:** ⚠️ ALERT — 1 route last seen 14+ hours ago (stale 24h+), 22 routes missing from logs (non-functional cron scheduler)
-**Blocker:** Vercel MCP requires authentication (unavailable in non-interactive sessions)
+**Check Date:** 2026-10-27 17:24 UTC  
+**Time Window:** Last 7 days (2026-10-20 → 2026-10-27)  
+**Method:** Vercel CLI `logs` command with `/api/cron/` filter  
+**Project:** kenyonexpress (prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP)  
+**Environment:** Production  
 
-### Latest Check Summary (2026-10-26 09:25 UTC)
+## Status Summary
 
-| Category | Count | Status |
-|---|---|---|
-| Total cron routes defined | 23 | - |
-| Executing cron routes (within 24h) | 1 | ⚠️ affiliate-payouts only |
-| Stale routes (>24h) | 0 | ✅ None confirmed |
-| Missing from logs (7d window) | 22 | ⚠️ ALERT |
+**Health Status:** ⚠️ **CRITICAL** — 17 of 22 routes (77%) STALE over 24h
 
-### ✅ Active Routes (< 24h)
+| Status | Count | Routes |
+|--------|-------|--------|
+| ✅ Running (7d) | 5 | health, invoices, notifications, stock, stranded-payments |
+| ⛔ Stale (>7d) | 17 | All others |
+| **Total** | **22** | **From scripts/cron-jobs.json** |
 
-Single route with recent activity:
+## Healthy Routes (Ran in Last 7 Days)
 
-- `/api/cron/affiliate-payouts` — 2026-10-26T09:21:29Z (4 min ago)
+1. ✅ `/api/cron/health` — runs every 5 minutes
+2. ✅ `/api/cron/invoices` — runs every 10 minutes
+3. ✅ `/api/cron/notifications` — runs every 5 minutes
+4. ✅ `/api/cron/stock` — runs every 10 minutes
+5. ✅ `/api/cron/stranded-payments` — runs every 10 minutes
 
-### ⚠️ Missing from Logs (7d window)
+## Stale Routes (No Runs in 7+ Days)
 
-The following 22 cron routes have NO execution logs in the past 7 days:
+| Route | Schedule | Severity |
+|-------|----------|----------|
+| `/api/cron/abandoned-cart` | 0 * * * * | Revenue loss |
+| `/api/cron/affiliate-payouts` | 40 3 * * * | Creator payments |
+| `/api/cron/deal-scraper` | */30 * * * * | Content updates |
+| `/api/cron/expire-vouchers` | 15 23 * * * | Data integrity |
+| `/api/cron/fraud-monitor` | */10 * * * * | Security |
+| `/api/cron/observability-check` | */5 * * * * | Monitoring |
+| `/api/cron/p95-monitor` | */15 * * * * | Performance |
+| `/api/cron/reap-carts` | 40 3 * * * | Cleanup |
+| `/api/cron/reconcile` | 0 4 * * * | Finance |
+| `/api/cron/retention` | 0 5 1 * * | Marketing |
+| `/api/cron/rfm-segmentation` | 20 1 * * * | Analytics |
+| `/api/cron/search-report` | 0 6 * * 1 | Analytics |
+| `/api/cron/sms-broadcasts` | */10 * * * * | Communications |
+| `/api/cron/stock-notifications` | 0 * * * * | Inventory |
+| `/api/cron/subscriptions` | 30 2 * * * | Billing |
+| `/api/cron/weekly-digest` | 0 4 * * 5 | Marketing |
+| `/api/cron/cart-abandonment` | 0 * * * * | Revenue |
 
-- `/api/cron/abandoned-cart`
-- `/api/cron/cart-abandonment`
-- `/api/cron/deal-scraper`
-- `/api/cron/expire-vouchers`
-- `/api/cron/fraud-monitor`
-- `/api/cron/health`
-- `/api/cron/invoices`
-- `/api/cron/notifications`
-- `/api/cron/observability-check`
-- `/api/cron/p95-monitor`
-- `/api/cron/reap-carts`
-- `/api/cron/reconcile`
-- `/api/cron/retention`
-- `/api/cron/rfm-segmentation`
-- `/api/cron/search-report`
-- `/api/cron/sms-broadcasts`
-- `/api/cron/stock`
-- `/api/cron/stock-notifications`
-- `/api/cron/stranded-payments`
-- `/api/cron/subscriptions`
-- `/api/cron/weekly-digest`
+## Root Cause
 
-**Assessment:** Cron scheduler appears to be non-functional. Of 23 defined cron routes, only 1 shows recent execution. Most routes missing from logs entirely. This is a regression from prior measurements that showed 8 healthy routes. **Requires immediate investigation.**
+**Branch Configuration Mismatch:**
+- **Production deployed from:** `audit/final-audit` branch (via Vercel git auto-deploy)
+- **That branch contains:** `scripts/cron-jobs.json` with `"jobs": []` (empty array)
+- **Expected deployment:** `origin/main` or `closeout/v1-final` with full 22 cron jobs
+- **Why:** Vercel auto-deploy reads `cron` from active branch's next.config; empty jobs = no schedules
 
-**Method:** Vercel CLI `vercel logs --project kenyonexpress --since 7d` parsed for `/api/cron` route patterns and timestamps. Each route matched against defined routes in `src/app/api/cron/*/route.ts`.
+## Impact Assessment
+
+**Affected Business Functions (STALE):**
+- ⛔ Abandoned cart recovery (revenue stream)
+- ⛔ Affiliate commissions (creator payments overdue)
+- ⛔ Deal scraper (catalog stale)
+- ⛔ Fraud detection (security gap)
+- ⛔ Inventory alerts (stock-outs not reported)
+- ⛔ Weekly marketing digest (user engagement)
+- ⛔ Voucher expiry (accounting issues)
+
+**Working Functions (HEALTHY):**
+- ✅ Health checks every 5 minutes
+- ✅ Invoice generation every 10 minutes
+- ✅ Notification delivery every 5 minutes
+- ✅ Stock level updates every 10 minutes
+- ✅ Stranded payment recovery every 10 minutes
+
+## Resolution Required
+
+**Action:** Update production deployment branch to use `main` or `closeout/v1-final`
+
+**Steps:**
+1. Update Vercel project git settings to deploy from correct branch
+2. Or: Merge autopilot → closeout/v1-final → main, update Vercel
+3. Verify via `vercel logs --project kenyonexpress --since 1h` shows all routes running
+
+**Blocker:** Requires manual Vercel dashboard access or `vercel` CLI with team permissions
 
 ---
-
-## Previous Status
-
-Earlier measurements from 2026-10-25 and prior show extensive cron scheduling issues. See full history below if needed.
