@@ -1,7 +1,6 @@
 
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
-line only, and the full block for each goal is in the root file.
 **המשך מ: M12-c209 DONE robots.ts production-safe (allow /, disallows redeem/coupon/account/supplier/admin/checkout/cart/auth/api/debug/voucher; sitemap+host on kenyonexpress.co.il, no double slash); robots.test.ts 7/7 pass; no code change**
 **המשך מ: M06-c209 DONE pnpm build passes (exit 0), working tree clean, no drift to commit; no code change**
 **המשך מ: M04-c209 DONE pnpm type-check clean (tsc --noEmit exit 0); committed drifted deps (lucide-react 1.61, zod 4.6.7), lockfile and E2E status doc; no forbidden files touched**
@@ -297,3 +296,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M10-c209 DONE-DEFERRED (2026-10-26): migrations/pending has       87 sql files, applied/ has       63; cannot verify against production because Supabase MCP is unauthenticated in this non-interactive session and keys 401 pending C51 recovery; nothing applied; no code changes, no forbidden files touched)
 המשך מ: M16-c209 DONE (2026-10-26): only indexable product page /product/[slug] emits both Product (offers, brand, image, conditional aggregateRating) and BreadcrumbList (בית > category > product) JSON-LD via src/lib/seo/json-ld.ts; /product/[slug]/gift is noindex; json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
 המשך מ: M04-c210 DONE (2026-10-26): pnpm type-check clean (tsc --noEmit exit 0); committed drifted status docs only; no forbidden files touched)
+line only, and the full block for each goal is in the root file.
