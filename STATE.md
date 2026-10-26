@@ -226,3 +226,11 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M01-c209 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server restarted on :3000, 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set (would score collapsed blocks as design diff). Same as M01-c204..c208. No locked files touched.
 **המשך מ: M01-c209 BLOCKED reference-images-not-loading**
+
+## M01-c210 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server on :3000, 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c209. No locked files touched.
+**המשך מ: M01-c210 BLOCKED reference-images-not-loading**
+
+## M02-c210 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server on :3000, 200; local /product/מוצר-לדוגמא). Reference passes classifyReference, but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set (would score the catalogue-size gap as design diff). No locked files touched.
+**המשך מ: M02-c210 BLOCKED product-grid-count-mismatch-12-vs-4**
