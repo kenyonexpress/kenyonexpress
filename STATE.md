@@ -194,3 +194,7 @@ Verify /api/health and /api/ready with real deps. Routes exist (src/app/api/heal
 ## M01-c217 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server was down, started `pnpm dev`, :3000 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 13/9/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c216. No locked files touched.
 **המשך מ: M01-c217 BLOCKED reference-images-not-loading**
+
+## M02-c217 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server :3000 up; local /product/מוצר-לדוגמא). Unforced: all three REFUSED by the grid-count guard (reference 12 cards vs 4 local). With COMPARE_ALLOW_GRID_MISMATCH=1 (measurement only): 35.07% @380, 29.82% @768, 20.52% @1440, all above the 11% gate. No code changes, no locked files touched.
+**המשך מ: M02-c217 BLOCKED gate-fail (product 35.07/29.82/20.52 vs 11%; unforced run refused on grid 12 vs 4)**
