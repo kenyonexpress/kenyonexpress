@@ -98,9 +98,31 @@ Continue from MAINTENANCE_LOOP_6 DONE (2026-10-26 04:25 UTC): Mobile gate score 
 ## סיום MAINTENANCE_LOOP_7 (2026-10-26 04:54 UTC) - COMPLETE
 ✅ Lighthouse CI comprehensive audit completed via pnpm lhci:autorun. Results: Homepage (/) Performance 99, Accessibility 100, SEO 100, Best Practices 93. Products (/products) Performance 99, Accessibility 100, SEO 100, Best Practices 93. All scores exceed 90 threshold with excellent consistency (variance ≤1 point). Documented comprehensive results in docs/LIGHTHOUSE-STATUS.md with run distribution, comparison to prior audit (Performance +1, Accessibility +2), and assessment. No optimization goal required. Quality gates: typecheck ✅ lint ✅ build ✅. Commit 60ce138cb [autopilot] chore: qa lighthouse check - complete pushed.
 
+## סיום MOBILE-GATE-FIX INVESTIGATION (2026-10-26 05:30 UTC) - ROOT CAUSE IDENTIFIED
+Root cause identified: Architectural difference between local React build and live Elementor-based WordPress site.
+
+**Findings:**
+- Local page height: 5151px at 380px viewport
+- Live reference height: 18146px at 380px viewport  
+- Height ratio: 0.28x (local is 28% of live height)
+- Gate score: 50.62% (threshold: < 11%)
+
+**Root causes identified:**
+1. **Hero section mismatch** (y 200-300: 99.7% diff): Live uses Elementor slider/carousel with multiple slides; local uses simple fixed hero (200px)
+2. **Product grid layout**: Local renders 2-column grid at 380px (Electro design), but live renders 1-column (Elementor design)
+3. **Reference degradation**: The ke_live_home.html reference is missing 153 failed resources (113 scripts, 37 fonts, 2 stylesheets, 1 xhr), affecting layout accuracy
+4. **Architectural incompatibility**: Live site is WordPress/Elementor; local is Next.js React - fundamentally different responsive behavior
+
+**Attempted fix (reverted):** Changed mobile grid from 2-column to 1-column to match live - made score worse (56.58%), confirming the issue is deeper than grid layout.
+
+**Next steps:** Hero section needs investigation. The 99.7% difference in y 200-300 band is the primary issue. Options:
+1. Increase HeroMobile height to match live reference (may require understanding Elementor slider dimensions)
+2. Accept that Electro design (2-column, smaller hero) differs from WordPress design (1-column, taller hero)
+3. Adjust comparison baseline or gate tolerance if architectural differences are acceptable
+
 ## המשך מ:
-MOBILE-GATE-FIX (item 1 from GOALS-QUEUE.md) — score 50.62% vs 11% threshold.
-Next: Investigate structural height difference (local 0.28x of live), check data loading, missing sections, responsive layout.
+MOBILE-GATE-FIX continued - Investigate hero height and Elementor slider design in live reference.
+Verify if Electro 2-column design is intentional and acceptable vs live 1-column design.
 Estimated: Data loading issue or structural page difference (CitiesRow per C24 trade-off noted in prior decision).
 Alternative: If third stuck attempt, mark SKIPPED per CLAUDE.md rule.
 
