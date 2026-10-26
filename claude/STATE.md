@@ -192,3 +192,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M16-c221 DONE (2026-10-26): /product/[slug] emits JSON-LD Product + BreadcrumbList (buildProductJsonLd/buildBreadcrumbJsonLd); json-ld.test.ts 26/26 pass; /product/[slug]/gift is noindex, no LD needed; no code changes**
 **המשך מ: M04-c222 DONE (2026-10-26): pnpm type-check (tsc --noEmit) passes clean, no drift; working tree clean, in sync with origin; no code changes**
 **המשך מ: M05-c222 DONE (2026-10-26): pnpm test 615 files pass / 7064 tests pass (2 files skipped); no drift, working tree clean; no code changes**
+**המשך מ: M06-c222 DONE (2026-10-26): pnpm build exit 0 on closeout/v1-final; only drift docs/M-CYCLE-STATUS.md timestamp, committed + pushed edb63b9db**
