@@ -1,0 +1,11 @@
+# M08-c212 Lighthouse mobile sample 2026-10-26 (prod build of kenyonexpress-autopilot @942d793f9, port 3100, simulate throttling, 2 runs/page, scripts/_lh-runs.mjs; load avg ~3)
+# NOTE: ke-merger main fails 'next build' (ambiguous /c/[slug] vs src/app/c/[code]); sampled the autopilot tree instead.
+c212-home #1: {"run":1,"score":86,"FCP":"1.5 s","LCP":"4.1 s","SI":"1.5 s","TBT":"20 ms","CLS":"0.019","TTFB":"Root document took 10 ms","blocking":"430 ms","unusedJS":"79 KiB","legacyJS":"-"}
+c212-home #2: {"run":2,"score":83,"FCP":"1.5 s","LCP":"4.6 s","SI":"1.5 s","TBT":"50 ms","CLS":"0.019","TTFB":"Root document took 0 ms","blocking":"450 ms","unusedJS":"79 KiB","legacyJS":"-"}
+
+c212-home scores: 86 / 83  (median 86)
+c212-product #1: {"run":1,"score":86,"FCP":"1.7 s","LCP":"4.1 s","SI":"1.7 s","TBT":"40 ms","CLS":"0","TTFB":"Root document took 0 ms","blocking":"840 ms","unusedJS":"79 KiB","legacyJS":"-"}
+c212-product #2: {"run":2,"score":85,"FCP":"1.7 s","LCP":"4.2 s","SI":"1.7 s","TBT":"40 ms","CLS":"0","TTFB":"Root document took 0 ms","blocking":"900 ms","unusedJS":"79 KiB","legacyJS":"-"}
+
+c212-product scores: 86 / 85  (median 86)
+Note: G23 95+ not met (home 83-86, product 85-86); LCP 4.1-4.6 s is the main gap. Sample-only item, no code changes.
