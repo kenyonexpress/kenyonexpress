@@ -219,3 +219,16 @@ Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server :
 ## M11-c218 (2026-10-26)
 Sitemap verify. Code/build side OK: src/app/sitemap.ts (cacheLife hours, orFail reads), built .next sitemap.xml has 79 URLs, lastmod 2026-10-24/25, robots.ts points at /sitemap.xml, sitemap+robots vitest 11/11 pass. Live side NOT verified: kenyonexpress.co.il 308 -> www, www/sitemap.xml returns 403 "Vercel Security Checkpoint" (x-vercel-mitigated: challenge) to curl; Vercel MCP fetch also 403. Not committed/pushed (local main diverged 81/4491 from origin). No locked files touched.
 **המשך מ: M11-c218 BLOCKED live-sitemap-behind-vercel-challenge**
+
+## M01-c219 (2026-10-26)
+Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html (:3000 up, reference passes classifyReference this run, all exit 0). OVERALL first 2600px: 380 = 29.28% (mine 380x18377 vs ref 3332x53681, height ratio 0.34x); 768 = 27.26% (mine 768x9136, ratio 0.18x); 1440 = 20.5% (mine 1440x5502, ratio 0.11x). Tool flags all three as NOT a pixel gate (structurally different heights: local home is far shorter than the v7 reference, likely local data/fallback render, see supabase.admin_key_invalid). Gate <11% not passed at any width. Ref screenshot is 3332px wide at every width, so the live side is not responsive-matched either. No locked files touched; nothing committed.
+**המשך מ: M01-c219 BLOCKED home-gate-fail-29.28/27.26/20.5pct-height-mismatch**
+
+## M01-c220 (2026-10-26)
+Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html at --width=380 / 768 / 1440 (:3000 up, all exit 0). OVERALL first 2600px: 380 = 29.28%, 768 = 27.26%, 1440 = 20.5%; byte-identical to M01-c219. Tool flags all three as NOT a pixel gate (height ratio 0.34x / 0.18x / 0.11x, local home far shorter than the v7 reference). Gate <11% not passed at any width. No locked files touched; nothing committed.
+**המשך מ: M01-c220 BLOCKED home-gate-fail-29.28/27.26/20.5pct-height-mismatch**
+
+## M03-c220 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (:3000 up). All three REFUSED by the reference guard: default live URL kenyonexpress.co.il/product-category/hot-deals/ serves our own Vercel build, and refs/ has no Electro v7 category reference file to pass via --live=. No diff percentages produced; gate not passed. Same state as M03-c218. No locked files touched; nothing committed.
+**המשך מ: M03-c220 BLOCKED category-reference-missing**
+המשך מ: M12-c220 DONE (robots.ts verified: /redeem/ /coupon/ + auth areas disallowed, sitemap on origin, 7/7 tests pass)
