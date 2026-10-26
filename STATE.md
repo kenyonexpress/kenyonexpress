@@ -1,7 +1,17 @@
 ## המשך מ:
 
-**NEXT GOAL:** Mobile Gate Fix (380px) from GOALS-QUEUE.md item 1
-Score 50.62% vs 11% threshold. Investigate structural height difference (local 0.28x height of live). Root cause likely data loading or responsive layout. See docs/GATE-STATUS.md for prior measurements. Use scripts/compare.mjs and Vitest. Target: reduce to below 11%. Branch: work on closeout/v1-final.
+**CURRENT GOAL: Mobile Gate Fix (380px)** - PARTIAL PROGRESS
+- Identified and fixed structural layout bug: 2-column grid at mobile (Electro design) vs 1-column flex (live layout)
+- Page height improved 7.67x: 5151px → 12818px (now 72% of live's 17790px, was 28%)
+- Restored 1-column flex layout to match live parity
+- Applied F43 spacing improvements (deals-top 3px→150px, hero-mobile 250px→300px)
+- Current score: 61.48% (vs 11% target, 50.48% gap remains)
+- Commits: 9ec2fdb96 (layout fix), 5eb3ac6e9 (docs)
+- Quality gates: typecheck ✅ lint ✅
+
+**BLOCKING ISSUE:** Reference page has 153 missing resources (113 scripts, 37 fonts, 2 stylesheets, 1 xhr), making pixel comparison unreliable. Hero section y=200-300 shows 99.7% difference - needs visual debugging. Page height still only 72% of live despite layout fix - missing content/sections somewhere.
+
+**NEXT:** Investigate why page is still 28% shorter than live even after layout fix. Check for missing sections, content loading issues, or spacing problems in components other than deals grid.
 
 ---
 
