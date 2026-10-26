@@ -1,0 +1,11 @@
+# M08-c222 Lighthouse mobile sample 2026-10-26 (localhost:3000 next-server, default mobile simulate, 2 runs/page, scripts/_lh-runs.mjs; /product alone 404s, using /product/bar-drink)
+# load avg at start: 3.24 8.31 6.59
+c222-home #1: {"run":1,"score":62,"FCP":"1.7 s","LCP":"9.8 s","SI":"3.3 s","TBT":"450 ms","CLS":"0.001","TTFB":"Root document took 520 ms","blocking":"660 ms","unusedJS":"538 KiB","legacyJS":"-"}
+c222-home #2: {"run":2,"score":68,"FCP":"1.7 s","LCP":"9.5 s","SI":"3.2 s","TBT":"290 ms","CLS":"0.001","TTFB":"Root document took 190 ms","blocking":"750 ms","unusedJS":"538 KiB","legacyJS":"-"}
+
+c222-home scores: 62 / 68  (median 68)
+
+c222-product #1: {"run":1,"score":46,"FCP":"1.8 s","LCP":"5.5 s","SI":"4.7 s","TBT":"4,320 ms","CLS":"0","TTFB":"Root document took 710 ms","blocking":"940 ms","unusedJS":"703 KiB","legacyJS":"-"}
+c222-product #2: {"run":2,"score":71,"FCP":"1.7 s","LCP":"7.4 s","SI":"1.7 s","TBT":"240 ms","CLS":"0.001","TTFB":"Root document took 70 ms","blocking":"900 ms","unusedJS":"704 KiB","legacyJS":"-"}
+
+c222-product scores: 46 / 71  (median 71)
