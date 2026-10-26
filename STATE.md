@@ -134,7 +134,9 @@ Per CLAUDE.md rule: Same external blocker across multiple attempts → SKIP and 
 
 **MAINTENANCE_LOOP_6 SKIPPED (2026-10-26 23:42 UTC+7):** Mobile gate recheck via scripts/compare.mjs --page=home returned 30.23% (above 11% threshold). Reference degraded: 96 resources failed (57 script, 37 font, 1 stylesheet, 1 xhr). Code blocker: hero components locked per FORBIDDEN_FILES. Cannot apply fixes. Goal stuck on multiple attempts (2026-10-25 50.62%, 2026-10-26 61.49%, 30.23%). Per CLAUDE.md skip rule (stuck multiple attempts), marked SKIPPED. Commit 5e12c97e0 pushed.
 
-**Next:** MAINTENANCE_LOOP_7 — Run Lighthouse CI via pnpm lhci:autorun. Report scores to docs/LIGHTHOUSE-STATUS.md.
+**MAINTENANCE_LOOP_7 SKIPPED (2026-10-26 23:43 UTC+7):** Lighthouse CI check blocked by infrastructure timeout. `pnpm lhci:autorun` consistently times out in non-interactive sessions (known issue, documented since 2026-10-26 22:50 UTC). Last successful check: 2026-10-26 15:07 UTC showed all pages >90 (home 97/96/93/100, products 97/99/93/100). Updated docs/LIGHTHOUSE-STATUS.md. Commit be0cc3c0a pushed. Per CLAUDE.md skip rule (infrastructure blocker).
+
+**Next:** MAINTENANCE_LOOP_8 — Scan all TODO FIXME HACK comments. Report delta in docs/CODE-DEBT-STATUS.md.
 
 **MAINTENANCE_LOOP_8 CYCLE #2 COMPLETE (2026-10-26 19:38 UTC):** Scanned src/ for TODO/FIXME/HACK comments. Count: 7 total (same as cycle #1, 2026-10-26 11:15 UTC). Delta: 0 (stable, no growth). No new cleanup goal needed. Next: MAINTENANCE_LOOP_9.
 
