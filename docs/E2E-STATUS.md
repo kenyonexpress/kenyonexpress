@@ -1,23 +1,33 @@
 # E2E Test Status
 
-## MAINTENANCE_LOOP_4 - ARCHITECTURAL BLOCKER (Session Timeout Limit)
+## MAINTENANCE_LOOP_4 - AUTHENTICATION BLOCKER (2026-10-26 23:55 UTC+7)
 
-**Status:** ⛔ Goal condition UNMET - Full E2E suite cannot complete in non-interactive session
+**Status:** ⚠️ INCOMPLETE - Admin authentication broken, preventing full suite completion
 
-**Attempts (2026-10-26):**
-1. First attempt (15:19 UTC): 41/874 tests (4.7%) - Background timeout
-2. Second attempt (17:42 UTC): 590/874 tests (67%) - Background timeout  
-3. Third attempt (20:24 UTC): 125/874 tests (14.3%) - Background timeout (killed port conflicts, 14 failures)
-4. Fourth attempt (20:58 UTC): 414/874 tests (47%) - Foreground+background max timeout
-5. Fifth attempt (23:35 UTC+7): 125/874 tests (14.3%) - Background timeout, 14 failures recorded
+**Latest Attempt (2026-10-26 23:55 UTC+7):**
+- Started: 874 tests configured (pnpm test:e2e)
+- Executed: 48 test specs (~5.5% of suite)
+- **Failed: 7 tests** - ALL authentication-related (admin sign-in timeouts)
+- Termination: Background process killed at 15-minute timeout
 
-**Root Cause:** Non-interactive session with 10-minute timeout maximum. Full E2E suite requires 25-40 minutes. Process terminates at various checkpoints (41, 590, 125, 414 of 874) without completing or generating final summary.
+**Root Cause:** Admin sign-in authentication broken in E2E test environment
+- All 7 failures occur in `signInWithEmail()` at `auth-session.ts:47`
+- Pattern: `getByRole('button', { name: 'כניסה' }).click()` succeeds, but `page.waitForURL` never completes (20s timeout)
+- Page remains on `/login` route after click, suggesting server not redirecting or auth state not updating
 
 **Architectural Constraint:** 
 - Foreground command max: 600s (10 min)
-- Background command max: 600s additional (10 min total ~20m with foreground)
+- Background command max: 900s (15 min)
 - Full E2E suite requirement: 25-40 minutes
-- **Mismatch: Impossible to satisfy in current session format**
+- **Mismatch: Cannot complete full suite within session timeout**
+
+**Previous Attempts (2026-10-26):**
+1. First attempt (15:19 UTC): 41/874 tests (4.7%) - Background timeout
+2. Second attempt (17:42 UTC): 590/874 tests (67%) - Background timeout  
+3. Third attempt (20:24 UTC): 125/874 tests (14.3%) - Background timeout (14 failures)
+4. Fourth attempt (20:58 UTC): 414/874 tests (47%) - Foreground+background max timeout
+5. Fifth attempt (23:35 UTC+7): 125/874 tests (14.3%) - Background timeout
+6. **Sixth attempt (23:55 UTC+7): 48 test specs - Auth failures**
 
 **Run 4 Details (2026-10-26 20:58 UTC):**
 - Tests completed: 414/874 (47.3%)
