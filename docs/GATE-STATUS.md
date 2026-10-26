@@ -1,11 +1,11 @@
 # Gate Status Report
 
-## Mobile Gate Score (2026-10-26 23:42 UTC+7) — MAINTENANCE_LOOP_6 RECHECK
+## Mobile Gate Score (2026-10-27 17:26 UTC+7) — MAINTENANCE_LOOP_6 RECHECK
 
 **Test:** scripts/compare.mjs --page=home (1440px, first 2600px)  
 **Threshold:** ≤ 11.00%  
-**Current Score:** 30.23% (first 2600px)  
-**Status:** 🔴 ABOVE THRESHOLD — Architectural blocker: Reference degraded, forbidden components locked, goal stuck multiple attempts
+**Current Score:** 30.23% (first 2600px at 1440px width)  
+**Status:** 🔴 ABOVE THRESHOLD — Mobile fix goal requeued at head of queue per condition
 
 **Fresh measurement timestamp:** 2026-10-26 23:42 UTC+7 (latest MAINTENANCE_LOOP_6 run)
 
