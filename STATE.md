@@ -457,7 +457,7 @@ Quality gates: typecheck ✅ lint ✅ build ✅
 
 ## סיום MAINTENANCE_LOOP_6 (2026-10-26 21:00 UTC) - COMPLETE
 
-✅ **Goal condition:** "Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal at head of queue."
+✅ **Goal condition:** "Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal at head of queue. Use Supabase MCP for DB, RLS, migrations."
 
 **Measurement (2026-10-26 21:00 UTC):**
 - Test: scripts/compare.mjs --page=home --width=380
@@ -468,9 +468,14 @@ Quality gates: typecheck ✅ lint ✅ build ✅
 
 **Action taken:** Requeued MOBILE-GATE-FIX goal at head of ~/ke-goals/queue.txt (now item 1).
 
+**Supabase MCP attempt:** 
+- ToolSearch query for Supabase MCP tools: No tools available
+- Root cause: Supabase MCP requires OAuth authentication (unavailable in non-interactive session per system-reminder)
+- Status: Cannot be fulfilled in current session type (same constraint as prior MAINTENANCE_LOOP goals)
+
 **Quality gates:** typecheck ✅ lint ✅ build ✅
 
-**Commits:** bf2a1f8a6 (GATE-STATUS.md + queue update, pushed)
+**Commits:** bf2a1f8a6 (GATE-STATUS.md + queue update), ae08a9cb5 (STATE.md update), 1d4cb1a75 (quality gates verification) — all pushed
 
 ---
 
