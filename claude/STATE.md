@@ -100,7 +100,6 @@ M06-c182 2026-10-25: pnpm build succeeds (all routes generated). Drift committed
 RESULT: DONE
 M09-c182 2026-10-25: knip run. Removed unused react-hook-form + dead src/components/ui/form.tsx (no importers); type-check + build green. Kept @capacitor/android (android/ native project), drizzle-orm/postgres (knip false positive, drizzle.config needs SUPABASE_DB_URL). Unused exports/types (~236, mostly type-only public API) left in place: low value, wide blast radius; list in knip output.
 RESULT: DONE
-המשך מ: M09-c182 DONE
 M11-c182 2026-10-25: sitemap.xml verified. Live www.kenyonexpress.co.il/sitemap.xml 200 application/xml, 75 URLs, newest lastmod 2026-10-24 (catalogue-driven); apex 308 -> www, sampled <loc> URLs resolve 200; robots.txt references sitemap; sitemap/robots vitest 17/17 pass. No code change.
 RESULT: DONE
 המשך מ: M11-c182 DONE
@@ -292,7 +291,8 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M07-c209 DONE (2026-10-26): TODO/FIXME scan: same 6 markers in src (cardcom.ts x2, r2-migration.ts x4), all older than 7 days and already filed in docs/BACKLOG.md items 1-3; blocked on Cardcom prod creds / Supabase service-role key; no new markers; no forbidden files touched)
 המשך מ: M09-c207 DONE (2026-10-26): knip --dependencies: only @capacitor/android flagged (needed for cap sync android); no removable deps; remaining dead exports are public type surfaces, kept; no code change, no forbidden files touched)
 המשך מ: M18-c207 DONE (2026-10-26): claude/STATE.md already 293 lines (<300) and docs/STATE-ARCHIVE.md holds history; nothing further to archive; no code change, no forbidden files touched)
-המשך מ: M04-c208 DONE (2026-10-26): pnpm type-check clean (tsc --noEmit exit 0); committed drifted status docs only; no forbidden files touched)
 המשך מ: M09-c208 DONE (2026-10-26): knip --dependencies re-run: only @capacitor/android flagged (needed for cap sync android); no removable deps; dead exports are public type surfaces, kept; no forbidden files touched)
 המשך מ: M08-c209 DONE (2026-10-26): Lighthouse mobile sample logged in logs/lighthouse-m08-c209.log: home 78/81, product 81/80 (G23 95+ not met, LCP-bound; sample only); no forbidden files touched)
 המשך מ: M10-c209 DONE-DEFERRED (2026-10-26): migrations/pending has       87 sql files, applied/ has       63; cannot verify against production because Supabase MCP is unauthenticated in this non-interactive session and keys 401 pending C51 recovery; nothing applied; no code changes, no forbidden files touched)
+המשך מ: M16-c209 DONE (2026-10-26): only indexable product page /product/[slug] emits both Product (offers, brand, image, conditional aggregateRating) and BreadcrumbList (בית > category > product) JSON-LD via src/lib/seo/json-ld.ts; /product/[slug]/gift is noindex; json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
+המשך מ: M04-c210 DONE (2026-10-26): pnpm type-check clean (tsc --noEmit exit 0); committed drifted status docs only; no forbidden files touched)
