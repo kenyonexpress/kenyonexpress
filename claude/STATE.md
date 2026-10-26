@@ -111,3 +111,4 @@ M07-c213 DONE 2026-10-26 TODO/FIXME scan: 0 markers left in code; all aged ones 
 M17-c213 DONE 2026-10-26 RTL probe (playwright, 380/768/1440) on / and /product/צימר-מאסטר: html dir=rtl lang=he, overflow 0, no physical text-align. Product: 0 direction:ltr Hebrew nodes. Home: only hero slide text (locked hero geometry, intentional per M17-c211). No code changes. No locked files touched.
 המשך מ: M17-c213 DONE
 המשך מ: M04-c214 DONE (type-check clean, no drift, nothing to commit)
+M07-c214 DONE 2026-10-26 TODO/FIXME scan: 0 markers in code; aged ones already filed in docs/BACKLOG.md #8-11. No code change, no locked files touched. המשך מ: M07-c214 DONE
