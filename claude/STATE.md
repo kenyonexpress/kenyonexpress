@@ -1,4 +1,5 @@
 
+**המשך מ: M15-c213 DONE-DEFERRED (2026-10-26): console NOT clean on / and /product/<slug> at 380/768/1440 (dev server :3000). Causes: Supabase "Invalid API key" (homepage.cms_read_failed, product_detail.supplier_load_failed, HTTP 400s) = cred-deferred; dev-only CSP blocks eval() + va.vercel-scripts.com; Next "runtime data outside Suspense" error on /product/[slug] needs separate fix; no code change**
 **המשך מ: M12-c213 DONE (2026-10-26): robots.ts verified production-safe (no blanket Disallow, private/auth/voucher paths blocked, sitemap+host on kenyonexpress.co.il, 7/7 robots tests pass); no code change**
 **המשך מ: M18-c212 DONE (2026-10-26): claude/STATE.md is 129 lines, already under 300; docs/STATE-ARCHIVE.md exists, nothing to archive; no code change**
 **המשך מ: M07-c212 DONE (2026-10-26): TODO/FIXME scan found 6 markers in 2 files, all older than 7 days and already filed in docs/BACKLOG.md (#1-#3, Cardcom creds + R2 stub); no code change**
@@ -132,3 +133,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M06-c213 DONE (2026-10-26): pnpm build exit 0, no drift, nothing to commit**
 **המשך מ: M09-c213 DONE (2026-10-26): knip audit — no safe removals. drizzle-orm still imported by src/db/schema (RLS tests live in src/db/__tests__); postgres/pg used by scripts/*.mjs; @capacitor/android backs android/ native project; @mdx-js/loader needed by @next/mdx. 79 unused exports are shadcn primitives, type aliases, script helpers, and locked HeroSlider — left as is; no code change**
 **המשך מ: M10-c213 BLOCKED (2026-10-26): migrations/pending has 89 files; cannot verify applied state — Supabase MCP (project ixvwfbuvfxxsjiywhbbb) unauthorized in this non-interactive session; 301_supplier_verification_status known unapplied (M15-c185); no code change**
+**המשך מ: M16-c213 DONE (2026-10-26): single dynamic template src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD (builders in src/lib/seo/json-ld.ts) for every product; missing/inactive slugs hit notFound(); json-ld tests 26/26 pass; no code change**
