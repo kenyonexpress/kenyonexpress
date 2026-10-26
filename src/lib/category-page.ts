@@ -98,7 +98,7 @@ export type CategoryProductRow = {
  * `latitude`/`longitude` are optional because they arrive with 136 and
  * are not selected yet. Typed here so the geo helpers compile against the
  * shape they will have, without the query pretending the columns exist.
- * `name` and `verification_status` are from migration 297.
+ * `verification_status` is from migration 301 (optional until migration applied).
  * F63: added open_weekends for weekend filter chip (migration 306).
  */
 type SupplierJoin = {
@@ -106,7 +106,7 @@ type SupplierJoin = {
   city: string | null
   latitude?: number | null
   longitude?: number | null
-  verification_status: 'unverified' | 'pending' | 'verified'
+  verification_status?: 'unverified' | 'pending' | 'verified'
   /** F63: for weekend filter chip, migration 306 */
   open_weekends?: boolean | null
 }
@@ -496,7 +496,7 @@ export async function getShopProducts(opts: {
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, categories!products_category_id_fkey(name_he, slug), suppliers(name, city, verification_status)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, categories!products_category_id_fkey(name_he, slug), suppliers(name, city)',
       { count: 'exact' },
     )
     .eq('status', 'active')
