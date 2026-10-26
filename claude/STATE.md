@@ -141,3 +141,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M16-c214 DONE (2026-10-26): re-verified single template src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD (json-ld.ts builders), /gift is noindex so excluded; json-ld tests 26/26 pass; no code change**
 **המשך מ: M05-c215 DONE (2026-10-26): pnpm test green (615 files / 7064 tests pass, 2 files skipped); working tree clean, no drift to fix; no code change**
 **המשך מ: M06-c215 DONE (2026-10-26): pnpm build green (all routes compile); no source drift to fix; no code change**
+**המשך מ: M07-c215 DONE (2026-10-26): TODO/FIXME scan of src/scripts/migrations finds only the 3 backlogged items (cardcom.ts:249, cardcom.ts:312, r2-migration.ts:103-106), all >7 days old and blocked on Cardcom creds / service-role key; BACKLOG.md re-verified; no code change**
