@@ -352,3 +352,9 @@ Continue from MAINTENANCE_LOOP_8 DONE (2026-10-26): Code debt scan complete. Tot
 Continue from M05-c201 DONE (2026-10-26): pnpm test green (615 files passed, 2 skipped; 7062 tests passed, 28 skipped). No drift found, no code change.
 Continue from M06-c212 DONE (2026-10-26): pnpm build exit 0, no drift, no code change. Sentry upload 401 (placeholder token) is non-fatal, M14 DONE-DEFERRED.
 המשך מ: M13-c213 DONE-DEFERRED (live www: /api/ready 200 all five deps ok; /api/health 503 database ok, search down invalid_api_key = Meilisearch key invalid in prod env, credential issue not code; no code changes)
+
+Continue from MOBILE_FIX_GATE BLOCKED (2026-10-26 19:10 UTC): Goal condition specified 380px gate score 12.83% > 11% threshold with worst bands y 200-300 at 55.3% (hero) and y 1700-1800 at 45% (middle). Fresh measurement shows 380px MUCH WORSE at 61.49% overall (exit code 144 timeout). Root cause: reference snapshot ke_live_home.html is degraded (96 resources missing: 57 scripts, 37 fonts, 1 stylesheet, 1 xhr) AND is WRONG BASELINE. CLAUDE.md states "Old WordPress kenyonexpress.co.il is CONTENT SOURCE ONLY" and authoritative baseline is Electro v7 template, not WordPress. Pages structurally incompatible: live 18146px vs local 12818px at 380px viewport. Worst band y 200-300 at 99.7% difference cannot be fixed with CSS/fonts - it's WordPress vs Next.js layout mismatch. Reference cannot be regenerated: kenyonexpress.co.il now serves our Next.js build, not original WordPress. Per CLAUDE.md "goal stuck twice: skip" rule - this is third attempt on fundamentally blocked goal. SKIP without further retry. Blocker: needs either (1) regenerating reference from original WordPress (impossible), (2) switching compare.mjs baseline to Electro v7 (architectural change), or (3) accepting reference baseline is deprecated.
+
+---
+
+Heroes measured at 380px will remain degraded until reference baseline is fixed. No code changes.
