@@ -26,6 +26,8 @@
 
 ## המשך מ:
 
+**MAINTENANCE_LOOP_8 COMPLETE (2026-10-26 17:45 UTC):** Scanned src/ for TODO/FIXME/HACK comments. Count: 7 total (same as prior 2026-10-26 11:15 UTC scan). Delta: 0 (stable, no growth). No new cleanup goal needed. Updated docs/CODE-DEBT-STATUS.md. Quality gates: build ✅. Next: MAINTENANCE_LOOP_9.
+
 **MAINTENANCE_LOOP_7 COMPLETE (2026-10-26 17:44 UTC):** Lighthouse CI audit via `pnpm lhci:autorun`. Results: Home (/) perf=97, a11y=96, bp=93, seo=100. Products perf=97, a11y=99, bp=93, seo=100. All scores ≥90 (PASS). No optimization queue needed. Updated docs/LIGHTHOUSE-STATUS.md. Quality gates: build ✅ typecheck ✅ lint ✅. Next: MAINTENANCE_LOOP_8.
 
 **MAINTENANCE_LOOP_6 SKIPPED (2026-10-26 17:42 UTC):** Gate measurement via compare.mjs timed out (reference page cold-load or network timeout). Infrastructure constraint: unable to establish stable measurement baseline. Per CLAUDE.md pattern for infrastructure blockers: goal cannot be satisfied in current conditions. Skipped.
