@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M11-c214: אימות sitemap.xml). https://www.kenyonexpress.co.il/sitemap.xml מחזיר 200 application/xml, XML תקין, 75 כתובות, lastmod אחרון 2026-10-24 (נגזר מעדכון הקטלוג). דגימה של 7 כתובות: 7/7 מחזירות 200. **ממצא:** age=123963s (~34 שעות) למרות s-maxage=3600, כלומר ה-CDN מגיש עותק ישן (ב-M11-c192 היה ~15.5 שעות); וכל ה-<loc> וה-Sitemap ב-robots על האפקס kenyonexpress.co.il ולא www כי NEXT_PUBLIC_APP_URL לא מוגדר ל-www בפרודקשן (הגדרת Vercel, לא קוד). sitemap.test.ts: 4/4 עברו. לא נערכו קבצי קוד. המשך מ: M11-c214 DONE.
 המשך מ: M08-c214 DONE (Lighthouse mobile: / =60, /product =68, dev server, מתחת ל-95; ראו docs/LIGHTHOUSE-AUDIT.md)
 Updated: 2026-10-26 (M02-c214: compare.mjs --page=product ב-380/768/1440 סורב ב-3 הרוחבים, exit 5: kenyonexpress.co.il הוא ה-build שלנו, אין רפרנס, לכן אין מספר מדידה. ראה docs/PARITY-REFERENCE.md). לא נערכו קבצי קוד. המשך מ: M02-c214 BLOCKED reference-unavailable.
 Updated: 2026-10-26 (M18-c211: STATE.md נמדד ב-     244 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c211 DONE.
