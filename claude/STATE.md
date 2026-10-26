@@ -1,4 +1,5 @@
 
+**המשך מ: M15-c213 DONE-DEFERRED (2026-10-26): console NOT clean on / and /product/<slug> at 380/768/1440 (dev server :3000). Causes: Supabase "Invalid API key" (homepage.cms_read_failed, product_detail.supplier_load_failed, HTTP 400s) = cred-deferred; dev-only CSP blocks eval() + va.vercel-scripts.com; Next "runtime data outside Suspense" error on /product/[slug] needs separate fix; no code change**
 **המשך מ: M12-c213 DONE (2026-10-26): robots.ts verified production-safe (no blanket Disallow, private/auth/voucher paths blocked, sitemap+host on kenyonexpress.co.il, 7/7 robots tests pass); no code change**
 **המשך מ: M18-c212 DONE (2026-10-26): claude/STATE.md is 129 lines, already under 300; docs/STATE-ARCHIVE.md exists, nothing to archive; no code change**
 **המשך מ: M07-c212 DONE (2026-10-26): TODO/FIXME scan found 6 markers in 2 files, all older than 7 days and already filed in docs/BACKLOG.md (#1-#3, Cardcom creds + R2 stub); no code change**
