@@ -252,3 +252,4 @@ Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html
 **המשך מ: M01-c224 BLOCKED home-gate-fail-62.6/35.41/26.99pct**
 
 המשך מ: M02-c224 BLOCKED reference-gone (compare.mjs --page=product exit 5 at 380/768/1440: kenyonexpress.co.il now serves our build; local sample slug מוצר-לדוגמא 404s)
+המשך מ: M18-c224 DONE — STATE.md 255 lines (<300), no archive needed
