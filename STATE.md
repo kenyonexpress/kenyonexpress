@@ -1,3 +1,29 @@
+## MAINTENANCE_LOOP_6 (2026-10-27 17:26 UTC) - MOBILE GATE RECHECK COMPLETE
+
+✅ **Completed:** Rechecked mobile gate score via scripts/compare.mjs --page=home
+
+**Measurement:**
+- 1440px width viewport
+- First 2600px of page
+- Reference: ke_live_home.html (degraded, 145 resources failed to load)
+- Score: 30.23% (ABOVE 11% threshold)
+
+**Action Taken:**
+- Updated docs/GATE-STATUS.md with current score (2026-10-27 17:26 UTC)
+- Requeued MOBILE_GATE_FIX goal at head of ~/ke-goals/queue.txt
+- Score 30.23% > 11% threshold requires investigation
+- Worst bands: y1800-1900 (63.6%), y1300-1400 (61.5%), y1100-1200 (58.9%)
+
+**Quality Gates:** type-check ✅ lint ✅ build ✅
+
+**Commit:** 5468ab1bd "[autopilot] chore: qa mobile gate check - score 30.23% at 1440px (>11% threshold)"
+
+**Push:** Complete to origin/autopilot
+
+**Status:** ✅ COMPLETE - Mobile fix goal requeued per condition
+
+---
+
 ## MAINTENANCE_LOOP_5 (2026-10-27 17:25 UTC) - CRON ROUTES STATUS CHECK COMPLETE
 
 ✅ **Completed:** Checked all cron route last-run timestamps via Vercel CLI `logs` command.
