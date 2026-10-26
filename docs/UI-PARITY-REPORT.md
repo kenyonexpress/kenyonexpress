@@ -375,3 +375,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-26 00:34 | home | 380 | 49.89% | **FAIL** | `c36550954-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-26 00:38 | home | 380 | 49.89% | **FAIL** | `12d72bba7-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-26 12:13 | home | 380 | 61.50% | **FAIL** | `65e57b22d` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 96 failed to load (57 script, 37 fo |
+| 2026-10-26 14:26 | home | 380 | 61.49% | **FAIL** | `fd4c45ad7` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 153 failed to load (113 script, 37  |

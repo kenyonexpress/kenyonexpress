@@ -1,3 +1,4 @@
+**המשך מ: M04-c221 DONE (2026-10-26): pnpm type-check green (tsc --noEmit, 0 errors); committed only generated docs/UI-PARITY-REPORT.md drift; left uncommitted src/app/(store)/page.tsx (CitiesRow hidden sm:block, not mine, gate unverified); no code changes**
 **המשך מ: M18-c220 DONE (2026-10-26): claude/STATE.md already 185 lines (<300); full history already in docs/STATE-ARCHIVE.md (28274 lines); nothing to trim, no code change**
 **המשך מ: M17-c220 DONE (2026-10-26): RTL on / and /product sample: html dir=rtl, rtl-lint hits on those routes are symmetric/false-positive (left-0 right-0, 50% centering, comments); only dir=ltr is the Electro carousel arrows in forbidden HeroSlider; latin-field-direction + BenefitBar tests pass; no code change**
 **המשך מ: M16-c220 DONE (2026-10-26): product page (store)/product/[slug] emits JSON-LD Product + BreadcrumbList (one script each); json-ld.test 26/26 pass; no code change**
