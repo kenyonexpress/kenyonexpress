@@ -102,3 +102,5 @@ M07-c211 DONE 2026-10-26 TODO/FIXME scan: all 8 markers older than 7d already in
 המשך מ: M07-c211 DONE
 M17-c211 DONE 2026-10-26 RTL probe (playwright, 380/768/1440) on / and /product/<sample>: html dir=rtl lang=he, no horizontal overflow, no physical text-align. Only direction:ltr nodes are intentional (discount_per percent badge, product phone/SKU meta, email input, home hero slide geometry). No code changes. No locked files touched.
 המשך מ: M17-c211 DONE
+M04-c212 DONE 2026-10-26 pnpm type-check clean (tsc --noEmit, 0 errors); no drift in working tree. No locked files touched.
+המשך מ: M04-c212 DONE
