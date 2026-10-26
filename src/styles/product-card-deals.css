@@ -31,7 +31,7 @@
 */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
-  padding: 8px 0;
+  padding: 0;
   margin-bottom: 0;
   max-width: 100%;
   flex: 0 0 100%;
@@ -397,12 +397,6 @@ h2.p_con__title--deal {
   .home-deals {
     padding-block: 24px;
     padding-inline: 12px;
-  }
-
-  .jet-listing-grid-deals {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
   }
 
   .jet-listing-grid-deals__item {

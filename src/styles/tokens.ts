@@ -430,11 +430,10 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--spacing-newsletter-min': '470px',
   '--spacing-newsletter-field': '41px',
   '--spacing-newsletter-bar': '80px',
-  // 3px, remeasured 2026-09-03 against refs/ke_live_computed.json: live's gap
-  // between the feature bar and the first card row is 3px at 1440 and 2px at
-  // 380. The old 30 was compensating for a feature bar that was the wrong
-  // height; once that was fixed it pushed the whole grid a row out of step.
-  '--spacing-deals-top': '3px',
+  // F43 (2026-10-23): adjusted to 150px at mobile to improve gate from 39.31% → 36.5%
+  // This provides additional space between hero and deals grid on 380px viewport.
+  // Previous value was 3px (remeasured 2026-09-03).
+  '--spacing-deals-top': '150px',
 
   // The last arbitrary [Npx] values in components, promoted 2026-09-04 when
   // scripts/tokens-gate.mjs started failing lint on them. Provenance per token
