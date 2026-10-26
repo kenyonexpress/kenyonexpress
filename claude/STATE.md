@@ -1,4 +1,5 @@
 
+**המשך מ: M18-c214 DONE (2026-10-26): STATE.md already 139 lines (<300), nothing to archive (docs/STATE-ARCHIVE.md exists); no code change**
 **המשך מ: M09-c214 DONE (2026-10-26): knip re-audit — only unused dep is @capacitor/android (needed by android/ platform, kept); remaining unused exports are tested public API / forbidden files; no code change**
 **המשך מ: M05-c214 DONE (2026-10-26): pnpm test green (615 files passed, 2 skipped; 7064 tests passed, 28 skipped), no drift, no code change**
 **המשך מ: M15-c213 DONE-DEFERRED (2026-10-26): console NOT clean on / and /product/<slug> at 380/768/1440 (dev server :3000). Causes: Supabase "Invalid API key" (homepage.cms_read_failed, product_detail.supplier_load_failed, HTTP 400s) = cred-deferred; dev-only CSP blocks eval() + va.vercel-scripts.com; Next "runtime data outside Suspense" error on /product/[slug] needs separate fix; no code change**
