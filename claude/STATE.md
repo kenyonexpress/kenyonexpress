@@ -9,6 +9,7 @@
 **המשך מ: M16-c216 DONE (2026-10-26): /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test.ts 26/26 pass); gift sub-page is noindex, /products listing is not a product page; no code change**
 **המשך מ: M04-c216 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); only drift was pnpm install rewriting the sharp specifier in pnpm-lock.yaml (^0.35.5 -> ^0.35.3, mismatches package.json), reverted; no code change**
 
+**המשך מ: M08-c220 DONE (2026-10-26): Lighthouse mobile sample on localhost:3000 (load avg 14, heavily contended): / 50/46 (TBT 2.7-4.3 s, LCP 4.9-5.1 s), /product/bar-drink 65/66 (LCP 5.3-7.2 s); logged in logs/lighthouse-m08-c220.log; G23 95+ not met; no code change**
 **המשך מ: M08-c217 DONE (2026-10-26): Lighthouse mobile sample (local prod, 2 runs/page): home 78/75, product 82/81; G23 95+ not met, LCP 4.7-6.4 s gap sits in locked hero/header; log logs/lighthouse-m08-c217.log; no code change**
 **המשך מ: M17-c215 DONE (2026-10-26): static RTL audit of / and /product/[slug] — rtl-lint hits only in comments/OG image (Satori); remaining dir="ltr" are SKU/phone/email inputs (intended) and locked HeroSlider; no code change**
 **המשך מ: M04-c215 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean), working tree clean, no drift; no code change**
