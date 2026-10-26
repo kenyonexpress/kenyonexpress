@@ -1,4 +1,5 @@
 
+**המשך מ: M07-c212 DONE (2026-10-26): TODO/FIXME scan found 6 markers in 2 files, all older than 7 days and already filed in docs/BACKLOG.md (#1-#3, Cardcom creds + R2 stub); no code change**
 **המשך מ: M04-c211 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); committed drift in src/lib/category-page.ts (suppliers select drops verification_status until migration 301 applied)**
 The canonical state file on this branch is the root `STATE.md`. This file
 **המשך מ: M08-c210 DONE (2026-10-26): Lighthouse mobile sample, / 52/61, product 50/62 (CPU-contended by concurrent Playwright run, TBT ~3s; c209 uncontended was 78-81); logged in logs/lighthouse-m08-c210.log; G23 95+ not met; no code change**
@@ -121,3 +122,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M08-c211 DONE (2026-10-26): Lighthouse mobile sample logged to logs/lighthouse-m08-c211.log (home 60/72, product 74/81, contended, G23 95+ not met); no code change**
 **המשך מ: M09-c211 DONE (2026-10-26): knip audit — no unused deps (drizzle-orm/postgres/pg/@capacitor/android are false positives); removed dead anyChip + unexported read in deal-chips.ts; remaining unused exports are public API surface/forbidden files, left; tsc + catalog tests pass**
 **המשך מ: M16-c211 DONE (2026-10-26): verified /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.ts, 26 tests pass); /product/[slug]/gift is noindex so excluded; no code change**
+**המשך מ: M05-c212 DONE (2026-10-26): pnpm test 615 files / 7064 tests pass; only drift was docs/M-CYCLE-STATUS.md, committed**

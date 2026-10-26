@@ -177,7 +177,6 @@ BLOCKED MAINTENANCE_LOOP_9 (2026-10-26): Cannot verify DB performance - verifica
 המשך מ: M16-c204 DONE (2026-10-26): /product/[slug] (single dynamic route, all products) renders JSON-LD Product + BreadcrumbList via src/lib/seo/json-ld.ts; 26 unit tests pass, tsc clean on both files. /product/[slug]/gift is noindex. No code change.
 המשך מ: M06-c198 DONE (2026-10-26): pnpm build passes (exit 0). First attempt failed only on transient Supabase 10s timeouts during prerender; anon key valid (200), retry clean. No code drift, no code change.
 
-Continue from M04-c196 DONE (2026-10-25): pnpm type-check passes (tsc --noEmit, 0 errors), working tree clean, no drift to fix. No code change.
 
 Continue from M08-c193 DONE (2026-10-25): Code debt scan MAINTENANCE_LOOP_8 complete. Total: 7 comments (was 8 in M07), delta: -1 (decreased). Removed in previous session: src/lib/whatsapp.test.ts test stub TODO. Remaining: 7 TODOs (r2-migration.ts: 4, cardcom.ts: 2, stock-notifications route: 1), zero FIXME/HACK. No cleanup goal needed (count decreased). Report updated: docs/CODE-DEBT-STATUS.md. Scan recipe: grep -rn "TODO\|FIXME\|HACK" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.mts" --include="*.mjs". Quality gates ALL PASS: type-check ✅, lint ✅ (6490 files), build ✅ (273 routes, exit 0). Commits 67f24c5ac, b51752172 pushed to origin/closeout/v1-final.
 
@@ -298,3 +297,4 @@ Continue from M09-c197 DONE (2026-10-26): knip run. Unused deps: only @capacitor
 Continue from MAINTENANCE_LOOP_8 DONE (2026-10-26): Code debt scan complete. Total: 7 comments (unchanged from previous M08 scan 2026-10-25), delta: 0 (stable). Remaining: 7 TODOs (r2-migration.ts: 4, cardcom.ts: 2, stock-notifications route: 1), zero FIXME/HACK. No cleanup goal needed (count stable). Report updated: docs/CODE-DEBT-STATUS.md. Quality gates ALL PASS: type-check ✅, lint ✅ (6490 files), build ✅ (273 routes, exit 0). Commit 090ad9d48 pushed to origin/closeout/v1-final.
 Continue from M05-c201 DONE (2026-10-26): pnpm test green (615 files passed, 2 skipped; 7062 tests passed, 28 skipped). No drift found, no code change.
 Continue from M08-c208 DONE (2026-10-26): Lighthouse mobile sample on prod build: home 81/78, product 82/81 (G23 95+ not met, LCP 4.7-5.5 s). Log: logs/lighthouse-m08-c208.log. No code changes.
+Continue from M06-c212 DONE (2026-10-26): pnpm build exit 0, no drift, no code change. Sentry upload 401 (placeholder token) is non-fatal, M14 DONE-DEFERRED.
