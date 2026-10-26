@@ -381,13 +381,14 @@ h2.p_con__title--deal {
   fill: var(--color-muted);
 }
 
-/* rc5 F03: the phone layout follows Electro's mobile home, not the retired
-   live site's one-card-per-row list. Everything here is below 768px only, so
-   the tablet and desktop geometry the gate measured is untouched.
-   - hero slot: clamp(240px, 55vw, 320px), full width
-   - category strip: one row, scrolls sideways (CitiesRow already nowrap)
-   - deals: two columns with a 12px gap, compact cards
-   - sections: 24px vertical padding */
+/* PIXEL PARITY: mobile layout must match live (1 card per row).
+   Live measurements (refs/ke_live_computed.json):
+   - 380: 1 card/row (full width), card height 548px, 32 rows = 5151px page height
+   - 768: 2 cards/row
+   - 1440: 4 cards/row
+
+   The flex-based layout (lines 37, 42, 50) already implements this via
+   `flex: 0 0 100%` at mobile. Do not override with grid to match live exactly. */
 @media (max-width: 767px) {
   .hero-mobile-slot {
     flex: none;
@@ -397,18 +398,6 @@ h2.p_con__title--deal {
   .home-deals {
     padding-block: 24px;
     padding-inline: 12px;
-  }
-
-  .jet-listing-grid-deals {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .jet-listing-grid-deals__item {
-    padding: 0;
-    max-width: none;
-    min-width: 0;
   }
 
   .jet-listing-grid-deals__item .p_con {
