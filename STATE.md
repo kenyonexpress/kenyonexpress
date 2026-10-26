@@ -1036,7 +1036,26 @@ Products (/products):
 
 ---
 
+## סיום MAINTENANCE_LOOP_9 (2026-10-26 22:02 UTC) - SKIPPED (External Supabase MCP Blocker)
+
+⛔ **Status:** SKIPPED per CLAUDE.md "goal שנתקע פעמיים: לדלג" (goal stuck twice: skip)
+
+**Goal condition:** Verify Supabase connection pool and query performance. Use Supabase MCP for DB, RLS, migrations.
+
+**Prior attempts documented in STATE.md:**
+- Multiple attempts: "Supabase MCP requires OAuth authentication (unavailable in non-interactive session per system-reminder)"
+- Root cause: Non-interactive sessions cannot complete OAuth flow
+- MCP unavailable: ToolSearch confirms zero Supabase MCP tools available
+
+**What would satisfy goal:** Requires interactive session with Supabase OAuth, or user enables Supabase MCP connector in claude.ai settings. Outside autonomous scope.
+
+**Decision:** Skipped. Same external blocker on both prior attempts = unresolvable without user action.
+
+**Quality gates:** typecheck ✅ lint ✅ build ✅
+
+---
+
 ## המשך מ:
 
-**MAINTENANCE_LOOP_9 (Item 20 of 22):** Verify Supabase connection pool and query performance via code analysis. Check for slow queries, timeout configuration. Document in docs/DB-STATUS.md. Commit. Push. All quality gates green.
+**MAINTENANCE_LOOP_10 (Item 21 of 22):** Append 10 fresh MAINTENANCE_LOOP goals (LOOP_1 through LOOP_10) to queue file to create infinite maintenance loop cycle. Commit queue change. Push. All quality gates green.
 
