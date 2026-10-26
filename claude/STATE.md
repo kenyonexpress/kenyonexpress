@@ -117,3 +117,4 @@ M15-c185: Console check on / and /product/<slug> at 380/768/1440 (dev server). /
 RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 line only, and the full block for each goal is in the root file.
 **המשך מ: M18-c210 DONE (2026-10-26): claude/STATE.md trimmed 299 -> 118 lines (duplicates dropped, older resume lines moved to docs/STATE-ARCHIVE.md); no code change**
+**המשך מ: M06-c211 DONE (2026-10-26): pnpm build passes (waited out a concurrent build lock); only drift was docs/M-CYCLE-STATUS.md, committed**
