@@ -1,3 +1,4 @@
+**המשך מ: M13-c217 DONE (2026-10-26): /api/health and /api/ready both 200 against real Supabase (database ok, redis ok, cardcom ok; meilisearch + r2 not_configured, treated as honestly absent); no code change**
 **המשך מ: M05-c217 DONE (2026-10-26): pnpm test passes (615 files / 7064 tests pass, 28 skipped); working tree clean of drift, no code change**
 **המשך מ: M04-c217 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); working tree clean, no drift; no code change**
 **המשך מ: M16-c216 DONE (2026-10-26): /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test.ts 26/26 pass); gift sub-page is noindex, /products listing is not a product page; no code change**
