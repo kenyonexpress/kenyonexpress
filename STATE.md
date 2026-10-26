@@ -455,9 +455,28 @@ Quality gates: typecheck ✅ lint ✅ build ✅
 
 **Next session:** Will continue from MAINTENANCE_LOOP_4 (E2E - will likely skip again due to blocker) and cycle through remaining loops.
 
+## סיום MAINTENANCE_LOOP_6 (2026-10-26 21:00 UTC) - COMPLETE
+
+✅ **Goal condition:** "Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal at head of queue."
+
+**Measurement (2026-10-26 21:00 UTC):**
+- Test: scripts/compare.mjs --page=home --width=380
+- Score: **61.49%** (ABOVE 11% threshold = PASSES gate)
+- Reference: 380x17790px, 153 resources missing (113 scripts, 37 fonts, 2 stylesheets, 1 xhr)
+- Local: 380x12818px (0.72x ratio)
+- Worst bands: y 200-300 (99.7%), y 2100-2200 (87.4%), y 900-1000 (87.3%)
+
+**Action taken:** Requeued MOBILE-GATE-FIX goal at head of ~/ke-goals/queue.txt (now item 1).
+
+**Quality gates:** typecheck ✅ lint ✅ build ✅
+
+**Commits:** bf2a1f8a6 (GATE-STATUS.md + queue update, pushed)
+
+---
+
 ## המשך מ:
 
-**Ready for next autonomous session** — Queue has 26 items (infinite cycle). Next automated /goal invocation will continue from MAINTENANCE_LOOP_4 or MAINTENANCE_LOOP_3 depending on queue pointer.
+**Ready for next autonomous session** — Queue has 25 items (MOBILE-GATE-FIX at head, followed by infinite MAINTENANCE_LOOP cycle). Next automated /goal invocation will start MOBILE-GATE-FIX.
 
 ---
 
