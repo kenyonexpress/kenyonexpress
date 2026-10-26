@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M18-c223: STATE.md נמדד ב-247 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c223 DONE.
 Updated: 2026-10-26 (M18-c221: STATE.md נמדד ב-234 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c221 DONE.
 Updated: 2026-10-26 (M18-c216: STATE.md נמדד ב-191 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c216 DONE.
 Updated: 2026-10-26 (M12-c216: אימות robots.txt production-safe). src/app/robots.ts: Allow / ל-*, Disallow על נתיבים פרטיים/אימות בלבד, אין התנגשות קידומת עם נתיבים ציבוריים, Sitemap+host מ-NEXT_PUBLIC_APP_URL (.env.local = https://www.kenyonexpress.co.il); אין noindex גורף. robots.test.ts: 7/7 עברו. לא נערכו קבצי קוד. המשך מ: M12-c216 DONE.
@@ -240,3 +241,8 @@ Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html
 ## M12-c222 (2026-10-26)
 robots.ts re-verified: auth/voucher/admin/api/debug paths disallowed, storefront allowed, sitemap+host on configured origin without double slash; robots+sitemap tests 11/11 pass; no public/robots.txt override. Live www robots.txt serves an older build (lacks /login /signup /mfa /admin-mfa /debug/, uses non-www origin) - resolves on next deploy; sensitive paths already disallowed live.
 המשך מ: M12-c222 DONE
+
+## M03-c223 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server restarted via pnpm dev; /category/hot-deals returned 500 at check time). All three REFUSED by the reference guard: kenyonexpress.co.il/product-category/hot-deals/ is not the WooCommerce reference (this run: no WP or Next markers found), and refs/ has no Electro v7 category capture to pass via --live=. No diff percentages produced; gate <11% not passed; guard not bypassed. No locked files touched; nothing committed (compare run only appended REFUSED rows to docs/UI-PARITY-REPORT.md).
+**המשך מ: M03-c223 BLOCKED category-reference-missing**
+המשך מ: M11-c223 DONE — www.kenyonexpress.co.il/sitemap.xml 200, 75 URLs, newest lastmod 2026-10-24; note: sitemap/robots emit apex host which 308-redirects to www (NEXT_PUBLIC_APP_URL should be https://www.kenyonexpress.co.il)
