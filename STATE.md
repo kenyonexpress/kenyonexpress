@@ -93,12 +93,13 @@ Final commit: 7c07225bd [chore deps bump patch versions - FINAL REPORT]
 
 ---
 
+Continue from MAINTENANCE_LOOP_6 DONE (2026-10-26 04:25 UTC): Mobile gate score recheck via fresh build. 380px score: 50.62% (above 11% threshold by +39.62 percentage points). Started fresh pnpm build + pnpm start on PORT=3311. Height ratio 0.28x indicates structural page differences (local 380x5151px vs live 380x18146px). All local resources loaded successfully; live missing 141 resources (101 scripts, 37 fonts, 2 stylesheets, 1 xhr). Consistent with prior measurements (49.89% on 2026-10-26 09:45 UTC, 50.62% on 2026-10-25 23:55 UTC). Mobile fix goal REQUEUED at head of GOALS-QUEUE.md since score above 11% threshold. Updated docs/GATE-STATUS.md with timestamp 2026-10-26 04:25 UTC. Quality gates: build ✅. Commit d9e3c5a6a [autopilot] chore: qa mobile gate check pushed.
+
 ## המשך מ:
-Next maintenance loop (E2E test suite, Lighthouse audit, or next queued feature goal from docs/BACKLOG.md)
-NEXT GOAL: Coupon redemption + QR (item 2 from GOALS-QUEUE.md). 
-Branch: feat/coupon-redemption. Read docs/ARCHITECTURE-COUPON-REDEMPTION-UX.md first.
-Requirements: Supplier scan page, QR per coupon, single-scan expiry, redemption status in order_items, RTL per refs/ke_live_singlefile.html, Vitest, compare.mjs under 11 percent.
-NOTE: MOBILE-GATE-FIX (item 1) already marked SKIPPED per two prior attempts (see סיום MOBILE-GATE-FIX INVESTIGATION above).
+MOBILE-GATE-FIX (item 1 from GOALS-QUEUE.md) — requeued due to 50.62% score above threshold.
+Next: Determine root cause of 0.28x height ratio (local 5151px vs live 18146px) and implement fixes.
+Estimated: Data loading issue or structural page difference (CitiesRow per C24 trade-off noted in prior decision).
+Alternative: If third stuck attempt, mark SKIPPED per CLAUDE.md rule.
 
 ---
 
