@@ -121,3 +121,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M08-c211 DONE (2026-10-26): Lighthouse mobile sample logged to logs/lighthouse-m08-c211.log (home 60/72, product 74/81, contended, G23 95+ not met); no code change**
 **המשך מ: M09-c211 DONE (2026-10-26): knip audit — no unused deps (drizzle-orm/postgres/pg/@capacitor/android are false positives); removed dead anyChip + unexported read in deal-chips.ts; remaining unused exports are public API surface/forbidden files, left; tsc + catalog tests pass**
 **המשך מ: M16-c211 DONE (2026-10-26): verified /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.ts, 26 tests pass); /product/[slug]/gift is noindex so excluded; no code change**
+**המשך מ: M05-c212 DONE (2026-10-26): pnpm test 615 files / 7064 tests pass; only drift was docs/M-CYCLE-STATUS.md, committed**
