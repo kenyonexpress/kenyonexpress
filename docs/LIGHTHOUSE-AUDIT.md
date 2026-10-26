@@ -210,3 +210,25 @@ E2E_PORT=3457 E2E_WEB_COMMAND='pnpm start -p 3457' npx playwright test e2e/a11y.
 ‏`aria-hidden` כמלכודת ספאם. הבודק מדלג עכשיו על תת-עצים של `aria-hidden`, וזה
 הקו הנכון ולא חריג נקודתי: אותה הצהרה שאיתה `aria-hidden-focus` של axe עובר
 כאן, ורק בזכות ה-tabindex השלילי.
+
+## M08-c207 sample — mobile performance, 2026-10-26
+
+Lighthouse mobile, performance only, against localhost:3000 (next-server v16.3.3, turbopack markers present in HTML, so most likely a dev server, not a production build).
+
+| Page | Perf | LCP | TBT | CLS |
+|---|---|---|---|---|
+| / | 43 | 6.9 s | 8,480 ms | 0 |
+| /product/עוזרת-אישית-שירותי-משרד | 62 | 1.9 s | 6,740 ms | 0.001 |
+
+Both are below the G23 target of 95. TBT dominates, which is typical of an unminified dev bundle. Re-measure against `next build && next start` before treating these as real; no code was changed.
+
+## M08-c214 sample — mobile performance, 2026-10-26
+
+Lighthouse mobile, performance only, against localhost:3000 (same dev server as c207, not a production build).
+
+| Page | Perf | LCP | TBT | CLS |
+|---|---|---|---|---|
+| / | 60 | 9.4 s | 590 ms | 0.001 |
+| /product/אוזניות-איירפודס-3 | 68 | 11.8 s | 260 ms | 0.002 |
+
+Both are below the G23 target of 95. LCP is high, most likely from dev-mode compilation on first hit. Re-measure against `next build && next start` before acting; no code was changed.
