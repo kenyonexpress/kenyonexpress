@@ -1,3 +1,4 @@
+**המשך מ: M04-c217 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); working tree clean, no drift; no code change**
 **המשך מ: M16-c216 DONE (2026-10-26): /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test.ts 26/26 pass); gift sub-page is noindex, /products listing is not a product page; no code change**
 **המשך מ: M04-c216 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); only drift was pnpm install rewriting the sharp specifier in pnpm-lock.yaml (^0.35.5 -> ^0.35.3, mismatches package.json), reverted; no code change**
 
