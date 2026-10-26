@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M18-c211: STATE.md נמדד ב-     244 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c211 DONE.
 Updated: 2026-10-26 (M18-c209: STATE.md נמדד ב-228 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c209 DONE.
 Updated: 2026-10-26 (M18-c206: STATE.md נמדד ב-201 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c206 DONE.
 Updated: 2026-10-26 (M02-c206: מדידה חוזרת compare.mjs על /product). ההפניה החיה kenyonexpress.co.il היא ה-build שלנו, לכן compare.mjs מסרב (exit 5). נמדד מול refs/electro-product-fresh.html עם COMPARE_ALLOW_GRID_MISMATCH=1 (12 כרטיסים ברפרנס מול 4 מקומית): 380=36.58%, 768=29.82%, 1440=20.41% — כולם מעל 11%, FAIL. לא נערכו קבצי קוד. המשך מ: M02-c206 BLOCKED (שער לא עבר).
