@@ -304,3 +304,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-26 05:49 | home | 380 | 61.48% | **FAIL** | `6ad7edbb2-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-26 09:53 | home | 380 | 61.49% | **FAIL** | `bfe283d9f` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-26 09:55 | home | 380 | 61.49% | **FAIL** | `bfe283d9f-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-26 11:44 | home | 1440 | 30.23% | **FAIL** | `0c95bf04e` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
