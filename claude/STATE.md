@@ -140,3 +140,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M16-c213 DONE (2026-10-26): single dynamic template src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD (builders in src/lib/seo/json-ld.ts) for every product; missing/inactive slugs hit notFound(); json-ld tests 26/26 pass; no code change**
 **המשך מ: M16-c214 DONE (2026-10-26): re-verified single template src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD (json-ld.ts builders), /gift is noindex so excluded; json-ld tests 26/26 pass; no code change**
 **המשך מ: M05-c215 DONE (2026-10-26): pnpm test green (615 files / 7064 tests pass, 2 files skipped); working tree clean, no drift to fix; no code change**
+**המשך מ: M06-c215 DONE (2026-10-26): pnpm build green (all routes compile); no source drift to fix; no code change**
