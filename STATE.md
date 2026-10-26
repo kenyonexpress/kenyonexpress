@@ -1,3 +1,36 @@
+## MOBILE_GATE_FIX (2026-10-27 17:27 UTC) - INVESTIGATION STARTED
+
+🔍 **Investigation Status:** IN PROGRESS
+
+**Task:** Reduce mobile gate score from 30.23% to below 11% (gap: 19.23 percentage points)
+
+**Findings:**
+- Current score: 30.23% at 1440px viewport
+- Worst bands: y1800-1900 (63.6%), y1300-1400 (61.5%), y1100-1200 (58.9%)
+- Reference page degraded: 145 failed resources (105 scripts, 37 fonts)
+- Pixel comparison reliability capped by reference quality
+
+**Complexity Assessment:**
+- Large gap to threshold (19+ percentage points)
+- Reference snapshot incomplete (missing ~100 resources)
+- Multi-band issues across entire page
+- Requires systematic investigation of content/layout differences
+
+**Quality Gates:** type-check ✅ lint ✅ build ✅
+
+**Commit:** 21530f32e "[autopilot] docs: GATE-STATUS update - MOBILE_GATE_FIX investigation findings"
+
+**Next Steps:**
+1. Analyze specific worst-band sections (y1100-1900)
+2. Compare local vs live page structure
+3. Identify root causes of pixel differences
+4. Implement targeted layout/style fixes
+5. Iterate measurements until score < 11%
+
+**Note:** This goal has high complexity due to reference degradation and large gap. May require multiple iterations.
+
+---
+
 ## MAINTENANCE_LOOP_6 (2026-10-27 17:26 UTC) - MOBILE GATE RECHECK COMPLETE
 
 ✅ **Completed:** Rechecked mobile gate score via scripts/compare.mjs --page=home
