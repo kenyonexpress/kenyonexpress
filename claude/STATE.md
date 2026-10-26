@@ -127,3 +127,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M09-c212 DONE (2026-10-26): knip re-audit — only unused dep is @capacitor/android (false positive, native android/ project); remaining unused exports are shadcn/ui surface, DB schema, scripts, forbidden files; no code change**
 **המשך מ: M11-c212 DONE (2026-10-26): www.kenyonexpress.co.il/sitemap.xml 200 application/xml, 75 URLs all resolve 200, robots.txt references it; lastmod real (newest 2026-10-24); note sitemap/canonical use apex which 308s to www (Vercel domain setting, not code); no code change**
 **המשך מ: M15-c212 DONE (2026-10-26): console clean on / and /product/<real slug> at 380/768/1440 — 0 console errors, 0 pageerrors, HTTP 200; only a navigation-aborted /api/cart fetch (endpoint itself 200); no code change**
+**המשך מ: M05-c213 DONE (2026-10-26): pnpm test 615 files / 7064 tests pass; no drift, nothing to commit**
