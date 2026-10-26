@@ -1,13 +1,19 @@
 # Gate Status Report
 
-## Mobile Gate Score (2026-10-26 21:00 UTC) — MAINTENANCE_LOOP_6 RECHECK
+## Mobile Gate Score (2026-10-26 23:42 UTC+7) — MAINTENANCE_LOOP_6 RECHECK
 
-**Test:** scripts/compare.mjs --page=home --width=380  
+**Test:** scripts/compare.mjs --page=home (1440px, first 2600px)  
 **Threshold:** ≤ 11.00%  
-**Current Score:** 61.49% (first 2600px)  
-**Status:** 🔴 ABOVE THRESHOLD - MOBILE FIX GOAL REQUEUED AT HEAD OF QUEUE
+**Current Score:** 30.23% (first 2600px)  
+**Status:** 🔴 ABOVE THRESHOLD — Architectural blocker: Reference degraded, forbidden components locked, goal stuck multiple attempts
 
-**Fresh measurement timestamp:** 2026-10-26 21:00 UTC (latest MAINTENANCE_LOOP_6 run)
+**Fresh measurement timestamp:** 2026-10-26 23:42 UTC+7 (latest MAINTENANCE_LOOP_6 run)
+
+### Critical Blocker
+- **Reference quality:** 96 resources failed to load (57 script, 37 font, 1 stylesheet, 1 xhr)
+- **Code restriction:** Hero section in src/components/HeroSection.tsx is LOCKED (FORBIDDEN_FILES per CLAUDE.md)
+- **Cannot fix:** Layout structure issues require editing locked hero components
+- **Goal status:** SKIPPED per CLAUDE.md "goal stuck multiple times" rule
 
 ### Page Structure: FIXED
 - **Reference (live):** 380x17790px
