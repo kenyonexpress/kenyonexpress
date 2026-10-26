@@ -1,11 +1,26 @@
 # Gate Status Report
 
-## Mobile Gate Score (2026-10-27 17:26 UTC+7) — MAINTENANCE_LOOP_6 RECHECK
+## Mobile Gate Score (2026-10-27 17:27 UTC+7) — MOBILE_GATE_FIX Investigation Start
 
 **Test:** scripts/compare.mjs --page=home (1440px, first 2600px)  
 **Threshold:** ≤ 11.00%  
-**Current Score:** 30.23% (first 2600px at 1440px width)  
-**Status:** 🔴 ABOVE THRESHOLD — Mobile fix goal requeued at head of queue per condition
+**Current Score:** 30.23% (needs to drop 19.23 percentage points)  
+**Status:** 🔴 CRITICAL GAP — Investigation in progress
+
+### Current Worst Bands (1440px measurement)
+| Y Range | Score | Issue |
+|---|---|---|
+| 1800-1900px | 63.6% | Critical visual mismatch |
+| 1300-1400px | 61.5% | Major layout difference |
+| 1100-1200px | 58.9% | Significant spacing/content gap |
+| 1200-1300px | 58.7% | Content alignment issue |
+| 2300-2400px | 51% | Below-fold content mismatch |
+
+### Reference Quality Blocker
+- **Resources failed to load:** 145 (105 script, 37 font, 2 stylesheet, 1 xhr)
+- **Impact:** Reference page is degraded, pixel comparison unreliable
+- **Root cause:** ke_live_home.html snapshot missing critical resources
+- **Consequence:** Gate improvements capped by reference quality
 
 **Fresh measurement timestamp:** 2026-10-26 23:42 UTC+7 (latest MAINTENANCE_LOOP_6 run)
 
