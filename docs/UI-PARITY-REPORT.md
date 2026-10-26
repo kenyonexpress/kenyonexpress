@@ -311,3 +311,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-26 12:51 | home | 380 | 12.83% | **FAIL** | `36f726c97-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-26 12:53 | home | 768 | 13.80% | **FAIL** | `4afebe3e5-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-26 12:55 | home | 1440 | 5.80% | PASS | `4afebe3e5-dirty` | OURS dropped 2 script (unhydrated, not a fidelity score); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-26 13:37 | home | 380 | 61.49% | **FAIL** | `78faad8e8` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 141 failed to load (101 script, 37  |
