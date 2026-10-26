@@ -44,6 +44,13 @@ describe('robots', () => {
     }
   })
 
+  it('disallows auth and debug routes', () => {
+    const disallow = disallowList()
+    for (const path of ['/login', '/signup', '/mfa', '/admin-mfa', '/debug/', '/api/']) {
+      expect(disallow).toContain(path)
+    }
+  })
+
   it('still allows the storefront to be crawled', () => {
     const rules = robots().rules
     const first = Array.isArray(rules) ? rules[0] : rules

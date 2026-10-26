@@ -208,3 +208,6 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M02-c207 (2026-10-26)
 Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://refs/electro-product-fresh.html and COMPARE_ALLOW_GRID_MISMATCH=1 (dev server on :3000, 200). Results: 380=36.17%, 768=29.82%, 1440=20.52% — all above the 11% gate, FAIL. No code files edited (forbidden files untouched).
 **המשך מ: M02-c207 BLOCKED gate-failed-over-11pct**
+המשך מ: M08-c207 DONE (Lighthouse mobile sampled: / 43, /product 62 on likely-dev server; logged in docs/LIGHTHOUSE-AUDIT.md)
+
+המשך מ: M12-c207 DONE (robots.ts verified: allow /, sitemap+host from NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il, trailing-slash safe; added /login /signup /mfa /admin-mfa /debug/ disallows + test; 7/7 pass)
