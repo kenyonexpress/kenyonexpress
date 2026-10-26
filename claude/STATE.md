@@ -1,3 +1,4 @@
+**המשך מ: M16-c218 DONE (2026-10-26): product page (store)/product/[slug] emits JSON-LD Product + BreadcrumbList (buildProductJsonLd/buildBreadcrumbJsonLd, one script each); json-ld.test 26/26 pass; no code change**
 **המשך מ: M12-c218 DONE (2026-10-26): robots.ts verified production-safe (allow / + private paths disallowed, sitemap+host absolute, robots.test 7/7 pass, no noindex-all); live robots.txt is one deploy behind (lacks /debug/ + /voucher/ disallows), no code change**
 **המשך מ: M05-c218 DONE (2026-10-26): pnpm test passes (615 files / 7064 tests pass, 28 skipped); no drift, no code change**
 **המשך מ: M13-c217 DONE (2026-10-26): /api/health and /api/ready both 200 against real Supabase (database ok, redis ok, cardcom ok; meilisearch + r2 not_configured, treated as honestly absent); no code change**
