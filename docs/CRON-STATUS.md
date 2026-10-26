@@ -1,6 +1,38 @@
 # Cron Routes Status
 
-**Last check:** 2026-10-25 21:54:00 UTC (MAINTENANCE_LOOP_5, eighteenth run; Vercel CLI `vercel logs --since 7d` parsed for `/api/cron` routes, all timestamps ISO 8601 UTC)
+**Last check:** 2026-10-26 11:05:00 UTC (MAINTENANCE_LOOP_5, tenth run; Vercel CLI `vercel logs --since 24h` parsed for `/api/cron` routes)
+**Status:** 🔴 CRITICAL — 2 of 22 routes executing, 20 routes missing from last 24h logs
+
+## Today's Check Summary (2026-10-26 11:05 UTC)
+
+| Category | Count | Status |
+|---|---|---|
+| Total cron routes (from source) | 22 | - |
+| Executing (within 24h) | 2 | ⚠️ Minimal activity |
+| Stale (>24h) | 20 | 🔴 Alert |
+
+### Routes Executing in Last 24h
+- `health` — 11:05:01 UTC (0m ago at time of check)
+- `notifications` — 11:05:01 UTC (0m ago at time of check)
+
+### Routes Stale (>24h, no logs in 24h)
+- `abandoned-cart`, `affiliate-payouts`, `deal-scraper`, `expire-vouchers`
+- `fraud-monitor`, `observability-check`, `p95-monitor`
+- `reap-carts`, `reconcile`, `retention`, `rfm-segmentation`
+- `scheduled-gifts`, `search-report`, `sms-broadcasts`, `stock`
+- `stock-notifications`, `stranded-payments`, `subscriptions`, `weekly-digest`
+- `invoices` (expected to run hourly, no execution in 24h)
+
+### Status Regression
+Previous run (2026-10-25 21:54 UTC): 8 healthy routes (health, invoices, notifications, stock, stranded-payments, scheduled-gifts, sms-broadcasts, fraud-monitor)
+Current run (2026-10-26 11:05 UTC): Only 2 healthy routes (health, notifications)
+**Delta: 6 of 8 previously healthy routes now stale (over 24h)**
+
+---
+
+## Historical Status
+
+**Last check:** 2026-10-25 21:54:00 UTC (MAINTENANCE_LOOP_5, eighth run; Vercel CLI `vercel logs --since 7d` parsed for `/api/cron` routes, all timestamps ISO 8601 UTC)
 **Status:** 🟡 PARTIAL — 8 of 22 routes executing normally, 14 routes missing from logs (no execution in 7 days)
 
 ## Latest Check Summary (2026-10-25 21:54 UTC)
