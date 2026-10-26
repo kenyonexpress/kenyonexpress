@@ -3,6 +3,7 @@
 **המשך מ: M16-c216 DONE (2026-10-26): /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test.ts 26/26 pass); gift sub-page is noindex, /products listing is not a product page; no code change**
 **המשך מ: M04-c216 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); only drift was pnpm install rewriting the sharp specifier in pnpm-lock.yaml (^0.35.5 -> ^0.35.3, mismatches package.json), reverted; no code change**
 
+**המשך מ: M08-c217 DONE (2026-10-26): Lighthouse mobile sample (local prod, 2 runs/page): home 78/75, product 82/81; G23 95+ not met, LCP 4.7-6.4 s gap sits in locked hero/header; log logs/lighthouse-m08-c217.log; no code change**
 **המשך מ: M17-c215 DONE (2026-10-26): static RTL audit of / and /product/[slug] — rtl-lint hits only in comments/OG image (Satori); remaining dir="ltr" are SKU/phone/email inputs (intended) and locked HeroSlider; no code change**
 **המשך מ: M04-c215 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean), working tree clean, no drift; no code change**
 **המשך מ: M18-c214 DONE (2026-10-26): STATE.md already 139 lines (<300), nothing to archive (docs/STATE-ARCHIVE.md exists); no code change**
@@ -157,3 +158,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M09-c216 DONE (2026-10-26): depcheck+knip find no unused runtime deps (@capacitor/android kept: native android/ platform); removed 4 truly-unreferenced exports (isSupportRole, getMyWishlistMarks, getUserRFMScore, getAllSegments); tsc, biome, vitest pass; remaining knip exports are test/script/public-API/locked-component and left intact**
 **המשך מ: M06-c217 DONE (2026-10-26): pnpm build exit 0 on closeout/v1-final; only drift was docs/M-CYCLE-STATUS.md timestamp, committed + pushed**
 **המשך מ: M07-c217 DONE (2026-10-26): TODO/FIXME scan finds only the 3 backlogged items (cardcom.ts:249, cardcom.ts:312, r2-migration.ts:103-106), all >7 days old (Jul 24, Aug 7, Oct 17), blocked on Cardcom creds / service-role key; BACKLOG.md re-verified; no code change**
+**המשך מ: M09-c217 DONE (2026-10-26): knip+usage scan find no unused runtime/dev deps (@mdx-js/loader, @types/mdx kept as @next/mdx peer/types); removed 1 dead default export (CouponCardSkeleton); tsc + biome pass; remaining knip exports are payments/ledger/server-actions/shadcn/public-API/locked and left intact**
