@@ -514,6 +514,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '294',
+    file: '294_group_deals.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '294',
     file: '294_payment_events.sql',
     state: 'applied',
     hasPreflight: false,

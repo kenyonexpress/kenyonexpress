@@ -18,6 +18,10 @@
 - `302_address_book.sql` - PENDING (C66). Creates address_book for saved shipping addresses, one default per user. Requires MCP apply_migration.
 - `304_soft_delete_consolidation.sql` - PENDING (C67). Adds deleted_at to vouchers and profiles and filters deleted rows in their RLS policies. Written as 131 under supabase/migrations/, renumbered because 131 is taken by 131_refunds.sql. Requires MCP apply_migration.
 
+## 2026-10-26: 294_group_deals added (BACKLOG-1, C47)
+
+- `294_group_deals.sql` - PENDING. Creates group_deals and group_deal_participants (tiered volume discounts, RLS, updated_at trigger). Shares number 294 with `294_payment_events.sql` in applied/; the filenames differ. Requires MCP apply_migration.
+
 ## 2026-10-25: 303 added (C68)
 
 - `303_comprehensive_audit_triggers.sql` - PENDING (C68). Adds audit triggers for 20 verified existing tables (orders, vouchers, payments, invoices, settlements, carts, etc.). All triggers use existing audit_log_trigger_fn() to capture who/what/before/after/at. Requires MCP apply_migration.
