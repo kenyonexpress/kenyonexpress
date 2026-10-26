@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M18-c209: STATE.md נמדד ב-228 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c209 DONE.
 Updated: 2026-10-26 (M18-c206: STATE.md נמדד ב-201 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c206 DONE.
 Updated: 2026-10-26 (M02-c206: מדידה חוזרת compare.mjs על /product). ההפניה החיה kenyonexpress.co.il היא ה-build שלנו, לכן compare.mjs מסרב (exit 5). נמדד מול refs/electro-product-fresh.html עם COMPARE_ALLOW_GRID_MISMATCH=1 (12 כרטיסים ברפרנס מול 4 מקומית): 380=36.58%, 768=29.82%, 1440=20.41% — כולם מעל 11%, FAIL. לא נערכו קבצי קוד. המשך מ: M02-c206 BLOCKED (שער לא עבר).
 Updated: 2026-10-26 (M18-c202: STATE.md קוצר ל-<300 שורות; סעיפי M01-c183..M17-c200 הועברו ל-docs/STATE-ARCHIVE.md). לא נערכו קבצי קוד. המשך מ: M18-c202 DONE.
@@ -221,3 +222,7 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 המשך מ: M16-c208 DONE (JSON-LD audit: single template src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList for every product via src/lib/seo/json-ld.ts; json-ld.test.ts 17/17 pass; no files edited)
 
 המשך מ: M18-c208 DONE (STATE.md נמדד ב-221 שורות לפני העדכון, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר; no code files edited)
+
+## M01-c209 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server restarted on :3000, 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set (would score collapsed blocks as design diff). Same as M01-c204..c208. No locked files touched.
+**המשך מ: M01-c209 BLOCKED reference-images-not-loading**
