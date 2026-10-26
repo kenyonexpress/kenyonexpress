@@ -206,3 +206,11 @@ Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server :
 ## M18-c217 (2026-10-26)
 STATE.md measured at 204 lines before this entry, under 300; full archive already in docs/STATE-ARCHIVE.md, nothing to move. No code files edited.
 **המשך מ: M18-c217 DONE**
+
+## M01-c218 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server was down, started `pnpm dev`, :3000 200). Reference passes classifyReference. 380 and 768 REFUSED by the pending-images guard (13 and 10 reference images unloaded vs 0 local); 1440 hit a navigation TimeoutError on the file:// reference. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c217. No locked files touched.
+**המשך מ: M01-c218 BLOCKED reference-images-not-loading**
+
+## M03-c218 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server :3000 up, /category/hot-deals 200). All three REFUSED, exit 5: the default live URL kenyonexpress.co.il/product-category/hot-deals/ now serves our own Vercel build (32-34 /_next/ refs, no wp-content), so classifyReference rejects it. refs/ has no Electro v7 category reference file (only electro-home-v7 and electro-product-fresh), so there is nothing to pass via --live=. No diff percentages produced; gate not passed. No locked files touched.
+**המשך מ: M03-c218 BLOCKED category-reference-missing**
