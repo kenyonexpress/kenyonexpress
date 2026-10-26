@@ -246,3 +246,9 @@ robots.ts re-verified: auth/voucher/admin/api/debug paths disallowed, storefront
 Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server restarted via pnpm dev; /category/hot-deals returned 500 at check time). All three REFUSED by the reference guard: kenyonexpress.co.il/product-category/hot-deals/ is not the WooCommerce reference (this run: no WP or Next markers found), and refs/ has no Electro v7 category capture to pass via --live=. No diff percentages produced; gate <11% not passed; guard not bypassed. No locked files touched; nothing committed (compare run only appended REFUSED rows to docs/UI-PARITY-REPORT.md).
 **המשך מ: M03-c223 BLOCKED category-reference-missing**
 המשך מ: M11-c223 DONE — www.kenyonexpress.co.il/sitemap.xml 200, 75 URLs, newest lastmod 2026-10-24; note: sitemap/robots emit apex host which 308-redirects to www (NEXT_PUBLIC_APP_URL should be https://www.kenyonexpress.co.il)
+
+## M01-c224 (2026-10-26)
+Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html at --width=380 / 768 / 1440. Dev server hung mid-run (no response 60s); killed + restarted via pnpm dev. Default runs REFUSED (13/8/4 live images unloaded in file:// reference), so measured with COMPARE_ALLOW_PENDING_IMAGES=1. OVERALL first 2600px: 380 = 62.6%, 768 = 35.41% (height ratio 1.73x, not a pixel gate), 1440 = 26.99%. Differs from c222 (29.28/27.26/20.5) because pending-image override was used; numbers are not comparable. Gate <11% not passed at any width. No locked files touched; nothing committed (compare appended rows to docs/UI-PARITY-REPORT.md).
+**המשך מ: M01-c224 BLOCKED home-gate-fail-62.6/35.41/26.99pct**
+
+המשך מ: M02-c224 BLOCKED reference-gone (compare.mjs --page=product exit 5 at 380/768/1440: kenyonexpress.co.il now serves our build; local sample slug מוצר-לדוגמא 404s)
