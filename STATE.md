@@ -956,7 +956,26 @@ Status: CLEAN - Zero critical/high vulnerabilities detected. Total audited: 540 
 
 ---
 
+## סיום MAINTENANCE_LOOP_5 (2026-10-26 21:48 UTC) - SKIPPED (External MCP Authorization Blocker)
+
+⛔ **Status:** SKIPPED per CLAUDE.md "goal שנתקע פעמיים: לדלג" (goal stuck twice: skip)
+
+**Goal condition:** Check all cron routes last-run timestamp via Vercel MCP `get_runtime_logs`. Alert in docs/CRON-STATUS.md if any route stale over 24h.
+
+**Prior attempts documented:**
+- First attempt: Vercel MCP `get_runtime_logs` returned 403 forbidden
+- Second attempt: Identical 403 error on same endpoint
+- Root cause: Vercel MCP connector in claude.ai settings lacks authorization for team_TUMTPVDP8218QHwedSjmgJWl / project prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP
+
+**What would satisfy goal:** Ofir updates Vercel MCP connector grant in claude.ai settings to include runtime logs read access. This is outside autonomous scope.
+
+**Decision:** Skipped per conservative handling rule. Same external blocker on both prior attempts = unresolvable in non-interactive session without user action.
+
+**Quality gates:** typecheck ✅ lint ✅ build ✅
+
+---
+
 ## המשך מ:
 
-**MAINTENANCE_LOOP_5 (Item 16 of 22):** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push. All quality gates green.
+**MAINTENANCE_LOOP_6 (Item 17 of 22):** Recheck Mobile Gate score via scripts/compare.mjs --page=home --widths=380. If above 11% threshold, requeue mobile-fix goal at head of queue. Use Supabase MCP for DB, RLS, migrations. Commit. Push. All quality gates green.
 
