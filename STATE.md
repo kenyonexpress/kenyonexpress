@@ -141,10 +141,22 @@ Gate is not fixable without working reference OR architectural redesign (ditch 2
 - Test infrastructure issue, not code issue
 - Solution would require: (a) working reference with all resources, or (b) architectural redesign
 
+## סיום MAINTENANCE_LOOP_8 RECHECK (2026-10-26 11:15 UTC)
+✅ Code debt scan recheck completed via grep.
+- Count: 7 (unchanged from CODE_DEBT_CLEANUP_1 result)
+- Previous scan: 7 (2026-10-26 09:30 UTC)
+- Delta: 0 — Stable, no new comments introduced
+- Items: stock-notifications (1), cardcom.ts (2), wallet/integration.test.ts (4)
+- No cleanup goal queued (count stable)
+- Updated docs/CODE-DEBT-STATUS.md
+- Quality gates: typecheck ✅ lint ✅ build ✅ (exit 0)
+- Commit 194ccba91 [autopilot] chore: maint code debt scan pushed.
+
+---
+
 ## המשך מ:
-Next session: item 2 from GOALS-QUEUE.md (Coupon redemption + QR). Branch feat/coupon-redemption exists. Read docs/ARCHITECTURE-COUPON-REDEMPTION-UX.md first.
-Estimated: Data loading issue or structural page difference (CitiesRow per C24 trade-off noted in prior decision).
-Alternative: If third stuck attempt, mark SKIPPED per CLAUDE.md rule.
+**QUEUE EMPTY** — All unblocked autonomous goals completed. Project in v2.0.0-final status.
+Remaining blockers: Supabase MCP OAuth (migrations 162/289), Cardcom prod credentials, Owner decisions (Z12 OTP, F13 coupon), Visual parity gate (reference degraded), E2E infrastructure, Lighthouse production access.
 
 ---
 
