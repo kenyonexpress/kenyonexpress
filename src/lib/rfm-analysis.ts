@@ -131,49 +131,6 @@ export async function getSegmentUsers(supabase: SupabaseClient, segmentType: Cus
 }
 
 /**
- * Get RFM scores for current user
- */
-export async function getUserRFMScore(supabase: SupabaseClient) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    throw new Error('Not authenticated')
-  }
-
-  const { data, error } = await supabase
-    .from('customer_rfm_scores')
-    .select('*')
-    .eq('user_id', user.id)
-    .single()
-
-  if (error && error.code !== 'PGRST116') {
-    throw new Error(`Failed to get RFM score: ${error.message}`)
-  }
-
-  return data as RFMScore | null
-}
-
-/**
- * Get all active segments
- */
-export async function getAllSegments(supabase: SupabaseClient) {
-  const { data, error } = await supabase
-    .from('customer_segments')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: true })
-
-  if (error) {
-    throw new Error(`Failed to get segments: ${error.message}`)
-  }
-
-  return data as CustomerSegment[]
-}
-
-/**
  * Determine segment classification based on RFM values
  * Used for display and analytics
  */
