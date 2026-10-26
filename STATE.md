@@ -211,3 +211,5 @@ Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=fi
 המשך מ: M08-c207 DONE (Lighthouse mobile sampled: / 43, /product 62 on likely-dev server; logged in docs/LIGHTHOUSE-AUDIT.md)
 
 המשך מ: M12-c207 DONE (robots.ts verified: allow /, sitemap+host from NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il, trailing-slash safe; added /login /signup /mfa /admin-mfa /debug/ disallows + test; 7/7 pass)
+
+המשך מ: M07-c208 DONE (TODO/FIXME rescan: 3 markers from 2026-09-17, all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds)

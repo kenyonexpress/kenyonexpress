@@ -13,3 +13,7 @@ Scanned all tracked files for `TODO` / `FIXME`. Markers older than 7 days (all b
 | 3 | `scripts/screenshot-all.mjs:42` | `TODO`: set real product/category slugs per environment | Filed. Low priority. Defaults are placeholders, and all four paths can be overridden by env vars or argv. |
 
 Not a TODO: `src/lib/whatsapp.test.ts:91` uses the literal string `'TODO'` as a fixture for an invalid phone value.
+
+## Scan M07-c208 (2026-10-26)
+
+Re-scanned `src` and `scripts` for `TODO` / `FIXME`. The same three markers remain, all blamed to 2026-09-17 (older than 7 days) and unchanged since the M07-c192 scan. Nothing could be resolved in code: #1 and #2 need Cardcom production credentials, and #3 needs per-environment slugs. All three stay filed in the table above. No new markers found. No locked files touched.
