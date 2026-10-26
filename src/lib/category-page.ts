@@ -409,9 +409,8 @@ async function getCategoryProducts(opts: {
       // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
       // exists. Add the two columns to this string when 136 is applied;
       // `supplierLocation` already prefers them the moment they are present.
-      // `name` and `verification_status` are from migration 297.
       // F63: added shipping_price_agorot for free shipping filter, suppliers.open_weekends for weekend filter (migration 306).
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, latitude, longitude, shipping_price_agorot, categories!products_category_id_fkey(name_he, slug), suppliers(name, city, verification_status, open_weekends)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, latitude, longitude, shipping_price_agorot, categories!products_category_id_fkey(name_he, slug), suppliers(name, city, open_weekends)',
       { count: 'exact' },
     )
     .eq('status', 'active')
