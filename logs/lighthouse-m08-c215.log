@@ -1,0 +1,11 @@
+# M08-c215 Lighthouse mobile sample 2026-10-26 (local prod build, port 3100, simulate throttling, 2 runs/page, scripts/_lh-runs.mjs)
+# load avg at start: 4.19 10.20 8.90
+c215-home #1: {"run":1,"score":68,"FCP":"2.0 s","LCP":"5.7 s","SI":"2.0 s","TBT":"400 ms","CLS":"0.006","TTFB":"Root document took 10 ms","blocking":"890 ms","unusedJS":"135 KiB","legacyJS":"-"}
+c215-home #2: {"run":2,"score":75,"FCP":"2.0 s","LCP":"6.3 s","SI":"3.2 s","TBT":"20 ms","CLS":"0.006","TTFB":"Root document took 500 ms","blocking":"840 ms","unusedJS":"135 KiB","legacyJS":"-"}
+
+c215-home scores: 68 / 75  (median 75)
+c215-product #1: {"run":1,"score":85,"FCP":"1.4 s","LCP":"4.4 s","SI":"1.4 s","TBT":"20 ms","CLS":"0.001","TTFB":"Root document took 0 ms","blocking":"600 ms","unusedJS":"129 KiB","legacyJS":"-"}
+c215-product #2: {"run":2,"score":82,"FCP":"1.7 s","LCP":"4.8 s","SI":"1.7 s","TBT":"20 ms","CLS":"0.001","TTFB":"Root document took 460 ms","blocking":"870 ms","unusedJS":"129 KiB","legacyJS":"-"}
+
+c215-product scores: 85 / 82  (median 85)
+Note: G23 95+ not met (home 68-75, product 82-85); load avg ~4 (less contended than c210/c211); LCP 4.4-6.3 s is the main gap; remaining fixes touch locked hero/header components. Sample-only item, no code changes.

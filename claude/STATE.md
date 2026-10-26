@@ -142,3 +142,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M05-c215 DONE (2026-10-26): pnpm test green (615 files / 7064 tests pass, 2 files skipped); working tree clean, no drift to fix; no code change**
 **המשך מ: M06-c215 DONE (2026-10-26): pnpm build green (all routes compile); no source drift to fix; no code change**
 **המשך מ: M07-c215 DONE (2026-10-26): TODO/FIXME scan of src/scripts/migrations finds only the 3 backlogged items (cardcom.ts:249, cardcom.ts:312, r2-migration.ts:103-106), all >7 days old and blocked on Cardcom creds / service-role key; BACKLOG.md re-verified; no code change**
+**המשך מ: M08-c215 DONE (2026-10-26): Lighthouse mobile sample, / 68/75, product 85/82 (load ~4, LCP 4.4-6.3 s main gap); logged in logs/lighthouse-m08-c215.log; G23 95+ not met; no code change**
