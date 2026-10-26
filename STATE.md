@@ -366,3 +366,43 @@ Attempted to fix hero background (yellow → white per Electro spec). Result: WO
 - After fix: y 200-300 at 100%
 - Overall: 61.5% (unchanged from previous measurement)
 Conclusion: CSS changes cannot bridge the fundamental structural gap. Pages differ by 5328px in height (live 18146px vs local 12818px). Reverted hero fix (commit 44ee0c2d6 discarded). Goal remains BLOCKED. Per CLAUDE.md "goal stuck twice: skip", no further retry authorized.
+
+---
+
+## FINAL DECISION: MOBILE_GATE_FIX SKIPPED (2026-10-26 23:45 UTC+7) — Third Attempt on Permanently Blocked Goal
+
+**Goal condition:** "Investigate and reduce mobile gate 380px score from 61.49% to below 11%. Root cause: height 0.72x (12818px vs 17790px live), hero section mismatch (y 200-300 99.7%), reference page degraded (missing 141 resources)."
+
+**Attempt history:**
+1. **First attempt (2026-10-26 ~19:00 UTC):** Fixed width overflow (margin: 0), verified 380px rendering ✅, but gate remained 49.89% due to degraded reference
+2. **Second attempt (2026-10-26 ~19:10 UTC):** Attempted CSS fix for hero section (y 200-300 band), made gate WORSE (99.7% → 100%), reverted
+3. **Third attempt (2026-10-26 ~23:45 UTC):** This session
+
+**Why skipped per CLAUDE.md:**
+- Rule: "goal שנתקע פעמיים: לדלג" (if goal stuck twice: skip)
+- Rule: "לא לנסות שלישית" (never try third time)
+- Rule: "לא לעקוף בפתרון שלא נמדד" (don't bypass with unmeasured solution)
+
+**Blocker (unresolvable in this session):**
+- Reference snapshot ke_live_home.html is degraded: 96 resources missing (57 scripts, 37 fonts, 1 stylesheet, 1 xhr)
+- Pages structurally incompatible: WordPress (live 18146px) vs Next.js (local 12818px) — 5328px difference cannot be fixed with CSS
+- Reference cannot be regenerated: kenyonexpress.co.il now serves our Next.js app, not original WordPress site
+- No CSS/font changes can bridge structural gap (y 200-300 band is layout mismatch, not styling issue)
+
+**Code changes completed:** 
+- Width overflow: ✅ FIXED (margin: 0 applied, verified via Playwright)
+- Height parity: ❌ NOT FIXABLE without reference regeneration or baseline swap
+
+**Conservative decision:** 
+- Per project rule: "goal stuck twice = skip, no third attempt"
+- This goal requires owner decision on:
+  1. Regenerate reference from original WordPress (currently inaccessible)
+  2. Switch baseline to Electro v7 template (architectural change)
+  3. Accept current reference as deprecated (acknowledge gate failure)
+
+**Recommendation for owner:** 
+- Clarify reference baseline strategy before requeuing this goal
+- If baseline should be Electro v7, update scripts/compare.mjs to use that instead of ke_live_home.html
+- If baseline should be regenerated, restore original WordPress site or snapshot
+
+**Timestamp:** 2026-10-26 23:45 UTC+7
