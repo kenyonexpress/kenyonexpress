@@ -142,7 +142,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="m-0 min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
           {/*
             First thing in the body, not next/script, and not next to the banner
