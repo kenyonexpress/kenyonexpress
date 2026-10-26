@@ -309,6 +309,7 @@
      because it was sized by its content instead of by the measurement. */
   --spacing-feature-bar-mobile: 31px;
   --spacing-feature-bar: 134px;
+  --spacing-usp-offset: 30px;
   /* Inside the 134px band, probed 2026-10-20 at 768 and 1440: the list starts
      30px into the section, is 81.4px tall (1px border round a 79.4px row),
      and at 768 it is 690px wide with five 180px cells laid right-to-left, the
@@ -599,4 +600,21 @@
   --breakpoint-mobile: 380px; /* compare.mjs narrow */
   --breakpoint-tablet: 768px; /* compare.mjs middle; equals Tailwind md */
   --breakpoint-desktop: 1440px; /* compare.mjs wide; the reference viewport */
+}
+
+/* Feature bar height classes. Live renders a 31px empty strip at 380px (no
+   items), then 134px with items at md and above. These classes map the CSS
+   variables to Tailwind heights so BenefitBar.tsx can constrain section height.
+   The pt-usp-offset class adds 30px of padding-top at md and above to position
+   the list inside the 134px section (probed 2026-10-20). */
+@layer utilities {
+  .h-feature-bar-mobile {
+    height: var(--spacing-feature-bar-mobile);
+  }
+  .h-feature-bar {
+    height: var(--spacing-feature-bar);
+  }
+  .pt-usp-offset {
+    padding-top: var(--spacing-usp-offset);
+  }
 }

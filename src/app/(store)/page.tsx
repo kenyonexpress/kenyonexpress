@@ -84,7 +84,7 @@ export default function HomePage() {
 
         C24 explicitly requested "City row + /c/city-slug + /c/category-slug",
         so CitiesRow is now mounted. This WILL break the comparison gate
-        (measured ~21.65% vs 11% threshold) because the live site has no city
+        (measured 61.49% vs 11% threshold) because the live site has no city
         row, and the 50px element shifts all content below it. The goal
         requirement takes precedence over the gate in this case.
       */}

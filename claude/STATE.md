@@ -188,3 +188,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M09-c220 DONE (2026-10-26): knip re-audit — only @capacitor/android flagged (required by native android build); no unused deps; exports are public API, left intact; no code changes**
 **המשך מ: M06-c221 DONE (2026-10-26): pnpm build green; working tree clean (earlier drift in docs/M-CYCLE-STATUS.md + store page.tsx already committed by concurrent process); no code changes**
 **המשך מ: M09-c221 DONE (2026-10-26): knip re-audit — only @capacitor/android flagged (required by native android build); no unused deps; unused exports are public API/re-exports, left intact; no code changes**
+המשך מ: M10-c221 BLOCKED (migrations/pending still NOT verified applied: 48 files pending; Supabase MCP unauthenticated in this non-interactive session so apply_migration/list_migrations unavailable; db push forbidden; no code changes)
