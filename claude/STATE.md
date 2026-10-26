@@ -1,3 +1,4 @@
+**המשך מ: M04-c220 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit exit 0); no drift, no code change**
 **המשך מ: M04-c219 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit exit 0); no drift, no code change**
 **המשך מ: M16-c218 DONE (2026-10-26): product page (store)/product/[slug] emits JSON-LD Product + BreadcrumbList (buildProductJsonLd/buildBreadcrumbJsonLd, one script each); json-ld.test 26/26 pass; no code change**
 **המשך מ: M12-c218 DONE (2026-10-26): robots.ts verified production-safe (allow / + private paths disallowed, sitemap+host absolute, robots.test 7/7 pass, no noindex-all); live robots.txt is one deploy behind (lacks /debug/ + /voucher/ disallows), no code change**
