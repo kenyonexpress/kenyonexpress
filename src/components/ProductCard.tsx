@@ -41,7 +41,7 @@ export type Product = {
   /** Supplier verification status and name, joined from suppliers table */
   supplier?: {
     name: string
-    verification_status: 'unverified' | 'pending' | 'verified'
+    verification_status?: 'unverified' | 'pending' | 'verified'
   } | null
 }
 
@@ -247,12 +247,13 @@ function DealsProductCard({ product }: { product: Product }) {
           product.free_shipping ||
           product.supplier?.verification_status === 'verified') && (
           <div className="absolute top-2 end-2 flex flex-col gap-1">
-            {product.supplier?.verification_status === 'verified' && (
-              <SupplierVerificationBadge
-                status={product.supplier.verification_status}
-                supplierName={product.supplier.name}
-              />
-            )}
+            {product.supplier?.verification_status === 'verified' &&
+              product.supplier.verification_status && (
+                <SupplierVerificationBadge
+                  status={product.supplier.verification_status}
+                  supplierName={product.supplier.name}
+                />
+              )}
             {product.weekend_only && (
               <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">
                 סוף ש
