@@ -197,3 +197,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M06-c222 DONE (2026-10-26): pnpm build exit 0 on closeout/v1-final; only drift docs/M-CYCLE-STATUS.md timestamp, committed + pushed edb63b9db**
 **המשך מ: M07-c222 DONE (2026-10-26): TODO/FIXME scan: 3 open items (cardcom.ts:249/:312, r2-migration.ts:103-106), all >7d old, already filed in docs/BACKLOG.md (Cardcom creds / R2 stub); no new items, no code changes**
 **המשך מ: M18-c222 DONE (2026-10-26): claude/STATE.md already 198 lines (<300), nothing to trim; docs/STATE-ARCHIVE.md untouched; no code changes**
+**המשך מ: M06-c223 DONE (2026-10-26): pnpm build exit 0 on closeout/v1-final; only drift docs/M-CYCLE-STATUS.md timestamp, committed + pushed**
