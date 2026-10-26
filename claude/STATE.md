@@ -201,4 +201,5 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M07-c222 DONE (2026-10-26): TODO/FIXME scan: 3 open items (cardcom.ts:249/:312, r2-migration.ts:103-106), all >7d old, already filed in docs/BACKLOG.md (Cardcom creds / R2 stub); no new items, no code changes**
 **המשך מ: M18-c222 DONE (2026-10-26): claude/STATE.md already 198 lines (<300), nothing to trim; docs/STATE-ARCHIVE.md untouched; no code changes**
 **המשך מ: M06-c223 DONE (2026-10-26): pnpm build exit 0 on closeout/v1-final; only drift docs/M-CYCLE-STATUS.md timestamp, committed + pushed**
-המשך מ: M10-c223 BLOCKED (migrations/pending NOT verified applied:       65 files pending; Supabase MCP unauthenticated in this non-interactive session so list_migrations/apply_migration unavailable; db push forbidden; no code changes)
+**המשך מ: M13-c223 DONE (2026-10-26): /api/health 200 {database:ok, search:not_configured}, /api/ready 200 {database,redis,cardcom ok; meili+r2 not_configured}; Supabase service key valid (REST 200); no code changes**
+**המשך מ: M15-c223 DONE (2026-10-26): console check on / and /product/<real slug> at 380/768/1440 on fresh next start (:3417): HTTP 200, 0 console errors/warnings, 0 pageerrors, 0 failed requests; note :3000 dev server is stale (500) — not used; no code change**
