@@ -1,35 +1,54 @@
 # Cron Routes Status
 
-## MAINTENANCE_LOOP_5 Results (2026-10-26 09:20 UTC+7)
+## MAINTENANCE_LOOP_5 Results (2026-10-26 09:25 UTC)
 
-**Last check:** 2026-10-26 09:20:00 UTC+7 (MAINTENANCE_LOOP_5, nineteenth run)  
-**Status:** ✅ HEALTHY — All executing cron routes active within 24 hours, no stale routes detected
+**Last check:** 2026-10-26T09:25:00Z (MAINTENANCE_LOOP_5 re-check via Vercel CLI)  
+**Status:** ⚠️ ALERT — 1 healthy route, 20 missing from 7d logs (likely stale)
 
-### Latest Check Summary (2026-10-26 09:20 UTC)
+### Latest Check Summary (2026-10-26 09:25 UTC)
 
 | Category | Count | Status |
 |---|---|---|
-| Executing cron routes (within 24h) | 5 | ✅ Healthy |
-| Stale routes (>24h) | 0 | ✅ None |
-| Routes with 2xx responses | 5 | ✅ All responding |
+| Total cron routes defined | 23 | - |
+| Executing cron routes (within 24h) | 1 | ⚠️ affiliate-payouts only |
+| Stale routes (>24h) | 0 | ✅ None confirmed |
+| Missing from logs (7d window) | 22 | ⚠️ ALERT |
 
-### ✅ Active Routes (Last 24 hours)
+### ✅ Active Routes (< 24h)
 
-All routes executing successfully with recent timestamps:
+Single route with recent activity:
 
-- `/api/cron/health` — 09:15:00 UTC+7
-- `/api/cron/invoices` — 09:10:00 UTC+7
-- `/api/cron/notifications` — 09:15:00 UTC+7
-- `/api/cron/stock` — 09:10:00 UTC+7
-- `/api/cron/stranded-payments` — 09:10:00 UTC+7
+- `/api/cron/affiliate-payouts` — 2026-10-26T09:21:29Z (4 min ago)
 
-**Assessment:** All cron routes currently executing are running normally. No alerts needed. 
+### ⚠️ Missing from Logs (7d window)
 
-**Method:** Vercel CLI `vercel logs --since 24h` queried for `/api/cron` routes. All timestamps confirmed within the last hour.
+The following 22 cron routes have NO execution logs in the past 7 days:
 
-### No Stale Routes
+- `/api/cron/abandoned-cart`
+- `/api/cron/cart-abandonment`
+- `/api/cron/deal-scraper`
+- `/api/cron/expire-vouchers`
+- `/api/cron/fraud-monitor`
+- `/api/cron/health`
+- `/api/cron/invoices`
+- `/api/cron/notifications`
+- `/api/cron/observability-check`
+- `/api/cron/p95-monitor`
+- `/api/cron/reap-carts`
+- `/api/cron/reconcile`
+- `/api/cron/retention`
+- `/api/cron/rfm-segmentation`
+- `/api/cron/search-report`
+- `/api/cron/sms-broadcasts`
+- `/api/cron/stock`
+- `/api/cron/stock-notifications`
+- `/api/cron/stranded-payments`
+- `/api/cron/subscriptions`
+- `/api/cron/weekly-digest`
 
-All monitored cron routes are running on schedule. No routes have exceeded the 24-hour staleness threshold.
+**Assessment:** Cron scheduler appears to be non-functional. Of 23 defined cron routes, only 1 shows recent execution. Most routes missing from logs entirely. This is a regression from prior measurements that showed 8 healthy routes. **Requires immediate investigation.**
+
+**Method:** Vercel CLI `vercel logs --project kenyonexpress --since 7d` parsed for `/api/cron` route patterns and timestamps. Each route matched against defined routes in `src/app/api/cron/*/route.ts`.
 
 ---
 
