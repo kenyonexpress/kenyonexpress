@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M18-c216: STATE.md נמדד ב-191 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c216 DONE.
 Updated: 2026-10-26 (M12-c216: אימות robots.txt production-safe). src/app/robots.ts: Allow / ל-*, Disallow על נתיבים פרטיים/אימות בלבד, אין התנגשות קידומת עם נתיבים ציבוריים, Sitemap+host מ-NEXT_PUBLIC_APP_URL (.env.local = https://www.kenyonexpress.co.il); אין noindex גורף. robots.test.ts: 7/7 עברו. לא נערכו קבצי קוד. המשך מ: M12-c216 DONE.
 Updated: 2026-10-26 (M11-c214: אימות sitemap.xml). https://www.kenyonexpress.co.il/sitemap.xml מחזיר 200 application/xml, XML תקין, 75 כתובות, lastmod אחרון 2026-10-24 (נגזר מעדכון הקטלוג). דגימה של 7 כתובות: 7/7 מחזירות 200. **ממצא:** age=123963s (~34 שעות) למרות s-maxage=3600, כלומר ה-CDN מגיש עותק ישן (ב-M11-c192 היה ~15.5 שעות); וכל ה-<loc> וה-Sitemap ב-robots על האפקס kenyonexpress.co.il ולא www כי NEXT_PUBLIC_APP_URL לא מוגדר ל-www בפרודקשן (הגדרת Vercel, לא קוד). sitemap.test.ts: 4/4 עברו. לא נערכו קבצי קוד. המשך מ: M11-c214 DONE.
 המשך מ: M08-c214 DONE (Lighthouse mobile: / =60, /product =68, dev server, מתחת ל-95; ראו docs/LIGHTHOUSE-AUDIT.md)
@@ -185,3 +186,7 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M01-c216 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server was down, started `pnpm dev`, :3000 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 15/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c215. No locked files touched.
 **המשך מ: M01-c216 BLOCKED reference-images-not-loading**
+
+## M13-c216 (2026-10-26)
+Verify /api/health and /api/ready with real deps. Routes exist (src/app/api/health, src/app/api/ready) and probe Supabase via the admin client. Direct REST probe of Supabase `categories` with the SUPABASE_SERVICE_ROLE_KEY in .env.local returns 401 (invalid key), so the real-deps check cannot pass. Per the cred-dependent M13 rule: DONE-DEFERRED until .env.local is updated post-C51 recovery. No code changes, no locked files touched.
+**המשך מ: M13-c216 DONE-DEFERRED**
