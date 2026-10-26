@@ -107,3 +107,4 @@ M04-c212 DONE 2026-10-26 pnpm type-check clean (tsc --noEmit, 0 errors); no drif
 
 המשך מ: M16-c212 DONE
 M04-c213 DONE 2026-10-26 pnpm type-check (tsc --noEmit) exit 0, tree clean, no drift to commit. המשך מ: M04-c213 DONE
+M07-c213 DONE 2026-10-26 TODO/FIXME scan: 0 markers left in code; all aged ones already filed in docs/BACKLOG.md (items 8-11). המשך מ: M07-c213 DONE
