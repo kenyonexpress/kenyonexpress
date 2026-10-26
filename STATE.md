@@ -243,3 +243,15 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Default live URL
 ## M02-c211 (2026-10-26)
 Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server on :3000, 200; local /product/מוצר-לדוגמא). Reference passes classifyReference, but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set. Same as M02-c210. No locked files touched.
 **המשך מ: M02-c211 BLOCKED product-grid-count-mismatch-12-vs-4**
+
+## M01-c213 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Default live URL REFUSED (kenyonexpress.co.il is our own Vercel build). Dev server had to be started (:3000 was down). With --live=file://<abs>/refs/electro-home-v7.html the reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 13/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c211. No locked files touched.
+**המשך מ: M01-c213 BLOCKED reference-images-not-loading**
+
+## M02-c213 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server was down, started; :3000 200; local /product/מוצר-לדוגמא). Reference passes classifyReference, but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set. Same as M02-c210/c211. No locked files touched.
+**המשך מ: M02-c213 BLOCKED product-grid-count-mismatch-12-vs-4**
+
+## M03-c213 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server :3000 up). All three REFUSED by the live-reference guard: kenyonexpress.co.il serves our own build, and refs/ still has no Electro v7 category capture (only home + product). No diff percentages produced; guard not bypassed. Same as M03-c202/c203. No locked files touched.
+**המשך מ: M03-c213 BLOCKED category-reference-missing**
