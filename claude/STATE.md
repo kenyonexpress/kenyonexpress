@@ -112,3 +112,4 @@ M17-c213 DONE 2026-10-26 RTL probe (playwright, 380/768/1440) on / and /product/
 המשך מ: M17-c213 DONE
 המשך מ: M04-c214 DONE (type-check clean, no drift, nothing to commit)
 M07-c214 DONE 2026-10-26 TODO/FIXME scan: 0 markers in code; aged ones already filed in docs/BACKLOG.md #8-11. No code change, no locked files touched. המשך מ: M07-c214 DONE
+M17-c216 BLOCKED locked-component 2026-10-26 RTL audit (380/768/1440): /product/<sample> 0 LTR leaks; / has 0 leaks outside hero, but src/components/home/HeroSlider.tsx:555-628 uses dir="ltr" on slide text (11 Hebrew <p> computed direction:ltr) - locked file, not edited. המשך מ: M17-c216 BLOCKED
