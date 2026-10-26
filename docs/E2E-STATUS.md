@@ -7,8 +7,9 @@
 **Attempts (2026-10-26):**
 1. First attempt (15:19 UTC): 41/874 tests (4.7%) - Background timeout
 2. Second attempt (17:42 UTC): 590/874 tests (67%) - Background timeout  
-3. Third attempt (20:24 UTC): 125/874 tests (14.3%) - Background timeout
+3. Third attempt (20:24 UTC): 125/874 tests (14.3%) - Background timeout (killed port conflicts, 14 failures)
 4. Fourth attempt (20:58 UTC): 414/874 tests (47%) - Foreground+background max timeout
+5. Fifth attempt (23:35 UTC+7): 125/874 tests (14.3%) - Background timeout, 14 failures recorded
 
 **Root Cause:** Non-interactive session with 10-minute timeout maximum. Full E2E suite requires 25-40 minutes. Process terminates at various checkpoints (41, 590, 125, 414 of 874) without completing or generating final summary.
 
