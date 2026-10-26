@@ -24,7 +24,7 @@ import { describe, expect, it } from 'vitest'
  * `begin_checkout`, `purchase`, `voucher_redeemed` and `order_refunded` are on
  * none of it. Every server-side money event the funnel emits goes nowhere.
  *
- * `migrations/pending/169` is the fix and it needs approval before it touches
+ * `migrations/applied/169` is the fix and it needs approval before it touches
  * production. This test does not assert the live database -- it cannot, and a
  * test that needed production to be right would fail for the next month. What
  * it pins is the thing that is actually in this repo's control: **the pending
@@ -36,7 +36,7 @@ import { describe, expect, it } from 'vitest'
  * working unchanged. The invariant is the same either way.
  */
 
-const MIGRATION = 'migrations/pending/169_analytics_server_event_names.sql'
+const MIGRATION = 'migrations/applied/169_analytics_server_event_names.sql'
 
 /**
  * The quoted names inside the whitelist of the `CREATE OR REPLACE` in 169.

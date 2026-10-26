@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest'
  * distribution, or the justification is decoration.
  */
 
-/** The row `migrations/pending/172` exists to take out of the catalogue. */
+/** The row `migrations/applied/172` exists to take out of the catalogue. */
 const MASTER_PRODUCT = { name: 'מוצר ראשי מאסטר Master Product', sell: 1, compareAt: 400 }
 
 /**

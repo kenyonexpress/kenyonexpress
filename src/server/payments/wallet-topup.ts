@@ -7,7 +7,7 @@ import { type Agorot, agorot, agorotToIls } from '@/lib/commerce/money'
  * production and `payment_kind` has exactly two values, `charge` and `refund`
  * (measured 2026-09-07). A top-up has no order, so it cannot be a `payments`
  * row without making that column nullable -- and every reader on the money path
- * finds the charge BY `order_id`. `migrations/pending/174_wallet_topups.sql`
+ * finds the charge BY `order_id`. `migrations/applied/174_wallet_topups.sql`
  * is the table this module is written against; it is not applied, and applying
  * a migration is one of the project's hard stops.
  *

@@ -61,7 +61,7 @@ describe('planWalletTopup', () => {
     // the action refuse with first. If they disagree, a customer is told a
     // number the database then rejects.
     const sql = require('node:fs').readFileSync(
-      'migrations/pending/174_wallet_topups.sql',
+      'migrations/applied/174_wallet_topups.sql',
       'utf8',
     ) as string
     expect(sql).toContain(`between ${MIN_TOPUP_AGOROT} and ${MAX_TOPUP_AGOROT}`)

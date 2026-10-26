@@ -190,7 +190,7 @@ export function shekelsFromIlsCompactPlain(value: number | string | null | undef
  * at x=1270.
  *
  * Correcting the row is a production data change, which this project does not
- * make without approval; `migrations/pending/171_category_name_shekel_order.sql`
+ * make without approval; `migrations/applied/171_category_name_shekel_order.sql`
  * is the draft, and it is not applied. Until it is, this repairs the string at
  * the render edge, which is also the safer place: a category name typed into
  * the admin form tomorrow gets the same treatment without anybody remembering

@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest'
  * Master Product", at ₪1 against a ₪400 compare-at with ten in stock and
  * status active. It renders on the homepage as a buyable product. If anyone
  * buys one the order is real, the payment is real, and there is nothing to
- * fulfil. `migrations/pending/172` removes it and needs approval; this is the
+ * fulfil. `migrations/applied/172` removes it and needs approval; this is the
  * half that can be done without touching production.
  *
  * The fixture below is that row's real numbers. `implausible-discount.test.ts`

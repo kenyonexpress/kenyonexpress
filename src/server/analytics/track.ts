@@ -158,7 +158,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // file emits is currently going nowhere, and has been since migration 151
     // narrowed the list.
     //
-    // `migrations/pending/169` adds the four names and is the actual fix; it
+    // `migrations/applied/169` adds the four names and is the actual fix; it
     // needs approval before it touches production. This does not fix the loss.
     // It makes the loss visible, which is the part that can be done without
     // approval -- silent data loss on the money funnel is indistinguishable
@@ -168,7 +168,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
       log.error('analytics.event_rejected', {
         eventName: input.eventName,
         detail:
-          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/169.',
+          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/applied/169.',
       })
     }
   } catch (error) {
