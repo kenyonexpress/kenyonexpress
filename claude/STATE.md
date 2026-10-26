@@ -2,6 +2,7 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M06-c209 DONE pnpm build passes (exit 0), working tree clean, no drift to commit; no code change**
 **המשך מ: M04-c209 DONE pnpm type-check clean (tsc --noEmit exit 0); committed drifted deps (lucide-react 1.61, zod 4.6.7), lockfile and E2E status doc; no forbidden files touched**
 **המשך מ: M06-c208 DONE pnpm build passes (exit 0, Next 16.4.3), working tree clean, no drift to commit; no code change**
 **המשך מ: M05-c208 DONE pnpm test 615 files / 7064 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
@@ -99,7 +100,6 @@ M04-c182 2026-10-25: pnpm type-check clean (tsc --noEmit, 0 errors). Drift commi
 RESULT: DONE
 M06-c182 2026-10-25: pnpm build succeeds (all routes generated). Drift committed: docs/M-CYCLE-STATUS.md regenerated timestamps.
 RESULT: DONE
-המשך מ: M06-c182 DONE
 M09-c182 2026-10-25: knip run. Removed unused react-hook-form + dead src/components/ui/form.tsx (no importers); type-check + build green. Kept @capacitor/android (android/ native project), drizzle-orm/postgres (knip false positive, drizzle.config needs SUPABASE_DB_URL). Unused exports/types (~236, mostly type-only public API) left in place: low value, wide blast radius; list in knip output.
 RESULT: DONE
 המשך מ: M09-c182 DONE
@@ -291,8 +291,9 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M13-c206 DONE (2026-10-26): dev server with .env.local: /api/health 200 {ok,database:ok,search:not_configured}, /api/ready 200 {database:ok,redis:ok,cardcom:ok,meilisearch+r2:not_configured}; no code changes)
 המשך מ: M17-c206 BLOCKED locked-component (RTL probe / and /product/עוזרת-אישית-שירותי-משרד at 380/768/1440: dir=rtl lang=he, 0 overflow, 0 text-align:left; /product clean; on / 11 Hebrew <p dir="ltr"> hero slide lines from locked src/components/home/HeroSlider.tsx:555-628, not edited; no code changes)
 המשך מ: M04-c207 DONE (2026-10-26): pnpm type-check (tsc --noEmit) clean, no drift to fix; no code changes, nothing to commit)
-המשך מ: M07-c207 DONE (TODO/FIXME scan: 6 markers in src, all older than 7 days and all already filed in docs/BACKLOG.md items 1-3; none resolvable without Cardcom prod creds or Supabase service-role key; no new markers)
+המשך מ: M07-c209 DONE (2026-10-26): TODO/FIXME scan: same 6 markers in src (cardcom.ts x2, r2-migration.ts x4), all older than 7 days and already filed in docs/BACKLOG.md items 1-3; blocked on Cardcom prod creds / Supabase service-role key; no new markers; no forbidden files touched)
 המשך מ: M09-c207 DONE (2026-10-26): knip --dependencies: only @capacitor/android flagged (needed for cap sync android); no removable deps; remaining dead exports are public type surfaces, kept; no code change, no forbidden files touched)
 המשך מ: M18-c207 DONE (2026-10-26): claude/STATE.md already 293 lines (<300) and docs/STATE-ARCHIVE.md holds history; nothing further to archive; no code change, no forbidden files touched)
 המשך מ: M04-c208 DONE (2026-10-26): pnpm type-check clean (tsc --noEmit exit 0); committed drifted status docs only; no forbidden files touched)
 המשך מ: M09-c208 DONE (2026-10-26): knip --dependencies re-run: only @capacitor/android flagged (needed for cap sync android); no removable deps; dead exports are public type surfaces, kept; no forbidden files touched)
+המשך מ: M08-c209 DONE (2026-10-26): Lighthouse mobile sample logged in logs/lighthouse-m08-c209.log: home 78/81, product 81/80 (G23 95+ not met, LCP-bound; sample only); no forbidden files touched)
