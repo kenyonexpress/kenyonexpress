@@ -198,3 +198,11 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M02-c217 (2026-10-26)
 Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server :3000 up; local /product/מוצר-לדוגמא). Unforced: all three REFUSED by the grid-count guard (reference 12 cards vs 4 local). With COMPARE_ALLOW_GRID_MISMATCH=1 (measurement only): 35.07% @380, 29.82% @768, 20.52% @1440, all above the 11% gate. No code changes, no locked files touched.
 **המשך מ: M02-c217 BLOCKED gate-fail (product 35.07/29.82/20.52 vs 11%; unforced run refused on grid 12 vs 4)**
+
+## M03-c217 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server :3000 up). All three REFUSED by the reference guard: kenyonexpress.co.il/product-category/hot-deals/ now serves our own Vercel build (32-34 /_next/ refs, no wp-content), so no number is produced. refs/ has no electro category capture to pass via --live=. No code changes, no locked files touched.
+**המשך מ: M03-c217 BLOCKED no-category-reference (compare.mjs refuses at 380/768/1440; live host is our own build)**
+
+## M18-c217 (2026-10-26)
+STATE.md measured at 204 lines before this entry, under 300; full archive already in docs/STATE-ARCHIVE.md, nothing to move. No code files edited.
+**המשך מ: M18-c217 DONE**
