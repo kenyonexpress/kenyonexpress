@@ -362,7 +362,17 @@ MAINTENANCE_LOOP_3 DONE (2026-10-26 22:32 UTC+7): Scanned docs/BACKLOG.md and do
 
 MAINTENANCE_LOOP_4 DONE (2026-10-26 22:45 UTC+7): Ran pnpm test:e2e. Suite partially completed (203/2172 tests). Found 2 timeout failures in mobile-shell.spec.ts (environmental, not code issues). Reported pass/fail/flaky counts in docs/E2E-STATUS.md. No code fixes applied (infrastructure issues). Commit 14b63bad1.
 
-## המשך מ: MAINTENANCE_LOOP_5 (Infinite Loop - Cycle 3)
+MAINTENANCE_LOOP_5 DONE (2026-10-26 22:50 UTC+7): Checked cron routes - documented in docs/CRON-STATUS.md. Known blocker: routes return 404 (prod uses wrong branch). Commit 3a3de7fca.
+
+MAINTENANCE_LOOP_6 SKIPPED (2026-10-26 22:50 UTC+7): Mobile gate check - known state 49.89% (reference degraded, cannot improve without regenerating baseline). Per CLAUDE.md skip rule (blocked twice).
+
+MAINTENANCE_LOOP_7 SKIPPED (2026-10-26 22:52 UTC+7): Lighthouse check - pnpm lhci:autorun timed out and was killed (SIGTERM). Known issue: Lighthouse CI times out in this environment. Per CLAUDE.md: blocked infrastructure issue, skip.
+
+MAINTENANCE_LOOP_8 DONE (2026-10-26 22:52 UTC+7): Code debt scan - found 6 TODOs in src/ (stable from M08-c221, no change). All >7 days old, already in BACKLOG.md. No cleanup needed.
+
+MAINTENANCE_LOOP_9 SKIPPED (2026-10-26 22:52 UTC+7): DB verification - Supabase MCP requires OAuth (unavailable non-interactive). Known blocker from multiple attempts. Per CLAUDE.md skip rule.
+
+## המשך מ: MAINTENANCE_LOOP_10 READY (Infinite Loop - Cycle 3 Complete)
 
 המשך מ: M13-c213 DONE-DEFERRED (live www: /api/ready 200 all five deps ok; /api/health 503 database ok, search down invalid_api_key = Meilisearch key invalid in prod env, credential issue not code; no code changes)
 
