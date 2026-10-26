@@ -31,3 +31,4 @@ All code executed. Awaiting manual tasks.
 
 המשך מ: M13-c185 DONE-DEFERRED (repo .env.local Supabase service key returns 401; /api/health + /api/ready 503 database=down on repo code)
 המשך מ: M11-c201 DONE (live /sitemap.xml + /robots.txt 200 application/xml, robots points to sitemap; live 75 URLs lastmod 2026-10-24, age ~23h, local build 79 URLs; no code change)
+המשך מ: M11-c207 DONE (live /sitemap.xml 200 application/xml via apex->www redirect, robots points to it; 75 URLs, 8 sampled locs all 200, lastmod 2026-10-24, cached copy age ~28h; no code change)
