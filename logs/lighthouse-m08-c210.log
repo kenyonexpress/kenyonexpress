@@ -1,0 +1,7 @@
+# M08-c210 Lighthouse mobile sample 2026-10-26 (local prod build, port 3100, simulate throttling, 2 runs/page, scripts/_lh-runs.mjs)
+# NOTE: a concurrent Playwright suite was running on the machine (TBT 2.9-3.3 s, CLS spikes), so these runs are CPU-contended and lower than c209.
+http://localhost:3100/ performance=52 FCP=2.5 s LCP=7.4 s TBT=660 ms CLS=0.002 render-blocking=840 ms unusedJS=135 KiB
+http://localhost:3100/ performance=61 FCP=1.9 s LCP=2.2 s TBT=3270 ms CLS=0.163 render-blocking=660 ms unusedJS=135 KiB
+http://localhost:3100/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90 performance=50 FCP=1.5 s LCP=1.9 s TBT=2900 ms CLS=0.423 render-blocking=680 ms unusedJS=130 KiB
+http://localhost:3100/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90 performance=62 FCP=1.4 s LCP=3.4 s TBT=3040 ms CLS=0.041 render-blocking=600 ms unusedJS=130 KiB
+Note: G23 95+ not met (home 52-61, product 50-62); contended run, uncomparable to c209 (78-81). Sample-only item, no code changes.
