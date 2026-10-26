@@ -17043,3 +17043,95 @@ Hits reaching / and /product are all non-leaks: comments (BenefitBar, MastheadNa
 No source changed, so no compare.mjs run needed. No runtime browser pass (no server on :3000).
 **המשך מ: M17-c200 DONE**
 
+
+## M01-c201 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard again, no diffs to record.
+Same cause as M01-c196..c200: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. Local dev server on :3000 was up this run (200), so the blocker is the reference, not the server. No percentages produced; guard not bypassed.
+**המשך מ: M01-c201 BLOCKED no-reference**
+
+## M01-c202 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard again, no diffs to record.
+Same cause as M01-c196..c201: kenyonexpress.co.il serves our own build (30-32 /_next/ refs, no wp-content), so build vs build. No percentages produced; guard not bypassed.
+**המשך מ: M01-c202 BLOCKED no-reference**
+
+## M02-c202 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard, no diffs to record.
+Same cause as M01-c196..c202: kenyonexpress.co.il serves our own build, so build vs build. No percentages produced; guard not bypassed.
+**המשך מ: M02-c202 BLOCKED no-reference**
+
+## M03-c202 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (exit 5), no diffs to record.
+Same cause as M02-c202: kenyonexpress.co.il serves our own build. refs/ has Electro v7 home + product captures but no category capture, so no honest category reference exists. Guard not bypassed.
+**המשך מ: M03-c202 BLOCKED no-reference**
+
+## M11-c202 (2026-10-26)
+Sitemap check. Local build artifact .next/server/app/sitemap.xml.body: valid urlset, 79 <loc>, lastmod 2026-10-25T11:04Z, built 2026-10-25 20:19 (src/app/sitemap.ts, cacheLife hours, CATALOGUE_TAG).
+Live https://www.kenyonexpress.co.il/sitemap.xml: apex 308 -> www, then 403 "Vercel Security Checkpoint" (x-vercel-mitigated: challenge) for curl and Googlebot UA. Vercel MCP fetch denied (403 on aliases). Reachability and freshness of the live response NOT verified.
+**המשך מ: M11-c202 BLOCKED live-unreachable**
+
+## M03-c203 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440: all three REFUSED by the live-reference guard (34/32/32 /_next/ refs, no wp-content), no diffs to record.
+Same cause as M03-c202: kenyonexpress.co.il serves our own build, and refs/ has no category capture of Electro v7. No percentage produced; guard not bypassed.
+**המשך מ: M03-c203 BLOCKED no-reference**
+
+## M01-c204 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://refs/electro-home-v7.html (dev server on :3000 up, 200). Reference passes classifyReference (60 wp-content refs, woocommerce body class), but all three runs REFUSED by the pending-images guard: 13/10/4 reference images (remote electro.madrasthemes.com) unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set (would score collapsed blocks, not design). Same as M01-c192. No locked files touched.
+**המשך מ: M01-c204 BLOCKED reference-images-not-loading**
+
+## M01-c205 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://refs/electro-home-v7.html (dev server restarted, 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204/c192. No locked files touched.
+**המשך מ: M01-c205 BLOCKED reference-images-not-loading**
+
+## M02-c205 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://refs/electro-product-fresh.html (dev server up, product מוצר-לדוגמא 200). Reference passes classifyReference (120 wp-content refs, woocommerce body class), but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set (would score catalogue difference, not design). No locked files touched.
+**המשך מ: M02-c205 BLOCKED grid-count-mismatch-12-vs-4**
+
+## M03-c205 (2026-10-26)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server up, 200). All three REFUSED by the live-reference guard: kenyonexpress.co.il serves our own build, and refs/ still has no Electro v7 category capture (only home + product). No diff percentages produced; guard not bypassed. Same as M03-c202/c203. No locked files touched.
+**המשך מ: M03-c205 BLOCKED no-reference**
+
+## M01-c206 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Default live URL (kenyonexpress.co.il) REFUSED: it serves our own build. With --live=file://refs/electro-home-v7.html the reference passes classifyReference (60 wp-content refs), but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204/c205. No locked files touched.
+**המשך מ: M01-c206 BLOCKED reference-images-not-loading**
+
+## M01-c207 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://refs/electro-home-v7.html (dev server was down, restarted, 200). Reference passes classifyReference (60 wp-content refs, woocommerce body class), but all three runs REFUSED by the pending-images guard: 13/10/4 reference images (remote) unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204/c205/c206. No locked files touched.
+**המשך מ: M01-c207 BLOCKED reference-images-not-loading**
+
+## M02-c207 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://refs/electro-product-fresh.html and COMPARE_ALLOW_GRID_MISMATCH=1 (dev server on :3000, 200). Results: 380=36.17%, 768=29.82%, 1440=20.52% — all above the 11% gate, FAIL. No code files edited (forbidden files untouched).
+**המשך מ: M02-c207 BLOCKED gate-failed-over-11pct**
+המשך מ: M08-c207 DONE (Lighthouse mobile sampled: / 43, /product 62 on likely-dev server; logged in docs/LIGHTHOUSE-AUDIT.md)
+
+המשך מ: M12-c207 DONE (robots.ts verified: allow /, sitemap+host from NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il, trailing-slash safe; added /login /signup /mfa /admin-mfa /debug/ disallows + test; 7/7 pass)
+
+## M01-c208 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://refs/electro-home-v7.html (dev server on :3000, 200). Reference passes classifyReference (60 wp-content refs, woocommerce body class), but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c207. No locked files touched.
+**המשך מ: M01-c208 BLOCKED reference-images-not-loading**
+
+המשך מ: M07-c208 DONE (TODO/FIXME rescan: 3 markers from 2026-09-17, all already filed in docs/BACKLOG.md, none resolvable without Cardcom prod creds)
+המשך מ: M15-c208 DONE-DEFERRED (console check on / and /product/<slug> @380/768/1440 against dev :3000: Supabase "Invalid API key" -> supplier_load_failed + 400s, cred-dependent; remaining dev-only noise: eval/CSP on va.vercel-scripts debug, Next Suspense prerender warning on / and /product/[slug], /api/cart reqfail; no files edited)
+המשך מ: M16-c208 DONE (JSON-LD audit: single template src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList for every product via src/lib/seo/json-ld.ts; json-ld.test.ts 17/17 pass; no files edited)
+
+המשך מ: M18-c208 DONE (STATE.md נמדד ב-221 שורות לפני העדכון, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר; no code files edited)
+
+## M01-c209 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server restarted on :3000, 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set (would score collapsed blocks as design diff). Same as M01-c204..c208. No locked files touched.
+**המשך מ: M01-c209 BLOCKED reference-images-not-loading**
+
+## M01-c210 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server on :3000, 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c209. No locked files touched.
+**המשך מ: M01-c210 BLOCKED reference-images-not-loading**
+
+## M02-c210 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server on :3000, 200; local /product/מוצר-לדוגמא). Reference passes classifyReference, but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set (would score the catalogue-size gap as design diff). No locked files touched.
+**המשך מ: M02-c210 BLOCKED product-grid-count-mismatch-12-vs-4**
+
+## M01-c211 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Default live URL REFUSED (kenyonexpress.co.il is our own Vercel build). With --live=file://<abs>/refs/electro-home-v7.html the reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c210. No locked files touched.
+**המשך מ: M01-c211 BLOCKED reference-images-not-loading**
+
+## M02-c211 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server on :3000, 200; local /product/מוצר-לדוגמא). Reference passes classifyReference, but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set. Same as M02-c210. No locked files touched.
+**המשך מ: M02-c211 BLOCKED product-grid-count-mismatch-12-vs-4**
+
