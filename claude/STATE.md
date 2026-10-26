@@ -1,4 +1,5 @@
 
+**המשך מ: M16-c215 DONE (2026-10-26): all product pages (single template product/[slug]/page.tsx) emit Product + BreadcrumbList JSON-LD via lib/seo/json-ld.ts; json-ld.test.ts 26/26 pass; gift subpage is noindex; no code change**
 **המשך מ: M04-c215 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean), working tree clean, no drift; no code change**
 **המשך מ: M18-c214 DONE (2026-10-26): STATE.md already 139 lines (<300), nothing to archive (docs/STATE-ARCHIVE.md exists); no code change**
 **המשך מ: M09-c214 DONE (2026-10-26): knip re-audit — only unused dep is @capacitor/android (needed by android/ platform, kept); remaining unused exports are tested public API / forbidden files; no code change**
