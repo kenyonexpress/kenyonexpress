@@ -181,3 +181,7 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server :3000 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c214. No locked files touched.
 **המשך מ: M01-c215 BLOCKED reference-images-not-loading**
 המשך מ: M02-c215 BLOCKED gate-fail (compare.mjs --page=product: live URL REFUSED at 380/768/1440 (own Next build); against refs/electro-product-fresh.html with COMPARE_ALLOW_GRID_MISMATCH=1 (live 12 cards vs local 4): 36.58% @380, 29.82% @768, 20.52% @1440, all above 11% gate; no code changes)
+
+## M01-c216 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server was down, started `pnpm dev`, :3000 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 15/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c215. No locked files touched.
+**המשך מ: M01-c216 BLOCKED reference-images-not-loading**
