@@ -214,38 +214,37 @@ BLOCKED C56 (2026-10-24): Cloudflare Turnstile site creation requires Cloudflare
 
 ## החלטות שהתקבלו אוטומטית
 
-### MAINTENANCE_LOOP_9 - BLOCKED: Cannot Verify DB Performance (2026-10-26)
+### MAINTENANCE_LOOP_9 - SKIPPED: Third Attempt on Blocked Goal (2026-10-26 10:50 UTC)
 
 **Goal condition:** "Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist."
 
-**Status:** ❌ BLOCKED - Verification not completed, only documented inability to verify
+**Status:** ⏭️ SKIPPED per CLAUDE.md rule — "goal שנתקע פעמיים: לדלג" (skip after two failures, never try third time)
 
-**Attempts made (2026-10-26):**
-1. Supabase MCP via ToolSearch → Requires OAuth authentication (unavailable)
-2. Supabase CLI `db query --linked` with full performance check → timeout >120s
-3. Supabase CLI `db query --linked` with simple connection count → timeout >120s
-4. Background execution tasks (bvr1nfvru, bpax4u04k) → 0 bytes output
+**Prior failure history:**
+1. **First attempt (2026-10-25):** `supabase db query --linked` timeout 30s+, exit code 144
+2. **Second attempt (2026-10-26 01:15 UTC):** 
+   - Supabase MCP requires OAuth authentication (unavailable)
+   - Supabase CLI `db query --linked` timed out >120s (three separate attempts)
+   - Background execution tasks produced 0 bytes output
+   - psql not installed in environment
 
-**Blocker:** Live database verification impossible in non-interactive session:
+**This attempt (2026-10-26 10:50 UTC):**
+- Recognized as third attempt on same blocked goal
+- Applied CLAUDE.md rule: "לא לנסות שלישית" (don't try a third time)
+- Skipped without attempting again
+
+**Blocker (unresolvable in this session):**
+- Live database verification impossible in non-interactive session
 - Supabase MCP requires OAuth authentication (unavailable per system-reminder)
-- `supabase db query --linked` times out via Management API (>120s, three attempts)
-- Background tasks produce empty output
-- psql not installed in environment
+- Management API connection times out consistently
 
-**Conservative decision per CLAUDE.md:** "goal שנתקע פעמיים: לדלג" - Skip after multiple failed attempts. Goal requires actual verification evidence (connection pool stats, pg_stat_statements showing queries <500ms), not documentation of inability to verify.
+**Documentation:** docs/DB-STATUS.md tracks inability to verify; last successful verification was 2026-10-21 (healthy connection pool, no slow queries >500ms)
 
-**What was documented (not verification):**
-- docs/DB-STATUS.md updated with 2026-10-26 attempt details
-- Alert status: ❌ No slow queries verified, ❌ No connection pool stats, ⚠️ Requires manual verification
-- Referenced last successful verification (2026-10-21): healthy connection pool, no slow queries
-- Quality gates ALL PASS: type-check ✅, lint ✅ (6490 files), build ✅ (273 routes)
-- Commits 1a35ec459, 251de2897 pushed to origin/closeout/v1-final
+**Conservative decision:** Goal requires actual evidence (connection pool stats, pg_stat_statements data), not documentation of inability to obtain evidence. Per project rules, skip after two failures and move to next goal.
 
-**Goal NOT met:** No evidence obtained about current connection pool status or slow queries. Verification incomplete.
+**Recommendation for owner:** Run verification in interactive session with Supabase MCP OAuth, or use Supabase dashboard: https://app.supabase.com/project/ixvwfbuvfxxsjiywhbbb/database/pooler
 
-**Recommendation:** Run verification in interactive session with Supabase MCP OAuth, or use Supabase dashboard: https://app.supabase.com/project/ixvwfbuvfxxsjiywhbbb/database/pooler
-
-**Timestamp:** 2026-10-26 01:15 UTC
+**Timestamp:** 2026-10-26 10:50 UTC+7
 
 ---
 
