@@ -39,20 +39,3 @@ export async function getMyWishlist(): Promise<WishlistEntry[]> {
   }
   return (data ?? []) as unknown as WishlistEntry[]
 }
-
-/** Which of `productIds` the signed-in user has saved. Empty when signed out. */
-export async function getMyWishlistMarks(productIds: readonly string[]): Promise<Set<string>> {
-  if (productIds.length === 0) return new Set()
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return new Set()
-
-  const { data, error } = await supabase
-    .from('wishlists' as never)
-    .select('product_id')
-    .in('product_id', productIds as string[])
-  if (error) return new Set()
-  return new Set((data as unknown as { product_id: string }[]).map((row) => row.product_id))
-}
