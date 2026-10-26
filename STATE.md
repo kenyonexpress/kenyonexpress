@@ -130,7 +130,9 @@ Per CLAUDE.md rule: Same external blocker across multiple attempts → SKIP and 
 
 **MAINTENANCE_LOOP_4 BLOCKED (2026-10-26 23:35 UTC+7):** E2E suite timeout issue persists. Ran pnpm test:e2e with 10m foreground timeout. Completed 125/874 tests (14.3%) before timeout, recorded 14 failures in admin/checkout tests (auth timeout pattern). Full suite requires 25-40 minutes; session limit is 10m. Architectural blocker: cannot complete full run. Updated docs/E2E-STATUS.md with attempt #5. Commit 752d7dca7 pushed. Per CLAUDE.md skip rule (blocked on infrastructure, not code).
 
-**Next:** MAINTENANCE_LOOP_5 — Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
+**MAINTENANCE_LOOP_5 BLOCKED (2026-10-26 23:40 UTC+7):** Goal requires Vercel MCP get_runtime_logs to check cron route timestamps. Vercel MCP requires authentication (unavailable in non-interactive sessions per system-reminder). Used baseline from 09:25 UTC: 1/23 cron routes healthy (affiliate-payouts), 22 missing from 7d logs (stale/non-functional). Documented alert in docs/CRON-STATUS.md. Commit 12868f36e pushed. Cannot re-check without MCP.
+
+**Next:** MAINTENANCE_LOOP_6 — Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal.
 
 **MAINTENANCE_LOOP_8 CYCLE #2 COMPLETE (2026-10-26 19:38 UTC):** Scanned src/ for TODO/FIXME/HACK comments. Count: 7 total (same as cycle #1, 2026-10-26 11:15 UTC). Delta: 0 (stable, no growth). No new cleanup goal needed. Next: MAINTENANCE_LOOP_9.
 
