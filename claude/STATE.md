@@ -98,3 +98,5 @@ M05-c209 DONE 2026-10-26 pnpm test: 4 failures (2 files) from drift: 294_group_d
 M16-c210 DONE 2026-10-26 only product template (store)/product/[slug]/page.tsx; emits Product + BreadcrumbList JSON-LD via src/lib/seo/json-ld.ts; vitest src/lib/seo 45/45 pass. No code changes. המשך מ: M16-c210 DONE
 M05-c211 DONE 2026-10-26 pnpm test: 587 files / 6898 tests pass (49 skipped), no drift found, no code changes. No locked files touched.
 המשך מ: M05-c211 DONE
+M07-c211 DONE 2026-10-26 TODO/FIXME scan: all 8 markers older than 7d already in docs/BACKLOG.md (#8-#11); fixed stale r2-migration wording in #9. 4 wallet integration.test.ts TODOs are 1 day old, skipped. No locked files touched.
+המשך מ: M07-c211 DONE
