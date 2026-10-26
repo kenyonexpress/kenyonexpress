@@ -175,3 +175,7 @@ STATE.md trimmed 257 -> under 300 lines: M01-c201..M02-c211 entries (lines 156-2
 ## M01-c214 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server :3000 up). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c213. No locked files touched.
 **המשך מ: M01-c214 BLOCKED reference-images-not-loading**
+
+## M01-c215 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server :3000 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/10/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c214. No locked files touched.
+**המשך מ: M01-c215 BLOCKED reference-images-not-loading**
