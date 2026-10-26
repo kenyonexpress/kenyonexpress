@@ -2,10 +2,9 @@
 The canonical state file on this branch is the root `STATE.md`. This file
 exists because the goal queue names `claude/STATE.md`; it holds the resume
 line only, and the full block for each goal is in the root file.
+**המשך מ: M12-c209 DONE robots.ts production-safe (allow /, disallows redeem/coupon/account/supplier/admin/checkout/cart/auth/api/debug/voucher; sitemap+host on kenyonexpress.co.il, no double slash); robots.test.ts 7/7 pass; no code change**
 **המשך מ: M06-c209 DONE pnpm build passes (exit 0), working tree clean, no drift to commit; no code change**
 **המשך מ: M04-c209 DONE pnpm type-check clean (tsc --noEmit exit 0); committed drifted deps (lucide-react 1.61, zod 4.6.7), lockfile and E2E status doc; no forbidden files touched**
-**המשך מ: M06-c208 DONE pnpm build passes (exit 0, Next 16.4.3), working tree clean, no drift to commit; no code change**
-**המשך מ: M05-c208 DONE pnpm test 615 files / 7064 tests pass, 28 skipped, 0 fail; committed M-CYCLE-STATUS.md timestamp drift**
 **המשך מ: M06-c207 DONE pnpm build passes (exit 0, Next 16.4.3), no drift to fix; no code change**
 **המשך מ: M05-c207 DONE pnpm test: 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, no failures, no drift to fix; no code change**
 **המשך מ: M06-c206 DONE pnpm build passes (Next 16.4.3), working tree clean, no drift to commit; no code change**
