@@ -104,3 +104,5 @@ M17-c211 DONE 2026-10-26 RTL probe (playwright, 380/768/1440) on / and /product/
 המשך מ: M17-c211 DONE
 M04-c212 DONE 2026-10-26 pnpm type-check clean (tsc --noEmit, 0 errors); no drift in working tree. No locked files touched.
 המשך מ: M04-c212 DONE
+
+המשך מ: M16-c212 DONE
