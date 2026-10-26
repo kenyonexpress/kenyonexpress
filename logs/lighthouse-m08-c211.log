@@ -1,0 +1,11 @@
+# M08-c211 Lighthouse mobile sample 2026-10-26 (local prod build, port 3100, simulate throttling, 2 runs/page, scripts/_lh-runs.mjs)
+# NOTE: machine load avg ~24 (concurrent Playwright/vitest), runs are CPU-contended.
+c211-home #1: {"run":1,"score":60,"FCP":"1.6 s","LCP":"1.8 s","SI":"6.6 s","TBT":"10,990 ms","CLS":"0.102","TTFB":"Root document took 750 ms","blocking":"300 ms","unusedJS":"135 KiB","legacyJS":"-"}
+c211-home #2: {"run":2,"score":72,"FCP":"1.6 s","LCP":"1.9 s","SI":"3.1 s","TBT":"1,480 ms","CLS":"0.04","TTFB":"Root document took 1,030 ms","blocking":"310 ms","unusedJS":"135 KiB","legacyJS":"-"}
+
+c211-home scores: 60 / 72  (median 72)
+c211-product #1: {"run":1,"score":74,"FCP":"1.7 s","LCP":"4.9 s","SI":"4.3 s","TBT":"230 ms","CLS":"0.041","TTFB":"Root document took 570 ms","blocking":"870 ms","unusedJS":"129 KiB","legacyJS":"-"}
+c211-product #2: {"run":2,"score":81,"FCP":"1.7 s","LCP":"4.7 s","SI":"1.7 s","TBT":"140 ms","CLS":"0.042","TTFB":"Root document took 190 ms","blocking":"720 ms","unusedJS":"130 KiB","legacyJS":"-"}
+
+c211-product scores: 74 / 81  (median 81)
+Note: G23 95+ not met (home 60-72, product 74-81); CPU-contended run (load ~24), TBT on home run 1 = 11 s is contention. Sample-only item, no code changes.
