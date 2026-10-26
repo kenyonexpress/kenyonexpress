@@ -1,4 +1,3 @@
-Older log lines (BLOCKED/Continue re-runs, pre-C44) archived in docs/STATE-ARCHIVE.md.
 
 ## v2.0.0-final RESULT (C01-C44 CLOSED, 2026-10-24)
 
