@@ -1,6 +1,7 @@
 /**
  * Ultra-simplified mobile-only hero (380px) for maximum Electro parity.
  * Minimal structure, no slider complexity, static content only.
+ * Rendered on white background (not tinted) per Electro mobile hero spec.
  */
 export default function HeroMobile() {
   return (
@@ -8,7 +9,7 @@ export default function HeroMobile() {
       style={{
         width: '100%',
         height: '200px',
-        background: 'var(--color-brand-primary)',
+        background: 'var(--color-surface)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
