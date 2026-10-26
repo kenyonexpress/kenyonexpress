@@ -1,5 +1,7 @@
 # KenyonExpress — Project State
 
+המשך מ: M08-c214 DONE (Lighthouse mobile: / =60, /product =68, dev server, מתחת ל-95; ראו docs/LIGHTHOUSE-AUDIT.md)
+Updated: 2026-10-26 (M02-c214: compare.mjs --page=product ב-380/768/1440 סורב ב-3 הרוחבים, exit 5: kenyonexpress.co.il הוא ה-build שלנו, אין רפרנס, לכן אין מספר מדידה. ראה docs/PARITY-REFERENCE.md). לא נערכו קבצי קוד. המשך מ: M02-c214 BLOCKED reference-unavailable.
 Updated: 2026-10-26 (M18-c211: STATE.md נמדד ב-     244 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c211 DONE.
 Updated: 2026-10-26 (M18-c209: STATE.md נמדד ב-228 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c209 DONE.
 Updated: 2026-10-26 (M18-c206: STATE.md נמדד ב-201 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c206 DONE.
@@ -168,3 +170,7 @@ Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server :
 ## M18-c213 (2026-10-26)
 STATE.md trimmed 257 -> under 300 lines: M01-c201..M02-c211 entries (lines 156-246) moved to docs/STATE-ARCHIVE.md. Older content already archived (M18-c181). No source changed.
 **המשך מ: M18-c213 DONE**
+
+## M01-c214 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server :3000 up). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c213. No locked files touched.
+**המשך מ: M01-c214 BLOCKED reference-images-not-loading**
