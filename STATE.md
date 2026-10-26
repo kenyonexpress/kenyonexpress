@@ -234,3 +234,11 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M02-c210 (2026-10-26)
 Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server on :3000, 200; local /product/מוצר-לדוגמא). Reference passes classifyReference, but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set (would score the catalogue-size gap as design diff). No locked files touched.
 **המשך מ: M02-c210 BLOCKED product-grid-count-mismatch-12-vs-4**
+
+## M01-c211 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Default live URL REFUSED (kenyonexpress.co.il is our own Vercel build). With --live=file://<abs>/refs/electro-home-v7.html the reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c210. No locked files touched.
+**המשך מ: M01-c211 BLOCKED reference-images-not-loading**
+
+## M02-c211 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-product-fresh.html (dev server on :3000, 200; local /product/מוצר-לדוגמא). Reference passes classifyReference, but all three runs REFUSED by the grid-count guard: reference shows 12 product cards vs 4 local. No diff percentages produced; COMPARE_ALLOW_GRID_MISMATCH not set. Same as M02-c210. No locked files touched.
+**המשך מ: M02-c211 BLOCKED product-grid-count-mismatch-12-vs-4**
