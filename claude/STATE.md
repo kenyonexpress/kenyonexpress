@@ -1,3 +1,4 @@
+**המשך מ: M16-c216 DONE (2026-10-26): /product/[slug] emits Product + BreadcrumbList JSON-LD (json-ld.test.ts 26/26 pass); gift sub-page is noindex, /products listing is not a product page; no code change**
 **המשך מ: M04-c216 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); only drift was pnpm install rewriting the sharp specifier in pnpm-lock.yaml (^0.35.5 -> ^0.35.3, mismatches package.json), reverted; no code change**
 
 **המשך מ: M17-c215 DONE (2026-10-26): static RTL audit of / and /product/[slug] — rtl-lint hits only in comments/OG image (Satori); remaining dir="ltr" are SKU/phone/email inputs (intended) and locked HeroSlider; no code change**
