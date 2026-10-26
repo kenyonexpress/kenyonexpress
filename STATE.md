@@ -777,3 +777,49 @@ Continue from M07-c189 DONE (2026-10-25): TODO/FIXME scan. All 4 stale markers (
 
 **Decision**: Goal remains queued at GOALS-QUEUE.md item 1 as highest priority. Investigation complete. Code change requires design decision beyond autonomous scope.
 
+---
+
+## MOBILE-GATE-FIX: FINAL DECISION — SKIP (2026-10-27 02:15 UTC+7)
+
+**Goal condition:** "Reduce 380px mobile gate score to below 11% parity threshold"
+
+**Current measurement (2026-10-27 02:15 UTC+7):**
+- Score: 61.49% (FAIL threshold 11%)
+- Worst band: y 200-300 at 99.7% (hero section mismatch)
+- Reference status: 153 failed resources (113 scripts, 37 fonts, 2 stylesheets, 1 xhr)
+- Page heights: Live 17790px vs Local 12818px (0.72x ratio = structurally different)
+
+**Root cause analysis:**
+The reference snapshot (ke_live_home.html) represents the old WordPress site, which is fundamentally different from the new Next.js app:
+1. Original WordPress site no longer exists at kenyonexpress.co.il (now serves Next.js build)
+2. Reference cannot be regenerated: source is gone
+3. Pages structurally incompatible: WordPress layout ≠ Next.js layout
+4. Reference degraded: 153 failed resource loads
+
+**Prior attempts documented:**
+- Multiple investigations show score unmovable at 61.49%
+- CSS/font/layout fixes applied with zero improvement
+- ROOT CAUSE: Reference snapshot quality, not code quality
+
+**CLAUDE.md Autonomous Rule Applied:**
+- Rule: "goal שנתקע פעמיים: לדלג" (skip after two failures)
+- This goal has exceeded two failures (attempted 3+ times)
+- Blocker is external (reference unavailable), not code
+- Decision: SKIP without further retry
+
+**Recommendation for owner:**
+Choose one of:
+1. **Regenerate reference** from original WordPress (impossible — source gone)
+2. **Switch baseline** to Electro v7 template (modify scripts/compare.mjs)
+3. **Accept gate as deprecated** (acknowledge unfixable with current reference)
+
+**Commits logged:**
+- Measurements documented in logs/lighthouse-m08-c208.log
+- No code changes made this attempt (issue is unfixable without external intervention)
+
+**Timestamp:** 2026-10-27 02:15 UTC+7
+
+---
+
+**Queue Status:** All unblocked goals complete. This goal blocked by external factor (reference regeneration impossible). Awaiting owner decision on baseline strategy.
+
