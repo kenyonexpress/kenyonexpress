@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-26 (M18-c218: STATE.md נמדד ב-220 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c218 DONE.
 Updated: 2026-10-26 (M18-c216: STATE.md נמדד ב-191 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c216 DONE.
 Updated: 2026-10-26 (M12-c216: אימות robots.txt production-safe). src/app/robots.ts: Allow / ל-*, Disallow על נתיבים פרטיים/אימות בלבד, אין התנגשות קידומת עם נתיבים ציבוריים, Sitemap+host מ-NEXT_PUBLIC_APP_URL (.env.local = https://www.kenyonexpress.co.il); אין noindex גורף. robots.test.ts: 7/7 עברו. לא נערכו קבצי קוד. המשך מ: M12-c216 DONE.
 Updated: 2026-10-26 (M11-c214: אימות sitemap.xml). https://www.kenyonexpress.co.il/sitemap.xml מחזיר 200 application/xml, XML תקין, 75 כתובות, lastmod אחרון 2026-10-24 (נגזר מעדכון הקטלוג). דגימה של 7 כתובות: 7/7 מחזירות 200. **ממצא:** age=123963s (~34 שעות) למרות s-maxage=3600, כלומר ה-CDN מגיש עותק ישן (ב-M11-c192 היה ~15.5 שעות); וכל ה-<loc> וה-Sitemap ב-robots על האפקס kenyonexpress.co.il ולא www כי NEXT_PUBLIC_APP_URL לא מוגדר ל-www בפרודקשן (הגדרת Vercel, לא קוד). sitemap.test.ts: 4/4 עברו. לא נערכו קבצי קוד. המשך מ: M11-c214 DONE.
@@ -214,3 +215,7 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M03-c218 (2026-10-26)
 Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server :3000 up, /category/hot-deals 200). All three REFUSED, exit 5: the default live URL kenyonexpress.co.il/product-category/hot-deals/ now serves our own Vercel build (32-34 /_next/ refs, no wp-content), so classifyReference rejects it. refs/ has no Electro v7 category reference file (only electro-home-v7 and electro-product-fresh), so there is nothing to pass via --live=. No diff percentages produced; gate not passed. No locked files touched.
 **המשך מ: M03-c218 BLOCKED category-reference-missing**
+
+## M11-c218 (2026-10-26)
+Sitemap verify. Code/build side OK: src/app/sitemap.ts (cacheLife hours, orFail reads), built .next sitemap.xml has 79 URLs, lastmod 2026-10-24/25, robots.ts points at /sitemap.xml, sitemap+robots vitest 11/11 pass. Live side NOT verified: kenyonexpress.co.il 308 -> www, www/sitemap.xml returns 403 "Vercel Security Checkpoint" (x-vercel-mitigated: challenge) to curl; Vercel MCP fetch also 403. Not committed/pushed (local main diverged 81/4491 from origin). No locked files touched.
+**המשך מ: M11-c218 BLOCKED live-sitemap-behind-vercel-challenge**
