@@ -368,7 +368,7 @@ Conclusion: CSS changes cannot bridge the fundamental structural gap. Pages diff
 
 ---
 
-## MOBILE_GATE_FIX INVESTIGATION: COMPLETE (2026-10-26 23:55 UTC+7)
+## MOBILE_GATE_FIX: INVESTIGATION COMPLETE, SCORE UNFIXABLE (2026-10-27 00:10 UTC+7)
 
 **Goal condition:** "Investigate and reduce mobile gate 380px score from 61.49% to below 11%."
 
@@ -415,6 +415,20 @@ Choose one of three paths:
 2. **Switch baseline** to Electro v7 template (modify scripts/compare.mjs)
 3. **Accept gate as deprecated** (acknowledge 61.49% as unfixable with current reference)
 
-**Timestamp:** 2026-10-26 23:55 UTC+7
-Commit: a45d90f4a (chore: mobile gate fix - investigate 380px score reduction)
+**Final Session Summary (2026-10-27 00:10 UTC+7):**
+
+Total fixes attempted with measurements:
+1. BenefitBar height classes (h-feature-bar-mobile: 31px) → 61.49%
+2. CitiesRow hiding (hidden sm:block) → 61.49%  
+3. HeroMobile height fix (200px → 213px) → 61.49%
+4. All missing Tailwind responsive layout classes → 61.49%
+
+**Commits made this session:**
+- a45d90f4a: chore: mobile gate fix - investigate 380px score reduction
+- a4488c704: docs: STATE.md - investigation complete
+- 2fb9bfb40: chore: mobile gate fix - add architectural responsive layout classes
+
+**Conclusion:** Score unmovable at 61.49% due to reference snapshot degradation (153 failed resources, especially 113 scripts and 37 fonts). Condition requires score <11%, which requires reference regeneration or baseline change — not possible without external intervention (original WordPress site no longer exists).
+
+**Timestamp:** 2026-10-27 00:10 UTC+7
 המשך מ: M07-c221 DONE (2026-10-26): TODO/FIXME scan (src, scripts, migrations, root docs) found 6 TODOs, all >7 days old (2026-07-24 to 2026-10-17) and all already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds, R2 migration stub). No new items, no code change.

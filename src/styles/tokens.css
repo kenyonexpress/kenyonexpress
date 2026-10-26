@@ -602,19 +602,77 @@
   --breakpoint-desktop: 1440px; /* compare.mjs wide; the reference viewport */
 }
 
-/* Feature bar height classes. Live renders a 31px empty strip at 380px (no
-   items), then 134px with items at md and above. These classes map the CSS
-   variables to Tailwind heights so BenefitBar.tsx can constrain section height.
-   The pt-usp-offset class adds 30px of padding-top at md and above to position
-   the list inside the 134px section (probed 2026-10-20). */
+/* Height and spacing utility classes mapping CSS variables to Tailwind.
+   These classes ensure responsive layout heights match live site measurements.
+
+   HERO HEIGHTS (from HeroSection layout):
+   - Live at 380px: 213px hero (just slider)
+   - Live at 768px: 495px hero row (slider 304 + category strip 170 + gap)
+   - Live at 1440px: 613px hero row (larger slider 370 + category strip 170 + spacing)
+
+   FEATURE BAR HEIGHTS:
+   - Live at 380px: 31px empty strip (no items rendered)
+   - Live at 768px+: 134px with 5 benefit items
+
+   INSETS:
+   - Hero tablet inset-end: 40px padding
+   - USP bar offset: 30px padding-top
+*/
 @layer utilities {
+  /* Hero row heights */
+  .h-hero-mobile {
+    height: var(--spacing-hero-mobile);
+  }
+  .h-hero-tablet {
+    height: var(--spacing-hero-tablet);
+  }
+  .h-hero-desktop {
+    height: var(--spacing-hero-desktop);
+  }
+
+  /* Hero slider heights (nested inside hero row) */
+  .h-hero-slider-tablet {
+    height: var(--spacing-hero-slider-tablet);
+  }
+  .min-h-hero-slider-tablet {
+    min-height: var(--spacing-hero-slider-tablet);
+  }
+  .h-hero-slider-desktop {
+    height: var(--spacing-hero-slider-desktop);
+  }
+  .min-h-hero-slider-desktop {
+    min-height: var(--spacing-hero-slider-desktop);
+  }
+
+  /* Feature/benefit bar heights */
   .h-feature-bar-mobile {
     height: var(--spacing-feature-bar-mobile);
   }
   .h-feature-bar {
     height: var(--spacing-feature-bar);
   }
+
+  /* USP bar item height */
+  .min-h-usp-list {
+    min-height: var(--spacing-usp-list, 79.4px);
+  }
+  .w-usp-cell-tablet {
+    width: var(--spacing-usp-cell-tablet, 180px);
+  }
+
+  /* Padding utilities */
+  .pe-hero-inset-tablet {
+    padding-inline-end: var(--spacing-hero-inset-tablet);
+  }
   .pt-usp-offset {
     padding-top: var(--spacing-usp-offset);
+  }
+
+  /* Max-width utilities */
+  .max-w-hero-row {
+    max-width: var(--container-hero-row);
+  }
+  .max-w-usp-tablet {
+    max-width: var(--spacing-usp-max-tablet, 690px);
   }
 }
