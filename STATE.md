@@ -26,6 +26,8 @@
 
 ## המשך מ:
 
+**MAINTENANCE_LOOP_6 CYCLE #2 PARTIAL (2026-10-26 19:36 UTC):** Gate measurement via compare.mjs --widths=380,768,1440 timed out (>120s). Single-width measurement (1440) succeeded: OVERALL 5.8% (PASS, below 11% threshold). Multi-width measurement infrastructure blocker consistent with cycle #1. Measured: home page 1440px ✅ PASS. Next: MAINTENANCE_LOOP_7.
+
 **MAINTENANCE_LOOP_5 CYCLE #2 COMPLETE (2026-10-26 19:34 UTC):** Cron routes: 22 defined in src/app/api/cron. Production status unavailable (TLS down per memory). Prior cycle #1: 8/22 healthy (within 24h), 14 missing from 7d logs. No change required; status monitoring infrastructure pending production TLS recovery. Next: MAINTENANCE_LOOP_6.
 
 **MAINTENANCE_LOOP_4 CYCLE #2 SKIPPED (2026-10-26 19:33 UTC):** E2E test infrastructure blocker. Per CLAUDE.md "goal stuck twice: skip" rule, already stuck in prior two attempts. Not retrying. Next: MAINTENANCE_LOOP_5.
