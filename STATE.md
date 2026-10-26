@@ -138,7 +138,9 @@ Per CLAUDE.md rule: Same external blocker across multiple attempts → SKIP and 
 
 **MAINTENANCE_LOOP_8 DONE (2026-10-26 23:44 UTC+7):** Code debt scan complete. Total: 7 TODOs (stable from previous scan 22:52 UTC). Composition changed: r2-migration TODOs removed (0), wallet/integration.test TODOs added (4), net delta 0. Remaining TODOs: cardcom.ts (2), stock-notifications (1), wallet tests (4). No cleanup needed. Updated docs/CODE-DEBT-STATUS.md. Commit f7e2ae8b0 pushed.
 
-**Next:** MAINTENANCE_LOOP_9 — Verify Supabase connection pool. Alert in docs/DB-STATUS.md if slow queries over 500ms exist.
+**MAINTENANCE_LOOP_9 SKIPPED (2026-10-26 23:45 UTC+7):** Goal requires Supabase MCP verification for connection pool and slow queries. Supabase MCP requires OAuth (unavailable in non-interactive sessions per system-reminder). Prior baseline from 2026-10-26 21:30 UTC: no slow queries detected, pool healthy. Cannot re-verify without MCP. Updated docs/DB-STATUS.md. Commit 65d8a9c0c pushed. Per CLAUDE.md skip rule (infrastructure blocker).
+
+**Next:** MAINTENANCE_LOOP_10 — Bootstrap queue: append MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to ~/ke-goals/queue.txt (creates infinite loop).
 
 **MAINTENANCE_LOOP_8 CYCLE #2 COMPLETE (2026-10-26 19:38 UTC):** Scanned src/ for TODO/FIXME/HACK comments. Count: 7 total (same as cycle #1, 2026-10-26 11:15 UTC). Delta: 0 (stable, no growth). No new cleanup goal needed. Next: MAINTENANCE_LOOP_9.
 
