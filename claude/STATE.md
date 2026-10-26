@@ -100,3 +100,5 @@ M05-c211 DONE 2026-10-26 pnpm test: 587 files / 6898 tests pass (49 skipped), no
 המשך מ: M05-c211 DONE
 M07-c211 DONE 2026-10-26 TODO/FIXME scan: all 8 markers older than 7d already in docs/BACKLOG.md (#8-#11); fixed stale r2-migration wording in #9. 4 wallet integration.test.ts TODOs are 1 day old, skipped. No locked files touched.
 המשך מ: M07-c211 DONE
+M17-c211 DONE 2026-10-26 RTL probe (playwright, 380/768/1440) on / and /product/<sample>: html dir=rtl lang=he, no horizontal overflow, no physical text-align. Only direction:ltr nodes are intentional (discount_per percent badge, product phone/SKU meta, email input, home hero slide geometry). No code changes. No locked files touched.
+המשך מ: M17-c211 DONE
