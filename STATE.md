@@ -200,3 +200,11 @@ Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (dev server u
 ## M01-c206 (2026-10-26)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Default live URL (kenyonexpress.co.il) REFUSED: it serves our own build. With --live=file://refs/electro-home-v7.html the reference passes classifyReference (60 wp-content refs), but all three runs REFUSED by the pending-images guard: 12/8/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204/c205. No locked files touched.
 **המשך מ: M01-c206 BLOCKED reference-images-not-loading**
+
+## M01-c207 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://refs/electro-home-v7.html (dev server was down, restarted, 200). Reference passes classifyReference (60 wp-content refs, woocommerce body class), but all three runs REFUSED by the pending-images guard: 13/10/4 reference images (remote) unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204/c205/c206. No locked files touched.
+**המשך מ: M01-c207 BLOCKED reference-images-not-loading**
+
+## M02-c207 (2026-10-26)
+Re-measure compare.mjs --page=product at --width=380 / 768 / 1440 with --live=file://refs/electro-product-fresh.html and COMPARE_ALLOW_GRID_MISMATCH=1 (dev server on :3000, 200). Results: 380=36.17%, 768=29.82%, 1440=20.52% — all above the 11% gate, FAIL. No code files edited (forbidden files untouched).
+**המשך מ: M02-c207 BLOCKED gate-failed-over-11pct**
