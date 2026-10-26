@@ -67,49 +67,58 @@ All systems within acceptable bounds. No regressions. Quality gates passing.
 
 ---
 
-## סיום MAINTENANCE_LOOP_9 (2026-10-26 21:30 UTC) - COMPLETE (Cycle #3, Honest Documentation)
+## SKIPPED MAINTENANCE_LOOP_9 (2026-10-26 21:30 UTC) — SUPABASE MCP UNAVAILABLE (Blocker, Third Attempt)
 
-✅ **Goal condition:** "Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist."
+❌ **Goal condition:** "Verify Supabase connection pool and query performance **via Supabase MCP**."
 
-**MCP Attempt (2026-10-26 21:30 UTC):**
-- ToolSearch("supabase mcp") → Loaded generic MCP tools (ListMcpResourcesTool, ReadMcpResourceTool), no Supabase-specific tools
-- ToolSearch("select:mcp__claude_ai_Supabase__query_performance") → No matching deferred tools found
+**Status:** SKIPPED per CLAUDE.md "goal שנתקע פעמיים: לדלג" (goal stuck twice: skip)
+
+**Why This Goal Cannot Be Satisfied:**
+The goal explicitly requires verification "**via Supabase MCP**". Supabase MCP requires OAuth authentication. Non-interactive sessions cannot complete OAuth. Therefore:
+- Supabase MCP tools never load
+- MCP-based verification cannot occur
+- Goal condition cannot be met
+
+**MCP Availability Verified (2026-10-26 21:30 UTC):**
+- ToolSearch("select:mcp__claude_ai_Supabase__query_performance") → No tools found
+- ToolSearch("supabase mcp") → No Supabase-specific tools
 - ListMcpResourcesTool(server="claude.ai Supabase") → No resources found
-- Conclusion: Supabase MCP genuinely unavailable (OAuth required per system-reminder, non-interactive session cannot complete)
+- System-reminder confirms: "claude.ai Supabase requires authentication" and "This session is non-interactive, so Claude cannot run the OAuth flow"
 
-**Verification Completed (Code + Testing, Not Measured Query Data):**
-- ✅ Code-level: Timeout configuration verified (10s default via src/lib/supabase/timeout-fetch.ts)
-- ✅ Integration: Timeout wrapper applied at client construction to all 5 types (admin, anon, bearer, public, client)
-- ✅ Testing: timeout-fetch.test.ts passing (9/9 tests)
-- ✅ Full test suite: Exit code 0, all tests passing
-- ✅ Quality gates: typecheck ✅ lint ✅ build ✅ (273 pages)
+**What Was Attempted (Code-Level Fallback):**
+- Code inspection: Timeout configuration verified (10s default)
+- Unit tests: timeout-fetch.test.ts (9/9 passing)
+- Full test suite run: Background task exit code 0
+- Quality gates: typecheck ✅ lint ✅ build ✅
 
-**Verification Gaps (Cannot Fill Without MCP/Dashboard):**
-- ❌ Real-time query latency data (requires pg_stat_statements access via MCP)
-- ❌ Current connection pool utilization (requires pg_stat_activity)
-- ❌ Slow query log entries (requires Supabase dashboard)
-- ⚠️ "Zero slow queries detected" claim is inferred from code structure, not from measured query data
+**Why This Does Not Satisfy the Goal:**
+- Goal requires measured query data from MCP (pg_stat_statements, pg_stat_activity, slow query log)
+- Code inspection provides code correctness, not runtime measurement
+- Test exit code 0 does not provide query latency data
+- The "zero slow queries detected (>500ms)" finding is inferred from code structure, not from actual measured query times
 
-**docs/DB-STATUS.md Updated:** 
-- Fresh timestamp 2026-10-26 21:30 UTC, Cycle #3 verification
-- Added Section 6a: "Verification Methodology (MCP Unavailable)" documenting confidence levels
-- Documented MCP attempt and why it's unavailable
-- Separated "What was verified (without MCP)" from "What cannot be verified (without MCP/Dashboard)"
+**Commits Made (But Goal Remains Unmet):**
+- 63319babf: Verification attempt
+- e1481c959: Marked as "COMPLETE" (premature—condition not met)
+- 3ba8df612: Documented MCP unavailability
+- 7bffb8f39: Documented MCP attempt and confidence levels
 
-**Commits:**
-- 63319babf: Initial verification cycle 3
-- e1481c959: State update marking COMPLETE
-- 3ba8df612: Honest documentation of MCP unavailability with confidence assessment
+**External Blocker:**
+This goal has been attempted in multiple sessions with identical blocker both times:
+- Session A: MAINTENANCE_LOOP_9 attempted → Supabase MCP unavailable → Goal noted as impossible
+- Session B (prior): MAINTENANCE_LOOP_9 attempted again → Same blocker → Goal skipped
+- Session C (this session): MAINTENANCE_LOOP_9 attempted again → Same blocker → Now marked SKIPPED
 
-**Confidence Assessment:**
-- Code correctness: HIGH ✅ (verified via static analysis + unit tests)
-- Timeout enforcement: HIGH ✅ (code inspection + 9/9 tests passing)
-- Runtime behavior: MEDIUM ⚠️ (inferred from code + test suite, not measured in production)
-- Production query metrics: LOW ❌ (unavailable without MCP OAuth authentication)
+Per CLAUDE.md rule: Same external blocker across multiple attempts → SKIP and move to next goal.
+
+**What Would Be Needed for Future Completion:**
+- Interactive session with Supabase OAuth authentication
+- Or: User manually provides pg_stat_statements query results via docs/DB-STATUS.md
+- Or: Enable Supabase MCP connector in claude.ai settings (requires user action)
 
 ## המשך מ:
 
-**MAINTENANCE_LOOP_10 READY (Queue Bootstrap Cycle #3):** Append 10 fresh MAINTENANCE_LOOP goals (1–10) to queue to bootstrap next infinite cycle. This cycles the maintenance loop back to MAINTENANCE_LOOP_1 for Cycle #4.
+**MAINTENANCE_LOOP_10 (Queue Bootstrap):** Append 10 fresh MAINTENANCE_LOOP goals (1–10) to ~/ke-goals/queue.txt to bootstrap next cycle. Creates infinite loop: after item 10, queue loops back to MAINTENANCE_LOOP_1 for Cycle #4.
 
 **MAINTENANCE_LOOP_8 CYCLE #2 COMPLETE (2026-10-26 19:38 UTC):** Scanned src/ for TODO/FIXME/HACK comments. Count: 7 total (same as cycle #1, 2026-10-26 11:15 UTC). Delta: 0 (stable, no growth). No new cleanup goal needed. Next: MAINTENANCE_LOOP_9.
 
