@@ -28113,3 +28113,6 @@ BLOCKED C49-M15 (Canonical Host) - NON-CRITICAL 2026-10-24: Canonical URLs in co
 Continue from C49-M18 (Backup Health) - DONE 2026-10-24: Created fresh backup kenyonexpress-backup-2026-10-24-1453.tar.gz (953M). Cleaned up old backups per CLAUDE.md rule (keep only 3 newest). Latest backup now 2h old vs 50h before. RPO requirement (23h) now met. No code change.
 
 המשך מ: M06-c182 DONE
+המשך מ: C02 DONE
+המשך מ: C04 BLOCKED
+המשך מ: C06 BLOCKED

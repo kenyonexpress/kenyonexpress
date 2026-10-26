@@ -106,15 +106,12 @@ M17-c182 2026-10-25: RTL live check (www, Playwright, 380/768/1440) on / and /pr
 RESULT: DONE
 C02 2026-10-25: health gates (typecheck, lint, build) all green on closeout/v1-final, no fixes needed.
 RESULT: DONE
-המשך מ: C02 DONE
 C04 2026-10-25: product parity measured vs Electro product capture: 380 42.77%, 768 33.85%, 1440 22.89% (all FAIL). Causes: anon key 401, suppliers.verification_status column missing, grid-count mismatch (needed COMPARE_ALLOW_GRID_MISMATCH=1). Report in docs/L3-PARITY-REPORT.md. No code changes.
 RESULT: BLOCKED supabase-anon-key-401 + gate 22-43pct
-המשך מ: C04 BLOCKED
 
 C05: BLOCKED, migration 301 unapplied (Supabase MCP unauthenticated), e2e guest flow unverified; unit tests 278 pass. See docs/L4-CHECKOUT-REPORT.md
 
 C06: BLOCKED, supabase-anon-key-401, account pages need a session (guest gets 307 to /login). See docs/L5-ACCOUNT-REPORT.md
-המשך מ: C06 BLOCKED
 
 C07: DONE, admin product upload verified end to end (manual + CSV): create, publish, /product/<slug> 200, delete, cleanup. Fixed free_shipping insert failure, unreachable CSV commit, weak dry-run validation. See docs/L6-ADMIN-REPORT.md
 RESULT: DONE
@@ -297,3 +294,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M06-c210 DONE (2026-10-26): pnpm build exit 0, no source drift after build (git status clean); nothing to commit; no forbidden files touched
 line only, and the full block for each goal is in the root file.
 המשך מ: M07-c210 DONE (2026-10-26): TODO/FIXME scan of src/scripts/migrations found 6 markers (cardcom.ts:249, :312; r2-migration.ts:103-106), all >7 days old and already filed as BACKLOG #1-3 (Cardcom prod creds / Supabase service key blockers); nothing new to file or resolve; no forbidden files touched
+המשך מ: M09-c210 DONE (2026-10-26): knip --dependencies: drizzle-orm/postgres/pg flagged only because drizzle.config.ts needs SUPABASE_DB_URL; grep confirms all used (src/db/schema, scripts/*.mjs), @capacitor/android needed for cap sync; no removable deps, dead exports are public API, kept; no code change, no forbidden files touched
