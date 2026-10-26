@@ -291,3 +291,4 @@ RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 המשך מ: M04-c207 DONE (2026-10-26): pnpm type-check (tsc --noEmit) clean, no drift to fix; no code changes, nothing to commit)
 המשך מ: M07-c207 DONE (TODO/FIXME scan: 6 markers in src, all older than 7 days and all already filed in docs/BACKLOG.md items 1-3; none resolvable without Cardcom prod creds or Supabase service-role key; no new markers)
 המשך מ: M09-c207 DONE (2026-10-26): knip --dependencies: only @capacitor/android flagged (needed for cap sync android); no removable deps; remaining dead exports are public type surfaces, kept; no code change, no forbidden files touched)
+המשך מ: M18-c207 DONE (2026-10-26): claude/STATE.md already 293 lines (<300) and docs/STATE-ARCHIVE.md holds history; nothing further to archive; no code change, no forbidden files touched)
