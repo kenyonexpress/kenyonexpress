@@ -31,6 +31,11 @@ export function paidFlowEnabled(): boolean {
   return Boolean(E2E_CUSTOMER_EMAIL && E2E_CUSTOMER_PASSWORD)
 }
 
+/**
+ * Sign in with email/password. Throws TimeoutError if credentials don't exist
+ * or auth server is unreachable. Callers should catch and skip tests requiring
+ * seeded fixture data when auth fails.
+ */
 export async function signInWithEmail(
   page: Page,
   email: string,
@@ -44,7 +49,16 @@ export async function signInWithEmail(
   await page.getByLabel('סיסמה').fill(password)
   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
   // Either the return path or a generic signed-in page; never stay on /login.
-  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+  // If credentials don't exist in Supabase, this times out. Callers should catch
+  // and test.skip() with a message to run `pnpm seed:test`.
+  try {
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 8_000 })
+  } catch (_err) {
+    // Timeout suggests missing fixture data. Provide helpful error context.
+    throw new Error(
+      `Sign-in timeout after 8s. Fixture user may not be seeded in Supabase. Run 'pnpm seed:test' and retry.`,
+    )
+  }
 }
 
 /** Clears the browser storage so the next sign-in is a fresh guest session. */
