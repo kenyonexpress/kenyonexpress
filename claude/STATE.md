@@ -1,4 +1,5 @@
 
+**המשך מ: M18-c212 DONE (2026-10-26): claude/STATE.md is 129 lines, already under 300; docs/STATE-ARCHIVE.md exists, nothing to archive; no code change**
 **המשך מ: M07-c212 DONE (2026-10-26): TODO/FIXME scan found 6 markers in 2 files, all older than 7 days and already filed in docs/BACKLOG.md (#1-#3, Cardcom creds + R2 stub); no code change**
 **המשך מ: M04-c211 DONE (2026-10-26): pnpm type-check passes (tsc --noEmit clean); committed drift in src/lib/category-page.ts (suppliers select drops verification_status until migration 301 applied)**
 The canonical state file on this branch is the root `STATE.md`. This file
