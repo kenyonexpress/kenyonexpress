@@ -232,3 +232,11 @@ Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html
 Re-measure compare.mjs --page=category at --width=380 / 768 / 1440 (:3000 up). All three REFUSED by the reference guard: default live URL kenyonexpress.co.il/product-category/hot-deals/ serves our own Vercel build, and refs/ has no Electro v7 category reference file to pass via --live=. No diff percentages produced; gate not passed. Same state as M03-c218. No locked files touched; nothing committed.
 **המשך מ: M03-c220 BLOCKED category-reference-missing**
 המשך מ: M12-c220 DONE (robots.ts verified: /redeem/ /coupon/ + auth areas disallowed, sitemap on origin, 7/7 tests pass)
+
+## M01-c222 (2026-10-26)
+Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html at --width=380 / 768 / 1440 (dev server was down, restarted via pnpm dev). OVERALL first 2600px: 380 = 29.28%, 768 = 27.26%, 1440 = 20.5%; byte-identical to M01-c219/c220. Tool flags all three as NOT a pixel gate (height ratio 0.34x / 0.18x / 0.11x; local home far shorter than v7 reference, homepage.cms_read_failed Invalid API key). Gate <11% not passed at any width. No locked files touched; nothing committed.
+**המשך מ: M01-c222 BLOCKED home-gate-fail-29.28/27.26/20.5pct-height-mismatch**
+
+## M12-c222 (2026-10-26)
+robots.ts re-verified: auth/voucher/admin/api/debug paths disallowed, storefront allowed, sitemap+host on configured origin without double slash; robots+sitemap tests 11/11 pass; no public/robots.txt override. Live www robots.txt serves an older build (lacks /login /signup /mfa /admin-mfa /debug/, uses non-www origin) - resolves on next deploy; sensitive paths already disallowed live.
+המשך מ: M12-c222 DONE
