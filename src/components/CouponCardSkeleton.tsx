@@ -17,7 +17,7 @@
  * placeholder: eight cards is four rows on a phone, the footer starts off
  * screen, and it stays off screen while the grid resolves.
  */
-export default function CouponCardSkeleton() {
+function CouponCardSkeleton() {
   return (
     <div
       className="block bg-white border border-gray-100 overflow-hidden [border-radius:var(--radius-card)]"
