@@ -190,3 +190,7 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file:
 ## M13-c216 (2026-10-26)
 Verify /api/health and /api/ready with real deps. Routes exist (src/app/api/health, src/app/api/ready) and probe Supabase via the admin client. Direct REST probe of Supabase `categories` with the SUPABASE_SERVICE_ROLE_KEY in .env.local returns 401 (invalid key), so the real-deps check cannot pass. Per the cred-dependent M13 rule: DONE-DEFERRED until .env.local is updated post-C51 recovery. No code changes, no locked files touched.
 **המשך מ: M13-c216 DONE-DEFERRED**
+
+## M01-c217 (2026-10-26)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440 with --live=file://<abs>/refs/electro-home-v7.html (dev server was down, started `pnpm dev`, :3000 200). Reference passes classifyReference, but all three runs REFUSED by the pending-images guard: 13/9/4 reference images unloaded vs 0 local. No diff percentages produced; COMPARE_ALLOW_PENDING_IMAGES not set. Same as M01-c204..c216. No locked files touched.
+**המשך מ: M01-c217 BLOCKED reference-images-not-loading**
