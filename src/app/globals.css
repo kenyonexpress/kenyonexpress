@@ -19,6 +19,8 @@
    See: em-values-lifted-from-live-css-scale-off-16px-body.md */
 html {
   font-size: 0.875rem;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -26,6 +28,7 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans), Arial, sans-serif;
   direction: rtl;
+  margin: 0;
   /* F43, MEASURED 2026-10-21: live's computed letter-spacing is -0.14px on
      every element probed at 380, 768 and 1440 (deals card titles, prices,
      category links), inherited from its body. Ours was `normal`, so each
