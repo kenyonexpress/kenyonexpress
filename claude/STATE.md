@@ -201,3 +201,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M18-c222 DONE (2026-10-26): claude/STATE.md already 198 lines (<300), nothing to trim; docs/STATE-ARCHIVE.md untouched; no code changes**
 **המשך מ: M06-c223 DONE (2026-10-26): pnpm build exit 0 on closeout/v1-final; only drift docs/M-CYCLE-STATUS.md timestamp, committed + pushed**
 **המשך מ: M13-c223 DONE (2026-10-26): /api/health 200 {database:ok, search:not_configured}, /api/ready 200 {database,redis,cardcom ok; meili+r2 not_configured}; Supabase service key valid (REST 200); no code changes**
+**המשך מ: M15-c223 DONE (2026-10-26): console check on / and /product/<real slug> at 380/768/1440 on fresh next start (:3417): HTTP 200, 0 console errors/warnings, 0 pageerrors, 0 failed requests; note :3000 dev server is stale (500) — not used; no code change**
