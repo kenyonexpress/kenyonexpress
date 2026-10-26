@@ -95,3 +95,4 @@ M12-c208 DONE 2026-10-26 robots.ts verified production-safe: allow / for *, disa
 המשך מ: M12-c208 DONE
 M05-c209 DONE 2026-10-26 pnpm test: 4 failures (2 files) from drift: 294_group_deals.sql (133ff1d7c) landed without README row, preflight, manifest regen or inventory entry. Added preflight_294.sql, README entry, inventory test entries, regenerated migration-manifest.ts. pnpm test now 587 files / 6898 tests pass. Migration NOT applied (Supabase MCP unauthorized). No locked files touched.
 המשך מ: M05-c209 DONE
+M16-c210 DONE 2026-10-26 only product template (store)/product/[slug]/page.tsx; emits Product + BreadcrumbList JSON-LD via src/lib/seo/json-ld.ts; vitest src/lib/seo 45/45 pass. No code changes. המשך מ: M16-c210 DONE
