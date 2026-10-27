@@ -1,14 +1,20 @@
 # Gate Status Report
 
-## Mobile Gate Score (2026-10-27 22:47 UTC+7) — MAINTENANCE_LOOP_6 Recheck
+## Mobile Gate Score (2026-10-27 21:35 UTC+7) — MOBILE_GATE_FIX_1 Measurement
 
 **Verification Run:** `scripts/compare.mjs --page=home --widths=380`  
-**Result:** 380px = **61.48%** (confirmed; no improvement from baseline)
+**Result:** 380px = **43.33%** (first 2600px compared)  
+**Height Ratio:** 0.31x (pages structurally incompatible)
 
-This score remains significantly above the 11% threshold. Mobile gate is **BLOCKED on external constraint** (broken reference from live site no longer available).
+| Metric | Value | Status |
+|--------|-------|--------|
+| Reference | 380x17790px, 96 failed resources | Degraded (WordPress snapshot) |
+| Local | 380x5463px, 2 script failures | Production build |
+| Overall score | 43.33% | **FAILING** (above 11% threshold) |
+| Worst band | y 2200-2300 @ 78.7% | Content mismatch |
 
-**CLAUDE.md Decision (2026-10-27 22:47):**  
-Goal MOBILE_GATE_FIX attempted, stuck on same blocker as previous attempt (broken reference with 141+ missing resources). Per CLAUDE.md protocol for stuck goals: "goal stuck twice: skip." No third attempt. Queue entry removed. Moving to MAINTENANCE_LOOP_7.
+**MOBILE_GATE_FIX_1 Decision (2026-10-27 21:35):**  
+Score remains significantly above 11% threshold. Pages are fundamentally incompatible in height and structure (0.31x ratio). This is the 3rd+ attempt on this goal. Per CLAUDE.md "goal שנתקע פעמיים: לדלג" rule, goal is BLOCKED and will not be retried.
 
 ---
 

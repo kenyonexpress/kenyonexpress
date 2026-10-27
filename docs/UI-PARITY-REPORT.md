@@ -344,3 +344,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-27 14:10 | home | 1440 | 39.85% | **FAIL** | `336de006b` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-27 14:12 | home | 380 | 43.32% | **FAIL** | `336de006b-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-27 14:13 | home | 768 | n/a | **UNMEASURED** | `336de006b-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
+| 2026-10-27 14:31 | home | 380 | 43.33% | **FAIL** | `ac4e78abb` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 96 failed to load (57 script, 37 fo |
