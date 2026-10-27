@@ -1,3 +1,50 @@
+## MAINTENANCE_LOOP_7: COMPLETE (2026-10-27 21:38 UTC+7)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun. Report scores to docs/LIGHTHOUSE-STATUS.md.
+
+**Status:** ✅ COMPLETE — Lighthouse audit completed, performance issue detected and documented
+
+**Results:**
+- Home page performance: min 82, avg 93, max 100 ❌ BELOW 90 THRESHOLD
+- /products page: min 92, avg 96, max 100 ✅ PASS
+- All accessibility/SEO perfect (100 across all runs)
+
+**Actions taken:**
+1. Ran pnpm lhci:autorun on localhost:3000 (6 runs per URL)
+2. Analyzed 12 Lighthouse reports (2 URLs × 6 runs)
+3. Updated docs/LIGHTHOUSE-STATUS.md with detailed findings
+4. Committed: [autopilot] chore: qa lighthouse check - home page performance below 90
+5. Pushed to origin/autopilot
+
+**Optimization goal queued:** PERF_HOME_PAGE_OPTIMIZATION_1
+
+---
+
+## PERF_HOME_PAGE_OPTIMIZATION_1: IN PROGRESS (2026-10-27 21:38 UTC+7)
+
+**Goal:** Fix home page Lighthouse performance from min 82 to ≥90. Investigate and optimize FCP/LCP/CLS.
+
+**Status:** 🔄 IN PROGRESS — Starting optimization work
+
+**Performance baseline (from MAINTENANCE_LOOP_7):**
+- Current: min 82, avg 93, max 100
+- Target: all runs ≥ 90
+- Variance: 18-point spread indicates intermittent slowness
+- Likely causes: FCP/LCP delays, layout shifts, render-blocking resources
+
+**Investigation plan:**
+1. Profile home page with Chrome DevTools (4G/4CPU throttling)
+2. Identify render-blocking JS/CSS in critical path
+3. Audit image optimization on hero section
+4. Check for layout shift (CLS) on hydration
+5. Run pnpm lhci:autorun after optimizations
+
+**Success criteria:**
+- All Lighthouse performance runs ≥ 90
+- No regression in other metrics
+
+---
+
 ## MOBILE_GATE_FIX_1: BLOCKED (2026-10-27 21:35 UTC+7)
 
 **Goal condition:** Fix mobile gate 380px score from 43.33% to below 11%. Investigate layout/component mismatches. Attempt layout optimizations first.
