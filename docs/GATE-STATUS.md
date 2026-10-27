@@ -1,18 +1,18 @@
 # Gate Status Report
 
-## Mobile Gate (380px) - MOBILE_GATE_FIX SKIPPED
+## Mobile Gate (380px) - MAINTENANCE_LOOP_6 ONGOING CHECK
 
-**Date:** 2026-10-27 11:40 UTC+7
-**Score:** 45.49% (OVERALL first 2600px) — ABOVE 11% THRESHOLD
-**Status:** ⏭️ SKIPPED — Architecturally unfixable, per CLAUDE.md "goal stuck twice: skip" rule
+**Date:** 2026-10-27 19:XX UTC+7 (Fresh Check)
+**Score:** 43.33% (OVERALL first 2600px) — ABOVE 11% THRESHOLD
+**Status:** ⚠️ GATE FAILING — above 11% threshold (no improvement from prior measurements)
 
-### Fresh Measurement (2026-10-27)
-- **Overall score:** 45.49% (first 2600px compared)
-- **Reference (WordPress):** 380x17790px
-- **Local (Next.js):** 380x5446px
-- **HEIGHT RATIO:** 0.31x (pages are structurally incompatible, not styling issue)
+### Latest Measurement (MAINTENANCE_LOOP_6, 2026-10-27)
+- **Overall score:** 43.33% (first 2600px compared)
+- **Reference (WordPress):** 380x18146px
+- **Local (Next.js):** 380x5463px
+- **HEIGHT RATIO:** 0.30x (pages are structurally incompatible, not styling issue)
 - **Reference failed resources:** 96 (57 script, 37 font, 1 stylesheet, 1 xhr)
-- **Local failed resources:** 0 (everything loaded successfully)
+- **Local failed resources:** 2 scripts (unhydrated, not a fidelity score)
 
 ### Worst bands (this measurement):
   - y 2200-2300: 78.4%
