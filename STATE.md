@@ -249,9 +249,34 @@
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_6
+## MAINTENANCE_LOOP_6: DONE (2026-10-27 19:15 UTC)
 
-Next in queue: MAINTENANCE_LOOP_6 (Recheck Mobile Gate score via scripts/compare.mjs)
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal at head of queue.
+
+**Status:** ✅ COMPLETE — Mobile fix requeued
+
+**Measurement (2026-10-27 19:15 UTC):**
+- Method: scripts/compare.mjs --page=home --widths=380
+- Mobile (380px) score: 43.33% (FAILED)
+- Tolerance: 11.0%
+- Delta: +32.33 percentage points
+
+**Finding:** Gate score 43.33% exceeds tolerance. Local page loading 0.30x height of reference (5463px vs 17790px). Indicates data loading failure.
+
+**Action Taken:**
+- ✅ Measured mobile gate: 43.33% > 11% threshold
+- ✅ Requeued MOBILE_FIX_1 goal at head of ~/ke-goals/queue.txt
+- ✅ Updated docs/GATE-STATUS.md with findings
+- ✅ Commit: 64e56abe9 "[autopilot] chore: qa mobile gate check - 43.33% exceeds tolerance"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Next:** MOBILE_FIX_1 (investigate data loading, check Supabase, re-measure)
+
+---
+
+## המשך מ: MOBILE_FIX_1 (REQUEUED AT HEAD)
+
+Requeued due to gate failure. Check Supabase admin key and API responses.
 
 ## המשך מ: M05-c229 DONE
 
