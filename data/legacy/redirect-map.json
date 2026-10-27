@@ -120,6 +120,7 @@
       "/account",
       "/account/addresses",
       "/account/cashback",
+      "/account/club",
       "/account/coupons",
       "/account/details",
       "/account/my-vouchers",

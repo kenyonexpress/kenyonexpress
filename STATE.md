@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-28 (M05-c235: pnpm test החזיר 4 כשלים ב-3 קבצים, כולם drift מ-3d922add (club tiers): data/legacy/redirect-map.json חסר /account/club, migrations/pending/README.md ורשימת pending-migrations-inventory.test.ts חסרו 243_club_tiers.sql, ו-ProductCard.tsx השתמש ב-#fed700 גולמי במקום bg-brand-primary. תוקן; pnpm test: 501/501 קבצים, 5843 עברו.) המשך מ: M05-c235 DONE.
 Updated: 2026-10-28 (M12-c233: אימות robots.txt לפרודקשן. src/app/robots.ts: allow / ל-*, disallow לכל האזורים המאומתים והטוקנים (/redeem/, /coupon/, /gift/, /account/, /supplier/, /admin/, /checkout, /cart, /auth/, /api/, /login, /signup, /mfa, /admin-mfa, /debug/ ועוד), sitemap ו-host מ-NEXT_PUBLIC_APP_URL בלי לוכסן כפול. robots.test.ts: 8/8 עברו. לא נערכו קבצי קוד.) המשך מ: M12-c233 DONE.
 Updated: 2026-10-28 (M18-c232: STATE.md נמדד ב-172 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c232 DONE.
 Updated: 2026-10-27 (M18-c227: STATE.md נמדד ב-281 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c227 DONE.

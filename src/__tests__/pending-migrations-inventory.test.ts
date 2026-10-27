@@ -388,6 +388,9 @@ describe('the pending migration inventory', () => {
       // search_index_dlq; the closing block refuses any client-role grant or
       // policy. Not yet dry-run on production.
       '242_job_dlq.sql',
+      // 243 is PENDING (2026-10-27): `club_tiers` and the 12-month spend/tier
+      // functions behind /account/club. Not yet applied to production.
+      '243_club_tiers.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

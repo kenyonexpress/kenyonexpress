@@ -188,7 +188,7 @@ function DealsProductCard({ product }: { product: Product }) {
 
         {product.club_tier_he && (
           <span
-            className="absolute rounded-full bg-[#fed700] px-2 py-0.5 text-xs font-semibold text-black"
+            className="absolute rounded-full bg-brand-primary px-2 py-0.5 text-xs font-semibold text-black"
             style={{ insetBlockStart: 8, insetInlineEnd: 8 }}
           >
             {product.club_tier_he}

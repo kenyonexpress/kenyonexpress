@@ -1,5 +1,14 @@
 # `migrations/pending/`
 
+## 2026-10-27: 243 PENDING (club tiers)
+
+`243_club_tiers.sql` adds `club_tiers` (bronze 0, silver 200000, gold 500000
+agorot) plus `fn_club_spend_12mo` and `fn_club_tier`: a customer's tier is
+decided in SQL by what they spent in the trailing 12 months over paid,
+partially_fulfilled and fulfilled orders. Integer agorot throughout. Feeds
+`/account/club` and the ProductCard badge. Rollback drops the two functions
+and the table. Not yet applied to production.
+
 ## 2026-09-17: 242 PENDING (job queue dead letters)
 
 `242_job_dlq.sql` adds `job_dlq`, the dead-letter table for the general job
