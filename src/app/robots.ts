@@ -37,6 +37,7 @@ export default function robots(): MetadataRoute.Robots {
           '/api/',
           '/debug/', // Sentry debug panel, env-gated
           '/voucher/', // per-customer voucher code pages
+          '/gift/', // claim links: the URL token is the credential
           '/reset-password',
           '/forgot-password',
         ],
