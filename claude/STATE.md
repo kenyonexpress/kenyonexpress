@@ -234,3 +234,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M05-c228 DONE (2026-10-27): pnpm test — 1 failure (sentry-version-pin expected 10.75.2, manifest+install at 10.75.3); updated pin test to 10.75.3, 4/4 pass, rest of suite 7063 passed; committed with generated docs drift**
 **המשך מ: M08-c228 DONE (2026-10-27): Lighthouse mobile sample (local prod build, 2 runs/page) — home 68/82, product 84/87; G23 95+ not met (LCP + render-blocking); logged to logs/lighthouse-m08-c228.log; no code change**
 **המשך מ: M09-c228 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ dep, kept); no unused deps; unused exports are deliberate public API; no code change**
+**המשך מ: C04 DONE (2026-10-27): F15 passkeys already shipped (register/authenticate APIs, webauthn_credentials table 178, /account/security UI); no duplicate passkey_credentials migration; docs/C04-passkeys.md**
