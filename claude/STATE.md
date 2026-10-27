@@ -245,3 +245,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M04-c229 DONE (2026-10-27): pnpm type-check clean (0 errors), no drift, nothing to fix**
 **המשך מ: M06-c229 DONE (2026-10-27): pnpm build passes, no drift remaining, tree clean**
 **המשך מ: M15-c229 DONE (2026-10-27): / and /product/<slug> zero console errors at 380/768/1440 on fresh prod build (:3901); stale :3000 dev server gave chunk 404s after rebuild, not a code issue**
+**המשך מ: M04-c230 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, zero errors; no drift, no code change, no forbidden files touched**
