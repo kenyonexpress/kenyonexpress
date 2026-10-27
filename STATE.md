@@ -278,6 +278,29 @@ pnpm build passes. Committed docs/M-CYCLE-STATUS.md timestamp drift.
 
 ## המשך מ: M18-c233 DONE
 
+## MAINTENANCE_LOOP_8: DONE (2026-10-28 21:25 UTC+7) - Cycle 8
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md.
+
+**Status:** ✅ COMPLETE
+
+**Scan Results (Cycle 8):**
+- **Current count:** 6 TODO markers (unchanged)
+  - r2-migration.ts: 4 TODOs (R2 migration workflow stubs)
+  - cardcom.ts: 2 TODOs (legacy API confirmation blockers)
+- **FIXME comments:** 0
+- **HACK comments:** 0
+- **Delta:** 0 (stable from prior cycles)
+
+**Action Taken:**
+- ✅ Scanned all .ts/.tsx files in src/
+- ✅ Found 6 markers (same as cycle 7)
+- ✅ No growth → no cleanup goal queued
+
+**Conclusion:** Code debt markers unchanged. No growth detected. Moving to next goal.
+
+---
+
 ## MAINTENANCE_LOOP_6: DONE (2026-10-28 21:15 UTC+7) - Cycle 8
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal.
