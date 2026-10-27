@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-27 (M12-c226: אימות robots.txt production-safe). src/app/robots.ts: Allow / ל-*, Disallow על נתיבים פרטיים/אימות בלבד (redeem, coupon, account, supplier, admin, checkout, cart, auth, api, login, signup, mfa, debug), אין התנגשות קידומת עם נתיבים ציבוריים (/coupons ו-/c פתוחים), Sitemap+host מ-NEXT_PUBLIC_APP_URL, אין noindex גורף. robots.test.ts: 7/7 עברו. לא נערכו קבצי קוד. המשך מ: M12-c226 DONE.
 Updated: 2026-10-27 (M02-c225: compare.mjs --page=product ב-380/768/1440 סירב למדוד, "live side is unknown": kenyonexpress.co.il כבר לא האתר המקורי ואין שרת מקומי רץ. אין מספר, אין שינוי קוד. המשך מ: M02-c225 BLOCKED reference-unavailable.)
 Updated: 2026-10-27 (M18-c225: STATE.md נמדד ב-256 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c225 DONE.
 Updated: 2026-10-26 (M18-c223: STATE.md נמדד ב-247 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c223 DONE.
@@ -261,3 +262,11 @@ Re-measure compare.mjs --page=category at --width=380 / 768 / 1440. All three RE
 **המשך מ: M03-c225 BLOCKED category-reference-missing**
 
 המשך מ: M06-c225 BLOCKED push-diverged (pnpm build + tsc pass; drift committed locally as 37d2b030 but local main is ahead 91 / behind 4605 vs origin/main, merge-base 18ed044b; rebase conflicts on commit 1 of 91, aborted; no force-push; no code changes)
+
+## M01-c226 (2026-10-27)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Not measured: local dev server (pnpm dev) returns HTTP 500 on / — Next's postcss loader subprocess crashes ("Connection reset by peer", /_error also fails), and the env probe logs SUPABASE_SERVICE_ROLE_KEY 401 (placeholder/revoked key, M13 deferred). compare.mjs was not run, so no diff percentages; last known (c224, pending-images override) 62.6/35.41/26.99, gate <11% not passed. No locked files touched; nothing committed.
+**המשך מ: M01-c226 BLOCKED dev-server-500-postcss-crash (no measurement)**
+
+## M03-c226 (2026-10-27)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440. Not measured: pnpm dev still returns HTTP 500 on /category/hot-deals (globals.css postcss loader failure, same as M01-c226), and refs/ has no Electro v7 category capture to pass via --live= (reference guard refuses kenyonexpress.co.il). compare.mjs not run, no diff percentages; gate <11% not passed. No locked files touched; nothing committed.
+**המשך מ: M03-c226 BLOCKED dev-server-500-postcss-crash + category-reference-missing (no measurement)**
