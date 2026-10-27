@@ -574,11 +574,28 @@ from this very file and appending them again.
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_4 READY
+## MAINTENANCE_LOOP_4: DEFERRED (2026-10-27 18:45 UTC+7)
 
-**Next goal (queued 2026-10-27 11:59 UTC+7):**
-Run full Playwright test suite with pnpm test:e2e.
-Report pass/fail/flaky counts to docs/E2E-STATUS.md.
+**Goal:** Run full Playwright test suite with pnpm test:e2e.
+
+**Status:** ⏸️ DEFERRED — Background task killed at 10-minute time limit
+
+**Issue:** E2E suite requires extended runtime (typically 1+ hour). Background task system has 10-minute limit.
+- Command: `timeout 3600 pnpm test:e2e` started
+- Output: [killed] - no test output produced
+- Reason: Background time limit exceeded before suite initialization completed
+
+**Decision:** E2E suite cannot run in maintenance loop time constraints. Document infrastructure limitation and continue.
+
+**Note:** Full E2E runs require interactive session or dedicated test runner outside maintenance cycles.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_5 READY
+
+**Next goal (queued 2026-10-27 18:45 UTC+7):**
+Check all cron routes last-run timestamp via Vercel MCP.
+Alert in docs/CRON-STATUS.md if any route stale over 24h.
 
 ---
 
