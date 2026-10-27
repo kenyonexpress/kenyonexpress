@@ -226,10 +226,32 @@
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_4 (CYCLE 5 IN PROGRESS)
+## MAINTENANCE_LOOP_5: DONE (2026-10-27 18:39 UTC)
 
-MAINTENANCE_LOOP_3 completed 2026-10-28 14:XX UTC+7 — backlog scan (0 unblocked items, all blocked by external credentials).
-Next in queue: MAINTENANCE_LOOP_4 (run pnpm test:e2e, document pass/fail counts)
+**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
+
+**Status:** ✅ COMPLETE
+
+**Measurement (2026-10-27 18:39 UTC):**
+- Method: Vercel CLI `logs --since 24h` (MCP failed with 403 Forbidden)
+- Routes executing: 2 of 22 (health, notifications)
+- Routes not executing: 20 of 22 (all commerce/critical functions stale)
+- Last execution: 2026-10-27 01:35 UTC (17+ hours ago)
+
+**Action Taken:**
+- ✅ Queried Vercel production logs for all cron routes in last 24h
+- ✅ Identified critical issue: 20 of 22 routes not executing
+- ✅ Updated docs/CRON-STATUS.md with findings, root cause, and resolution steps
+- ✅ Commit: b34daddcb "[autopilot] chore: ops cron status check - 20 of 22 routes not executing"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Finding:** Production deployment missing cron job registration. Only health and notifications registered; 20 routes including fraud detection, invoicing, payments, and subscriptions are offline. Requires deployment of full cron configuration or external scheduler.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_6
+
+Next in queue: MAINTENANCE_LOOP_6 (Recheck Mobile Gate score via scripts/compare.mjs)
 
 ## המשך מ: M05-c229 DONE
 
