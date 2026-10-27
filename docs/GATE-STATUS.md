@@ -1,19 +1,26 @@
 # Mobile Gate Status (2026-10-28)
 
-## Latest Check (2026-10-28 02:07 UTC)
+## Latest Check (2026-10-28 21:15 UTC+7, MAINTENANCE_LOOP_6, Cycle 8)
 
-**Measurement Date:** 2026-10-28 02:07 UTC  
-**Method:** `scripts/compare.mjs --page=home --widths=380,768,1440`  
+**Measurement Date:** 2026-10-28 21:15 UTC+7 (MAINTENANCE_LOOP_6)
+**Method:** `scripts/compare.mjs --page=home --widths=380`  
 **Environment:** Local pnpm start (fresh production build)  
-**Server:** PORT=3399 (verified fresh start, no stale processes)
+**Server:** PORT=3312 (localhost:3000)
 
-## Current Scores (All Widths)
+## Current Scores (380px only, Cycle 8 measurement)
 
+| Width | Score | Best Known | Delta | Status |
+|-------|-------|-----------|-------|--------|
+| 380px | **61.49%** | 30.26% | +31.23% | 🔴 FAILED |
+
+**Previous Check (2026-10-28 02:07 UTC):**
 | Width | Score | Best Known | Delta | Status |
 |-------|-------|-----------|-------|--------|
 | 380px | 43.33% | 30.26% | +13.07% | 🔴 FAILED |
 | 768px | 44.74% | 29.00% | +15.74% | 🔴 FAILED |
 | 1440px | 39.86% | 8.29% | +31.57% | 🔴 FAILED |
+
+**REGRESSION ALERT:** 2026-10-28 fresh measurement shows 61.49% (was 43.33% at 02:07 UTC). +18.16% worse in 19 hours.
 
 **Tolerance:** 11.0% (all widths)  
 **Overall Status:** 🔴 FAILING — all widths exceed tolerance
