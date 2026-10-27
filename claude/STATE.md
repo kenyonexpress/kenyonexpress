@@ -1,3 +1,4 @@
+**המשך מ: M09-c230 DONE (2026-10-27): depcheck+prior knip re-audit — flagged items (capacitor, tailwind/postcss, lighthouse, lint-staged) are config/CLI/native false positives, kept; no unused deps; unused exports are deliberate public API; no code change, no forbidden files touched**
 **המשך מ: M09-c229 DONE (2026-10-27): knip deps scan: only flagged @capacitor/android, a false positive (android/ Capacitor platform needs it for cap sync) so kept; 0 unused deps; ~76 unused exports are intentional lib/UI API surface (shadcn, money, ledger, payments), left untouched; no code change, no forbidden files touched**
 **המשך מ: C01 DONE (2026-10-27): preflight node v25.9.0, pnpm 11.1.2, git clean on closeout/v1-final, pnpm install up to date, typecheck clean; docs/C01-preflight.md**
 **המשך מ: M18-c228 DONE (2026-10-27): STATE.md already 234 lines (<300) and docs/STATE-ARCHIVE.md exists; no trim needed, no code change**
@@ -246,3 +247,5 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M06-c229 DONE (2026-10-27): pnpm build passes, no drift remaining, tree clean**
 **המשך מ: M15-c229 DONE (2026-10-27): / and /product/<slug> zero console errors at 380/768/1440 on fresh prod build (:3901); stale :3000 dev server gave chunk 404s after rebuild, not a code issue**
 **המשך מ: M04-c230 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, zero errors; no drift, no code change, no forbidden files touched**
+**המשך מ: M06-c230 DONE (2026-10-27): pnpm build passes; committed drifted docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md**
+**המשך מ: M10-c230 BLOCKED (2026-10-27): migrations/pending 301,305,306,310 NOT applied in prod (verified read-only via REST: columns/tables missing); 000 applied. Supabase MCP unauthenticated in this session, db push forbidden. Needs MCP apply_migration one at a time.**
