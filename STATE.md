@@ -16,6 +16,28 @@
 
 ---
 
+## MAINTENANCE_LOOP_4: SKIPPED (2026-10-28 22:59 UTC+7) - Cycle 9
+
+**Goal:** Run full Playwright test suite with pnpm test:e2e. Report pass/fail/flaky counts to docs/E2E-STATUS.md.
+
+**Status:** ⏭️ **SKIPPED** (Background timeout limit)
+
+**Reason for Skip:**
+- Full E2E suite requires ~16 minutes (2172 tests across 2 workers)
+- Background task limit: 10 minutes (system enforces timeout)
+- Test killed at 10m mark: reached [13/2172] tests before timeout
+- Prior skip: 2026-10-28 21:30 (first timeout)
+- This is second skip — authorized per "goal stuck twice, skip" rule in CLAUDE.md
+
+**Autonomous Decision:**
+- Skipped per infrastructure constraints (background timeout)
+- Would require foreground/interactive execution (not available in autonomous loop)
+- Documented as known limitation for E2E verification
+
+**Conclusion:** M4 blocked by background execution time limit. Per CLAUDE.md skip rule after two timeouts.
+
+---
+
 ## MAINTENANCE_LOOP_2: DONE (2026-10-28 22:58 UTC+7) - Cycle 9
 
 **Goal:** Run pnpm outdated and bump patch versions for safe packages. Skip major and minor.
