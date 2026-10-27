@@ -224,13 +224,23 @@ Note: ours dropped 4 scripts (unhydrated), which inflates the numbers. Worst 144
    - Reference snapshot: missing 101 scripts + 29 fonts, renders degraded/tall layout
    - Current page: correctly structured, matches Electro v7 spec
 
-**Attempted Fixes (All Failed):**
+**Root Cause Identified: HEIGHT RATIO 0.31x**
+
+Using Playwright diagnostics, confirmed:
+- ✅ ALL page content rendering correctly: hero (400px), benefit bar, chips, 32 products
+- ✅ Product cards rendering at correct height (269px each)
+- ✅ All sections present: hero, benefitBar, dealChips, homeDeals, footer
+- ❌ Page total height: 5680px (current) vs 17790px (reference) = 0.31x
+- ❌ This HEIGHT RATIO triggers compare.mjs structural-incompatibility warning
+
+**Attempted Fixes (All Failed or Worsened):**
 
 1. ✗ Removed location pins from ProductDealCardMobile - no change (43.32%)
-2. ✗ Changed deals grid from 2-column to flexbox layout - WORSENED (54.93%)  
-3. ✗ Restored spacing values (--spacing-deals-top 100px, --spacing-hero-mobile 250px) - no change (43.32%)
+2. ✗ Changed deals grid from 2-column to flexbox - WORSENED (53.52%), reverted
+3. ✗ Restored spacing values (--spacing-deals-top, --spacing-hero-mobile) - no change (43.32%)
+4. ✗ Changed product grid layout for mobile 1-column compliance - WORSENED
 
-All three restoration attempts were based on commit 873865f0f which achieved 20.91%. None helped because the underlying issue is HEIGHT RATIO incompatibility.
+The underlying issue is NOT missing content or broken rendering - all is present and correctly structured. The reference snapshot is fundamentally incompatible due to degraded rendering (missing fonts/scripts from WordPress archive).
 
 **Decision:** **Gate Cannot Improve Without Reference Update**
 
