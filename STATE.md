@@ -1,3 +1,19 @@
+## MAINTENANCE_LOOP_10: DONE (2026-10-28 04:25 UTC+7)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from this very file and appending them again. This creates the infinite loop.
+
+**Status:** ✅ COMPLETE
+
+**Action Taken:**
+- ✅ Extracted MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from queue.txt (lines 2-11)
+- ✅ Appended 10 goals to ~/ke-goals/queue.txt (created cycle 4+)
+- ✅ Queue now has infinite maintenance loop cycles ready for continuation
+- ✅ Quality gates: typecheck ✅, lint ✅ (6496 files), build ✅ (292 routes)
+
+**Conclusion:** Infinite maintenance loop extended. Next cycle ready (MAINTENANCE_LOOP_1 onwards).
+
+---
+
 ## MAINTENANCE_LOOP_9: DONE (2026-10-28 04:20 UTC+7)
 
 **Goal:** Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist. Commit as chore ops db performance check. Push.
@@ -1165,6 +1181,7 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ## המשך מ: MAINTENANCE_LOOP_1 (CYCLE 4 CONTINUES)
 
+MAINTENANCE_LOOP_10 completed 2026-10-28 04:25 UTC+7 — infinite loop queue extended.
 MAINTENANCE_LOOP_9 completed 2026-10-28 04:20 UTC+7 — database verified healthy, zero slow queries detected.
 Next iteration of the infinite maintenance loop continues with MAINTENANCE_LOOP_1: Run pnpm audit and fix critical/high vulnerabilities.
 
@@ -1179,3 +1196,6 @@ Note: ours dropped 4 scripts (unhydrated), which inflates the numbers. Worst 144
 
 ## המשך מ: M07-c231 DONE
 TODO/FIXME scan: 6 markers in src (cardcom.ts:249, :312; r2-migration.ts:103-106), all older than 7 days, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom creds / service-role key). No new items.
+
+## המשך מ: M08-c231 DONE
+Lighthouse mobile sample (local prod, 2 runs/page): home 87 / 82, product 87 / 86. G23 95+ not met; LCP 3.8-4.7 s and render-blocking 0.4-1 s are the drivers. Log: logs/lighthouse-m08-c231.log. No code changes.
