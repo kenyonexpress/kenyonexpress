@@ -498,5 +498,13 @@ These are structurally different pages, not the same page styled differently.
 
 ---
 
+## המשך מ: MAINTENANCE_LOOP_9 READY
+
+**Next goal (queued 2026-10-27 11:45 UTC+7):**
+Verify Supabase connection pool and query performance via Supabase MCP.
+Alert in docs/DB-STATUS.md if slow queries over 500ms exist.
+
+---
+
 המשך מ: M07-c221 DONE (2026-10-26): TODO/FIXME scan (src, scripts, migrations, root docs) found 6 TODOs, all >7 days old (2026-07-24 to 2026-10-17) and all already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds, R2 migration stub). No new items, no code change.
 המשך מ: M08-c225 DONE (2026-10-27): Lighthouse mobile sample, local prod build port 3100: home 68/88 (median 88), product 77/83 (median 83); G23 95+ not met, LCP is the gap, fixes touch locked components. Log: logs/lighthouse-m08-c225.log. No code change.
