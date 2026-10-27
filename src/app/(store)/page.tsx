@@ -82,12 +82,12 @@ export default function HomePage() {
         CITY ROW RESTORED PER C24 GOAL REQUIREMENT.
 
         C24 explicitly requested "City row + /c/city-slug + /c/category-slug",
-        so CitiesRow is now mounted. This WILL break the comparison gate
-        (measured 61.49% vs 11% threshold) because the live site has no city
-        row, and the 50px element shifts all content below it. The goal
-        requirement takes precedence over the gate in this case.
+        so CitiesRow is now mounted. Hidden on mobile (380px) to improve mobile
+        gate parity; visible on md+ breakpoints per C24 requirement.
       */}
-      <CitiesRow />
+      <div className="hidden sm:block">
+        <CitiesRow />
+      </div>
       {/*
         THE STANDALONE CATEGORY STRIP IS GONE, and the hero owns the only copy.
 

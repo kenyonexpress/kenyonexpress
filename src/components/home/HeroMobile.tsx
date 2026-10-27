@@ -9,12 +9,12 @@ export default function HeroMobile() {
     <div
       style={{
         width: '100%',
-        height: '213px',
+        height: '400px',
         background: 'var(--color-surface)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px',
+        padding: '60px 20px',
       }}
     >
       <div style={{ textAlign: 'center' }}>
