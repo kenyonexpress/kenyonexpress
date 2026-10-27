@@ -1113,3 +1113,10 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 Next iteration of the infinite maintenance loop begins with MAINTENANCE_LOOP_1: Run pnpm audit and fix critical/high vulnerabilities.
 
 ## המשך מ: M05-c229 DONE
+
+## המשך מ: M01-c230 BLOCKED (gate over 11pct)
+compare.mjs --page=home --widths=380,768,1440, re-measured 2026-10-27 (first 2600px diff):
+- 380: 61.49% (best known 30.26%, WORSE)
+- 768: 39.45% (best known 29%, WORSE)
+- 1440: 30.23% (best known 8.29%, WORSE)
+Note: ours dropped 4 scripts (unhydrated), which inflates the numbers. Worst 1440 bands y1100-1400, 1800-1900. Gate <11% not met at any width.
