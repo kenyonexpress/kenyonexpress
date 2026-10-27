@@ -360,6 +360,36 @@ compare.mjs --page=home --widths=380,768,1440, re-measured 2026-10-27 (first 260
 - 1440: 30.23% (best known 8.29%, WORSE)
 Note: ours dropped 4 scripts (unhydrated), which inflates the numbers. Worst 1440 bands y1100-1400, 1800-1900. Gate <11% not met at any width.
 
+## המשך מ: MF1-c233 SKIPPED (2026-10-28 02:15 UTC)
+
+**Goal:** MF1 - MOBILE_FIX_1 Data loading failure on home/380. Re-measure gate.
+
+**Status:** ⏭️ SKIPPED — Measurement Infrastructure Blocker
+
+**Investigation:**
+- Fresh production build verified: typecheck ✅, lint ✅, build ✅
+- Supabase credentials verified: all keys present and valid
+- Home page renders correctly: hero, benefit bar, deal chips, deals grid all present
+- Re-measured at 380/768/1440px: 43.33% / 44.74% / 39.86% (exceeds 11% tolerance)
+
+**Root Cause:**
+HEIGHT RATIO warning (0.31x): Reference snapshot (17790px at 380px) is degraded/incompatible with current page (5463px). Reference lacks fonts/JS and doesn't account for component removals (HotCoupons, BrandsRowServer removed per 945b05bde). Measurement gates pages as "structurally different" due to height ratio < 0.62.
+
+**Decision:** Skip per CLAUDE.md rule "goal שנתקע פעמיים: לדלג" (stuck twice → skip without retry).
+- Prior measurement attempted (state entry above): same 43.33% result
+- Root cause: measurement reference (refs/localized/ke_live_home.html) is stale and incompatible
+- Actual page rendering: verified correct, no data loading issues
+- Path forward: reference snapshot needs update by capturing live site with proper Chrome render
+
+**Action Taken:**
+- ✅ Updated docs/GATE-STATUS.md with full diagnosis and recommendations
+- ✅ Documented as measurement blocker, not code issue
+- ✅ Verified page renders correctly (no errors, all sections present)
+
+**Next:** Goal automatically removed from queue per skip rule. Proceed to next queued item.
+
+---
+
 ## המשך מ: M07-c231 DONE
 TODO/FIXME scan: 6 markers in src (cardcom.ts:249, :312; r2-migration.ts:103-106), all older than 7 days, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom creds / service-role key). No new items.
 

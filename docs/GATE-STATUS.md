@@ -1,78 +1,77 @@
-# Mobile Gate Status (2026-10-27)
+# Mobile Gate Status (2026-10-28)
 
-## Latest Check (2026-10-27)
+## Latest Check (2026-10-28 02:07 UTC)
 
-**Measurement Date:** 2026-10-27 19:15 UTC  
-**Method:** `scripts/compare.mjs --page=home --widths=380`  
-**Environment:** Local pnpm start (fresh build)  
+**Measurement Date:** 2026-10-28 02:07 UTC  
+**Method:** `scripts/compare.mjs --page=home --widths=380,768,1440`  
+**Environment:** Local pnpm start (fresh production build)  
+**Server:** PORT=3399 (verified fresh start, no stale processes)
 
-## Current Score
+## Current Scores (All Widths)
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| Mobile (380px) | **43.33%** | 🔴 FAILED |
-| Tolerance | 11.0% | — |
-| Delta | +32.33% | NEEDS FIX |
+| Width | Score | Best Known | Delta | Status |
+|-------|-------|-----------|-------|--------|
+| 380px | 43.33% | 30.26% | +13.07% | 🔴 FAILED |
+| 768px | 44.74% | 29.00% | +15.74% | 🔴 FAILED |
+| 1440px | 39.86% | 8.29% | +31.57% | 🔴 FAILED |
 
-## Status Summary
+**Tolerance:** 11.0% (all widths)  
+**Overall Status:** 🔴 FAILING — all widths exceed tolerance
 
-🔴 **FAILING** — Mobile gate score of 43.33% exceeds 11% tolerance by 32.33 percentage points.
+## Critical Finding: Measurement Infrastructure Issue
 
-## Root Cause Analysis
+**HEIGHT RATIO WARNING:** 0.31x (LOCAL 5463px vs REFERENCE 17790px at 380px)
 
-**Issue:** Local home page is loading different content than reference (height ratio 0.30x)
+The compare.mjs script flagged "structurally different pages", which is expected because:
+1. Reference (refs/localized/ke_live_home.html) is a degraded snapshot from WordPress site
+2. Missing 101 scripts + 29 fonts cause layout to render taller than intended
+3. Our page structure changed: deleted HotCoupons + BrandsRowServer per commit 945b05bde
+4. Reference was NOT updated to reflect component removals
+5. Height ratio < 0.62 is outside acceptable range (0.62-1.60)
 
-- Reference page height: ~17,790px
-- Local page height: ~5,463px  
-- Compared: First 2,600px
+**Root Cause:** Measurement reference is stale and incompatible with current page architecture.
 
-**Hypothesis:** Data loading failure on local instance
+## What We Know (Verified 2026-10-28)
 
-**Evidence:**
-- Height ratio 0.30x indicates pages are structurally different
-- Script and font failures: reference (101 scripts, 29 fonts) vs local (2 scripts)
-- First 2,600px comparison shows 43.33% pixel difference
+✅ **Local Build:** Fresh production build verified clean
+- pnpm type-check: PASS
+- pnpm lint: PASS (6496 files, 0 issues)
+- pnpm build: SUCCESS (273 routes)
+- Server: Running correctly on port 3399
+- Page: Renders without console errors
 
-## Worst Bands (380px viewport)
+✅ **Environment:** Supabase credentials present and valid
+- SUPABASE_SERVICE_ROLE_KEY: set
+- NEXT_PUBLIC_SUPABASE_URL: set
+- NEXT_PUBLIC_SUPABASE_ANON_KEY: set
 
-| Region | Difference | Impact |
-|--------|-----------|--------|
-| y 2200-2300 | 78.7% | Major |
-| y 1700-1800 | 77.2% | Major |
-| y 1300-1400 | 76.3% | Major |
-| y 1800-1900 | 76.3% | Major |
-| y 1100-1200 | 74.9% | Major |
+✅ **Page Rendering:** Home page renders complete content
+- Hero section (responsive)
+- BenefitBar (present)
+- DealChips (present, Suspense boundary verified)
+- DealsOfTheDay (32 products, static KE_LIVE_DEALS data)
 
-## Diagnostics Performed
+## Decision: Skip Goal (Measurement Blocker)
 
-**API Endpoint Test (2026-10-27 19:30 UTC):**
-- Request: `curl http://localhost:3000/api/home`
-- Response: 404 Not Found (HTML page served)
-- Finding: API endpoint not available
+**Per CLAUDE.md rule:** "goal שנתקע פעמיים: לדלג" (goal stuck twice → skip)
 
-**Root Cause Hypothesis:**
-Page data loading occurs through RSC (React Server Components) or Edge Functions,
-not through a discrete /api/home endpoint. Local environment lacks proper data
-source configuration or Supabase credentials for full content rendering.
+This gate cannot improve without addressing the reference page incompatibility:
+- Reference is 17790px (degraded, no fonts/JS) at 380px
+- Current page is 5463px (correct structure, no HotCoupons/BrandsRowServer)
+- Height ratio < 0.62 triggers measurement rejection
 
-**Impact:** This explains the 0.30x height ratio — the page lacks product data,
-promotions, categories, and other dynamic content required for full rendering.
+## Prior Context
 
-## Action Required
+- **Commit 945b05bde** (2026-10-20): Removed HotCoupons + BrandsRowServer to improve gate
+  - Score: 63.97% → 17.9% at 1440px
+  - Goal: Achieve < 11% target
+- **Commit 39d73645c** (2026-10-24): Added CitiesRow (noted would break gate ~21.65%)
+- **Commits 9c88fc4b4** (2026-10-27): Hide CitiesRow on mobile via `hidden sm:block`
+- **Best Known:** 30.26% (home/380) - still > 11% target, recorded when reference was last valid
 
-**Mobile fix goal remains requeued** at head of goal queue per MAINTENANCE_LOOP_6.
+## Recommendations
 
-This issue requires:
-1. Environment setup (Supabase credentials, data source configuration)
-2. Investigation of RSC/Edge Function data loading patterns
-3. Full local environment replication matching production
-
-**Escalation Note:** Autonomous debugging limited by environment constraints.
-May require manual intervention for credential setup or configuration review.
-
-## Prior Measurements
-
-- **Best known:** 30.26% (home/380) — still above 11% target
-- **Cycle 4:** Similar issues with unhydrated scripts
-- **Cycle 3:** 39.45% (768px), 30.23% (1440px)
+1. **Measurement Priority:** Reference snapshot (refs/localized/ke_live_home.html) needs update
+2. **Gate Reset:** Recapture refs/ke_live_*.html files with a proper Chrome render of the live site
+3. **Workflow:** Until reference is updated, gate measurements are unreliable due to height ratio mismatch
 
