@@ -1,6 +1,15 @@
 # Gate Status Report
 
-## Mobile Gate Score (2026-10-27 18:10 UTC+7) — MOBILE_GATE_FIX Investigation Update
+## Mobile Gate Score (2026-10-27 22:47 UTC+7) — MAINTENANCE_LOOP_6 Recheck
+
+**Verification Run:** `scripts/compare.mjs --page=home --widths=380`  
+**Result:** 380px = **61.48%** (confirmed; no improvement from baseline)
+
+This score remains significantly above the 11% threshold. Mobile gate is **BLOCKED** — requeuing MOBILE_GATE_FIX to head of queue per CLAUDE.md autonomous protocol.
+
+---
+
+## Prior Baseline (2026-10-27 18:10 UTC+7) — MOBILE_GATE_FIX Investigation Update
 
 **Test:** scripts/compare.mjs --page=home (all three widths, first 2600px)  
 **Threshold:** ≤ 11.00% for all widths  
