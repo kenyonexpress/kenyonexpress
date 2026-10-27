@@ -1,3 +1,4 @@
+**המשך מ: M13-c225 DONE (2026-10-27): live dev server against real Supabase (service key valid) — /api/health 200 {database:ok, search:not_configured}, /api/ready 200 {database,redis,cardcom ok; meilisearch,r2 not_configured}; no code change**
 **המשך מ: M04-c225 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, zero errors; no drift, no code change**
 **המשך מ: M12-c223 DONE (2026-10-26): robots.ts verified production-safe — allow / , disallows redeem/coupon/account/supplier/admin/scan/checkout/cart/auth/api/debug/voucher/reset+forgot-password; sitemap+host from NEXT_PUBLIC_APP_URL (.env.production = https://kenyonexpress.co.il, fallback same, trailing slash stripped); robots.test.ts 7/7 pass; no code change**
 **המשך מ: M05-c223 DONE (2026-10-26): pnpm test green (615 files / 7064 tests pass, 28 skipped); no test drift, no code change**
