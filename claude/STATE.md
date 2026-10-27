@@ -223,3 +223,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M06-c226 DONE (2026-10-27): pnpm build exit 0, all routes generated, no drift; no code change**
 **המשך מ: M08-c226 DONE (2026-10-27): Lighthouse mobile sample, / 47/34, product (/product/bar-drink) 46/52; load avg 11 (e2e running), TBT contention-driven; logged in logs/lighthouse-m08-c226.log; G23 95+ not met; no code change**
 **המשך מ: M09-c226 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ dep for capacitor.config.ts, kept); no unused deps; unused exports are deliberate public API (money/ledger/cardcom, shadcn ui, schema); no code change**
+**המשך מ: M04-c227 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, 0 errors; committed generated docs drift only (M-CYCLE-STATUS, UI-PARITY-REPORT); no code change**
