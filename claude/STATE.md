@@ -1,3 +1,4 @@
+**המשך מ: M06-c239 DONE (2026-10-28): pnpm build exit 0 (all routes generated); drift = auto-generated docs/M-CYCLE-STATUS.md timestamps, committed; no forbidden files touched**
 **המשך מ: M04-c239 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit clean) — no drift, no code change, no forbidden files touched**
 **המשך מ: M06-c238 DONE (2026-10-28): pnpm build exit 0 (all routes generated), working tree clean, nothing unpushed — no drift, no code change, no forbidden files touched**
 **המשך מ: M04-c238 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit clean) — no drift, no code change; unrelated docs/UI-PARITY-REPORT.md edit left uncommitted; no forbidden files touched**
@@ -161,3 +162,5 @@
 המשך מ: M05-c238 DONE (2026-10-28): pnpm test 616 files passed/2 skipped, 7072 tests passed/28 skipped, no failures; only drift was docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md ledger rows, committed + pushed; no forbidden files touched
 המשך מ: M09-c238 DONE (2026-10-28): knip --dependencies re-run. Only unused devDeps: @capacitor/android (android/ platform), uuid + xcode (security pins via pnpm overrides/patches) - kept deliberately; no unused deps removed; remaining unused exports are ui-kit/money/payments/ledger public surface, left. No source changed, no forbidden files touched
 המשך מ: M05-c239 DONE (2026-10-28): pnpm test 616 files passed/2 skipped, 7072 tests passed/28 skipped, no failures; working tree clean, no drift to fix; no code changes
+המשך מ: M07-c239 DONE (2026-10-28): TODO/FIXME scan of src/scripts/migrations: 6 TODO markers (cardcom.ts:249,:312; r2-migration.ts:103-106), 0 FIXME, all older than 7 days, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase service-role key); nothing resolvable now; no source changed, no forbidden files touched
+המשך מ: M09-c239 DONE (2026-10-28): knip --dependencies re-run. Only unused devDeps: @capacitor/android (android/ platform), uuid + xcode (security pins via pnpm overrides/patches) - kept deliberately; no unused deps removed; remaining unused exports are ui-kit/money/payments/ledger public surface, left. No source changed, no forbidden files touched
