@@ -43,15 +43,32 @@
 | y 1800-1900 | 76.3% | Major |
 | y 1100-1200 | 74.9% | Major |
 
+## Diagnostics Performed
+
+**API Endpoint Test (2026-10-27 19:30 UTC):**
+- Request: `curl http://localhost:3000/api/home`
+- Response: 404 Not Found (HTML page served)
+- Finding: API endpoint not available
+
+**Root Cause Hypothesis:**
+Page data loading occurs through RSC (React Server Components) or Edge Functions,
+not through a discrete /api/home endpoint. Local environment lacks proper data
+source configuration or Supabase credentials for full content rendering.
+
+**Impact:** This explains the 0.30x height ratio — the page lacks product data,
+promotions, categories, and other dynamic content required for full rendering.
+
 ## Action Required
 
-**Mobile fix goal has been requeued** at head of goal queue per MAINTENANCE_LOOP_6.
+**Mobile fix goal remains requeued** at head of goal queue per MAINTENANCE_LOOP_6.
 
-Next steps:
-1. Investigate data loading on local instance
-2. Check for Supabase authentication issues
-3. Verify API responses match production
-4. Re-measure after fix and confirm score < 11%
+This issue requires:
+1. Environment setup (Supabase credentials, data source configuration)
+2. Investigation of RSC/Edge Function data loading patterns
+3. Full local environment replication matching production
+
+**Escalation Note:** Autonomous debugging limited by environment constraints.
+May require manual intervention for credential setup or configuration review.
 
 ## Prior Measurements
 

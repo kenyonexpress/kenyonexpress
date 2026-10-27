@@ -249,9 +249,107 @@
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_6
+## MAINTENANCE_LOOP_6: DONE (2026-10-27 19:15 UTC)
 
-Next in queue: MAINTENANCE_LOOP_6 (Recheck Mobile Gate score via scripts/compare.mjs)
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11 percent requeue mobile fix goal at head of queue.
+
+**Status:** ✅ COMPLETE — Mobile fix requeued
+
+**Measurement (2026-10-27 19:15 UTC):**
+- Method: scripts/compare.mjs --page=home --widths=380
+- Mobile (380px) score: 43.33% (FAILED)
+- Tolerance: 11.0%
+- Delta: +32.33 percentage points
+
+**Finding:** Gate score 43.33% exceeds tolerance. Local page loading 0.30x height of reference (5463px vs 17790px). Indicates data loading failure.
+
+**Action Taken:**
+- ✅ Measured mobile gate: 43.33% > 11% threshold
+- ✅ Requeued MOBILE_FIX_1 goal at head of ~/ke-goals/queue.txt
+- ✅ Updated docs/GATE-STATUS.md with findings
+- ✅ Commit: 64e56abe9 "[autopilot] chore: qa mobile gate check - 43.33% exceeds tolerance"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Next:** MOBILE_FIX_1 (investigate data loading, check Supabase, re-measure)
+
+---
+
+## MAINTENANCE_LOOP_7: SKIPPED (2026-10-27 19:35 UTC)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun.
+
+**Status:** ⏭️ SKIPPED — Known infrastructure blocker
+
+**Reason:** No lighthouserc.json config file found, and prior attempts timeout.
+Per CLAUDE.md rule "goal שנתקע פעמיים: לדלג" — skip after two failures.
+
+---
+
+## MAINTENANCE_LOOP_8: DONE (2026-10-27 19:45 UTC)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/.
+
+**Status:** ✅ COMPLETE
+
+**Scan Results:**
+- TODO: 6 markers (cardcom.ts:2, r2-migration.ts:4)
+- FIXME: 0
+- HACK: 0
+- Delta: 0 (no growth from prior scan)
+
+**Action Taken:**
+- ✅ Scanned src/ for all markers
+- ✅ No growth detected
+- ✅ Created docs/CODE-DEBT-STATUS.md report
+- ✅ Commit: 39b7c6498 "[autopilot] chore: maint code debt scan - 6 markers stable"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** All markers already tracked in BACKLOG.md with external blockers. No cleanup goal queued.
+
+---
+
+## MAINTENANCE_LOOP_9: SKIPPED (2026-10-27 19:50 UTC)
+
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP.
+
+**Status:** ⏭️ SKIPPED — OAuth unavailable in non-interactive session
+
+**Reason:** Supabase MCP requires interactive OAuth flow. Prior attempts (2026-10-25, 2026-10-26) failed with CLI timeout. Per CLAUDE.md rule "goal שנתקע פעמיים: לדלג" — skip after two failures. Last verified status: healthy (2026-10-26).
+
+---
+
+## MAINTENANCE_LOOP_10: DONE (2026-10-27 19:50 UTC)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt
+
+**Status:** ✅ COMPLETE
+
+**Action Taken:**
+- ✅ Appended MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to queue
+- ✅ Queue now has 21 entries (11 prior + 10 new)
+- ✅ Infinite maintenance loop perpetuated
+
+**Outcome:** Next cycle ready (goals 12-21 with fresh MAINTENANCE_LOOP goals)
+
+---
+
+## Cycle 6 Summary (2026-10-27)
+
+**Completed (5):**
+- MAINTENANCE_LOOP_5: Cron routes check (20 of 22 stale, critical issue)
+- MAINTENANCE_LOOP_6: Mobile gate (43.33%, above tolerance, requeued)
+- MAINTENANCE_LOOP_8: Code debt (6 markers, no growth)
+- MAINTENANCE_LOOP_10: Queue renewal
+- Quality gates: typecheck ✅, lint ✅, build ✅
+
+**Skipped (2):**
+- MAINTENANCE_LOOP_7: Lighthouse (infrastructure blocker, timeout)
+- MAINTENANCE_LOOP_9: DB perf (OAuth unavailable)
+
+**Requeued (1):**
+- MOBILE_FIX_1: Data loading investigation (requires environment setup)
+
+**Next Queue Head:** MOBILE_FIX_1 (environment setup needed)
 
 ## המשך מ: M05-c229 DONE
 
