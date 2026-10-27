@@ -1,3 +1,4 @@
+**המשך מ: M06-c238 DONE (2026-10-28): pnpm build exit 0 (all routes generated), working tree clean, nothing unpushed — no drift, no code change, no forbidden files touched**
 **המשך מ: M04-c238 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit clean) — no drift, no code change; unrelated docs/UI-PARITY-REPORT.md edit left uncommitted; no forbidden files touched**
 **המשך מ: M15-c237 DONE (2026-10-28): / and /product/<slug> at 380+1440 on fresh `next start` of current build — 0 console errors, 0 pageerrors, 0 failed requests; earlier errors were stale ISR route-cache in .next/server/route-cache referencing chunks from a prior build (env artifact, not code); no code change, no forbidden files touched**
 **המשך מ: M04-c237 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit clean), working tree clean — no drift, no code change, no forbidden files touched**
