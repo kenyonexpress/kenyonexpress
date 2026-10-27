@@ -50,6 +50,11 @@ describe('robots', () => {
     }
   })
 
+  it('disallows gift claim links', () => {
+    // /gift/<token> is a working claim link; the URL is the credential.
+    expect(disallowList()).toContain('/gift/')
+  })
+
   it('still allows the storefront to be crawled', () => {
     const rules = robots().rules
     const first = Array.isArray(rules) ? rules[0] : rules
