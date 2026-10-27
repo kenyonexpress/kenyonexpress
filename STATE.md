@@ -240,7 +240,32 @@ This is the 4th failed measurement. Root cause is not fixable via code - it requ
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_8
+## MAINTENANCE_LOOP_8: DONE (2026-10-28 23:15 UTC+7) - Cycle 9
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew since last scan queue a cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md.
+
+**Status:** ✅ COMPLETE
+
+**Scan Results (Cycle 9):**
+- **Current count:** 6 TODO markers (unchanged)
+  - r2-migration.ts: 4 TODOs (R2 migration workflow stubs)
+  - cardcom.ts: 2 TODOs (legacy API confirmation blockers)
+- **FIXME comments:** 0
+- **HACK comments:** 0
+- **Delta:** 0 (stable from prior cycles, no growth)
+
+**Action Taken:**
+- ✅ Scanned all .ts/.tsx/.js/.jsx files in src/
+- ✅ Found 6 markers (same as prior cycles - no growth)
+- ✅ No cleanup goal queued (count unchanged)
+- ✅ Updated docs/CODE-DEBT-STATUS.md with fresh 2026-10-28 23:15 timestamp
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+
+**Conclusion:** Code debt markers unchanged. No growth detected. All 6 markers are already filed in docs/BACKLOG.md (blocked on external dependencies: Cardcom creds, R2 service-role key).
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_9
 
 ---
 
