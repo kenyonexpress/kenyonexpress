@@ -238,3 +238,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: C04 DONE (2026-10-27): F15 passkeys already shipped (register/authenticate APIs, webauthn_credentials table 178, /account/security UI); no duplicate passkey_credentials migration; docs/C04-passkeys.md**
 **המשך מ: C06 DONE (2026-10-27): F07 1 ILS Cardcom verify already shipped (token stored, auto-refund); added CARDCOM_1ILS_VERIFY kill switch to verify-card POST; docs/C06-cardcom-verify.md**
 **המשך מ: C10 DONE (2026-10-27): F14 web push — VAPID/SW/subscribe+DELETE already shipped; added admin broadcast (/admin/push) and account BrowserPushToggle; docs/C10-web-push.md**
+**המשך מ: C11 SKIPPED (2026-10-27): F19 Turnstile code already on login/signup/supplier-apply; no real keys (placeholder secret) so left off; docs/C11-turnstile.md**
