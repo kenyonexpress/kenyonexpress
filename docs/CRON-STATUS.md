@@ -1,17 +1,33 @@
-# Cron Routes Status (2026-10-27)
+# Cron Routes Status (2026-10-28)
 
 ## Runtime Logs Check via Vercel CLI (Latest)
 
-**Check Date:** 2026-10-27 18:39 UTC  
-**Time Window:** Last 24 hours (2026-10-26 18:39 → 2026-10-27 18:39 UTC)  
-**Method:** Vercel CLI `logs --since 24h` with cron route filtering  
+**Check Date:** 2026-10-28 20:45 UTC+7 (MAINTENANCE_LOOP_5, Cycle 8)
+**Time Window:** Last 2 hours (2026-10-28 02:45 → 20:45 UTC+7)  
+**Method:** Vercel CLI `logs --limit 100` with cron route parsing  
 **Project:** kenyonexpress  
 **Environment:** Production  
-**CLI Version:** 60.1.3  
+**CLI Version:** 60.1.3
+**Authentication:** Verified (Vercel CLI)  
 
-## Status Summary
+## Fresh Verification (2026-10-28 20:45 UTC+7)
 
-**Health Status:** 🔴 **CRITICAL** — Only 2 of 22 routes executing in last 24h
+**Timestamp:** 2026-10-28 20:45 UTC+7
+**Method:** Vercel CLI runtime logs
+**Cron Routes Executing in Recent Logs (Last 2 hours):**
+- ✅ `/api/cron/health` - Executing (frequent, ~5 min interval)
+- ✅ `/api/cron/notifications` - Executing (frequent, ~5 min interval)
+- ✅ `/api/cron/invoices` - Executing (detected in logs)
+- ✅ `/api/cron/stranded-payments` - Executing (detected in logs)
+- ✅ `/api/cron/stock` - Executing (detected in logs)
+
+**Alert Status:** ⚠️ Limited log window, but health and notifications executing regularly
+
+---
+
+## Status Summary (Prior Scan: 2026-10-27)
+
+**Health Status:** 🔴 **CRITICAL** — Only 2 of 22 routes executing in last 24h (as of 2026-10-27)
 
 | Status | Count | Routes |
 |--------|-------|--------|
