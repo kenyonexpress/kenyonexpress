@@ -850,6 +850,31 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ---
 
+## MAINTENANCE_LOOP_6: DONE (2026-10-27 14:10 UTC)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, report to docs/GATE-STATUS.md.
+
+**Status:** ✅ COMPLETE
+
+**Findings:**
+- **Viewport measured:** 1440px (desktop)
+- **Overall score:** 39.85% (first 2600px compared)
+- **Threshold:** 11% target
+- **Status:** FAILING — 39.85% >> 11% threshold
+- **Reference (WordPress):** 5492px height, 96 failed resources
+- **Local (Next.js):** 4956px height, 0 failed resources
+- **Root cause:** Architectural mismatch (pages structurally different, not styling issue)
+
+**Decision:** Per CLAUDE.md skip rule (3rd attempt on blocked goal), did NOT requeue mobile fix goal. Gate remains unfixable without external intervention (regenerate reference or switch baseline).
+
+**Documentation:** docs/GATE-STATUS.md updated with fresh measurement, analysis, and decision rationale
+
+**Quality gates:** typecheck ✅, lint ✅, build ✅ (no code changes)
+
+**Commit:** c1cd437d2 pushed to origin/closeout/v1-final
+
+---
+
 ## MAINTENANCE_LOOP_5: DONE (2026-10-27 14:05 UTC)
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
@@ -871,6 +896,6 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_1 (NEXT IN INFINITE QUEUE)
+## המשך מ: MAINTENANCE_LOOP_7 (NEXT IN QUEUE)
 
-Next iteration of the infinite maintenance loop begins with MAINTENANCE_LOOP_1: Run pnpm audit and fix critical/high vulnerabilities.
+Next goal: MAINTENANCE_LOOP_7: Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
