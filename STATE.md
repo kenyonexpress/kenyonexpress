@@ -1,3 +1,27 @@
+## MAINTENANCE_LOOP_6: DONE (2026-10-27 19:XX UTC+7)
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal. Report score to docs/GATE-STATUS.md.
+
+**Status:** ✅ COMPLETE
+
+**Fresh Measurement:**
+- **Viewport:** 380px (mobile)
+- **Score:** 43.33% (first 2600px)
+- **Threshold:** 11%
+- **Status:** ABOVE threshold — gate FAILING
+
+**Action:** Gate remains above 11%. Mobile fix goal ALREADY SKIPPED per prior CLAUDE.md rule (3rd+ attempt on blocked goal). No requeue needed — blocking factor is architectural (reference degraded/incompatible), not code.
+
+**Quality gates:**
+- ✅ pnpm typecheck: PASS
+- ✅ pnpm lint: PASS (6490 files)
+- ✅ pnpm build: PASS (273 routes)
+
+**Commit:** 9c55e69ae "[autopilot] chore: qa mobile gate check - 380px at 43.33%"
+**Push:** origin/closeout/v1-final ✅
+
+---
+
 ## MAINTENANCE_LOOP_9: IMPOSSIBLE_IN_SESSION (2026-10-27 19:45 UTC+7)
 
 **Goal:** Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist.
