@@ -1292,3 +1292,6 @@ TODO/FIXME scan: 6 markers in src (cardcom.ts:249, :312; r2-migration.ts:103-106
 
 ## המשך מ: M08-c231 DONE
 Lighthouse mobile sample (local prod, 2 runs/page): home 87 / 82, product 87 / 86. G23 95+ not met; LCP 3.8-4.7 s and render-blocking 0.4-1 s are the drivers. Log: logs/lighthouse-m08-c231.log. No code changes.
+
+## המשך מ: M05-c232 DONE
+pnpm test: 616 files / 7072 tests pass. Fixed drift: verify/page.test.tsx floated dynamic imports caused 2 teardown unhandled errors (nonzero exit); now awaited.
