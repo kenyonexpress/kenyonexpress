@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-27 (M18-c227: STATE.md נמדד ב-281 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c227 DONE.
 Updated: 2026-10-27 (M08-c227: Lighthouse mobile על / ו-/product לא נמדד. השרת (dev :3000 ו-next start :3456) מחזיר 500 בכל מסלול: instrumentation hook נופל על אימות src/lib/env.ts (מחרוזת קצרה מ-40 תווים + URL לא תקין), כנראה ערכי placeholder ב-.env.local. אין ציון חדש; הציון האחרון הידוע נשאר / =60, /product =68. לא נערכו קבצי קוד.) המשך מ: M08-c227 DONE-DEFERRED (placeholder env)
 Updated: 2026-10-27 (M12-c226: אימות robots.txt production-safe). src/app/robots.ts: Allow / ל-*, Disallow על נתיבים פרטיים/אימות בלבד (redeem, coupon, account, supplier, admin, checkout, cart, auth, api, login, signup, mfa, debug), אין התנגשות קידומת עם נתיבים ציבוריים (/coupons ו-/c פתוחים), Sitemap+host מ-NEXT_PUBLIC_APP_URL, אין noindex גורף. robots.test.ts: 7/7 עברו. לא נערכו קבצי קוד. המשך מ: M12-c226 DONE.
 Updated: 2026-10-27 (M02-c225: compare.mjs --page=product ב-380/768/1440 סירב למדוד, "live side is unknown": kenyonexpress.co.il כבר לא האתר המקורי ואין שרת מקומי רץ. אין מספר, אין שינוי קוד. המשך מ: M02-c225 BLOCKED reference-unavailable.)
