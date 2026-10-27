@@ -849,6 +849,27 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ---
 
+## MAINTENANCE_LOOP_5: DONE (2026-10-27 14:05 UTC)
+
+**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
+
+**Status:** ✅ COMPLETE
+
+**Findings:**
+- Healthy routes (7): health, notifications, invoices, stock, stranded-payments, abandoned-cart, stock-notifications
+- Stale routes (15): affiliate-payouts, deal-scraper, expire-vouchers, fraud-monitor, observability-check, p95-monitor, reap-carts, reconcile, retention, rfm-segmentation, scheduled-gifts, search-report, sms-broadcasts, subscriptions, weekly-digest
+- Last-run timestamps obtained via Vercel CLI `logs --since 24h`
+- Most recent run: 21:05:00 local time (health, notifications)
+- Oldest recent run: 20:58:54 local time (search-reindex, anomaly not in cron-jobs.json)
+
+**Documentation:** docs/CRON-STATUS.md updated with fresh check results, root cause analysis, impact assessment, and resolution steps
+
+**Quality gates:** typecheck ✅, lint ✅, build ✅ (no code changes)
+
+**Commit:** 317b6dbc8 pushed to origin/closeout/v1-final
+
+---
+
 ## המשך מ: MAINTENANCE_LOOP_1 (NEXT IN INFINITE QUEUE)
 
 Next iteration of the infinite maintenance loop begins with MAINTENANCE_LOOP_1: Run pnpm audit and fix critical/high vulnerabilities.
