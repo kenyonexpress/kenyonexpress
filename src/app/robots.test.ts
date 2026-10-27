@@ -37,6 +37,11 @@ describe('robots', () => {
     expect(disallowList()).toContain('/coupon/')
   })
 
+  it('disallows the gift token path', () => {
+    // /gift/<token>: the URL is the credential, same class as /redeem/.
+    expect(disallowList()).toContain('/gift/')
+  })
+
   it('disallows every authenticated area', () => {
     const disallow = disallowList()
     for (const path of ['/account/', '/supplier/', '/admin/', '/scan', '/checkout', '/cart']) {
