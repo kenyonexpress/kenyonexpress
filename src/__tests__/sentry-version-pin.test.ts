@@ -41,8 +41,8 @@ describe('the Sentry packages', () => {
   })
 
   it('has not been moved past the last version that can be imported under vitest', () => {
-    // 10.75.2 patches CRITICAL security vulnerability (GHSA-mchm-gjx6-7h55).
+    // 10.75.3 (>= 10.75.2) patches CRITICAL security vulnerability (GHSA-mchm-gjx6-7h55).
     // Updated from 10.71.0 to patch middleware bypass. Verified imports under vitest.
-    expect(manifest.dependencies['@sentry/nextjs']).toBe('10.75.2')
+    expect(manifest.dependencies['@sentry/nextjs']).toBe('10.75.3')
   })
 })
