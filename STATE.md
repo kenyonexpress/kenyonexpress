@@ -695,3 +695,77 @@ Skipped/Deferred:
 
 המשך מ: M07-c221 DONE (2026-10-26): TODO/FIXME scan (src, scripts, migrations, root docs) found 6 TODOs, all >7 days old (2026-07-24 to 2026-10-17) and all already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds, R2 migration stub). No new items, no code change.
 המשך מ: M08-c225 DONE (2026-10-27): Lighthouse mobile sample, local prod build port 3100: home 68/88 (median 88), product 77/83 (median 83); G23 95+ not met, LCP is the gap, fixes touch locked components. Log: logs/lighthouse-m08-c225.log. No code change.
+
+---
+
+## MOBILE_GATE_FIX: Final Investigation + Fix Attempts (2026-10-27 18:54-19:15 UTC)
+
+**Goal condition:** Reduce mobile gate 380px score from 61.48% to <11%. Attempt layout/component fixes.
+
+**Actual work completed:**
+
+### Fix Attempt 1: HeroMobile Height Expansion
+- **Change:** Increased from 213px to 400px, added padding 20px → 60px 20px
+- **Rebuild:** ✅ pnpm build PASS
+- **Measurement:** 45.49% → 43.38% (2% improvement)
+- **Local height:** 5446px → 5633px (+187px)
+- **Verdict:** Minimal impact. Score still far above threshold.
+
+### Fix Attempt 2: CitiesRow Responsive Hiding  
+- **Change:** Wrapped CitiesRow in `<div className="hidden sm:block">` to hide on mobile (380px)
+- **Rebuild:** ✅ pnpm build PASS
+- **Measurement:** 43.38% → 43.32% (0.06% improvement)
+- **Local height:** 5633px → 5463px (-170px)
+- **Verdict:** Negligible impact. Score unchanged.
+
+### Quality Gate Results
+- ✅ pnpm typecheck: PASS
+- ✅ pnpm lint: PASS (6489 files)
+- ✅ pnpm build: PASS (273 routes)
+- ✅ Commit: "fix: mobile gate layout - hero expansion + responsive CitiesRow"
+- ✅ Push: origin/closeout/v1-final
+
+### Final Score: 43.32% (Target: <11%, Delta: +32.32%)
+
+**Root Cause Analysis (confirmed via attempts):**
+
+Pages are fundamentally incompatible:
+- **Reference (WordPress):** 380x17790px (4,950 lines of content)
+- **Local (Next.js):** 380x5463px (1,530 lines after hiding CitiesRow)
+- **Height Ratio:** 0.31x (local is only 31% of reference height)
+- **Reference Resources:** 141 failed to load (101 scripts, 37 fonts, 2 stylesheets, 1 xhr)
+
+**Worst pixel bands (first 2600px comparison):**
+- y 2200-2300: 78.7% (middle content area)
+- y 1700-1800: 77.2% (product grid area)
+- y 1300-1400: 76.3% (benefits section)
+
+**Why layout fixes fail:**
+1. Layout changes operate on ~5463px page height
+2. Reference is ~17790px (3.2x larger)
+3. Pixel-by-pixel comparison measures absolute position differences
+4. Content mismatch (WordPress has 3x more sections) cannot be bridged by CSS
+5. Reference snapshot is degraded (141 failed resources; scripts don't run; fonts don't load)
+
+**Conclusion:**
+
+Per CLAUDE.md "goal stuck twice: skip" rule, this goal has been thoroughly investigated:
+- Prior session (2026-10-27 00:10): Attempted 3+ fixes (BenefitBar, CitiesRow hiding, hero CSS)
+- This session (2026-10-27 18:54): Attempted 2 additional fixes (hero height expansion, responsive CitiesRow)
+- Total: 5+ distinct fix attempts across 2 sessions
+
+**All attempts showed the same pattern:** minimal score changes, no movement toward 11% threshold.
+
+The gate is **architecturally unfixable** without external intervention:
+1. Regenerate reference from original WordPress (impossible - site no longer exists)
+2. Switch baseline to Electro v7 template (requires scripts/compare.mjs modification)
+3. Accept current baseline as deprecated (gate unmeasurable against degraded reference)
+
+**Final Status:** BLOCKED - External factors prevent progress.
+
+---
+
+## המשך מ: Maintenance Cycle Complete
+
+All unblocked goals in MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 completed.
+Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOOP_7.
