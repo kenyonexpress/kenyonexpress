@@ -285,3 +285,7 @@ robots.txt verified production-safe: allow /, disallows redeem/coupon/account/su
 ## M01-c228 (2026-10-27)
 Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Not measured. Local server on :3000 still returns HTTP 500 on /, and compare.mjs refuses the reference at all three widths (kenyonexpress.co.il has no WP/Next markers; guard not bypassed, see docs/PARITY-REFERENCE.md). No diff percentages; last known (c224) 62.6/35.41/26.99, gate <11% not passed. No locked files touched; nothing committed.
 **המשך מ: M01-c228 BLOCKED dev-server-500 + home-reference-refused (no measurement)**
+
+## C07 (2026-10-27)
+F11 club tiers: migrations/pending/243_club_tiers.sql (club_tiers table, fn_club_spend_12mo, fn_club_tier; integer agorot), src/lib/club/tiers.ts (+test), src/server/queries/club.ts, /account/club page, optional club_tier_he badge on ProductCard (no badge unless passed, no visual change). docs/C07-club-tiers.md did not exist; thresholds chosen: bronze 0 / silver 2,000 / gold 5,000 ILS. Vitest 4/4, tsc and biome clean on touched files. Migration 243 NOT applied: Supabase MCP is unauthorized in this session. Until applied, /account/club shows the "cannot load" message. No locked files touched.
+**המשך מ: C07 BLOCKED supabase-mcp-unauthorized (code committed, migration 243 unapplied)**

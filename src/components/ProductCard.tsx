@@ -15,6 +15,8 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** Club tier name to badge the card with; omitted means no badge (default). */
+  club_tier_he?: string | null
 }
 
 /**
@@ -182,6 +184,15 @@ function DealsProductCard({ product }: { product: Product }) {
           <div className="p_con__badge">
             <span className="discount_per">-{discountPct}%</span>
           </div>
+        )}
+
+        {product.club_tier_he && (
+          <span
+            className="absolute rounded-full bg-[#fed700] px-2 py-0.5 text-xs font-semibold text-black"
+            style={{ insetBlockStart: 8, insetInlineEnd: 8 }}
+          >
+            {product.club_tier_he}
+          </span>
         )}
 
         {outOfStock && (
