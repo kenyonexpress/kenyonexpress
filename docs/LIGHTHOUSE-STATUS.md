@@ -1,13 +1,13 @@
 # Lighthouse CI Status Report
 
-**Last updated:** 2026-10-27 19:16 UTC+7 (MAINTENANCE_LOOP_7)  
-**Run:** localhost:3311 (pnpm build && PORT=3311 pnpm start)  
-**Runs per URL:** 3 (median taken)  
-**Threshold:** ≥90 for Performance, Accessibility, SEO
+**Last updated:** 2026-10-27 21:38 UTC+7 (MAINTENANCE_LOOP_7)  
+**Run:** localhost:3000 (pnpm start)  
+**Total runs:** 6 per URL  
+**Threshold:** ≥90 for Performance
 
 ## Summary
 
-✅ **All categories PASS** — No optimization needed
+⚠️ **Home page FAILS performance threshold** — Optimization goal queued
 
 ---
 
@@ -15,41 +15,47 @@
 
 ### Home Page (/)
 
-| Category | Score | Status |
-|----------|-------|--------|
-| Performance | 99 | ✅ PASS |
-| Accessibility | 100 | ✅ PASS |
-| Best Practices | 100 | ✅ PASS |
-| SEO | 100 | ✅ PASS |
+| Category | Min | Avg | Max | Status |
+|----------|-----|-----|-----|--------|
+| Performance | 82 | 93 | 100 | ❌ FAIL |
+| Accessibility | 100 | 100 | 100 | ✅ PASS |
+| Best Practices | 100 | 100 | 100 | ✅ PASS |
+| SEO | 100 | 100 | 100 | ✅ PASS |
 
-**Median across 3 runs:** Performance 99, Accessibility 100, SEO 100
+**Issue:** Performance drops as low as 82 (minimum acceptable 90)  
+**Variance:** 18-point spread across runs indicates intermittent slowness
 
 ### Products Page (/products)
 
-| Category | Score | Status |
-|----------|-------|--------|
-| Performance | 99 | ✅ PASS |
-| Accessibility | 100 | ✅ PASS |
-| Best Practices | 100 | ✅ PASS |
-| SEO | 100 | ✅ PASS |
+| Category | Min | Avg | Max | Status |
+|----------|-----|-----|-----|--------|
+| Performance | 92 | 96 | 100 | ✅ PASS |
+| Accessibility | 100 | 100 | 100 | ✅ PASS |
+| Best Practices | 100 | 100 | 100 | ✅ PASS |
+| SEO | 100 | 100 | 100 | ✅ PASS |
 
-**Median across 3 runs:** Performance 99, Accessibility 100, SEO 100
+**Status:** Meets threshold consistently
 
 ---
 
 ## Assessment
 
-✅ All pages meet the ≥90 threshold  
-✅ Performance is excellent (97-100)  
-✅ Accessibility is perfect (100)  
-✅ SEO is optimal (100)  
-✅ No optimization goal queued
+❌ Home page performance unstable (min 82 vs target 90)  
+✅ All other metrics pass  
+✅ /products route stable and excellent  
+⚠️ **Optimization goal queued**: PERF_HOME_PAGE_82
 
-**Decision:** No further action needed. Continue monitoring in next cycle.
+**Decision:** Immediate investigation needed. Likely causes:
+- Initial page load waterfalls (FCP/LCP)
+- Layout shift after hydration
+- CSS/JS blocking in critical path
+- Image optimization on hero section
 
 ---
 
-## Report Files
+## Next Steps
 
-- Home runs: `.lighthouseci/reports/-2026_10_27_12_*.json|html`
-- Products runs: `.lighthouseci/reports/products-2026_10_27_12_*.json|html`
+1. Profile home page load with Lighthouse throttling (4G/4CPU)
+2. Audit render-blocking resources
+3. Optimize Core Web Vitals on hero/fold
+4. Re-run after changes: `pnpm lhci:autorun`
