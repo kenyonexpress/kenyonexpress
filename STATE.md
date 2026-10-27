@@ -274,9 +274,44 @@
 
 ---
 
+## MAINTENANCE_LOOP_7: SKIPPED (2026-10-27 19:35 UTC)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun.
+
+**Status:** ⏭️ SKIPPED — Known infrastructure blocker
+
+**Reason:** No lighthouserc.json config file found, and prior attempts timeout.
+Per CLAUDE.md rule "goal שנתקע פעמיים: לדלג" — skip after two failures.
+
+---
+
+## MAINTENANCE_LOOP_8: DONE (2026-10-27 19:45 UTC)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/.
+
+**Status:** ✅ COMPLETE
+
+**Scan Results:**
+- TODO: 6 markers (cardcom.ts:2, r2-migration.ts:4)
+- FIXME: 0
+- HACK: 0
+- Delta: 0 (no growth from prior scan)
+
+**Action Taken:**
+- ✅ Scanned src/ for all markers
+- ✅ No growth detected
+- ✅ Created docs/CODE-DEBT-STATUS.md report
+- ✅ Commit: 39b7c6498 "[autopilot] chore: maint code debt scan - 6 markers stable"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** All markers already tracked in BACKLOG.md with external blockers. No cleanup goal queued.
+
+---
+
 ## המשך מ: MOBILE_FIX_1 (REQUEUED AT HEAD)
 
-Requeued due to gate failure. Check Supabase admin key and API responses.
+Diagnostics complete. Requires environment setup for Supabase/data loading.
+Issue: Local page loads 0.30x of reference height due to missing data sources.
 
 ## המשך מ: M05-c229 DONE
 
