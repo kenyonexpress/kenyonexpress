@@ -1,3 +1,4 @@
+**המשך מ: C01 DONE (2026-10-27): preflight node v25.9.0, pnpm 11.1.2, git clean on closeout/v1-final, pnpm install up to date, typecheck clean; docs/C01-preflight.md**
 **המשך מ: M18-c228 DONE (2026-10-27): STATE.md already 234 lines (<300) and docs/STATE-ARCHIVE.md exists; no trim needed, no code change**
 **המשך מ: M07-c228 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md #1-3; blocked on Cardcom prod creds / R2 feature work; no new items, no forbidden files touched**
 **המשך מ: M07-c227 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old per git blame and already filed in docs/BACKLOG.md #1-3; blocked on Cardcom prod creds / R2 feature work; no new items, no forbidden files touched**
