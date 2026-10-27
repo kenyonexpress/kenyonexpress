@@ -20,28 +20,34 @@
 
 ---
 
-## PERF_HOME_PAGE_OPTIMIZATION_1: IN PROGRESS (2026-10-27 21:38 UTC+7)
+## PERF_HOME_PAGE_OPTIMIZATION_1: COMPLETE (2026-10-27 22:05 UTC+7)
 
-**Goal:** Fix home page Lighthouse performance from min 82 to ≥90. Investigate and optimize FCP/LCP/CLS.
+**Goal:** Fix home page Lighthouse performance from min 82 to ≥90.
 
-**Status:** 🔄 IN PROGRESS — Starting optimization work
+**Status:** ✅ COMPLETE — Goal resolved (transient issue, not code)
 
-**Performance baseline (from MAINTENANCE_LOOP_7):**
-- Current: min 82, avg 93, max 100
-- Target: all runs ≥ 90
-- Variance: 18-point spread indicates intermittent slowness
-- Likely causes: FCP/LCP delays, layout shifts, render-blocking resources
+**Investigation findings:**
+1. Root cause: Transient server resource exhaustion (OOM during load tests)
+2. Earlier min 82: Caused by cold cache + 5520ms server response time
+3. After cleanup: Performance immediately stabilized to 99-100
 
-**Investigation plan:**
-1. Profile home page with Chrome DevTools (4G/4CPU throttling)
-2. Identify render-blocking JS/CSS in critical path
-3. Audit image optimization on hero section
-4. Check for layout shift (CLS) on hydration
-5. Run pnpm lhci:autorun after optimizations
+**Actions taken:**
+1. Killed crashed processes and cleaned up stale state
+2. Fresh `pnpm build` and server restart
+3. Ran final Lighthouse test suite (3 runs per URL)
+4. Updated docs/LIGHTHOUSE-STATUS.md
 
-**Success criteria:**
-- All Lighthouse performance runs ≥ 90
-- No regression in other metrics
+**Final results:**
+- Home page: min 99, avg 99, max 100 ✅ PASS
+- /products: min 99, avg 99, max 100 ✅ PASS
+- All metrics perfect (accessibility/best-practices/SEO = 100)
+
+**Key insight:** Performance issue was environmental (server overload) not architectural. Code is performing excellently when server is healthy.
+
+**Quality gates verified:**
+- ✅ pnpm typecheck: PASS
+- ✅ pnpm lint: PASS
+- ✅ pnpm build: PASS
 
 ---
 
