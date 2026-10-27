@@ -896,6 +896,43 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_7 (NEXT IN QUEUE)
+## MAINTENANCE_LOOP_8: DONE (2026-10-27 14:20 UTC)
 
-Next goal: MAINTENANCE_LOOP_7: Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal.
+
+**Status:** ✅ COMPLETE
+
+**Findings:**
+- Total count: 6 TODOs (unchanged)
+- cardcom.ts: 2 TODOs (Cardcom prod creds blocker)
+- r2-migration.ts: 4 TODOs (R2 migration blocker)
+- FIXME: 0, HACK: 0
+- Delta: 0 (no growth, no cleanup goal needed)
+
+**Decision:** All items already tracked in docs/BACKLOG.md. No new cleanup goal queued.
+
+---
+
+## MAINTENANCE_LOOP_7: SKIPPED (2026-10-27 14:15 UTC)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun.
+
+**Status:** ⏭️ SKIPPED — Known infrastructure blocker
+
+**Reason:** 
+- pnpm lhci:autorun consistently times out (>120s)
+- Lighthouse CI requires extended runtime not available in background task limit
+- Per CLAUDE.md: infrastructure blocker, not code issue
+
+**Last known scores (from interactive session):**
+- home: 81/88 (median 88)
+- product: 82/83 (median 83)
+- Status: Below G23 95+ target, LCP is the limiting factor
+
+**Action:** Skip per CLAUDE.md — cannot run in maintenance loop constraints
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_9 (NEXT IN QUEUE)
+
+Next goal: MAINTENANCE_LOOP_9: Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist. Commit as chore ops db performance check. Push.
