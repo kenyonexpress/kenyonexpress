@@ -1,3 +1,22 @@
+## MAINTENANCE_LOOP_8: DONE (2026-10-27 18:58 UTC+7)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md.
+
+**Status:** ✅ COMPLETE
+
+**Scan Result:**
+- Current count: 6 items (cardcom.ts: 2 TODOs, r2-migration.ts: 4 TODOs)
+- Previous count: 6 items (2026-10-27 08:56)
+- Delta: 0 (no growth, no cleanup goal queued)
+- FIXME/HACK: 0
+
+**Deliverables:**
+- ✅ CODE-DEBT-STATUS.md updated with fresh scan
+- ✅ Commit e74868909: "[autopilot] chore: maintenance code debt scan - 6 TODOs stable"
+- ✅ Pushed to origin/closeout/v1-final
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+
+---
 
 ## v2.0.0-final RESULT (C01-C44 CLOSED, 2026-10-24)
 
