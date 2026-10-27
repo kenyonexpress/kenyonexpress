@@ -341,3 +341,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-26 18:23 | home | 1440 | n/a | **UNMEASURED** | `30bdcd927-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3311/ Call log: [2m - navigating to "http://localhost:3311/", waiting until "domc |
 | 2026-10-27 11:01 | home | 380 | 61.48% | **FAIL** | `30bdcd927-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
 | 2026-10-27 11:05 | home | 380 | 61.48% | **FAIL** | `b140a0715` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-27 14:10 | home | 1440 | 39.85% | **FAIL** | `336de006b` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-27 14:12 | home | 380 | 43.32% | **FAIL** | `336de006b-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-27 14:13 | home | 768 | n/a | **UNMEASURED** | `336de006b-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
