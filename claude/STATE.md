@@ -233,3 +233,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M05-c228 DONE (2026-10-27): pnpm test — 1 failure (sentry-version-pin expected 10.75.2, manifest+install at 10.75.3); updated pin test to 10.75.3, 4/4 pass, rest of suite 7063 passed; committed with generated docs drift**
 **המשך מ: M08-c228 DONE (2026-10-27): Lighthouse mobile sample (local prod build, 2 runs/page) — home 68/82, product 84/87; G23 95+ not met (LCP + render-blocking); logged to logs/lighthouse-m08-c228.log; no code change**
 **המשך מ: M09-c228 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ dep, kept); no unused deps; unused exports are deliberate public API; no code change**
+**המשך מ: M17-c228 DONE (2026-10-27): RTL re-verify on / and /product/[slug] via scripts/rtl-lint.mjs — only hits in scope are prose in comments (BenefitBar.tsx) and a satori OG image style (opengraph-image.tsx); no physical-direction CSS leaks; no code change**
