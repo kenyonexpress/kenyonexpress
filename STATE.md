@@ -278,6 +278,28 @@ pnpm build passes. Committed docs/M-CYCLE-STATUS.md timestamp drift.
 
 ## המשך מ: M18-c233 DONE
 
+## MAINTENANCE_LOOP_3: DONE (2026-10-28 21:05 UTC+7) - Cycle 8
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items. Report count in docs/MAINT-LOG.md.
+
+**Status:** ✅ COMPLETE
+
+**Scan Results:**
+- **docs/BACKLOG.md:** 3 items, all BLOCKED
+  - Item 1-2: Cardcom production credentials needed
+  - Item 3: R2 service-role key needed
+- **docs/TODO.md:** does not exist
+- **Unblocked items found:** 0
+- **Items queued to ~/ke-goals/queue.txt:** 0 (no unblocked items)
+
+**Action Taken:**
+- ✅ Scanned both BACKLOG.md and TODO.md for unblocked items
+- ✅ Reported findings to docs/MAINT-LOG.md (Cycle 8 entry added)
+
+**Conclusion:** All backlog items remain blocked by external dependencies. No new goals queued. Continuing maintenance loop.
+
+---
+
 ## MAINTENANCE_LOOP_2: DONE (2026-10-28 21:00 UTC+7) - Cycle 8
 
 **Goal:** Run pnpm outdated and bump patch versions for safe packages. Skip major and minor.
