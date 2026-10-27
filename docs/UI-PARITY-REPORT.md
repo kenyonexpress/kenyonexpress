@@ -453,3 +453,24 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-27 11:08 | category | 380 | n/a | REFUSED | `418c188b-dirty` | live side is unknown |
 | 2026-10-27 11:08 | category | 768 | n/a | REFUSED | `418c188b-dirty` | live side is unknown |
 | 2026-10-27 11:08 | category | 1440 | n/a | REFUSED | `418c188b-dirty` | live side is unknown |
+| 2026-10-27 11:36 | product | 380 | n/a | REFUSED | `a9f6b7ee-dirty` | live side is unknown |
+| 2026-10-27 12:03 | home | 380 | n/a | REFUSED | `584cf38e-dirty` | live side is unknown |
+| 2026-10-27 12:03 | home | 768 | n/a | REFUSED | `584cf38e-dirty` | live side is unknown |
+| 2026-10-27 12:03 | home | 1440 | n/a | REFUSED | `584cf38e-dirty` | live side is unknown |
+| 2026-10-27 12:08 | product | 380 | 43.58% | **FAIL** | `584cf38e-dirty` |  |
+| 2026-10-27 12:10 | product | 768 | 33.72% | **FAIL** | `584cf38e-dirty` |  |
+| 2026-10-27 12:13 | product | 1440 | 22.49% | **FAIL** | `584cf38e-dirty` |  |
+| 2026-10-27 12:15 | product | 380 | n/a | REFUSED | `584cf38e-dirty` | live side is our-build |
+| 2026-10-27 12:15 | product | 768 | n/a | REFUSED | `584cf38e-dirty` | live side is our-build |
+| 2026-10-27 12:15 | product | 1440 | n/a | REFUSED | `584cf38e-dirty` | live side is our-build |
+| 2026-10-27 12:46 | home | 380 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:47 | home | 768 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:47 | home | 1440 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:47 | product | 380 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:47 | product | 768 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:47 | product | 1440 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:49 | category | 380 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:49 | category | 768 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 12:49 | category | 1440 | n/a | REFUSED | `e1287d51-dirty` | live side is our-build |
+| 2026-10-27 14:41 | home | 380 | n/a | REFUSED | `3d922add-dirty` | live side is our-build |
+| 2026-10-27 14:41 | cart | 380 | n/a | REFUSED | `3d922add-dirty` | live side is our-build |
