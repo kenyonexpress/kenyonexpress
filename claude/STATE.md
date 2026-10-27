@@ -221,3 +221,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M04-c226 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift; no code change**
 **המשך מ: M05-c226 DONE (2026-10-27): pnpm test full run — 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, 0 failures; no drift found, no code change**
 **המשך מ: M06-c226 DONE (2026-10-27): pnpm build exit 0, all routes generated, no drift; no code change**
+**המשך מ: M08-c226 DONE (2026-10-27): Lighthouse mobile sample, / 47/34, product (/product/bar-drink) 46/52; load avg 11 (e2e running), TBT contention-driven; logged in logs/lighthouse-m08-c226.log; G23 95+ not met; no code change**

@@ -1,0 +1,11 @@
+# M08-c226 Lighthouse mobile sample 2026-10-27 (local prod build, port 3100, simulate throttling, 2 runs/page, scripts/_lh-runs.mjs)
+# load avg at start: 11.06 7.05 5.01
+c226-home #1: {"run":1,"score":47,"FCP":"2.1 s","LCP":"4.8 s","SI":"5.3 s","TBT":"6,770 ms","CLS":"0.049","TTFB":"Root document took 940 ms","blocking":"","unusedJS":"135 KiB","legacyJS":"-"}
+c226-home #2: {"run":2,"score":34,"FCP":"2.0 s","LCP":"7.4 s","SI":"13.1 s","TBT":"11,190 ms","CLS":"0.049","TTFB":"Root document took 3,780 ms","blocking":"410 ms","unusedJS":"135 KiB","legacyJS":"-"}
+
+c226-home scores: 47 / 34  (median 47)
+c226-product #1: {"run":1,"score":46,"FCP":"1.7 s","LCP":"4.4 s","SI":"7.3 s","TBT":"5,110 ms","CLS":"0.041","TTFB":"Root document took 2,520 ms","blocking":"840 ms","unusedJS":"130 KiB","legacyJS":"-"}
+c226-product #2: {"run":2,"score":52,"FCP":"1.7 s","LCP":"4.7 s","SI":"3.0 s","TBT":"3,520 ms","CLS":"0","TTFB":"Root document took 460 ms","blocking":"530 ms","unusedJS":"130 KiB","legacyJS":"-"}
+
+c226-product scores: 46 / 52  (median 52)
+Note: G23 95+ not met (home 34-47, product 46-52); load avg 11 with pnpm test:e2e running concurrently, TBT 3.5-11 s is CPU contention, not a regression (c215 at load ~4: 68-75 / 82-85). Sample-only item, no code changes.
