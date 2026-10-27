@@ -896,6 +896,40 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ---
 
+## MAINTENANCE_LOOP_10: DONE (2026-10-27 14:25 UTC)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from this very file and appending them again.
+
+**Status:** ✅ COMPLETE
+
+**Action:** Read MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from ~/ke-goals/queue.txt lines 1-20 and appended them to create lines 21-40.
+
+**Result:** Infinite maintenance loop cycle extended. Queue now has cycle 3+ content ready for next iteration.
+
+---
+
+## MAINTENANCE_LOOP_9: SKIPPED (2026-10-27 14:22 UTC)
+
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP.
+
+**Status:** ⏭️ SKIPPED — Known MCP OAuth blocker (3rd attempt)
+
+**Reason:**
+- Goal explicitly requires "via Supabase MCP"
+- Supabase MCP requires OAuth authentication
+- OAuth unavailable in non-interactive sessions
+- Prior attempts: 2026-10-25 (CLI timeout), 2026-10-26 01:15 (CLI timeout + REST workaround), 2026-10-26 10:58 (workaround insufficient)
+- Per CLAUDE.md rule: "goal שנתקע פעמיים: לדלג" (skip after two failures, never try third time)
+
+**Last verified status (2026-10-26 10:58 UTC):**
+- Connection pool: HEALTHY
+- Query performance: 15 samples, average 166ms, max 177ms
+- Slow queries >500ms: 0
+
+**Action:** Skip without retry. Requires interactive session with Supabase MCP OAuth.
+
+---
+
 ## MAINTENANCE_LOOP_8: DONE (2026-10-27 14:20 UTC)
 
 **Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal.
@@ -933,6 +967,6 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_9 (NEXT IN QUEUE)
+## המשך מ: MAINTENANCE_LOOP_1 (CYCLE 3 BEGINS)
 
-Next goal: MAINTENANCE_LOOP_9: Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist. Commit as chore ops db performance check. Push.
+Next iteration of the infinite maintenance loop begins with MAINTENANCE_LOOP_1: Run pnpm audit and fix critical/high vulnerabilities.
