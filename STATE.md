@@ -255,3 +255,9 @@ Re-measure compare.mjs --page=home --live=file://<abs>/refs/electro-home-v7.html
 
 המשך מ: M02-c224 BLOCKED reference-gone (compare.mjs --page=product exit 5 at 380/768/1440: kenyonexpress.co.il now serves our build; local sample slug מוצר-לדוגמא 404s)
 המשך מ: M18-c224 DONE — STATE.md 255 lines (<300), no archive needed
+
+## M03-c225 (2026-10-27)
+Re-measure compare.mjs --page=category at --width=380 / 768 / 1440. All three REFUSED by the reference guard (no WP or Next markers at kenyonexpress.co.il/product-category/hot-deals/); refs/ still has no Electro v7 category capture to pass via --live=. Local dev server did not come up within ~2 min, so no local side either. No diff percentages produced; gate <11% not passed; guard not bypassed. No locked files touched; nothing committed.
+**המשך מ: M03-c225 BLOCKED category-reference-missing**
+
+המשך מ: M06-c225 BLOCKED push-diverged (pnpm build + tsc pass; drift committed locally as 37d2b030 but local main is ahead 91 / behind 4605 vs origin/main, merge-base 18ed044b; rebase conflicts on commit 1 of 91, aborted; no force-push; no code changes)
