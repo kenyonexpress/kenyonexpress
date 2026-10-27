@@ -1,3 +1,4 @@
+**המשך מ: M04-c238 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit clean) — no drift, no code change; unrelated docs/UI-PARITY-REPORT.md edit left uncommitted; no forbidden files touched**
 **המשך מ: M15-c237 DONE (2026-10-28): / and /product/<slug> at 380+1440 on fresh `next start` of current build — 0 console errors, 0 pageerrors, 0 failed requests; earlier errors were stale ISR route-cache in .next/server/route-cache referencing chunks from a prior build (env artifact, not code); no code change, no forbidden files touched**
 **המשך מ: M04-c237 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit clean), working tree clean — no drift, no code change, no forbidden files touched**
 **המשך מ: M18-c236 DONE (2026-10-28): STATE.md trimmed 286 -> 151 lines (<300); older entries moved to docs/STATE-ARCHIVE.md; no code change, no forbidden files touched**
@@ -155,3 +156,4 @@
 המשך מ: M06-c237 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; Sentry source map upload 401 non-fatal (DONE-DEFERRED); only drift was docs/M-CYCLE-STATUS.md timestamp, committed + pushed
 המשך מ: M08-c237 DONE (2026-10-28): Lighthouse mobile sample (local prod build, 2 runs/page) home 86/88 (median 88), product 91/91; LCP 3.5-4.1 s main driver, G23 95+ not met; log logs/lighthouse-m08-c237.log; no code change, no forbidden files touched
 המשך מ: M09-c237 DONE (2026-10-28): knip re-run (SUPABASE_DB_URL dummy). Only unused devDeps: @capacitor/android (android/ platform), uuid + xcode (security pins via pnpm overrides/patches) - kept deliberately; no unused deps; remaining unused exports are ui-kit/money/payments/ledger public surface, left. No source changed, no forbidden files touched
+המשך מ: M05-c238 DONE (2026-10-28): pnpm test 616 files passed/2 skipped, 7072 tests passed/28 skipped, no failures; only drift was docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md ledger rows, committed + pushed; no forbidden files touched
