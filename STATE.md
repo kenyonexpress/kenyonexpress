@@ -1148,3 +1148,6 @@ compare.mjs --page=home --widths=380,768,1440, re-measured 2026-10-27 (first 260
 - 768: 39.45% (best known 29%, WORSE)
 - 1440: 30.23% (best known 8.29%, WORSE)
 Note: ours dropped 4 scripts (unhydrated), which inflates the numbers. Worst 1440 bands y1100-1400, 1800-1900. Gate <11% not met at any width.
+
+## המשך מ: M07-c231 DONE
+TODO/FIXME scan: 6 markers in src (cardcom.ts:249, :312; r2-migration.ts:103-106), all older than 7 days, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom creds / service-role key). No new items.
