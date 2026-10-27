@@ -183,3 +183,5 @@ Updated: 2026-10-28 (M18-c235: STATE.md נבדק, 180 שורות (מתחת ל-30
 **המשך מ: M18-c235 DONE**
 Updated: 2026-10-28 (M01-c236: `compare.mjs --page=home` ב-380 / 768 / 1440 הורץ שוב מול dev על :3000 ו**סורב** בשלושת הרוחבים, ללא מספר diff. `kenyonexpress.co.il` מגיש שוב את הבילד שלנו (30-32 הפניות `/_next/`, אין wp-content), כך שהשוואה תהיה בילד מול עצמו. לא נערכו קבצי קוד ולא קבצים נעולים; הסירוב לא עוקף. ראה docs/PARITY-REFERENCE.md.)
 **המשך מ: M01-c236 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
+Updated: 2026-10-28 (M01-c238: `compare.mjs --page=home` ב-380 / 768 / 1440 הורץ שוב ו**סורב** בשלושת הרוחבים, ללא מספר diff. `kenyonexpress.co.il` מגיש את הבילד שלנו (30-32 הפניות `/_next/`, אין wp-content), כך שהשוואה תהיה בילד מול עצמו. שורות `REFUSED` נוספו ל-`docs/UI-PARITY-REPORT.md`. לא נערכו קבצי קוד ולא קבצים נעולים; הסירוב לא עוקף. ראה docs/PARITY-REFERENCE.md.)
+**המשך מ: M01-c238 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
