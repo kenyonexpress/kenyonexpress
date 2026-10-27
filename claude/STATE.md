@@ -226,3 +226,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M09-c226 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ dep for capacitor.config.ts, kept); no unused deps; unused exports are deliberate public API (money/ledger/cardcom, shadcn ui, schema); no code change**
 **המשך מ: M04-c227 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, 0 errors; committed generated docs drift only (M-CYCLE-STATUS, UI-PARITY-REPORT); no code change**
 **המשך מ: M05-c227 DONE (2026-10-27): pnpm test full run — 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, 0 failures; committed generated docs drift only (DB-STATUS, M-CYCLE-STATUS); no code change**
+**המשך מ: M09-c227 DONE (2026-10-27): knip deps re-audit (SUPABASE_DB_URL stub so drizzle config loads) — only @capacitor/android flagged (native android/ dep, kept); no unused deps; unused exports are deliberate public API; no code change**
