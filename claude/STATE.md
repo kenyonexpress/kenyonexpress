@@ -218,3 +218,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M09-c225 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ platform dep for capacitor.config.ts, kept); no unused deps; 76 unused exports are deliberate public API (money/ledger/cardcom, shadcn ui, schema, re-exports); no code change**
 **המשך מ: M11-c225 DONE (2026-10-27): sitemap.xml live 200 (apex 308→www), 75 URLs, valid XML, lastmod 2026-10-24 derived from catalogue (not clock), robots.txt points at it, 6 sampled URLs 200; note: sitemap/robots declare apex origin while apex 308s to www (domain config, not code); no code change**
 **המשך מ: M04-c226 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift; no code change**
+**המשך מ: M05-c226 DONE (2026-10-27): pnpm test full run — 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, 0 failures; no drift found, no code change**
