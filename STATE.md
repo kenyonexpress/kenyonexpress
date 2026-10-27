@@ -650,11 +650,46 @@ from this very file and appending them again.
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_8 READY
+## MAINTENANCE_LOOP_8: DONE (2026-10-27 18:56 UTC+7)
 
-**Next goal (queued 2026-10-27 18:54 UTC+7):**
-Scan all TODO FIXME HACK comments in src/.
-If count grew since last scan queue a cleanup goal.
+**Goal:** Scan all TODO FIXME HACK comments. If count grew queue cleanup goal.
+
+**Status:** ✅ COMPLETE
+
+**Scan result:** 6 comments total (unchanged from previous scan 2026-10-26)
+- cardcom.ts: 2 TODOs (need Cardcom prod creds)
+- r2-migration.ts: 4 TODOs (R2 migration stubs)
+- Zero FIXME, zero HACK
+
+**Delta:** 0 (no growth, no new items)
+
+**Action:** No cleanup goal needed. All items already in docs/BACKLOG.md.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_9 (SKIPPED) → MAINTENANCE_LOOP_10 (DONE) → CYCLE REPEATS
+
+**Maintenance cycle complete. Next iteration begins with MAINTENANCE_LOOP_1.**
+
+---
+
+**CYCLE SUMMARY (2026-10-27):**
+
+Completed/Done:
+- MAINTENANCE_LOOP_1: Audit clean (1 moderate, no critical/high)
+- MAINTENANCE_LOOP_2: No patch updates available
+- MAINTENANCE_LOOP_3: 0 unblocked backlog items
+- MAINTENANCE_LOOP_6: Gate at 45.49%, fix skipped
+- MAINTENANCE_LOOP_8: 6 TODOs, no growth
+- MAINTENANCE_LOOP_10: Queue refreshed (appended next cycle)
+
+Skipped/Deferred:
+- MAINTENANCE_LOOP_4: E2E suite timeout (background limit)
+- MAINTENANCE_LOOP_5: Cron status infrastructure blocker
+- MAINTENANCE_LOOP_7: Lighthouse CI timeout (known)
+- MAINTENANCE_LOOP_9: Supabase MCP OAuth unavailable
+
+**Key blockers:** Infrastructure timeouts (E2E, Lighthouse), MCP OAuth, external services (Cardcom, R2).
 
 ---
 
