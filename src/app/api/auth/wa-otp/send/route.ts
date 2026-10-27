@@ -5,12 +5,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { sendWhatsappOtp } from '@/lib/whatsapp/meta-cloud'
+import { sendTwilioWhatsappOtp } from '@/lib/whatsapp/twilio'
 import { WA_OTP_TTL_MS, hashOtp, newOtpCode } from '@/server/auth/wa-otp'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Sends a sign-in code to an existing account's phone over WhatsApp
- * (rc5 F15). When WhatsApp is not configured, or cannot deliver, the code
+ * (rc5 F15), through Twilio and then Meta Cloud. Three codes an hour per
+ * number. When WhatsApp is not configured, or cannot deliver, the code
  * goes to the account's email instead through Supabase's email OTP.
  *
  * The answer is the same whether or not the number belongs to an account, so
@@ -25,7 +27,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const ip = await getClientIp()
   if (
-    !(await checkRateLimit(`wa-otp-send:${phone}`, 5, 3600)) ||
+    !(await checkRateLimit(`wa-otp-send:${phone}`, 3, 3600)) ||
     !(await checkRateLimit(`wa-otp-send-ip:${ip}`, 20, 3600))
   ) {
     return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
@@ -63,6 +65,11 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     log.error('wa_otp.insert_failed', { reason: insertError.message })
     return NextResponse.json({ ok: false, error: 'internal' }, { status: 500 })
   }
+
+  // Twilio first, Meta Cloud second; either one delivering is a WhatsApp send.
+  const twilio = await sendTwilioWhatsappOtp(phone, code)
+  if (twilio.ok) return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
+  if (!('skipped' in twilio)) log.warn('wa_otp.twilio_failed', { reason: twilio.error })
 
   const sent = await sendWhatsappOtp(phone, code)
   if (sent.ok) return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })

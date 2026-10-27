@@ -96,3 +96,24 @@ describe('sendWhatsappTemplate', () => {
     }
   })
 })
+
+describe('sendTwilioWhatsappOtp', () => {
+  it('skips without a content SID', async () => {
+    const { sendTwilioWhatsappOtp } = await import('./twilio')
+    expect(await sendTwilioWhatsappOtp('+972501234567', '123456', {} as NodeJS.ProcessEnv)).toEqual(
+      { ok: false, skipped: true },
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('sends the code as template variable 1', async () => {
+    const { sendTwilioWhatsappOtp } = await import('./twilio')
+    vi.stubEnv('TWILIO_WA_OTP_CONTENT_SID', 'HX_otp')
+    const r = await sendTwilioWhatsappOtp('+972501234567', '123456', process.env)
+    expect(r).toEqual({ ok: true, sid: 'SM1' })
+    const body = new URLSearchParams(fetchMock.mock.calls[0]?.[1].body as string)
+    expect(body.get('To')).toBe('whatsapp:+972501234567')
+    expect(body.get('ContentSid')).toBe('HX_otp')
+    expect(body.get('ContentVariables')).toBe('{"1":"123456"}')
+  })
+})

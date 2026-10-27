@@ -91,3 +91,20 @@ export async function sendWhatsappTemplate(args: {
   const json = (await res.json()) as { sid?: string }
   return { ok: true, sid: json.sid ?? '' }
 }
+
+/**
+ * A one-time sign-in code over Twilio WhatsApp, through the approved OTP
+ * content template (TWILIO_WA_OTP_CONTENT_SID). Skipped, never thrown, while
+ * the template SID or the Twilio credentials are missing, so the caller falls
+ * through to the next channel.
+ */
+export async function sendTwilioWhatsappOtp(
+  phoneE164: string,
+  code: string,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<WhatsappSendResult> {
+  const contentSid = env.TWILIO_WA_OTP_CONTENT_SID
+  const to = toWhatsappAddress(phoneE164)
+  if (!contentSid || !to) return { ok: false, skipped: true }
+  return sendWhatsappTemplate({ to, contentSid, variables: { '1': code } })
+}
