@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-28 (M12-c233: אימות robots.txt לפרודקשן. src/app/robots.ts: allow / ל-*, disallow לכל האזורים המאומתים והטוקנים (/redeem/, /coupon/, /gift/, /account/, /supplier/, /admin/, /checkout, /cart, /auth/, /api/, /login, /signup, /mfa, /admin-mfa, /debug/ ועוד), sitemap ו-host מ-NEXT_PUBLIC_APP_URL בלי לוכסן כפול. robots.test.ts: 8/8 עברו. לא נערכו קבצי קוד.) המשך מ: M12-c233 DONE.
 Updated: 2026-10-28 (M18-c232: STATE.md נמדד ב-172 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c232 DONE.
 Updated: 2026-10-27 (M18-c227: STATE.md נמדד ב-281 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c227 DONE.
 Updated: 2026-10-27 (M16-c228: אימות JSON-LD בעמודי מוצר. המסלול היחיד הוא src/app/(store)/product/[slug]/page.tsx, מרנדר שני סקריפטים ld+json: Product (buildProductJsonLd, מחיר מאותם ערכים כמו העמוד) ו-BreadcrumbList (בית > קטגוריה > מוצר). json-ld.test.ts: 17/17 עברו. לא נערכו קבצי קוד.) המשך מ: M16-c228 DONE.
