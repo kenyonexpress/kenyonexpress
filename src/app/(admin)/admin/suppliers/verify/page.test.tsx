@@ -7,19 +7,17 @@ import { describe, expect, it } from 'vitest'
  */
 
 describe('AdminSuppliersVerifyPage', () => {
-  it('has correct metadata', () => {
+  it('has correct metadata', async () => {
     // Dynamic import to test module exports
-    import('./page').then((module) => {
-      expect(module.metadata).toBeDefined()
-      expect(module.metadata.title).toBe('אימות ספקים')
-    })
+    const module = await import('./page')
+    expect(module.metadata).toBeDefined()
+    expect(module.metadata.title).toBe('אימות ספקים')
   })
 
-  it('exports default component', () => {
-    import('./page').then((module) => {
-      expect(module.default).toBeDefined()
-      expect(typeof module.default).toBe('function')
-    })
+  it('exports default component', async () => {
+    const module = await import('./page')
+    expect(module.default).toBeDefined()
+    expect(typeof module.default).toBe('function')
   })
 
   it('verification filters are defined correctly', () => {
