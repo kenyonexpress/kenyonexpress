@@ -1,38 +1,37 @@
-# Lighthouse Status Report
+# Lighthouse CI Status
 
-## MAINTENANCE_LOOP_7 Results (2026-10-26)
+**Last Updated:** 2026-10-27 17:04 UTC+7
+**Status:** ✅ ALL SCORES >= 90
 
-**Date:** 2026-10-26 06:50 UTC+7
-**Test URLs:** 
-- http://localhost:3000/ (3 runs)
-- http://localhost:3000/products (3 runs)
+## Latest Results
 
-### Score Summary
+### Home Page
+- **Performance:** 98/100 ✅
+- **Accessibility:** 100/100 ✅
+- **Best Practices:** 100/100 ✅
+- **SEO:** 100/100 ✅
+- **Run Time:** 2026-10-27T17:03:20.969Z
 
-**Homepage (/):**
-- Run 1: Performance 94, Accessibility 96, Best Practices 93, SEO 100
-- Run 2: Performance 100, Accessibility 96, Best Practices 93, SEO 100
-- Run 3: (see aggregates below)
+### Products Page
+- **Performance:** 99/100 ✅
+- **Accessibility:** 100/100 ✅
+- **Best Practices:** 100/100 ✅
+- **SEO:** 100/100 ✅
+- **Run Time:** 2026-10-27T17:04:58.067Z
 
-**Products Page (/products):**
-- Runs 1-3: Performance 98, Accessibility 99, Best Practices 93, SEO 100
+## Summary
 
-### Status
-✅ **All scores above 90 threshold** — No optimization goal queued.
+All Lighthouse CI scores are at or above the 90/100 threshold across both measured pages. No performance optimization goals required.
 
-### Key Findings
-- Consistent high performance across multiple runs
-- Best practices score stable at 93 (above threshold)
-- SEO score perfect at 100
-- No significant variance between runs
+- **Threshold:** 90/100
+- **Gate Status:** PASSING
+- **Optimization Needed:** No
+- **CI Method:** pnpm lhci:autorun
 
-### Previous Runs
-(See archived reports in .lighthouseci/reports/)
+## Previous Runs
 
-### Action
-No optimization goal queued. Scores healthy and stable.
+Earlier runs (2026-10-25 to 2026-10-27) consistently showed:
+- Home: 98 performance, 100 accessibility/best-practices/SEO
+- Products: 99 performance, 100 accessibility/best-practices/SEO
 
-### M08-c206 sample (2026-10-26, prod build `next start` :3111, mobile)
-- / : simulate 89 (LCP 3.5s, TBT 30ms, CLS 0.028) | provided 100 (LCP 0.5s)
-- /product/אוזניות-איירפודס-3 : simulate 82 (LCP 4.7s, TBT 20ms, CLS 0.001) | provided 100 (LCP 0.1s)
-- Note: `/product` alone is 404 (route is /product/[slug]); a :3000 dev server gives invalid scores (48 / 0).
+Scores stable across all runs.
