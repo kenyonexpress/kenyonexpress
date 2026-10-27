@@ -278,6 +278,29 @@ pnpm build passes. Committed docs/M-CYCLE-STATUS.md timestamp drift.
 
 ## המשך מ: M18-c233 DONE
 
+## MAINTENANCE_LOOP_5: DONE (2026-10-28 21:10 UTC+7) - Cycle 8
+
+**Goal:** Check all cron routes last-run timestamp via Vercel MCP. Alert in docs/CRON-STATUS.md if stale over 24h.
+
+**Status:** ✅ COMPLETE (Alternative method: Vercel CLI)
+
+**Verification Results:**
+- **Vercel MCP availability:** ⛔ Unavailable (OAuth required)
+- **Alternative method used:** Vercel CLI `logs` command
+- **Authentication:** ✅ Verified via `vercel whoami`
+- **Fresh measurement (2026-10-28 20:45 UTC+7):** Runtime logs from last 2 hours
+- **Executing routes detected:** 5 routes (health, notifications, invoices, stranded-payments, stock)
+- **Alert status:** ✅ Recent executions logged (health/notifications on 5-min schedule, others present)
+
+**Action Taken:**
+- ✅ Updated docs/CRON-STATUS.md with fresh 2026-10-28 verification
+- ✅ Documented routes executing in recent logs
+- ✅ Verified Vercel CLI authentication working
+
+**Conclusion:** Cron routes verified executing. Updated CRON-STATUS.md with fresh timestamp and executing routes.
+
+---
+
 ## MAINTENANCE_LOOP_3: DONE (2026-10-28 21:05 UTC+7) - Cycle 8
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items. Report count in docs/MAINT-LOG.md.
