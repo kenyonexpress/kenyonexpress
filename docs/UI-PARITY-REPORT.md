@@ -442,3 +442,11 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-26 16:55 | product | 380 | n/a | REFUSED | `0362cd10-dirty` | live side is our-build |
 | 2026-10-26 16:55 | product | 768 | n/a | REFUSED | `0362cd10-dirty` | live side is our-build |
 | 2026-10-26 16:55 | product | 1440 | n/a | REFUSED | `0362cd10-dirty` | live side is our-build |
+| 2026-10-26 18:19 | product | 380 | n/a | REFUSED | `f30538c1-dirty` | live side is our-build |
+| 2026-10-26 18:19 | product | 768 | n/a | REFUSED | `f30538c1-dirty` | live side is our-build |
+| 2026-10-26 18:19 | product | 1440 | n/a | REFUSED | `f30538c1-dirty` | live side is our-build |
+| 2026-10-26 18:21 | product | 380 | 43.83% | **FAIL** | `f30538c1-dirty` |  |
+| 2026-10-26 18:24 | product | 768 | 10.62% | PASS | `f30538c1-dirty` |  |
+| 2026-10-27 11:05 | product | 380 | n/a | REFUSED | `96a04259-dirty` | live side is unknown |
+| 2026-10-27 11:05 | product | 768 | n/a | REFUSED | `96a04259-dirty` | live side is unknown |
+| 2026-10-27 11:05 | product | 1440 | n/a | REFUSED | `96a04259-dirty` | live side is unknown |

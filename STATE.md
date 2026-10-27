@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-27 (M02-c225: compare.mjs --page=product ב-380/768/1440 סירב למדוד, "live side is unknown": kenyonexpress.co.il כבר לא האתר המקורי ואין שרת מקומי רץ. אין מספר, אין שינוי קוד. המשך מ: M02-c225 BLOCKED reference-unavailable.)
 Updated: 2026-10-27 (M18-c225: STATE.md נמדד ב-256 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c225 DONE.
 Updated: 2026-10-26 (M18-c223: STATE.md נמדד ב-247 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c223 DONE.
 Updated: 2026-10-26 (M18-c221: STATE.md נמדד ב-234 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c221 DONE.
