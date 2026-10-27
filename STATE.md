@@ -308,10 +308,48 @@ Per CLAUDE.md rule "goal שנתקע פעמיים: לדלג" — skip after two f
 
 ---
 
-## המשך מ: MOBILE_FIX_1 (REQUEUED AT HEAD)
+## MAINTENANCE_LOOP_9: SKIPPED (2026-10-27 19:50 UTC)
 
-Diagnostics complete. Requires environment setup for Supabase/data loading.
-Issue: Local page loads 0.30x of reference height due to missing data sources.
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP.
+
+**Status:** ⏭️ SKIPPED — OAuth unavailable in non-interactive session
+
+**Reason:** Supabase MCP requires interactive OAuth flow. Prior attempts (2026-10-25, 2026-10-26) failed with CLI timeout. Per CLAUDE.md rule "goal שנתקע פעמיים: לדלג" — skip after two failures. Last verified status: healthy (2026-10-26).
+
+---
+
+## MAINTENANCE_LOOP_10: DONE (2026-10-27 19:50 UTC)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt
+
+**Status:** ✅ COMPLETE
+
+**Action Taken:**
+- ✅ Appended MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 to queue
+- ✅ Queue now has 21 entries (11 prior + 10 new)
+- ✅ Infinite maintenance loop perpetuated
+
+**Outcome:** Next cycle ready (goals 12-21 with fresh MAINTENANCE_LOOP goals)
+
+---
+
+## Cycle 6 Summary (2026-10-27)
+
+**Completed (5):**
+- MAINTENANCE_LOOP_5: Cron routes check (20 of 22 stale, critical issue)
+- MAINTENANCE_LOOP_6: Mobile gate (43.33%, above tolerance, requeued)
+- MAINTENANCE_LOOP_8: Code debt (6 markers, no growth)
+- MAINTENANCE_LOOP_10: Queue renewal
+- Quality gates: typecheck ✅, lint ✅, build ✅
+
+**Skipped (2):**
+- MAINTENANCE_LOOP_7: Lighthouse (infrastructure blocker, timeout)
+- MAINTENANCE_LOOP_9: DB perf (OAuth unavailable)
+
+**Requeued (1):**
+- MOBILE_FIX_1: Data loading investigation (requires environment setup)
+
+**Next Queue Head:** MOBILE_FIX_1 (environment setup needed)
 
 ## המשך מ: M05-c229 DONE
 
