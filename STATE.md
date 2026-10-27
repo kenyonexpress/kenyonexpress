@@ -1,6 +1,7 @@
 # KenyonExpress — Project State
 
 Updated: 2026-10-27 (M18-c227: STATE.md נמדד ב-281 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c227 DONE.
+Updated: 2026-10-27 (M16-c228: אימות JSON-LD בעמודי מוצר. המסלול היחיד הוא src/app/(store)/product/[slug]/page.tsx, מרנדר שני סקריפטים ld+json: Product (buildProductJsonLd, מחיר מאותם ערכים כמו העמוד) ו-BreadcrumbList (בית > קטגוריה > מוצר). json-ld.test.ts: 17/17 עברו. לא נערכו קבצי קוד.) המשך מ: M16-c228 DONE.
 Updated: 2026-10-27 (M08-c227: Lighthouse mobile על / ו-/product לא נמדד. השרת (dev :3000 ו-next start :3456) מחזיר 500 בכל מסלול: instrumentation hook נופל על אימות src/lib/env.ts (מחרוזת קצרה מ-40 תווים + URL לא תקין), כנראה ערכי placeholder ב-.env.local. אין ציון חדש; הציון האחרון הידוע נשאר / =60, /product =68. לא נערכו קבצי קוד.) המשך מ: M08-c227 DONE-DEFERRED (placeholder env)
 Updated: 2026-10-27 (M12-c226: אימות robots.txt production-safe). src/app/robots.ts: Allow / ל-*, Disallow על נתיבים פרטיים/אימות בלבד (redeem, coupon, account, supplier, admin, checkout, cart, auth, api, login, signup, mfa, debug), אין התנגשות קידומת עם נתיבים ציבוריים (/coupons ו-/c פתוחים), Sitemap+host מ-NEXT_PUBLIC_APP_URL, אין noindex גורף. robots.test.ts: 7/7 עברו. לא נערכו קבצי קוד. המשך מ: M12-c226 DONE.
 Updated: 2026-10-27 (M02-c225: compare.mjs --page=product ב-380/768/1440 סירב למדוד, "live side is unknown": kenyonexpress.co.il כבר לא האתר המקורי ואין שרת מקומי רץ. אין מספר, אין שינוי קוד. המשך מ: M02-c225 BLOCKED reference-unavailable.)
@@ -280,3 +281,7 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Not measured. (1
 ## M12-c227 (2026-10-27)
 robots.txt verified production-safe: allow /, disallows redeem/coupon/account/supplier/admin/checkout/cart/auth/api/debug; sitemap+host on https://kenyonexpress.co.il. Gap fixed: added /gift/ (token URL = credential) + test. 8/8 vitest pass. No locked files touched.
 **המשך מ: M12-c227 DONE**
+
+## M01-c228 (2026-10-27)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Not measured. Local server on :3000 still returns HTTP 500 on /, and compare.mjs refuses the reference at all three widths (kenyonexpress.co.il has no WP/Next markers; guard not bypassed, see docs/PARITY-REFERENCE.md). No diff percentages; last known (c224) 62.6/35.41/26.99, gate <11% not passed. No locked files touched; nothing committed.
+**המשך מ: M01-c228 BLOCKED dev-server-500 + home-reference-refused (no measurement)**
