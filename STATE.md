@@ -1,3 +1,30 @@
+## MAINTENANCE_LOOP_8: DONE (2026-10-28 12:45 UTC+7)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew since last scan queue a cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+
+**Status:** ✅ COMPLETE
+
+**Scan Results:**
+- **Current count:** 6 TODO comments (unchanged)
+  - r2-migration.ts: 4 TODOs (R2 migration workflow stubs)
+  - cardcom.ts: 2 TODOs (legacy API confirmation blockers)
+- **FIXME comments:** 0
+- **HACK comments:** 0
+- **Delta:** 0 (stable from 2026-10-27 scan)
+- **Cleanup goal needed:** No (count unchanged)
+
+**Action Taken:**
+- ✅ Scanned src/ (all .ts, .tsx, .js, .jsx files) for TODO/FIXME/HACK
+- ✅ Confirmed 6 items, all tracked in docs/BACKLOG.md
+- ✅ Updated docs/CODE-DEBT-STATUS.md with fresh scan date (2026-10-28 12:45 UTC)
+- ✅ Quality gates: typecheck ✅, lint ✅ (6496 files), build ✅ (273 routes)
+- ✅ Commit: 26d49404f "[autopilot] chore: maintenance code debt scan - 6 TODOs stable (2026-10-28)"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Code debt stable, no growth detected. No cleanup goal queued. All items blocked by external dependencies (Cardcom prod creds, R2 key).
+
+---
+
 ## MAINTENANCE_LOOP_3: DONE (2026-10-27 20:XX UTC+7)
 
 **Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items. If any found, queue them to ~/ke-goals/queue.txt. Report count found in docs/MAINT-LOG.md. Commit as chore maint scan backlog. Push.
