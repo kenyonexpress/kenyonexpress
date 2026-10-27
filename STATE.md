@@ -278,6 +278,81 @@ pnpm build passes. Committed docs/M-CYCLE-STATUS.md timestamp drift.
 
 ## המשך מ: M18-c233 DONE
 
+## MAINTENANCE_LOOP_4: SKIPPED (2026-10-28 21:30 UTC+7) - Cycle 8
+
+**Goal:** Run full Playwright test suite with pnpm test:e2e. Report results to docs/E2E-STATUS.md.
+
+**Status:** ⏭️ **SKIPPED** (Background timeout limit exceeded)
+
+**Reason for Skip:**
+- E2E test started in background at 21:00 UTC+7
+- Full E2E suite requires ~16 minutes to complete (per memory: "Full-E2E run fits the hour slot")
+- Background task limit: 10 minutes (system enforces timeout after 10m)
+- Test killed at 10m mark: insufficient time to complete
+- Prior runs (2026-10-26) also had timeout issues
+
+**Autonomous Decision:**
+- Skipped per infrastructure constraints (background timeout limit)
+- Would require foreground execution (not possible in autonomous loop)
+- Documented as known limitation for E2E verification
+
+**Conclusion:** M4 blocked by background execution time limit. Will be retried in next cycle if interactive session allows.
+
+---
+
+## MAINTENANCE_LOOP_7: DONE (2026-10-28 21:25 UTC+7) - Cycle 8
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90 queue optimization goal.
+
+**Status:** ✅ COMPLETE (All scores >= 90, no optimization needed)
+
+**Lighthouse Results (9 test runs, 2026-10-28):**
+- **Performance:** 100 (all runs)
+- **Accessibility:** 100 (all runs)
+- **Best-practices:** 96 (all runs)
+- **SEO:** 100 (all runs)
+- **Minimum score across all metrics:** 96
+- **Target threshold:** >= 90 (goal: queue if any < 90)
+- **Status:** ✅ **PASS** — all scores >= 90
+
+**Test Coverage:**
+- Home page (/): 3 runs
+- Products (/products): 6 runs
+- Total: 9 runs
+
+**Action Taken:**
+- ✅ Ran `pnpm lhci:autorun` (completed successfully)
+- ✅ Generated 9 Lighthouse reports
+- ✅ Verified all scores >= 90
+- ✅ No optimization goal queued (not needed)
+
+**Conclusion:** Lighthouse audit passed all thresholds. Reported to docs/LIGHTHOUSE-STATUS.md.
+
+---
+
+## MAINTENANCE_LOOP_8: DONE (2026-10-28 21:25 UTC+7) - Cycle 8
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md.
+
+**Status:** ✅ COMPLETE
+
+**Scan Results (Cycle 8):**
+- **Current count:** 6 TODO markers (unchanged)
+  - r2-migration.ts: 4 TODOs (R2 migration workflow stubs)
+  - cardcom.ts: 2 TODOs (legacy API confirmation blockers)
+- **FIXME comments:** 0
+- **HACK comments:** 0
+- **Delta:** 0 (stable from prior cycles)
+
+**Action Taken:**
+- ✅ Scanned all .ts/.tsx files in src/
+- ✅ Found 6 markers (same as cycle 7)
+- ✅ No growth → no cleanup goal queued
+
+**Conclusion:** Code debt markers unchanged. No growth detected. Moving to next goal.
+
+---
+
 ## MAINTENANCE_LOOP_6: DONE (2026-10-28 21:15 UTC+7) - Cycle 8
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal.
@@ -435,6 +510,32 @@ Per CLAUDE.md "goal שנתקע פעמיים: לדלג" (skip after two failures)
 - ✅ Commit: [autopilot] chore: ops db performance check - slow query alert
 
 **Conclusion:** MAINTENANCE_LOOP_9 completed with alert. Slow queries detected and documented. Requires manual investigation via Supabase dashboard for root cause analysis (connection pool saturation, missing indexes, or concurrent load spike).
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_10 READY (Cycle 9)
+
+Queue refreshed for next cycle. Next goal head: MAINTENANCE_LOOP_10.
+
+---
+
+## Cycle 8 Summary (2026-10-28)
+
+**Completed (7):**
+- M09: DB performance check (slow queries 3089ms, 2677ms detected)
+- M10: Queue renewal for cycle 8
+- M1: Security audit (0 vulns)
+- M2: Deps outdated (0 patch versions)
+- M3: Backlog scan (0 unblocked)
+- M5: Cron routes verified (5 executing)
+- M6: Mobile gate 61.49% (regression detected)
+- M7: Lighthouse all >=90 (pass)
+- M8: Code debt 6 markers (no growth)
+
+**Skipped (1):**
+- M4: E2E tests (10m background timeout, would need 16m)
+
+**Next Queue Head:** MAINTENANCE_LOOP_10 (cycle 9 renewal)
 
 ---
 
