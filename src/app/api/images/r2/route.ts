@@ -12,9 +12,13 @@
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { R2_CONFIG, isR2Enabled } from '@/lib/images/optimizer'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { type NextRequest, NextResponse } from 'next/server'
 
 async function handleGET(request: NextRequest) {
+  const limited = await limitByIp('r2-image', 600, 60)
+  if (limited) return limited
+
   const { pathname } = request.nextUrl
 
   // Extract the image path from the route:
@@ -26,6 +30,9 @@ async function handleGET(request: NextRequest) {
   }
 
   const [, options, imagePath] = match
+  if (!imagePath || imagePath.split('/').includes('..') || options === '..') {
+    return NextResponse.json({ error: 'Invalid image request format' }, { status: 400 })
+  }
   const sourceUrl = `/${imagePath}`
 
   // If R2 is not enabled, return a 503 Service Unavailable

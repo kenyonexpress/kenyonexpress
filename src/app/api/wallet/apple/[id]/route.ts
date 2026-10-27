@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { readAppleWalletConfig } from '@/lib/wallet/config'
 import { passImages } from '@/lib/wallet/pass-images'
 import { buildApplePass } from '@/lib/wallet/pass-model'
@@ -28,6 +29,9 @@ async function handleGET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const limited = await limitByIp('wallet-apple', 30, 300)
+  if (limited) return limited
+
   const config = readAppleWalletConfig()
   if (!config) return NextResponse.json({ ok: false, error: 'not_configured' }, { status: 404 })
 

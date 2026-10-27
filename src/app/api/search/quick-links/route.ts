@@ -1,4 +1,5 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
@@ -30,6 +31,9 @@ const POPULAR_LIMIT = 8
 const RECENT_LIMIT = 5
 
 async function handleGET(): Promise<NextResponse> {
+  const limited = await limitByIp('quick-links', 120, 60)
+  if (limited) return limited
+
   const supabase = await createClient()
   const {
     data: { user },

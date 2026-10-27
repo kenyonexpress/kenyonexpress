@@ -74,6 +74,8 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
+vi.mock('@/lib/rate-limit/route-guard', () => ({ limitByIp: async () => null }))
+
 describe('GET /api/wallet/apple/[id]', () => {
   it('serves a signed archive with the pkpass content type', async () => {
     configure()

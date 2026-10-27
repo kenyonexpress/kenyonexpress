@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GET } from './route'
 
 vi.mock('@/lib/supabase/public')
+vi.mock('@/lib/rate-limit/route-guard', () => ({ limitByIp: async () => null }))
 
 describe('GET /api/mobile/products/[slug]', () => {
   beforeEach(() => {

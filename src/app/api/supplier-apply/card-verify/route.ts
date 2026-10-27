@@ -1,4 +1,5 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { completeSupplierCardVerification } from '@/server/supplier/card-verification'
 import { NextResponse } from 'next/server'
 
@@ -10,6 +11,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
  * (see card-verification.ts) and is idempotent, so both arriving is fine.
  */
 async function handle(request: Request): Promise<Response> {
+  const limited = await limitByIp('supplier-card-verify', 20, 3600)
+  if (limited) return limited
+
   const url = new URL(request.url)
   const id = url.searchParams.get('v') ?? ''
   const back = new URL('/suppliers', url.origin)
