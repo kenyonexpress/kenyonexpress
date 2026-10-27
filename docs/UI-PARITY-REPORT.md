@@ -418,3 +418,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-27 19:24 | home | 768 | n/a | **UNMEASURED** | `73516e0b8-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
 | 2026-10-27 19:24 | home | 380 | 54.93% | **FAIL** | `73516e0b8-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-27 19:27 | home | 380 | 43.32% | **FAIL** | `73516e0b8-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-27 19:32 | home | 380 | 53.52% | **FAIL** | `de7878943-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-27 19:33 | home | 768 | n/a | **UNMEASURED** | `67ce808bb-dirty` | screenshot failed: page.waitForTimeout: Target page, context or browser has been closed |
+| 2026-10-27 19:34 | home | 380 | n/a | **UNMEASURED** | `67ce808bb-dirty` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3384/ Call log: [2m - navigating to "http://localhost:3384/", waiting until "domc |
