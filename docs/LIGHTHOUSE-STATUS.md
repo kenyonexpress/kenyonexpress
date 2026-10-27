@@ -1,7 +1,7 @@
 # Lighthouse CI Status Report
 
-**Last updated:** 2026-10-27 23:12 UTC+7 (MAINTENANCE_LOOP_7)  
-**Run:** localhost:3322 (pnpm build && pnpm start)  
+**Last updated:** 2026-10-27 19:16 UTC+7 (MAINTENANCE_LOOP_7)  
+**Run:** localhost:3311 (pnpm build && PORT=3311 pnpm start)  
 **Runs per URL:** 3 (median taken)  
 **Threshold:** ≥90 for Performance, Accessibility, SEO
 
@@ -17,12 +17,12 @@
 
 | Category | Score | Status |
 |----------|-------|--------|
-| Performance | 100 | ✅ PASS |
+| Performance | 99 | ✅ PASS |
 | Accessibility | 100 | ✅ PASS |
-| Best Practices | 93 | ✅ PASS |
+| Best Practices | 100 | ✅ PASS |
 | SEO | 100 | ✅ PASS |
 
-**Median across 3 runs:** Performance 100, Accessibility 100, SEO 100
+**Median across 3 runs:** Performance 99, Accessibility 100, SEO 100
 
 ### Products Page (/products)
 
@@ -30,7 +30,7 @@
 |----------|-------|--------|
 | Performance | 99 | ✅ PASS |
 | Accessibility | 100 | ✅ PASS |
-| Best Practices | 93 | ✅ PASS |
+| Best Practices | 100 | ✅ PASS |
 | SEO | 100 | ✅ PASS |
 
 **Median across 3 runs:** Performance 99, Accessibility 100, SEO 100
@@ -51,5 +51,5 @@
 
 ## Report Files
 
-- Home runs: `.lighthouseci/reports/-2026_10_27_11_*.json|html`
-- Products runs: `.lighthouseci/reports/products-2026_10_27_11_*.json|html`
+- Home runs: `.lighthouseci/reports/-2026_10_27_12_*.json|html`
+- Products runs: `.lighthouseci/reports/products-2026_10_27_12_*.json|html`
