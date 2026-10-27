@@ -128,3 +128,4 @@ C03 DONE 2026-10-27 cache invalidation: audited (use cache + updateTag on 7 writ
 C05 DONE 2026-10-27 WhatsApp OTP: send route now Twilio -> Meta -> email fallback, 3/hour per phone; verify already existed. Tests + type-check pass. No locked files touched. המשך מ: C05 DONE
 C08 DONE 2026-10-27 F12 affiliate already shipped (migration 283 applied, admin+user UI, ke_aff 30d cookie); verified, affiliate tests 7/7 pass, wrote docs/C08-affiliate.md. No locked files touched. המשך מ: C08 DONE
 C11 SKIPPED 2026-10-27 F19 Turnstile: no site/secret keys in env; verify+widgets already in code, activates when keys set. docs/C11-turnstile.md. המשך מ: C11 DONE
+C13 DONE 2026-10-27 a11y axe-core WCAG2.1 AA on 17 routes + product/checkout/cart panel, keyboard nav, focus trap, contrast: 94 passed 2 skipped 0 failed, no code changes. docs/C13-a11y.md. המשך מ: C13 DONE
