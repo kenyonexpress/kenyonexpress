@@ -166,5 +166,5 @@ Updated: 2026-09-07 11:35 UTC (‏Passkeys: כניסה והרשמה עם WebAuth
 
 Entries older than the above were moved to docs/STATE-ARCHIVE.md (M18-c181).
 
-Updated: 2026-10-27 (M01-c231: `compare.mjs --page=home` ב-380 / 768 / 1440 הורץ ו**סורב** בשלושת הרוחבים, exit 5: `kenyonexpress.co.il` מגיש את הבילד שלנו ולא את אתר ה-WP, ולכן אין מספר diff. אין "עבר" ואין "נכשל"; שלוש שורות `REFUSED` נוספו ל-`docs/UI-PARITY-REPORT.md` אוטומטית. מקור ההשוואה האפשרי היחיד, `refs/electro-home-v7_{380,768,1440}.png`, אינו נתמך על ידי הסקריפט ולא שונה כדי לעקוף. לא נערכו קבצי קוד. ראה docs/PARITY-REFERENCE.md.)
-**המשך מ: M01-c231 BLOCKED reference-gone (gate refused, no diff measured)**
+Updated: 2026-10-28 (M01-c232: `compare.mjs --page=home` ב-380 / 768 / 1440 הורץ שוב ו**סורב** בשלושת הרוחבים, אותה סיבה כמו ב-c231: `kenyonexpress.co.il` מגיש את הבילד שלנו (30-32 הפניות `/_next/`, אין wp-content), ולכן אין מספר diff ואין עבר/נכשל. שלוש שורות `REFUSED` נוספו ל-`docs/UI-PARITY-REPORT.md`. לא נערכו קבצי קוד ולא עקפתי את הסירוב. ראה docs/PARITY-REFERENCE.md.)
+**המשך מ: M01-c232 BLOCKED reference-gone (gate refused, no diff measured)**
