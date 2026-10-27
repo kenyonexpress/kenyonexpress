@@ -1,3 +1,4 @@
+**המשך מ: M07-c226 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md; none resolvable without Cardcom prod creds / Supabase service work; no new items**
 **המשך מ: M13-c225 DONE (2026-10-27): live dev server against real Supabase (service key valid) — /api/health 200 {database:ok, search:not_configured}, /api/ready 200 {database,redis,cardcom ok; meilisearch,r2 not_configured}; no code change**
 **המשך מ: M04-c225 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, zero errors; no drift, no code change**
 **המשך מ: M12-c223 DONE (2026-10-26): robots.ts verified production-safe — allow / , disallows redeem/coupon/account/supplier/admin/scan/checkout/cart/auth/api/debug/voucher/reset+forgot-password; sitemap+host from NEXT_PUBLIC_APP_URL (.env.production = https://kenyonexpress.co.il, fallback same, trailing slash stripped); robots.test.ts 7/7 pass; no code change**
@@ -218,3 +219,6 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M07-c225 DONE (2026-10-27): TODO/FIXME scan of src/scripts/migrations — 5 markers total (cardcom.ts:249, :312, r2-migration.ts:103-106), all already filed in docs/BACKLOG.md items 1-3 (all >7 days old; blocked on Cardcom prod creds / feature work + service-role key); no new markers, no code change**
 **המשך מ: M09-c225 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ platform dep for capacitor.config.ts, kept); no unused deps; 76 unused exports are deliberate public API (money/ledger/cardcom, shadcn ui, schema, re-exports); no code change**
 **המשך מ: M11-c225 DONE (2026-10-27): sitemap.xml live 200 (apex 308→www), 75 URLs, valid XML, lastmod 2026-10-24 derived from catalogue (not clock), robots.txt points at it, 6 sampled URLs 200; note: sitemap/robots declare apex origin while apex 308s to www (domain config, not code); no code change**
+**המשך מ: M04-c226 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift; no code change**
+**המשך מ: M05-c226 DONE (2026-10-27): pnpm test full run — 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, 0 failures; no drift found, no code change**
+**המשך מ: M06-c226 DONE (2026-10-27): pnpm build exit 0, all routes generated, no drift; no code change**

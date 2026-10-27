@@ -453,5 +453,133 @@ Total fixes attempted with measurements:
 **Conclusion:** Score unmovable at 61.49% due to reference snapshot degradation (153 failed resources, especially 113 scripts and 37 fonts). Condition requires score <11%, which requires reference regeneration or baseline change — not possible without external intervention (original WordPress site no longer exists).
 
 **Timestamp:** 2026-10-27 00:10 UTC+7
+
+---
+
+## MOBILE_GATE_FIX: SKIPPED — Third Attempt, Height Ratio 0.31x (2026-10-27 11:40 UTC+7)
+
+**Goal condition:** "Fix mobile gate regression - score currently 61.48%, target <11%. Attempt fix via layout or component changes."
+
+**Status:** ⏭️ SKIPPED per CLAUDE.md rule — "goal שנתקע פעמיים: לדלג" (skip after two failures, never try third time)
+
+**Fresh measurement (2026-10-27 11:40):**
+- **Overall score:** 45.49% (first 2600px compared)
+- **Reference (WordPress):** 380x17790px with 96 failed resources (57 script, 37 font, 1 stylesheet, 1 xhr)
+- **Local (Next.js):** 380x5446px with 0 failed resources
+- **HEIGHT RATIO:** 0.31x — pages are structurally incompatible, not a styling issue
+- **Worst bands:** y 2200-2300 at 78.4%, y 1800-1900 at 77.8%, y 1700-1800 at 76.3%
+
+**Tool warning (compare.mjs):**
+```
+HEIGHT RATIO 0.31x — the percentage above is NOT a pixel gate.
+These are structurally different pages, not the same page styled differently.
+```
+
+**Why this is unfixable:**
+1. Reference is degraded: WordPress snapshot missing 96 critical resources
+2. Reference is incompatible: Old WordPress (17790px) ≠ New Next.js (5446px) — 12344px gap
+3. Reference cannot be regenerated: Original WordPress site no longer exists at kenyonexpress.co.il
+4. Code-only fixes are impossible: Height difference is architectural, not styling
+
+**Prior attempts in this goal:**
+1. Attempt 1 (2026-10-26 early): Fixed width overflow (body margin), gate still above 11%
+2. Attempt 2 (2026-10-26 late): BenefitBar height classes, CitiesRow hiding, hero CSS → all locked at 61.49%
+3. Attempt 3 (2026-10-27 this session): Fresh measurement shows 45.49% but 0.31x ratio proves pages are structurally different
+
+**Conservative decision:** Applied CLAUDE.md skip rule. No further retry authorized. Requires external intervention:
+- Regenerate reference from original WordPress (impossible, site no longer exists)
+- Switch baseline to Electro v7 template (architectural change)
+- Accept gate as unmeasurable with current degraded reference
+
+**Documentation:** docs/GATE-STATUS.md updated with fresh measurement and root cause analysis.
+
+**Timestamp:** 2026-10-27 11:40 UTC+7
+
+---
+
+## MAINTENANCE_LOOP_9: SKIPPED (2026-10-27 11:50 UTC+7)
+
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP.
+
+**Status:** ⏭️ SKIPPED per CLAUDE.md rule — "goal שנתקע פעמיים: לדלג"
+
+**Blocker:** Requires Supabase MCP which requires OAuth authentication unavailable in non-interactive sessions.
+
+**Prior attempts:**
+- 2026-10-25: Supabase CLI `db query --linked` timeout >120s
+- 2026-10-26 01:15 UTC: CLI timeout again, background tasks failed
+- 2026-10-26 10:58 UTC: Workaround via REST API verified no slow queries
+
+**Last verified:** 2026-10-26 10:58 UTC — Connection pool HEALTHY, 0 slow queries >500ms
+
+**Decision:** Third attempt on blocked goal, skip per rule. DB-STATUS.md up to date with last successful verification.
+
+---
+
+## MAINTENANCE_LOOP_10: DONE (2026-10-27 11:52 UTC+7)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10
+from this very file and appending them again.
+
+**Status:** ✅ COMPLETE
+
+**Action:** Appended 10 maintenance loop goals to queue.txt (lines 15-24), extending the queue from 14 to 24 lines.
+
+**Result:** Infinite maintenance loop established — cycle 2 of 3+ now queued.
+
+---
+
+## MAINTENANCE_LOOP_1: DONE (2026-10-27 11:55 UTC+7)
+
+**Goal:** Run pnpm audit and fix critical and high vulnerabilities.
+
+**Status:** ✅ COMPLETE
+
+**Audit result:** 1 vulnerability found (severity: moderate, not critical/high)
+- Package: uuid <11.1.1 (transitive via @capacitor/cli > xcode > uuid)
+- Per task instructions, only fix critical and high vulnerabilities — this is moderate, no fix needed
+
+**Conclusion:** No critical or high vulnerabilities to fix. Audit clean for required severity levels.
+
+---
+
+## MAINTENANCE_LOOP_2: DONE (2026-10-27 11:57 UTC+7)
+
+**Goal:** Run pnpm outdated and bump patch versions for safe packages. Skip major and minor.
+
+**Status:** ✅ COMPLETE
+
+**Outdated scan result:** 16 packages with updates available
+- All are major or minor version updates (no patch updates found)
+- Examples: react 19.2.9→19.3.1 (minor), typescript 5.9.3→7.0.2 (major), @sentry/nextjs 10.75.2→11.9.0 (major)
+
+**Action:** Per task, skip major and minor. No patch versions available to bump.
+
+**Conclusion:** No packages need updating for this task.
+
+---
+
+## MAINTENANCE_LOOP_3: DONE (2026-10-27 11:59 UTC+7)
+
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items.
+
+**Status:** ✅ COMPLETE
+
+**Scan result:**
+- docs/BACKLOG.md: 3 items, all BLOCKED (2 need Cardcom prod creds, 1 needs R2 service-role key)
+- docs/TODO.md: does not exist
+
+**Conclusion:** 0 unblocked items found. No new goals queued.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_4 READY
+
+**Next goal (queued 2026-10-27 11:59 UTC+7):**
+Run full Playwright test suite with pnpm test:e2e.
+Report pass/fail/flaky counts to docs/E2E-STATUS.md.
+
+---
+
 המשך מ: M07-c221 DONE (2026-10-26): TODO/FIXME scan (src, scripts, migrations, root docs) found 6 TODOs, all >7 days old (2026-07-24 to 2026-10-17) and all already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds, R2 migration stub). No new items, no code change.
 המשך מ: M08-c225 DONE (2026-10-27): Lighthouse mobile sample, local prod build port 3100: home 68/88 (median 88), product 77/83 (median 83); G23 95+ not met, LCP is the gap, fixes touch locked components. Log: logs/lighthouse-m08-c225.log. No code change.
