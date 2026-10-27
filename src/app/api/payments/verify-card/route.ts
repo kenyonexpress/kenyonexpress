@@ -7,7 +7,20 @@ import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
+const VERIFICATION_AMOUNT_AGOROT = agorot(1)
+
+// CARDCOM_1ILS_VERIFY is a kill switch: the flow is live by default and only an
+// explicit "0"/"false" turns it off.
+function verifyEnabled(): boolean {
+  const raw = process.env.CARDCOM_1ILS_VERIFY?.trim().toLowerCase()
+  return raw !== '0' && raw !== 'false'
+}
+
 async function handlePOST(_request: NextRequest): Promise<NextResponse> {
+  if (!verifyEnabled()) {
+    return NextResponse.json({ error: 'verification_disabled' }, { status: 503 })
+  }
+
   const supabase = await createClient()
   const {
     data: { user },

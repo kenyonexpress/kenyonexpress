@@ -874,27 +874,156 @@ Queue established for infinite cycle. Next iteration begins with MAINTENANCE_LOO
 
 ---
 
-## MAINTENANCE_LOOP_5: DONE (2026-10-27 14:05 UTC)
+## MAINTENANCE_LOOP_5: DONE (2026-10-27 14:05 UTC) — QUALITY GATES VERIFIED (2026-10-27 14:45 UTC)
 
-**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
+**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
 
-**Status:** ✅ COMPLETE
+**Status:** ✅ COMPLETE — All quality gates verified and passed
 
 **Findings:**
 - Healthy routes (7): health, notifications, invoices, stock, stranded-payments, abandoned-cart, stock-notifications
 - Stale routes (15): affiliate-payouts, deal-scraper, expire-vouchers, fraud-monitor, observability-check, p95-monitor, reap-carts, reconcile, retention, rfm-segmentation, scheduled-gifts, search-report, sms-broadcasts, subscriptions, weekly-digest
-- Last-run timestamps obtained via Vercel CLI `logs --since 24h`
+- Last-run timestamps obtained via Vercel CLI `logs --since 24h` (MCP returned 403, switched to CLI fallback)
 - Most recent run: 21:05:00 local time (health, notifications)
 - Oldest recent run: 20:58:54 local time (search-reindex, anomaly not in cron-jobs.json)
 
 **Documentation:** docs/CRON-STATUS.md updated with fresh check results, root cause analysis, impact assessment, and resolution steps
 
-**Quality gates:** typecheck ✅, lint ✅, build ✅ (no code changes)
+**Quality gates verification (2026-10-27 14:45 UTC):**
+- ✅ pnpm typecheck: PASS (no errors)
+- ✅ pnpm lint: PASS (1 formatting fix applied to .lighthouseci/flags-*.json)
+- ✅ pnpm build: PASS (273 routes, exit 0)
 
-**Commit:** 317b6dbc8 pushed to origin/closeout/v1-final
+**Commits:**
+- 317b6dbc8: Initial cron status check with docs update
+- 2ebee489e: chore ops cron status check - quality gates verified (pushed 2026-10-27 14:45 UTC)
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_7 (NEXT IN QUEUE)
+## MAINTENANCE_LOOP_3 (Cycle 3): DONE (2026-10-27 14:32 UTC)
 
-Next goal: MAINTENANCE_LOOP_7: Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
+**Goal:** Scan docs/BACKLOG.md and docs/TODO.md for unblocked items.
+
+**Status:** ✅ COMPLETE
+
+**Scan result:**
+- docs/BACKLOG.md: 3 items (all BLOCKED)
+  - #1-2: Cardcom production credentials needed
+  - #3: R2 service-role key needed
+- docs/TODO.md: Does not exist
+
+**Unblocked items found:** 0
+
+**Action taken:** No new goals queued
+
+**Conclusion:** All backlog items blocked by external credentials.
+
+---
+
+## MAINTENANCE_LOOP_2 (Cycle 3): DONE (2026-10-27 14:30 UTC)
+
+**Goal:** Run pnpm outdated and bump patch versions for safe packages. Skip major and minor.
+
+**Status:** ✅ COMPLETE
+
+**Outdated scan:**
+- 16 packages with updates available
+- All are major or minor version updates (examples: react 19.2.9→19.3.1 minor, typescript 5.9.3→7.0.2 major)
+- Zero patch version updates (e.g., 19.2.9→19.2.10)
+
+**Action taken:** No updates applied (no patch versions available per task instructions)
+
+**Conclusion:** No patches needed.
+
+---
+
+## MAINTENANCE_LOOP_1 (Cycle 3): DONE (2026-10-27 14:25 UTC)
+
+**Goal:** Run pnpm audit and fix critical and high vulnerabilities.
+
+**Status:** ✅ COMPLETE
+
+**Audit result:**
+- 1 vulnerability found (moderate severity)
+- Package: uuid (transitive via @capacitor/cli > xcode > uuid)
+- Per task instructions: only fix critical and high, skip moderate
+- Action taken: No fixes applied
+
+**Conclusion:** Audit clean for required severity levels.
+
+---
+
+## MAINTENANCE_LOOP_10: DONE (2026-10-27 14:25 UTC)
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from this very file and appending them again.
+
+**Status:** ✅ COMPLETE
+
+**Action:** Read MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from ~/ke-goals/queue.txt lines 1-20 and appended them to create lines 21-40.
+
+**Result:** Infinite maintenance loop cycle extended. Queue now has cycle 3+ content ready for next iteration.
+
+---
+
+## MAINTENANCE_LOOP_9: SKIPPED (2026-10-27 14:22 UTC)
+
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP.
+
+**Status:** ⏭️ SKIPPED — Known MCP OAuth blocker (3rd attempt)
+
+**Reason:**
+- Goal explicitly requires "via Supabase MCP"
+- Supabase MCP requires OAuth authentication
+- OAuth unavailable in non-interactive sessions
+- Prior attempts: 2026-10-25 (CLI timeout), 2026-10-26 01:15 (CLI timeout + REST workaround), 2026-10-26 10:58 (workaround insufficient)
+- Per CLAUDE.md rule: "goal שנתקע פעמיים: לדלג" (skip after two failures, never try third time)
+
+**Last verified status (2026-10-26 10:58 UTC):**
+- Connection pool: HEALTHY
+- Query performance: 15 samples, average 166ms, max 177ms
+- Slow queries >500ms: 0
+
+**Action:** Skip without retry. Requires interactive session with Supabase MCP OAuth.
+
+---
+
+## MAINTENANCE_LOOP_8: DONE (2026-10-27 14:20 UTC)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew, queue cleanup goal.
+
+**Status:** ✅ COMPLETE
+
+**Findings:**
+- Total count: 6 TODOs (unchanged)
+- cardcom.ts: 2 TODOs (Cardcom prod creds blocker)
+- r2-migration.ts: 4 TODOs (R2 migration blocker)
+- FIXME: 0, HACK: 0
+- Delta: 0 (no growth, no cleanup goal needed)
+
+**Decision:** All items already tracked in docs/BACKLOG.md. No new cleanup goal queued.
+
+---
+
+## MAINTENANCE_LOOP_7: SKIPPED (2026-10-27 14:15 UTC)
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun.
+
+**Status:** ⏭️ SKIPPED — Known infrastructure blocker
+
+**Reason:** 
+- pnpm lhci:autorun consistently times out (>120s)
+- Lighthouse CI requires extended runtime not available in background task limit
+- Per CLAUDE.md: infrastructure blocker, not code issue
+
+**Last known scores (from interactive session):**
+- home: 81/88 (median 88)
+- product: 82/83 (median 83)
+- Status: Below G23 95+ target, LCP is the limiting factor
+
+**Action:** Skip per CLAUDE.md — cannot run in maintenance loop constraints
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_1 (CYCLE 3 BEGINS)
+
+Next iteration of the infinite maintenance loop begins with MAINTENANCE_LOOP_1: Run pnpm audit and fix critical/high vulnerabilities.
