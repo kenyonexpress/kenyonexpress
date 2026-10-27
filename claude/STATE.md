@@ -244,3 +244,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: C15 DONE (2026-10-27): headers (CSP/HSTS/XFO) already shipped+tested; RLS live 127/127; no raw SQL; added per-IP rate limits to 6 unlimited public routes + R2 path-traversal guard; docs/C15-security.md**
 **המשך מ: M04-c229 DONE (2026-10-27): pnpm type-check clean (0 errors), no drift, nothing to fix**
 **המשך מ: M06-c229 DONE (2026-10-27): pnpm build passes, no drift remaining, tree clean**
+**המשך מ: M15-c229 DONE (2026-10-27): / and /product/<slug> zero console errors at 380/768/1440 on fresh prod build (:3901); stale :3000 dev server gave chunk 404s after rebuild, not a code issue**
