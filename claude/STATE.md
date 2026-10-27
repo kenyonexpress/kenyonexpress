@@ -1,3 +1,4 @@
+**המשך מ: M07-c227 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old per git blame and already filed in docs/BACKLOG.md #1-3; blocked on Cardcom prod creds / R2 feature work; no new items, no forbidden files touched**
 **המשך מ: M07-c226 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md; none resolvable without Cardcom prod creds / Supabase service work; no new items**
 **המשך מ: M13-c225 DONE (2026-10-27): live dev server against real Supabase (service key valid) — /api/health 200 {database:ok, search:not_configured}, /api/ready 200 {database,redis,cardcom ok; meilisearch,r2 not_configured}; no code change**
 **המשך מ: M04-c225 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, zero errors; no drift, no code change**
@@ -225,3 +226,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M08-c226 DONE (2026-10-27): Lighthouse mobile sample, / 47/34, product (/product/bar-drink) 46/52; load avg 11 (e2e running), TBT contention-driven; logged in logs/lighthouse-m08-c226.log; G23 95+ not met; no code change**
 **המשך מ: M09-c226 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ dep for capacitor.config.ts, kept); no unused deps; unused exports are deliberate public API (money/ledger/cardcom, shadcn ui, schema); no code change**
 **המשך מ: M04-c227 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, 0 errors; committed generated docs drift only (M-CYCLE-STATUS, UI-PARITY-REPORT); no code change**
+**המשך מ: M05-c227 DONE (2026-10-27): pnpm test full run — 615 files passed / 2 skipped, 7064 tests passed / 28 skipped, 0 failures; committed generated docs drift only (DB-STATUS, M-CYCLE-STATUS); no code change**
