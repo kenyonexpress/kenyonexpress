@@ -1,5 +1,6 @@
 import { CacheControl } from '@/lib/cache/http'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import { NextResponse } from 'next/server'
@@ -22,6 +23,9 @@ import { NextResponse } from 'next/server'
  * into a server component.
  */
 async function handleGET() {
+  const limited = await limitByIp('cart-read', 120, 60)
+  if (limited) return limited
+
   const supabase = await createClient()
   const [cart, { data: auth }] = await Promise.all([getCart(), supabase.auth.getUser()])
 

@@ -240,3 +240,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: C10 DONE (2026-10-27): F14 web push — VAPID/SW/subscribe+DELETE already shipped; added admin broadcast (/admin/push) and account BrowserPushToggle; docs/C10-web-push.md**
 **המשך מ: C11 SKIPPED (2026-10-27): F19 Turnstile code already on login/signup/supplier-apply; no real keys (placeholder secret) so left off; docs/C11-turnstile.md**
 **המשך מ: C14 DONE (2026-10-27): SEO (dynamic sitemap, robots, og per route, Product+Offer+Breadcrumb JSON-LD, canonical) already shipped; 75 SEO tests pass; docs/C14-seo.md**
+**המשך מ: C15 DONE (2026-10-27): headers (CSP/HSTS/XFO) already shipped+tested; RLS live 127/127; no raw SQL; added per-IP rate limits to 6 unlimited public routes + R2 path-traversal guard; docs/C15-security.md**

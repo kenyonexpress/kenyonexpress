@@ -1,4 +1,5 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { createPublicClient } from '@/lib/supabase/public'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -7,6 +8,9 @@ import { type NextRequest, NextResponse } from 'next/server'
  * to fetch full product information from a notification link.
  */
 async function handleGET(_request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const limited = await limitByIp('mobile-product', 120, 300)
+  if (limited) return limited
+
   const { slug } = await params
 
   if (!slug || typeof slug !== 'string') {
