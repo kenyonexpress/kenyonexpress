@@ -6,16 +6,16 @@ should be replaced with logical properties that flip automatically.
 
 ## Summary
 
-- Generated: 2026-10-24
-- Files scanned: 1521
-- Files with violations: 56
-- Total violations: 105
+- Generated: 2026-10-27
+- Files scanned: 1556
+- Files with violations: 55
+- Total violations: 104
 
 ### By token
 
 | Physical | Count |
 | --- | --- |
-| `right-` | 20 |
+| `right-` | 19 |
 | `mr-` | 18 |
 | `text-right` | 16 |
 | `left:` | 14 |
@@ -66,7 +66,7 @@ should be replaced with logical properties that flip automatically.
 | src/app/api/cron/abandoned-cart/route.ts | 113 | `text-align:right` | `text-align: end` |
 | src/app/error-pages.test.ts | 10 | `left-` | `start-` |
 | src/app/error-pages.test.ts | 32 | `right-` | `end-` |
-| src/app/globals.css | 487 | `left:` | `inset-inline-start:` |
+| src/app/globals.css | 490 | `left:` | `inset-inline-start:` |
 | src/app/not-found.tsx | 8 | `left-` | `start-` |
 | src/app/not-found.tsx | 51 | `text-right` | `text-end` |
 | src/app/not-found.tsx | 56 | `left-` | `start-` |
@@ -101,7 +101,6 @@ should be replaced with logical properties that flip automatically.
 | src/components/category/PriceRangeSlider.tsx | 57 | `right:` | `inset-inline-end:` |
 | src/components/FooterAccordion.test.tsx | 131 | `text-right` | `text-end` |
 | src/components/FooterAccordion.tsx | 22 | `text-right` | `text-end` |
-| src/components/geo/CityTag.tsx | 21 | `right-` | `end-` |
 | src/components/home/BenefitBar.test.tsx | 33 | `right-` | `end-` |
 | src/components/home/BenefitBar.test.tsx | 51 | `right-` | `end-` |
 | src/components/home/BenefitBar.tsx | 49 | `right-` | `end-` |
@@ -134,5 +133,5 @@ should be replaced with logical properties that flip automatically.
 | src/styles/mini-cart.css | 289 | `right-` | `end-` |
 | src/styles/newsletter.css | 2 | `margin-left` | `margin-inline-start` |
 | src/styles/product-card-deals.css | 329 | `left:` | `inset-inline-start:` |
-| src/styles/tokens.css | 314 | `right-` | `end-` |
+| src/styles/tokens.css | 315 | `right-` | `end-` |
 | src/styles/tokens.ts | 141 | `left-` | `start-` |
