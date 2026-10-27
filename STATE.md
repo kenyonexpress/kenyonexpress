@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-28 (M18-c232: STATE.md נמדד ב-172 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c232 DONE.
 Updated: 2026-10-27 (M18-c227: STATE.md נמדד ב-281 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c227 DONE.
 Updated: 2026-10-27 (M16-c228: אימות JSON-LD בעמודי מוצר. המסלול היחיד הוא src/app/(store)/product/[slug]/page.tsx, מרנדר שני סקריפטים ld+json: Product (buildProductJsonLd, מחיר מאותם ערכים כמו העמוד) ו-BreadcrumbList (בית > קטגוריה > מוצר). json-ld.test.ts: 17/17 עברו. לא נערכו קבצי קוד.) המשך מ: M16-c228 DONE.
 Updated: 2026-10-27 (M08-c227: Lighthouse mobile על / ו-/product לא נמדד. השרת (dev :3000 ו-next start :3456) מחזיר 500 בכל מסלול: instrumentation hook נופל על אימות src/lib/env.ts (מחרוזת קצרה מ-40 תווים + URL לא תקין), כנראה ערכי placeholder ב-.env.local. אין ציון חדש; הציון האחרון הידוע נשאר / =60, /product =68. לא נערכו קבצי קוד.) המשך מ: M08-c227 DONE-DEFERRED (placeholder env)
