@@ -64,7 +64,7 @@ const PDI = '\u2069'
 const NBSP = '\u00a0'
 
 /** The digits and the sign, with no isolate. Everything shared lives here. */
-export function shekelBody(value: Agorot, withFraction: boolean): string {
+function shekelBody(value: Agorot, withFraction: boolean): string {
   const negative = value < 0
   const absolute = Math.abs(value)
   const whole = Math.trunc(absolute / AGOROT_PER_ILS)

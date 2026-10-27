@@ -25,7 +25,7 @@ import { secretEquals } from '@/lib/security/constant-time'
 
 type CardcomJson = Record<string, unknown>
 
-export function asString(value: unknown): string | null {
+function asString(value: unknown): string | null {
   if (typeof value === 'string' && value.length > 0) return value
   if (typeof value === 'number') return String(value)
   return null

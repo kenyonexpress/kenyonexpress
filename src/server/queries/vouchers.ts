@@ -139,14 +139,6 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
   return (data as unknown as CustomerVoucherDetail | null) ?? null
 }
 
-/** True while a voucher can still be presented at a counter. */
-export function isVoucherRedeemable(v: {
-  status: string
-  expires_at: string
-}): boolean {
-  return v.status === 'issued' && new Date(v.expires_at).getTime() > Date.now()
-}
-
 /** What the counter is shown before it commits to burning a voucher. */
 export interface RedemptionPreview {
   id: string

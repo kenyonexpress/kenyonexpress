@@ -5,7 +5,6 @@
 
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
 
 export type MilestoneType =
   | 'phone_verification_after_5_orders'
@@ -20,25 +19,6 @@ export interface UserVerificationMilestone {
   metadata: Record<string, unknown>
   created_at: string
   updated_at: string
-}
-
-/**
- * Check if current user needs phone verification
- * (Called on account pages, checkout, etc.)
- */
-export async function currentUserNeedsPhoneVerification(): Promise<boolean> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return false
-
-    return await userNeedsPhoneVerification(user.id)
-  } catch (error) {
-    log.error('milestone.check_current_user_failed', { error })
-    return false
-  }
 }
 
 /**
