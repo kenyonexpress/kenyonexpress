@@ -1,0 +1,11 @@
+# M08-c228 Lighthouse mobile sample 2026-10-27 (local prod build, port 3100, 2 runs/page, scripts/_lh-runs.mjs; product = /product/אוזניות-איירפודס-3)
+# load avg at start: 7.03 18.22 22.38
+c228-home #1: {"run":1,"score":68,"FCP":"2.5 s","LCP":"6.8 s","SI":"5.3 s","TBT":"130 ms","CLS":"0","TTFB":"Root document took 60 ms","blocking":"550 ms","unusedJS":"135 KiB","legacyJS":"-"}
+c228-home #2: {"run":2,"score":82,"FCP":"2.0 s","LCP":"4.4 s","SI":"2.0 s","TBT":"120 ms","CLS":"0.001","TTFB":"Root document took 10 ms","blocking":"740 ms","unusedJS":"135 KiB","legacyJS":"-"}
+
+c228-home scores: 68 / 82  (median 82)
+c228-product #1: {"run":1,"score":87,"FCP":"1.8 s","LCP":"3.8 s","SI":"1.8 s","TBT":"20 ms","CLS":"0.001","TTFB":"Root document took 590 ms","blocking":"1,010 ms","unusedJS":"129 KiB","legacyJS":"-"}
+c228-product #2: {"run":2,"score":84,"FCP":"1.7 s","LCP":"4.4 s","SI":"1.7 s","TBT":"20 ms","CLS":"0.001","TTFB":"Root document took 10 ms","blocking":"900 ms","unusedJS":"129 KiB","legacyJS":"-"}
+
+c228-product scores: 87 / 84  (median 87)
+Note: G23 95+ not met (home 68-82, product 84-87); LCP 3.8-6.8 s and render-blocking 0.5-1 s remain the drivers; load ~7 at start. Sample-only item, no code changes.
