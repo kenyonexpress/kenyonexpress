@@ -289,3 +289,12 @@ Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Not measured. Lo
 ## C07 (2026-10-27)
 F11 club tiers: migrations/pending/243_club_tiers.sql (club_tiers table, fn_club_spend_12mo, fn_club_tier; integer agorot), src/lib/club/tiers.ts (+test), src/server/queries/club.ts, /account/club page, optional club_tier_he badge on ProductCard (no badge unless passed, no visual change). docs/C07-club-tiers.md did not exist; thresholds chosen: bronze 0 / silver 2,000 / gold 5,000 ILS. Vitest 4/4, tsc and biome clean on touched files. Migration 243 NOT applied: Supabase MCP is unauthorized in this session. Until applied, /account/club shows the "cannot load" message. No locked files touched.
 **המשך מ: C07 BLOCKED supabase-mcp-unauthorized (code committed, migration 243 unapplied)**
+
+## M01-c229 (2026-10-27)
+Re-measure compare.mjs --page=home at --width=380 / 768 / 1440. Not measured. Local server on :3000 now returns HTTP 200 on / (was 500 in c227/c228), but compare.mjs refuses the reference at all three widths: kenyonexpress.co.il serves our own Next build (30-32 /_next/ assets, no wp-content), so scoring would compare our build with itself. Guard not bypassed; no --live= self-contained capture of the old site exists (docs/PARITY-REFERENCE.md). No diff percentages; last known (c224) 62.6/35.41/26.99, gate <11% not passed. No locked files touched; nothing committed.
+**המשך מ: M01-c229 BLOCKED home-reference-refused (no measurement)**
+המשך מ: M02-c229 BLOCKED no-reference (compare.mjs --page=product at 380/768/1440 vs pinned מוצר-לדוגמא on local :3000: all 3 REFUSED exit 5, live host kenyonexpress.co.il is our own Vercel build (33-34 _next refs, 0 wp-content); no refs/ke_live_*.html archive in tree so no fallback reference; no number produced, gate not passed; REFUSED rows in docs/UI-PARITY-REPORT.md uncommitted; no code changes)
+המשך מ: M02-c230 BLOCKED no-reference (compare.mjs --page=product refuses at 380/768/1440, exit 5: kenyonexpress.co.il = our own build; see docs/PARITY-REFERENCE.md)
+## M13-c230 (2026-10-27)
+Health/ready re-verified on local dev: /api/health 503 (database down), /api/ready 503 (database+redis down). Supabase REST with .env.local service key returns 401 (invalid key). DONE-DEFERRED until key updated post-C51. No code changes.
+**המשך מ: M13-c230 DONE-DEFERRED**
