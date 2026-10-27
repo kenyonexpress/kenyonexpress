@@ -5,7 +5,10 @@
 **Verification Run:** `scripts/compare.mjs --page=home --widths=380`  
 **Result:** 380px = **61.48%** (confirmed; no improvement from baseline)
 
-This score remains significantly above the 11% threshold. Mobile gate is **BLOCKED** — requeuing MOBILE_GATE_FIX to head of queue per CLAUDE.md autonomous protocol.
+This score remains significantly above the 11% threshold. Mobile gate is **BLOCKED on external constraint** (broken reference from live site no longer available).
+
+**CLAUDE.md Decision (2026-10-27 22:47):**  
+Goal MOBILE_GATE_FIX attempted, stuck on same blocker as previous attempt (broken reference with 141+ missing resources). Per CLAUDE.md protocol for stuck goals: "goal stuck twice: skip." No third attempt. Queue entry removed. Moving to MAINTENANCE_LOOP_7.
 
 ---
 
