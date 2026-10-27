@@ -63,3 +63,7 @@ overrides:
   # server (GHSA-g7r4-m6w7-qqqr). vite 7.3.6 still pins ^0.27, so scope the
   # bump to that edge; tsx already resolves 0.28.1 on its own.
   'vite>esbuild': ^0.28.1
+  uuid@<11.1.1: ^11.1.1
+
+patchedDependencies:
+  xcode@3.0.1: patches/xcode@3.0.1.patch
