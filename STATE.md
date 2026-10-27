@@ -16,6 +16,37 @@
 
 ---
 
+## MAINTENANCE_LOOP_6: DONE (2026-10-28 23:05 UTC+7) - Cycle 9
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal. Report current score to docs/GATE-STATUS.md.
+
+**Status:** ✅ COMPLETE
+
+**Measurement Result:**
+- **Fresh measurement (2026-10-28 23:02 UTC+7):** 380px score = **61.47%**
+- **Best known:** 30.26% (2026-10-28 02:07)
+- **Tolerance:** 11%
+- **Status:** 🔴 **FAILED** — score 61.47% >> 11%
+- **HEIGHT RATIO:** 0.72x (reference 17790px vs ours 12818px)
+
+**Root Cause Analysis:**
+- Measurement infrastructure blocker confirmed
+- Reference snapshot is degraded (missing 101 scripts + 37 fonts from WordPress archive)
+- Page structure changed (HotCoupons + BrandsRowServer removed per commit 945b05bde)
+- Reference NOT updated to reflect component removals
+- compare.mjs flags: "structurally different pages"
+
+**Action Taken:**
+- ✅ Ran `scripts/compare.mjs --page=home --widths=380` 
+- ✅ Measured: 61.47% (exceeds 11% tolerance)
+- ✅ Updated docs/GATE-STATUS.md with fresh score
+- ✅ **Queued MOBILE_FIX_1** to ~/ke-goals/queue.txt (head of queue)
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+
+**Conclusion:** Gate failed (61.47% > 11%). MOBILE_FIX_1 queued per goal specification. Root cause is measurement infrastructure blocker (reference outdated), not code issue.
+
+---
+
 ## MAINTENANCE_LOOP_5: DONE (2026-10-28 23:02 UTC+7) - Cycle 9
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP. Alert in docs/CRON-STATUS.md if stale over 24h.
@@ -140,7 +171,7 @@
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_6
+## המשך מ: MOBILE_FIX_1
 
 ---
 

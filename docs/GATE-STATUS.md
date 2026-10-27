@@ -1,17 +1,22 @@
 # Mobile Gate Status (2026-10-28)
 
-## Latest Check (2026-10-28 21:15 UTC+7, MAINTENANCE_LOOP_6, Cycle 8)
+## Latest Check (2026-10-28 23:02 UTC+7, MAINTENANCE_LOOP_6, Cycle 9)
 
-**Measurement Date:** 2026-10-28 21:15 UTC+7 (MAINTENANCE_LOOP_6)
+**Measurement Date:** 2026-10-28 23:02 UTC+7 (MAINTENANCE_LOOP_6, Cycle 9)
 **Method:** `scripts/compare.mjs --page=home --widths=380`  
 **Environment:** Local pnpm start (fresh production build)  
-**Server:** PORT=3312 (localhost:3000)
+**Server:** PORT=3311 (localhost:3311)
 
-## Current Scores (380px only, Cycle 8 measurement)
+## Current Scores (380px only, Cycle 9 measurement)
 
 | Width | Score | Best Known | Delta | Status |
 |-------|-------|-----------|-------|--------|
-| 380px | **61.49%** | 30.26% | +31.23% | 🔴 FAILED |
+| 380px | **61.47%** | 30.26% | +31.21% | 🔴 FAILED |
+
+**Previous Check (2026-10-28 21:15 UTC+7):**
+| Width | Score | Best Known | Delta | Status |
+|-------|-------|-----------|-------|--------|
+| 380px | 61.49% | 30.26% | +31.23% | 🔴 FAILED |
 
 **Previous Check (2026-10-28 02:07 UTC):**
 | Width | Score | Best Known | Delta | Status |
