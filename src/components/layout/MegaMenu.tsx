@@ -326,8 +326,11 @@ export default function MegaMenu() {
                             className="inline-flex items-center mt-4 text-[color:var(--electro-white)] font-medium hover:underline text-sm transition-all duration-200"
                           >
                             <span>לחצו כאן</span>
-                            <span className="ms-2 transition-transform duration-200 group-hover:translate-x-1">
-                              →
+                            <span
+                              className="ms-2 transition-transform duration-200 group-hover:-translate-x-1"
+                              aria-hidden="true"
+                            >
+                              ←
                             </span>
                           </Link>
                         </div>
