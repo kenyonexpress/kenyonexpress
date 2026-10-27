@@ -1,3 +1,4 @@
+**המשך מ: M09-c229 DONE (2026-10-27): knip deps scan: only flagged @capacitor/android, a false positive (android/ Capacitor platform needs it for cap sync) so kept; 0 unused deps; ~76 unused exports are intentional lib/UI API surface (shadcn, money, ledger, payments), left untouched; no code change, no forbidden files touched**
 **המשך מ: C01 DONE (2026-10-27): preflight node v25.9.0, pnpm 11.1.2, git clean on closeout/v1-final, pnpm install up to date, typecheck clean; docs/C01-preflight.md**
 **המשך מ: M18-c228 DONE (2026-10-27): STATE.md already 234 lines (<300) and docs/STATE-ARCHIVE.md exists; no trim needed, no code change**
 **המשך מ: M07-c228 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md #1-3; blocked on Cardcom prod creds / R2 feature work; no new items, no forbidden files touched**
