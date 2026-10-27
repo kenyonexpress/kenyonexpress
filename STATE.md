@@ -178,3 +178,5 @@ Updated: 2026-10-28 (M01-c235: `compare.mjs --page=home` ב-380 / 768 / 1440 ה�
 **המשך מ: M01-c235 BLOCKED reference-gone (home gate refused at 380/768/1440, live host has no WP/Next markers, no diff measured)**
 Updated: 2026-10-28 (M12-c235: robots.txt אומת: `src/app/robots.ts` מתיר `/` ושולל את כל האזורים הפרטיים (redeem, coupon, gift, account, supplier, admin, checkout, cart, auth, api, login, mfa, debug), יש sitemap ו-host מוחלטים, ו-`robots.test.ts` עובר 8/8. הערה: `.next/server/app/robots.txt.body` ישן וחסר `/gift/`; בילד חדש הוא יתעדכן. לא נערכו קבצי קוד.)
 **המשך מ: M12-c235 DONE**
+Updated: 2026-10-28 (M18-c235: STATE.md נבדק, 180 שורות (מתחת ל-300), והארכיון `docs/STATE-ARCHIVE.md` כבר מכיל את הערכים הישנים. אין צורך בגזירה נוספת; לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M18-c235 DONE**
