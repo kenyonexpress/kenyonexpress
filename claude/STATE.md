@@ -1,3 +1,4 @@
+**המשך מ: M07-c227 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old per git blame and already filed in docs/BACKLOG.md #1-3; blocked on Cardcom prod creds / R2 feature work; no new items, no forbidden files touched**
 **המשך מ: M07-c226 DONE (2026-10-27): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md; none resolvable without Cardcom prod creds / Supabase service work; no new items**
 **המשך מ: M13-c225 DONE (2026-10-27): live dev server against real Supabase (service key valid) — /api/health 200 {database:ok, search:not_configured}, /api/ready 200 {database,redis,cardcom ok; meilisearch,r2 not_configured}; no code change**
 **המשך מ: M04-c225 DONE (2026-10-27): pnpm type-check (tsc --noEmit) clean, zero errors; no drift, no code change**
