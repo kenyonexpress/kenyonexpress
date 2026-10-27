@@ -42,3 +42,44 @@ Choose one of three paths:
 1. **Regenerate reference** from original WordPress (currently inaccessible)
 2. **Switch baseline** to Electro v7 template (architectural change to compare.mjs)
 3. **Accept gate as deprecated** (measurement against old WordPress no longer valid)
+
+---
+
+## Desktop Gate (1440px) - MAINTENANCE_LOOP_6 CHECK
+
+**Date:** 2026-10-27 14:10 UTC
+**Score:** 39.85% (OVERALL first 2600px) — ABOVE 11% THRESHOLD
+**Status:** ⚠️ GATE FAILING — above 11% threshold
+
+### Fresh Measurement (MAINTENANCE_LOOP_6, 2026-10-27 14:10 UTC)
+- **Overall score (1440px):** 39.85% (first 2600px compared)
+- **Reference (WordPress):** 1440x5492px
+- **Local (Next.js):** 1440x4956px
+- **Failed resources on reference:** 96 (57 script, 37 font, 1 stylesheet, 1 xhr)
+- **Failed resources on local:** 0 (everything loaded)
+- **Height ratio:** 0.90x (5492px vs 4956px = 536px difference, 9.8% height variance)
+
+### Worst bands (1440px viewport, y 0-2600):
+  - y 1400-1500: 64.6%
+  - y 2300-2400: 62.4%
+  - y 2200-2300: 61.4%
+  - y 900-1000: 60.5%
+  - y 1200-1300: 60.2%
+
+### Analysis
+- **Score 39.85% >> 11% threshold:** Gate is FAILING
+- **Reference degraded:** 96 resources failed to load on WordPress snapshot
+- **Pages incompatible:** WordPress (5492px) vs Next.js (4956px) have fundamental structural differences
+- **Prior fix attempts:** Three separate attempts in previous sessions produced no meaningful improvement
+- **Measurement pattern:** Consistent failure (45.49% on 380px, now 39.85% on 1440px) indicates architectural mismatch, not styling bug
+
+### Decision per CLAUDE.md
+**Rule: "goal שנתקע פעמיים: לדלג" (skip after two failures)**
+- This is the 3rd attempt on a blocked goal (prior 2 attempts in STATE.md lines 394-457)
+- No further retry authorized
+- Requires external intervention: regenerate reference or switch baseline
+
+### Next Steps
+- If MOBILE_GATE_FIX goal appears in queue again: skip immediately per CLAUDE.md rule
+- Gate will remain above 11% until external intervention applied
+- Consider owner decision on baseline (Electro v7 vs deprecated WordPress reference)
