@@ -237,3 +237,4 @@ line only, and the full block for each goal is in the root file.
 **המשך מ: M09-c228 DONE (2026-10-27): knip re-audit — only @capacitor/android flagged (native android/ dep, kept); no unused deps; unused exports are deliberate public API; no code change**
 **המשך מ: C04 DONE (2026-10-27): F15 passkeys already shipped (register/authenticate APIs, webauthn_credentials table 178, /account/security UI); no duplicate passkey_credentials migration; docs/C04-passkeys.md**
 **המשך מ: C06 DONE (2026-10-27): F07 1 ILS Cardcom verify already shipped (token stored, auto-refund); added CARDCOM_1ILS_VERIFY kill switch to verify-card POST; docs/C06-cardcom-verify.md**
+**המשך מ: C10 DONE (2026-10-27): F14 web push — VAPID/SW/subscribe+DELETE already shipped; added admin broadcast (/admin/push) and account BrowserPushToggle; docs/C10-web-push.md**

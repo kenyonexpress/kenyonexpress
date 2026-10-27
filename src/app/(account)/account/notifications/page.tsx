@@ -1,5 +1,5 @@
 import AllInAppToggle from '@/components/account/AllInAppToggle'
-import PushNotificationsToggle from '@/components/account/PushNotificationsToggle'
+import BrowserPushToggle from '@/components/account/BrowserPushToggle'
 import { ALL_IN_APP_CONSENT_KEY } from '@/lib/consent-keys'
 import { createClient } from '@/lib/supabase/server'
 
@@ -41,6 +41,7 @@ export default async function NotificationsPage() {
       <p className="account-subtitle">בחרו איך לקבל עדכונים מאיתנו. אפשר לשנות בכל רגע.</p>
       <section className="account-card">
         <AllInAppToggle initial={granted} />
+        <BrowserPushToggle />
       </section>
       <section className="account-card">
         <PushNotificationsToggle hasOrders={hasOrders} />
