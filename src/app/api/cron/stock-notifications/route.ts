@@ -1,3 +1,6 @@
+import { revalidateTag } from 'next/cache'
+
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -122,9 +125,12 @@ async function handlePOST(request: Request) {
           })
         }
       }
+    }
 
-      // Invalidate product cache (TODO: revalidateTag may require different API in Next.js 16)
-      // revalidateTag(`product_${productId}`)
+    // A route handler cannot call updateTag (Server Actions only), so expire the
+    // catalogue tag with revalidateTag; 'max' serves stale once while refreshing.
+    if (emailCount > 0) {
+      revalidateTag(CATALOGUE_TAG, 'max')
     }
 
     // Send alert if any notifications were sent
