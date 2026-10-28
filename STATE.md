@@ -414,7 +414,31 @@ This is the 4th failed measurement. Root cause is not fixable via code - it requ
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_5 (Cycle 10)
+## MAINTENANCE_LOOP_5: DONE (2026-10-28 23:35 UTC+7) - Cycle 10
+
+**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h.
+
+**Status:** ✅ COMPLETE
+
+**Verification Results:**
+- **Method:** Vercel CLI `vercel logs --limit 200` (MCP unavailable, requires OAuth)
+- **Latest cron execution:** 2026-10-28 08:10:00 UTC+7
+- **Time elapsed:** 15.4 hours (well within 24h threshold)
+- **Executing routes:** 5 (health, notifications, invoices, stranded-payments, stock)
+- **Alert status:** ✅ **NO ROUTES STALE** — all verified within 24h
+
+**Action Taken:**
+- ✅ Checked Vercel runtime logs via CLI (alternative to MCP)
+- ✅ Identified 5 core cron routes executing at 2026-10-28 08:10:00 UTC+7
+- ✅ Updated docs/CRON-STATUS.md with fresh 2026-10-28 23:35 verification
+- ✅ Commit: d153640f5 "Record M13-c240 health/ready verification"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Cron routes verified executing. No alerts issued (all within 24h threshold). Five core routes healthy.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_6 (Cycle 10)
 
 ---
 
