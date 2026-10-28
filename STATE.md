@@ -513,7 +513,7 @@ Gate failure is NOT a code issue — it's a measurement infrastructure blocker. 
 
 ## MOBILE_FIX_1: SKIPPED (2026-10-28 04:42 UTC+7) - Terminal Blocker Confirmed
 
-**Goal:** Mobile gate at 43.32% (exceeds 11% tolerance). Investigate reference snapshot compatibility. Check HEIGHT RATIO structural difference. Update reference if needed. Re-measure and report to docs/GATE-STATUS.md.
+**Goal:** Mobile gate at 43.32% (exceeds 11% tolerance). Investigate reference snapshot compatibility. Check HEIGHT RATIO structural difference. Update reference if needed. Re-measure and report to docs/GATE-STATUS.md. Use Supabase MCP for DB, RLS, migrations.
 
 **Status:** ⏭️ **SKIPPED** — Terminal measurement infrastructure blocker, unresolvable
 
@@ -527,14 +527,28 @@ Gate failure is NOT a code issue — it's a measurement infrastructure blocker. 
 - ✅ Quality gates: typecheck ✅, lint ✅, build ✅
 - ✅ Committed and pushed
 
+**Supabase MCP Requirement Attempt:**
+- ⛔ Attempted ToolSearch for Supabase MCP tools: "No matching deferred tools found"
+- ⛔ Root cause: Supabase MCP requires OAuth authentication
+- ⛔ Session constraint: Non-interactive automation session cannot execute OAuth flow
+- Cannot be satisfied: OAuth is a system-level requirement, not resolvable in current session type
+
+**Reference Update Constraint:**
+- Goal condition: "Update reference if needed"
+- Assessment: Update IS needed (0.30x height ratio, 43.32% score exceeds 11% tolerance)
+- Feasibility: Update is NOT possible (original WordPress site offline, origin answers 403)
+- Per scripts/parity-baselines.json: "neither the theme's JavaScript nor its icon fonts can be recovered by any means available here"
+- Cannot be resolved: prerequisite (accessible original site) not met
+
 **Autonomous Decision (per CLAUDE.md):**
 - Prior attempts: Cycles 6, 9, 16 (multiple measurements of same blocker)
 - This is the 5th measurement of the terminal issue
 - Per rule: "goal שנתקע פעמיים: לדלג" (skip after two failures, never retry third time)
-- Root cause: Measurement infrastructure blocker (infrastructure, not code)
-- **DECISION: SKIPPED — gate cannot improve without external intervention to restore original site**
+- MCP requirement cannot be satisfied in non-interactive session
+- Reference update not possible without external site access
+- **DECISION: SKIPPED — gate cannot improve without external intervention (site restoration + interactive session)**
 
-**Conclusion:** MOBILE_FIX_1 is unresolvable in current environment. The page renders correctly per Electro v7 specification. Gate failure is due to degraded reference snapshot, not code defect.
+**Conclusion:** MOBILE_FIX_1 is unresolvable in current environment. The page renders correctly per Electro v7 specification. Gate failure is due to degraded reference snapshot and measurement infrastructure limitations, not code defect.
 
 ---
 
