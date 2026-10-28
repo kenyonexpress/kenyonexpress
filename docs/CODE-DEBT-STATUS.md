@@ -1,6 +1,49 @@
 # Code Debt Status (2026-10-28)
 
-## Latest Scan (2026-10-28 23:15 UTC+7, MAINTENANCE_LOOP_8, Cycle 9)
+## Latest Scan (2026-10-28 23:35 UTC+7, MAINTENANCE_LOOP_8, Cycle 10)
+
+**Scan Date:** 2026-10-28 23:35 UTC+7
+**Method:** `find src -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | xargs grep "TODO|FIXME|HACK"`
+**Environment:** closeout/v1-final branch  
+
+## Summary
+
+| Type | Count | Status |
+|------|-------|--------|
+| TODO | 6 | — |
+| FIXME | 0 | ✅ Clean |
+| HACK | 0 | ✅ Clean |
+| **Total** | **6** | ✅ No Growth (Cycle 10) |
+
+## By File
+
+Same as Cycle 9 (no changes):
+
+### src/lib/payments/cardcom.ts (2 TODOs)
+- Line 249: `// TODO(cardcom): confirm the exact legacy refund endpoint + field names against`
+- Line 312: `* TODO(cardcom): confirm endpoint + field names against the live terminal`
+- **Status:** Blocked on Cardcom production credentials
+
+### src/lib/images/r2-migration.ts (4 TODOs)
+- Line 103: `// TODO: Query database for all product images`
+- Line 104: `// TODO: Batch upload to R2`
+- Line 105: `// TODO: Update product.images URLs to point to R2`
+- Line 106: `// TODO: Verify uploads and delete from source`
+- **Status:** Blocked on R2 service-role key
+
+## Delta Analysis (Cycle 10 vs Cycle 9)
+
+**Previous Scan:** 2026-10-28 23:15 UTC+7 (MAINTENANCE_LOOP_8, Cycle 9)
+- Count: 6 markers
+
+**Current Scan:** 2026-10-28 23:35 UTC+7 (MAINTENANCE_LOOP_8, Cycle 10)
+- Count: 6 markers
+
+**Delta:** **0** (unchanged, no growth, no cleanup goal queued)
+
+---
+
+## Previous Scan (2026-10-28 23:15 UTC+7, MAINTENANCE_LOOP_8, Cycle 9)
 
 **Scan Date:** 2026-10-28 23:15 UTC+7
 **Method:** `find src -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | xargs grep "TODO|FIXME|HACK"`
