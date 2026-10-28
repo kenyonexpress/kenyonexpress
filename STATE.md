@@ -19,3 +19,5 @@ Updated: 2026-10-28 (M01-c247: `compare.mjs --page=home` ב-380 / 768 / 1440 ה�
 **המשך מ: M01-c247 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
 Updated: 2026-10-28 (M03-c247: `compare.mjs --page=category` ב-380 / 768 / 1440 הורץ מול dev על :3000 (200) וסורב בשלושת הרוחבים: `kenyonexpress.co.il/product-category/hot-deals/` מגיש את הבילד שלנו (32-34 הפניות `/_next/`, אין wp-content). אין ב-refs קובץ Electro v7 לקטגוריה (רק home ו-product), ולכן אין reference חלופי. אין מספר diff. לא נערכו קבצי קוד ולא קבצים נעולים. ראה docs/PARITY-REFERENCE.md.)
 **המשך מ: M03-c247 BLOCKED reference-gone (category gate refused at 380/768/1440, no diff measured)**
+Updated: 2026-10-28 (M04-c247: `pnpm type-check` (tsc --noEmit) עבר נקי, exit 0. אין דריפט בקבצים במעקב (רק קבצי .bak לא-במעקב, לא נוספו). אין מה לתקן ואין קוד ל-commit. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M04-c247 DONE**
