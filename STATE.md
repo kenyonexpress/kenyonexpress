@@ -39,3 +39,5 @@ Updated: 2026-10-28 (M03-c251: `compare.mjs --page=category` ב-380 / 768 / 1440
 **המשך מ: M03-c251 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440)**
 Updated: 2026-10-28 (M01-c252: `compare.mjs --page=home` ב-380 / 768 / 1440 לא הורץ: שרת ה-dev על :3000 עלה אך מחזיר 500 על `/` בגלל כשל postcss של `src/app/globals.css` (SIGKILL, signal 9), כמו ב-c248..c251. אין מספר diff ולכן אין diff לרשום. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M01-c252 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440)**
+Updated: 2026-10-28 (M18-c252: STATE.md מאומת ב-43 שורות (מתחת ל-300); ההיסטוריה המלאה ב-docs/STATE-ARCHIVE.md. לא נדרש קיצוץ נוסף, לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M18-c252 DONE**
