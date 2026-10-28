@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-10-28 (M18-c259: STATE.md כבר 78 שורות, מתחת ל-300; אין מה לארכב, docs/STATE-ARCHIVE.md קיים. לא נערכו קבצי קוד.) **המשך מ: M12-c261 BLOCKED prod-robots-stale (src robots.ts + 8 tests OK; live robots.txt lacks /gift/ /scan /admin-mfa /login /mfa /debug/ — needs deploy of main)**
+Updated: 2026-10-28 (M12-c262: robots.ts + 8 tests OK; live robots.txt still stale, missing /gift/ /login /signup /mfa /admin-mfa /debug/; apex 308s to www but Host/Sitemap point at apex. לא נערכו קבצי קוד.) **המשך מ: M12-c262 BLOCKED prod-robots-stale (needs deploy of main; also set NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il in prod)**
 Updated: 2026-10-28 (M18-c246: STATE.md קוצר; הגרסה המלאה הועברה ל-docs/STATE-ARCHIVE.md. נשארו רק הרשומות האחרונות.)
 
 **המשך מ: M01-c242 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
