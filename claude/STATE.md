@@ -168,3 +168,4 @@
 המשך מ: M15-c239 DONE (/ and /product clean at 380/768/1440 on current .next build; :3000 server stale since 02:19, restart it)
 המשך מ: M16-c239 DONE (2026-10-28): product template src/app/(store)/product/[slug]/page.tsx emits both JSON-LD Product (buildProductJsonLd) and BreadcrumbList (buildBreadcrumbJsonLd: בית > category > product) as separate ld+json scripts; /product/[slug]/gift is noindex checkout form, not a product page; json-ld.test.ts 26/26 pass; no source changed, no forbidden files touched
 המשך מ: M04-c240 DONE (pnpm type-check clean, tsc --noEmit exit 0; only drift was uncommitted M03-c240 line in claude_STATE.md, committed; no code changes)
+המשך מ: M05-c240 DONE (pnpm test 616 files / 7072 tests pass, 0 failures; only drift was regenerated timestamp in docs/M-CYCLE-STATUS.md, committed; no code changes, no forbidden files touched)
