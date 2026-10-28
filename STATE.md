@@ -87,3 +87,4 @@ Updated: 2026-10-28 (M01-c262: `compare.mjs --page=home` נמדד מחדש ב-38
 **המשך מ: M01-c262 BLOCKED gate-fail (home diff 39.83/36.52/27.52 at 380/768/1440, >11%; unchanged from c260; supabase admin key invalid distorts height)**
 Updated: 2026-10-28 (M02-c262: `compare.mjs --page=product` נמדד מחדש ב-380 / 768 / 1440 מול `file://refs/electro-product-fresh.html` (live kenyonexpress.co.il הוא ה-build שלנו ולכן לא רפרנס), מוצר `עוזרת-אישית-שירותי-משרד`, dev :3000 (200). ללא דגלים הגייט מסרב (live 12 כרטיסי מוצר מול 4 מקומיים); עם COMPARE_ALLOW_GRID_MISMATCH=1 COMPARE_ALLOW_PENDING_IMAGES=1 (מספרים אינדיקטיביים): OVERALL first 2600px 380 = 23.4%, 768 = 21.93%, 1440 = 16.5%. כולם מעל סף 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M02-c262 BLOCKED gate-fail (product diff 23.4/21.93/16.5 at 380/768/1440, >11%; indicative only, grid-count mismatch 12 vs 4)**
+**המשך מ: M18-c262 DONE (STATE.md כבר 89 שורות, מתחת ל-300; הארכיון המלא ב-docs/STATE-ARCHIVE.md)**
