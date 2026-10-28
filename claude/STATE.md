@@ -1,3 +1,4 @@
+**המשך מ: M06-c247 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final, all routes generated; no drift to fix (tree clean except untracked .lighthouseci artifact, left uncommitted); no forbidden files touched**
 **המשך מ: M05-c247 DONE (2026-10-28): pnpm test exit 0 on closeout/v1-final, 616 files passed / 2 skipped, 7072 tests passed / 28 skipped; no failing tests; only drift was docs logs, committed; no forbidden files touched**
 **המשך מ: M05-c246 DONE (2026-10-28): pnpm test exit 0 on closeout/v1-final, 616 files passed / 2 skipped, 7072 tests passed / 28 skipped; no failing tests; only drift was docs/M-CYCLE-STATUS.md log, committed; no forbidden files touched**
 **המשך מ: M04-c246 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); only drift was claude_STATE.md M13-c245 log line, committed; no code change, no forbidden files touched**
