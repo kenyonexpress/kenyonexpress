@@ -131,3 +131,4 @@
 המשך מ: M13-c265 DONE (2026-10-29): dev :3365 with real .env.local — /api/health 200 {database:ok, search:not_configured} 324ms; /api/ready 200 {database:ok, redis:ok, cardcom:ok, meilisearch:not_configured, r2:not_configured}; no code changes; no forbidden files touched
 המשך מ: M16-c265 DONE (2026-10-29): only product template src/app/(store)/product/[slug]/page.tsx emits both JSON-LD nodes (buildProductJsonLd + buildBreadcrumbJsonLd via jsonLdScript, price from the same resolved values as the cart); /product/[slug]/gift is a sub-route, not a product page; json-ld.test.ts 26/26 pass; no code changes; no forbidden files touched
 המשך מ: M04-c266 DONE (2026-10-29): pnpm type-check 0 errors, no type drift to fix; committed leftover logs/lighthouse-m08-c265.log; no forbidden files touched
+המשך מ: M06-c266 DONE (2026-10-29): pnpm build passes, no drift, working tree clean before edit; no forbidden files touched
