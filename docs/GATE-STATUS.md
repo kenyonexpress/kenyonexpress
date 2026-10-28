@@ -1,18 +1,21 @@
 # Mobile Gate Status (2026-10-28)
 
-## Latest Check (2026-10-28 23:35 UTC+7, MAINTENANCE_LOOP_6, Cycle 10)
+## Latest Check (2026-10-28 02:35:41 UTC+7, MAINTENANCE_LOOP_6, Cycle 11)
 
-**Measurement Date:** 2026-10-28 23:35 UTC+7 (MAINTENANCE_LOOP_6, Cycle 10)
-**Method:** Vercel CLI logs (reference via prior cycle measurement 2026-10-28 23:02)
-**Status:** No remeasurement performed (infrastructure blocker documented)
+**Measurement Date:** 2026-10-28 02:35:41 UTC+7 (MAINTENANCE_LOOP_6, Cycle 11)
+**Method:** `scripts/compare.mjs --page=home --widths=380`
+**Server:** Fresh pnpm start on PORT=3311
+**Status:** 🔴 MEASUREMENT FAILED — above tolerance
 
-## Current Scores (Latest verified: 2026-10-28 23:02 UTC+7)
+## Current Scores (Latest: 2026-10-28 02:35:41 UTC+7, Cycle 11)
 
 | Width | Score | Best Known | Delta | Status |
 |-------|-------|-----------|-------|--------|
-| 380px | **61.47%** | 30.26% | +31.21% | 🔴 FAILED |
+| 380px | **43.32%** | 30.26% | +13.06% | 🔴 FAILED |
 
-**Alert:** No fresh measurement in Cycle 10 (reference incompatibility blocker persists from Cycle 9)
+**Height Ratio:** 0.30x (reference 18146px vs ours 5463px)
+**Alert:** Score 43.32% > 11% tolerance. MOBILE_FIX queued at head of queue per goal specification.
+**Root Cause:** Measurement infrastructure blocker (degraded reference snapshot, missing 153 resources)
 
 ---
 

@@ -1,3 +1,70 @@
+## MAINTENANCE_LOOP_6: DONE (2026-10-28 02:35:41 UTC+7) - Cycle 11
+
+**Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md.
+
+**Status:** ✅ **COMPLETE**
+
+**Measurement Result:**
+- **Fresh measurement (2026-10-28 02:35:41 UTC+7):** 380px score = **43.32%**
+- **Tolerance:** 11%
+- **Status:** 🔴 **FAILED** — score 43.32% > 11%
+- **Height ratio:** 0.30x (reference 18146px vs ours 5463px)
+
+**Root Cause Analysis:**
+- Measurement infrastructure blocker confirmed (reference incompatibility)
+- Reference snapshot missing 153 resources (113 scripts, 37 fonts, 2 stylesheets)
+- Structural incompatibility requires reference snapshot update
+
+**Action Taken:**
+- ✅ Ran fresh measurement via `scripts/compare.mjs --page=home --widths=380`
+- ✅ Score exceeds tolerance: 43.32% > 11%
+- ✅ Updated docs/GATE-STATUS.md with fresh measurement
+- ✅ **Queued MOBILE_FIX_1 at head of queue per goal specification**
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Commit: ae421210a "[autopilot] chore: qa mobile gate check - Cycle 11, 43.32% at 380px"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Gate measurement complete. Score above tolerance confirmed. MOBILE_FIX_1 queued at queue head per specification.
+
+---
+
+## MOBILE_FIX_1: SKIPPED (2026-10-28 02:40:00 UTC+7) - Cycle 11 - Infrastructure Blocker
+
+**Goal:** Mobile gate at 43.32% (exceeds 11%). Investigate reference snapshot compatibility. Update if needed. Re-measure.
+
+**Status:** ⏭️ **SKIPPED** — Terminal infrastructure blocker (original WordPress site no longer exists)
+
+**Investigation Completed:**
+1. **Reference Source:** refs/localized/ke_live_home.html (archived snapshot from 2026-09-08)
+2. **Original Site Status:** kenyonexpress.co.il DNS cut to Vercel (2026-09-08) — no longer serves WordPress
+3. **Reference Recovery:** Images 100% recovered, but **153 resources missing:**
+   - 113 scripts (cannot be recovered - original server offline)
+   - 37 fonts (cannot be recovered - original server offline)
+   - 2 stylesheets (cannot be recovered - original server offline)
+   - 1 XHR (cannot be recovered - original server offline)
+4. **Height Ratio Cause:** Reference renders degraded (18146px vs our 5463px) due to missing scripts/fonts/styles affecting layout rendering
+5. **Prior Attempts:** Multiple prior attempts to fix/recapture all failed (Cycle 9-10 logs)
+
+**Why This Cannot Be Fixed:**
+- Original WordPress site no longer exists (DNS cut to Vercel on 2026-09-08)
+- Reference is a static archive with no way to restore missing resources
+- Recapturing from live site produces same degraded reference (site now serves our Next.js app, not WordPress)
+- HEIGHT RATIO 0.30x < 0.62 threshold triggers "structurally different pages" warning in compare.mjs
+- No code changes can fix an incompatible measurement reference
+
+**Autonomous Decision per CLAUDE.md:**
+- "goal שנתקע פעמיים: לדלג" — Goal stuck multiple times (4+ attempts documented)
+- Terminal infrastructure blocker: original site offline, cannot recover missing resources
+- Root cause is not fixable via code changes (measurement reference issue, not page issue)
+
+**Conclusion:** Measurement infrastructure blocker. Reference incompatibility unresolvable. Skip without further retry.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_7 - Next goal in queue
+
+---
+
 ## MAINTENANCE_LOOP_5: SKIPPED (2026-10-28 09:27 UTC+7) - Cycle 11
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
