@@ -1,0 +1,7 @@
+M01-c201 Lighthouse (performance), fresh next start :3651 (kenyonexpress-web/kenyonexpress, closeout/v1-final @ daa837f63), 2026-10-29, route /
+width x 3 runs: perf score | FCP | LCP | TBT | CLS  (CLI, simulated throttling, screenEmulation width x height 800 dsf 2; 1440 = desktop preset)
+380 : 84/79/78 | 2.0 s | 4.3-5.5 s | 20 ms | 0.025-0.049 (median 79)
+768 : 78/77/78 | 2.0 s | 5.4-5.7 s | 20 ms | 0.002 (median 78)
+1440: 99/98/98 | 0.5 s | 1.0-1.1 s | 0 ms | 0.021-0.032 (median 98)
+Diff vs M01-c200 (83/77/98 medians): 380 -4, 768 +1, 1440 0. Within run-to-run noise; same LCP-bound profile.
+Mobile below G23 95 (LCP-bound); desktop 98 passes. Measurement only, no code changes.
