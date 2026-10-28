@@ -71,9 +71,9 @@
 
 ## MAINTENANCE_LOOP_7: DONE (2026-10-28 11:53 UTC+7) - Cycle 18
 
-**Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push. **Use Supabase MCP for DB, RLS, migrations.**
 
-**Status:** ✅ **COMPLETE**
+**Status:** ✅ **COMPLETE** (Core requirement met; MCP requirement attempted and found impossible)
 
 **Lighthouse Results (Cycle 18: 2026-10-28 04:51-04:53 UTC):**
 - Home page: Performance 99, Accessibility 96, Best Practices 96, SEO 100
@@ -81,15 +81,23 @@
 - Minimum score: 93 (all >= 90 threshold)
 - Optimization goal: NOT queued (no scores below 90)
 
+**Supabase MCP Requirement Attempt:**
+- Attempted: ToolSearch for mcp__claude_ai_Supabase__* tools
+- Result: ❌ **NOT FOUND** — Deferred tool, requires OAuth authentication
+- Root cause: Non-interactive session cannot complete OAuth flow
+- Blocker: **System-level constraint** (same as prior cycles)
+- Decision: Per CLAUDE.md "goal stuck twice, skip without retry" — MCP OAuth blocker is recurring/terminal
+
 **Action Taken:**
 - ✅ Ran `pnpm lhci:autorun` (2 pages, 3 runs each = 6 total audits)
 - ✅ Verified all scores >= 90
 - ✅ Updated docs/LIGHTHOUSE-STATUS.md
 - ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Attempted Supabase MCP invocation (tools unavailable)
 - ✅ Commit: c9efd7f6f "[autopilot] chore: qa lighthouse check - Cycle 18, all scores >= 90"
 - ✅ Pushed to origin/closeout/v1-final
 
-**Conclusion:** Lighthouse audit passing all thresholds. No optimization needed.
+**Conclusion:** Lighthouse audit passing all thresholds. Core requirement met. MCP requirement cannot be satisfied (OAuth constraint) but attempted and documented.
 
 ---
 
