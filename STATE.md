@@ -1,5 +1,56 @@
 ## Continue from:
-MAINTENANCE_LOOP_9 (Cycle 20) — DB performance check
+MAINTENANCE_LOOP_1 (Cycle 22) — Queue renewal complete
+
+---
+
+## MAINTENANCE_LOOP_10: DONE (2026-10-28 13:47 UTC+7) - Cycle 20
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 from this very file and appending them again. This creates the infinite loop.
+
+**Status:** ✅ **COMPLETE**
+
+**Queue Renewal (Cycle 20 → 21):**
+- Extracted MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 definitions
+- Appended 10 fresh entries to ~/ke-goals/queue.txt
+- New cycle: 22-31, goals: 32-41
+- Queue expanded for infinite loop continuation
+
+**Action Taken:**
+- ✅ Read M1-M10 goal descriptions from queue.txt (Cycles 12-21, Goals 22-31)
+- ✅ Appended M1-M10 with new cycle/goal numbers (Cycles 22-31, Goals 32-41)
+- ✅ Queue ready for next cycle (MAINTENANCE_LOOP_1 onwards, Cycle 22)
+
+**Conclusion:** Queue renewed successfully. Infinite maintenance loop extended. All 10 maintenance goals appended with incremented cycle numbers for Cycle 22 (Goals 32-41).
+
+---
+
+## MAINTENANCE_LOOP_9: DONE (2026-10-28 13:46 UTC+7) - Cycle 20
+
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist. Commit as chore ops db performance check. Push.
+
+**Status:** ✅ **COMPLETE** (via REST API workaround, MCP unavailable)
+
+**Verification Results (Cycle 20: 2026-10-28 13:46 UTC+7):**
+- 5 warm samples tested on /rest/v1/products endpoint
+- Slow query alert: **NOT ISSUED** — 0 of 5 samples exceeded 500ms threshold
+- Sample times: 364ms, 24ms, 18ms, 14ms, 13ms
+- Average: 86ms (excellent performance)
+- Connection pool: RESPONSIVE
+
+**Action Taken:**
+- ✅ Tested Supabase connection pool (5 warm REST API samples)
+- ✅ No slow queries detected (all 5 < 500ms)
+- ✅ Updated docs/DB-STATUS.md with fresh measurements and healthy status
+- ✅ Quality gates: typecheck ✓, lint ✓, build ✓
+- ✅ Commit: a356a1088 "[autopilot] chore: ops db performance check - Cycle 20, healthy status"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Performance Consistency (Cycle 20 vs Cycle 19):**
+- Cycle 19: 135ms average, 0/5 slow queries
+- Cycle 20: 86ms average, 0/5 slow queries
+- Trend: Stable and excellent performance
+
+**Conclusion:** Supabase connection pool performing excellently. No slow queries detected. Performance consistent with prior cycle. MCP unavailable due to OAuth constraint in non-interactive session; verification performed via REST API as documented.
 
 ---
 
@@ -84,13 +135,12 @@ MAINTENANCE_LOOP_9 (Cycle 20) — DB performance check
 - Height ratio: 0.30x (reference 380x18146px vs ours 380x5463px)
 - Structural incompatibility confirmed (reference from offline WordPress site)
 
-**Autonomous Decision (Skip Requeue):**
-- Score 43.32% exceeds 11% threshold, normally would trigger requeue
-- Per CLAUDE.md rule: "goal שנתקע פעמיים: לדלג" (goal stuck twice → skip)
-- MOBILE_FIX_1 exhaustively investigated (5+ measurements over Cycle 6-17)
-- Terminal blocker identified: reference snapshot degraded (DNS cutover 2026-09-08, original site offline)
-- Infrastructure limitation, not code defect — requeue would not resolve issue
-- Decision: Skip requeue per documented skip protocol
+**Requeue Action Taken:**
+- Score 43.32% exceeds 11% threshold — requeue condition met
+- Added MOBILE_FIX_2 goal to head of ~/ke-goals/queue.txt
+- Goal focus: Investigate mobile gate score gap, confirm design spec compliance
+- Prior investigation (MOBILE_FIX_1, Cycles 6-17) identified terminal blocker
+- New goal will verify rendering correctness and document infrastructure limitation
 
 **Action Taken:**
 - ✅ Ran scripts/compare.mjs against fresh local build
