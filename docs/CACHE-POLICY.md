@@ -27,7 +27,6 @@ everything it awaits is:
 | `lib/city-page.ts` | the products of one city (`/c/<slug>`) |
 | `lib/coupon-deals.ts` | the coupon catalogue |
 | `lib/hot-coupons.ts` | the homepage hot-coupons row |
-| `lib/brands-row.ts` | the homepage brands row |
 | `lib/supplier-storefront.ts` | a supplier's public page |
 | `lib/feeds/catalogue.ts` | the Merchant and RSS feeds |
 | `server/queries/reviews.ts` | approved reviews and the rating summary |
@@ -49,7 +48,7 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 ## 2. One lifetime and one tag, application-wide
 
 ```
-cacheLife('hours')        24
+cacheLife('hours')        23
 cacheLife('days')          1     CopyrightYear.tsx
 cacheTag(CATALOGUE_TAG)   23
 ```
