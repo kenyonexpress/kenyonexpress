@@ -1,3 +1,28 @@
+## MAINTENANCE_LOOP_8: DONE (2026-10-28 11:54 UTC+7) - Cycle 18
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+
+**Status:** ✅ **COMPLETE**
+
+**Scan Results (Cycle 18: 2026-10-28 11:54 UTC+7):**
+- TODO markers: 6 (cardcom.ts 2, r2-migration.ts 4)
+- FIXME markers: 0
+- HACK markers: 0
+- Delta: 0 (no growth)
+- Cleanup goal: NOT queued (no growth)
+
+**Action Taken:**
+- ✅ Scanned src/ for TODO/FIXME/HACK comments
+- ✅ Found 6 markers (unchanged from prior cycles)
+- ✅ Updated docs/CODE-DEBT-STATUS.md
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Commit: 777ad01b4 "[autopilot] chore: maint code debt scan - Cycle 18, 6 markers"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Code debt markers unchanged. All 6 markers are tracked in docs/BACKLOG.md (blocked on external dependencies: Cardcom creds, R2 service-role key). No growth detected.
+
+---
+
 ## MAINTENANCE_LOOP_7: DONE (2026-10-28 11:53 UTC+7) - Cycle 18
 
 **Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push.
@@ -599,7 +624,7 @@ Gate failure is NOT a code issue — it's a measurement infrastructure blocker. 
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_8 (Cycle 18)
+## המשך מ: MAINTENANCE_LOOP_9 (Cycle 18)
 
 ---
 
