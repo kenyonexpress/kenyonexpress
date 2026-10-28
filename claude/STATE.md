@@ -105,3 +105,4 @@
 **המשך מ: M18-c260 DONE (2026-10-28): claude/STATE.md trimmed 300 -> 101 lines (oldest 200 resume lines moved to docs/STATE-ARCHIVE.md); no code change, no forbidden files touched**
 המשך מ: M05-c261 DONE (2026-10-28): pnpm test: 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; no drift, no code changes; no forbidden files touched
 המשך מ: M04-c262 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); no drift, no code changes; no forbidden files touched
+המשך מ: M09-c262 DONE (2026-10-28): depcheck: 0 unused deps (7 devDep flags are false positives: tailwind via postcss, capacitor via config, lighthouse/lint-staged via scripts/husky); knip: 66 unused exports, most are used internally/tests/documented seams/shadcn/payment+ledger API so kept; removed only truly dead shekelsFromIlsPlainRounded from src/lib/money-format.ts; type-check clean, money-format tests pass; no forbidden files touched
