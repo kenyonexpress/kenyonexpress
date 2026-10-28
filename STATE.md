@@ -66,3 +66,5 @@ Updated: 2026-10-28 (M01-c257: `compare.mjs --page=home` נמדד מחדש ב-38
 **המשך מ: M01-c257 BLOCKED gate-fail (home diff 39.84/36.52/27.61 at 380/768/1440, >11%; unchanged from c256)**
 
 **המשך מ: M12-c257 DONE (robots.ts נבדק שוב: Allow / + Disallow לנתיבי redeem/coupon/gift/account/supplier/admin/checkout/cart/auth/api/login/mfa/debug; sitemap+host על kenyonexpress.co.il; 8/8 טסטים עברו; ללא שינוי קוד)**
+Updated: 2026-10-28 (M01-c258: `compare.mjs --page=home` נמדד מחדש ב-380 / 768 / 1440 מול `file://refs/electro-home-v7.html` על `next dev --webpack` (200 על `/`), עם COMPARE_ALLOW_PENDING_IMAGES=1 (מספרים אינדיקטיביים). OVERALL first 2600px: 380 = 39.84% (c257: 39.84%), 768 = 36.52% (36.52%), 1440 = 27.52% (27.61%). שינוי זניח (≤0.09pp). כולם מעל סף 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M01-c258 BLOCKED gate-fail (home diff 39.84/36.52/27.52 at 380/768/1440, >11%; unchanged from c257)**
