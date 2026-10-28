@@ -1,0 +1,7 @@
+M01-c195 Lighthouse (performance), fresh next start :3555 (kenyonexpress-web/kenyonexpress, closeout/v1-final @ 9128fb272), 2026-10-29, route /
+width x 3 runs: perf score | FCP | LCP | TBT | CLS
+380 : 99/99/99   | 1.6-1.7 s | 1.6-1.7 s | 20 ms   | 0.030 | mobile preset, 1190 KB
+768 : 99/99/99   | 1.6-1.8 s | 1.6-1.8 s | 10-40 ms | 0.002 | mobile preset, 945 KB
+1440: 98/99/98   | 0.4-0.5 s | 0.9-1.1 s | 0 ms     | 0.004-0.023 | desktop preset, 855 KB
+Diff vs M01-c194 (100/99/99 | 79/79/79 | 100/100/100): 380 -1 (flat), 768 +20 (LCP 5.5-5.7s -> 1.6-1.8s), 1440 -2 (flat; desktop preset here, mobile-throttled 1440 run failed in Lighthouse 13.5 so not directly comparable).
+All three widths now >= 98, at/above G23 95 target for /. Server log clean, page fully rendered. Measurement only, no code changes.
