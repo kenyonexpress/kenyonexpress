@@ -1,0 +1,3 @@
+M03-c181 Lighthouse mobile (performance), fresh next start :3433, 2026-10-29
+/category/hot-deals : 84 / 76 / 71 (3 runs; FCP 1.7-1.8 s, LCP 4.3-4.4 s, TBT 40-500 ms, CLS 0.014-0.069)
+Below G23 target 95 (LCP-bound, TBT/CLS variance on later runs). Measurement only, no code changes.
