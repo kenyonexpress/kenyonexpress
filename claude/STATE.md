@@ -256,3 +256,4 @@
 המשך מ: M04-c253 DONE (2026-10-28): pnpm type-check (tsc --noEmit) exits 0 clean, no drift, no source fix needed; no forbidden files touched
 המשך מ: M06-c253 DONE (2026-10-28): pnpm build exits 0 clean (all routes generated), no source fix needed; drift limited to regenerated docs/M-CYCLE-STATUS.md timestamps, committed; no forbidden files touched
 המשך מ: M08-c253 DONE (2026-10-28): lighthouse mobile sampled+logged: / 81/79, /product/barbecue 84/80, LCP-bound 4.5-5.4s; below G23 95 target; no code changes, no forbidden files touched
+המשך מ: M09-c253 DONE (2026-10-28): no unused deps (scan: @mdx-js/loader needed by @next/mdx, @capacitor/* needed by android/ios native projects, kept); removed dead exports extractFingerprint + getSyncManager; type-check, biome, vitest clean; no forbidden files touched

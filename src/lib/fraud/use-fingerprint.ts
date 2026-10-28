@@ -41,10 +41,3 @@ export function useDeviceFingerprint() {
 
   return { fingerprint, loading }
 }
-
-/**
- * Server-side helper to extract fingerprint from form data
- */
-export function extractFingerprint(formData: FormData): string | null {
-  return formData.get('device_fingerprint') as string | null
-}
