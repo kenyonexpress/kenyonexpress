@@ -118,3 +118,5 @@ Updated: 2026-10-29 (M03-c268: `compare.mjs --page=category` הורץ ב-380 / 7
 **המשך מ: M03-c268 BLOCKED no-category-reference (compare category refuses at 380/768/1440; no refs/electro category html; no gate number)**
 Updated: 2026-10-29 (G05: mobile parity gate. home 39.85/36.59/27.52, product 23.40/21.93/16.50 at 380/768/1440, all >11%; /c and /c/<slug> have no Electro reference so compare refuses. Allowed paths src/app/page-sections, src/components/products, src/components/categories do not exist. Saved docs/PARITY-FINAL.md. No code or locked files edited.)
 **המשך מ: G05 BLOCKED gate-fail (6/12 numbers all >11%; 6/12 no-reference for /c and /c/<slug>)**
+
+- המשך מ: M02-c190 DONE — mobile Lighthouse /product (prod build, :3612): 65/86/85, median 85 (LCP 4.2-4.4s, TBT 30ms, CLS 0). Below G23 target 95. Note: .env.production.local has placeholder SUPABASE_SERVICE_ROLE_KEY/SENTRY_DSN; next start needs process-env overrides.
