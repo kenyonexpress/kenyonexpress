@@ -1,6 +1,7 @@
 # KenyonExpress — Project State
 
 Updated: 2026-10-28 (M12-c262: robots.ts + 8 tests OK; live robots.txt still stale, missing /gift/ /login /signup /mfa /admin-mfa /debug/; apex 308s to www but Host/Sitemap point at apex. לא נערכו קבצי קוד.) **המשך מ: M12-c262 BLOCKED prod-robots-stale (needs deploy of main; also set NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il in prod)**
+**המשך מ: M03-c191 DONE (lighthouse mobile /category/phones-computers: simulate 85/72, provided 100/100; localhost ככל הנראה dev; docs/LIGHTHOUSE-AUDIT.md; לא נערכו קבצי קוד)**
 Updated: 2026-10-28 (M18-c246: STATE.md קוצר; הגרסה המלאה הועברה ל-docs/STATE-ARCHIVE.md. נשארו רק הרשומות האחרונות.)
 
 **המשך מ: M01-c242 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
