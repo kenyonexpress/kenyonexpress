@@ -21,3 +21,5 @@ Updated: 2026-10-28 (M03-c247: `compare.mjs --page=category` ב-380 / 768 / 1440
 **המשך מ: M03-c247 BLOCKED reference-gone (category gate refused at 380/768/1440, no diff measured)**
 Updated: 2026-10-28 (M04-c247: `pnpm type-check` (tsc --noEmit) עבר נקי, exit 0. אין דריפט בקבצים במעקב (רק קבצי .bak לא-במעקב, לא נוספו). אין מה לתקן ואין קוד ל-commit. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M04-c247 DONE**
+Updated: 2026-10-28 (M01-c248: `compare.mjs --page=home` ב-380 / 768 / 1440 לא הורץ: שרת ה-dev על :3000 מחזיר 500 בכל בקשה אחרי שני אתחולים, כי תהליך ה-postcss של `src/app/globals.css` נהרג ב-SIGKILL (signal 9). אין מספר diff, ולכן אין diff לרשום. הסירוב הקודם מול `kenyonexpress.co.il` (reference-gone) עדיין תקף. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M01-c248 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440)**
