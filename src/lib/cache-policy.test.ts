@@ -71,7 +71,6 @@ describe('the cache policy document matches the code', () => {
       'lib/city-page.ts',
       'lib/coupon-deals.ts',
       'lib/feeds/catalogue.ts',
-      'lib/hot-coupons.ts',
       'lib/product-detail.ts',
       'lib/product-seo.ts',
       'lib/related-products.ts',
@@ -84,14 +83,14 @@ describe('the cache policy document matches the code', () => {
   })
 
   it('agrees on the lifetime counts', () => {
-    expect(measured.lives).toEqual({ hours: 23, days: 1 })
-    expect(DOC).toContain("cacheLife('hours')        23")
+    expect(measured.lives).toEqual({ hours: 22, days: 1 })
+    expect(DOC).toContain("cacheLife('hours')        22")
     expect(DOC).toContain("cacheLife('days')          1")
   })
 
-  it('agrees that there is exactly one invalidation tag, used 23 times', () => {
-    expect(measured.tags).toBe(23)
-    expect(DOC).toContain('cacheTag(CATALOGUE_TAG)   23')
+  it('agrees that there is exactly one invalidation tag, used 22 times', () => {
+    expect(measured.tags).toBe(22)
+    expect(DOC).toContain('cacheTag(CATALOGUE_TAG)   22')
   })
 
   it('still holds that no route declares its own caching', () => {
