@@ -1,5 +1,3 @@
-**המשך מ: M07-c258 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers, all already filed in docs/BACKLOG.md (3 items, all older than 7 days, blocked on Cardcom prod creds / Supabase service key); no new markers, no forbidden files touched**
-**המשך מ: M05-c258 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M16-c257 DONE (2026-10-28): product/[slug] page renders JSON-LD Product + BreadcrumbList (json-ld.ts, 26 tests pass); gift sub-page is noindex; no code change, no forbidden files touched**
 **המשך מ: M05-c257 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M04-c257 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, zero errors; no drift found, no code change, no forbidden files touched**
@@ -297,3 +295,4 @@
 המשך מ: M04-c260 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift to fix; no code change; no forbidden files touched
 המשך מ: M05-c260 DONE (2026-10-28): pnpm test 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; 0 failures, no drift to fix; no code change; no forbidden files touched
 המשך מ: M06-c260 DONE (2026-10-28): pnpm build green, all routes generated; drift was only STATE/M-CYCLE-STATUS timestamps, committed; no forbidden files touched
+המשך מ: M07-c260 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers (cardcom.ts:249,312; r2-migration.ts:103-106), all already filed in docs/BACKLOG.md and older than 7 days, blocked on Cardcom prod creds / Supabase service key; no new markers, no forbidden files touched
