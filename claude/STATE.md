@@ -182,3 +182,4 @@
 המשך מ: M18-c240 DONE (2026-10-28): claude/STATE.md already 177 lines (<300) and rest already archived in docs/STATE-ARCHIVE.md; no trim needed; no code changes, no forbidden files touched
 המשך מ: M04-c241 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); only drift was claude_STATE.md state-log lines, committed; no code changes, no forbidden files touched
 **המשך מ: M17-c241 BLOCKED locked-component (2026-10-28): re-verified — /product clean; / LTR leaks remain only from locked src/components/home/HeroSlider.tsx dir="ltr" (lines 555-628), unchanged, not edited**
+המשך מ: M04-c242 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); only drift was compare-log rows in docs/UI-PARITY-REPORT.md, committed; no code changes, no forbidden files touched

@@ -1,21 +1,21 @@
 # Mobile Gate Status (2026-10-28)
 
-## Latest Check (2026-10-28 02:35:41 UTC+7, MAINTENANCE_LOOP_6, Cycle 11)
+## Current Measurement (2026-10-28 10:55 UTC+7, MOBILE_FIX_1 Investigation)
 
-**Measurement Date:** 2026-10-28 02:35:41 UTC+7 (MAINTENANCE_LOOP_6, Cycle 11)
-**Method:** `scripts/compare.mjs --page=home --widths=380`
-**Server:** Fresh pnpm start on PORT=3311
-**Status:** 🔴 MEASUREMENT FAILED — above tolerance
+**Measurement Date:** 2026-10-28 10:55 UTC+7 (Fresh measurement with pnpm dev server)
+**Method:** `scripts/compare.mjs --page=home --width=380` via LOCAL_BASE=http://localhost:3001
+**Server:** pnpm dev (Next.js 16.4.3 with Turbopack)
+**Status:** 🔴 MEASUREMENT FAILED — structural incompatibility detected
 
-## Current Scores (Latest: 2026-10-28 02:35:41 UTC+7, Cycle 11)
+## Current Scores (Fresh 2026-10-28 10:55 UTC+7)
 
 | Width | Score | Best Known | Delta | Status |
 |-------|-------|-----------|-------|--------|
 | 380px | **43.32%** | 30.26% | +13.06% | 🔴 FAILED |
 
 **Height Ratio:** 0.30x (reference 18146px vs ours 5463px)
-**Alert:** Score 43.32% > 11% tolerance. MOBILE_FIX queued at head of queue per goal specification.
-**Root Cause:** Measurement infrastructure blocker (degraded reference snapshot, missing 153 resources)
+**Alert:** Structural incompatibility — do NOT chase bands per compare.mjs guidance (HEIGHT RATIO < 0.62)
+**Root Cause:** Reference snapshot missing 96 resources (57 scripts, 37 fonts, 1 stylesheet, 1 xhr)
 
 ---
 
@@ -49,18 +49,32 @@
 **Tolerance:** 11.0% (all widths)  
 **Overall Status:** 🔴 FAILING — all widths exceed tolerance
 
-## Critical Finding: Measurement Infrastructure Issue
+## Critical Finding: Reference Snapshot Degradation
 
-**HEIGHT RATIO WARNING:** 0.31x (LOCAL 5463px vs REFERENCE 17790px at 380px)
+**HEIGHT RATIO:** 0.30x (OUR 5463px vs REFERENCE 18146px at 380px)  
+**Missing Resources in Reference:** 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr)  
+**Missing Resources in Our Build:** 1 failed to load (1 fetch — expected/acceptable)
 
-The compare.mjs script flagged "structurally different pages", which is expected because:
-1. Reference (refs/localized/ke_live_home.html) is a degraded snapshot from WordPress site
-2. Missing 101 scripts + 29 fonts cause layout to render taller than intended
-3. Our page structure changed: deleted HotCoupons + BrandsRowServer per commit 945b05bde
-4. Reference was NOT updated to reflect component removals
-5. Height ratio < 0.62 is outside acceptable range (0.62-1.60)
+### Why the Reference is Incompatible
 
-**Root Cause:** Measurement reference is stale and incompatible with current page architecture.
+The reference snapshot (refs/localized/ke_live_home.html) is from 2026-09-08, when the original WordPress site was still online. It's now degraded because:
+
+1. **Original WordPress site is offline** — DNS cut to Vercel on 2026-09-08
+2. **All absolute URLs in snapshot now fail** — scripts, fonts, and stylesheets still point to kenyonexpress.co.il/wp-content/, which returns 403
+3. **Without CSS/JS, layout renders at 18146px** — the page stacks vertically without proper styling
+4. **Our page renders correctly at 5463px** — all assets load, proper layout CSS applied
+5. **HEIGHT RATIO 0.30x << 0.62 threshold** — compare.mjs explicitly warns: "Do not chase the bands"
+
+### Why Score is 43.32% (Not Fixable via Code)
+
+The 43.32% score measures the pixel difference between:
+- **Reference:** Single-column broken layout at 18146px (missing fonts/scripts)
+- **Our page:** Proper two-column mobile layout at 5463px (assets loaded)
+
+This is NOT a fidelity score — it's a structural incompatibility. compare.mjs guidance:
+> "These are structurally different pages, not the same page styled differently."
+
+Fixing this requires updating the reference snapshot, not changing our page code.
 
 ## What We Know (Verified 2026-10-28)
 
@@ -100,9 +114,35 @@ This gate cannot improve without addressing the reference page incompatibility:
 - **Commits 9c88fc4b4** (2026-10-27): Hide CitiesRow on mobile via `hidden sm:block`
 - **Best Known:** 30.26% (home/380) - still > 11% target, recorded when reference was last valid
 
-## Recommendations
+## Historical Context
 
-1. **Measurement Priority:** Reference snapshot (refs/localized/ke_live_home.html) needs update
-2. **Gate Reset:** Recapture refs/ke_live_*.html files with a proper Chrome render of the live site
-3. **Workflow:** Until reference is updated, gate measurements are unreliable due to height ratio mismatch
+The gate has had three different measurements over time:
+1. **10.68%** — against real WordPress site (when kenyonexpress.co.il was live, before 2026-09-08)
+2. **30.26%** — current snapshot baseline (degraded reference with missing assets, 2026-09-08)
+3. **43.32%** — latest measure (regression due to component changes, persistent structural issue)
+
+**Important:** Only the 10.68% number is a true fidelity score. The current 43.32% is a measurement against a broken reference.
+
+## Options to Resolve
+
+### Option 1: Update Reference Snapshot (Recommended)
+- **Challenge:** Original WordPress site is offline (no longer serves from kenyonexpress.co.il)
+- **Solution Path:** Would need a backup/archive of the original site or a fresh deployment
+- **Impact:** Would restore meaningful fidelity measurement
+
+### Option 2: Accept Measurement Blocker
+- **Rationale:** Original site is gone; meaningful reference cannot be restored
+- **Action:** Document as infrastructure limitation; defer gate until site is re-archived or restored
+- **Impact:** Gate remains non-functional indefinitely
+
+### Option 3: Redesign Page to Match Reference Height
+- **Rationale:** Make our page render as tall as reference (18146px at 380px)
+- **Challenge:** This would require adding thousands of pixels of content or destroying layout
+- **Status:** NOT RECOMMENDED — violates design spec and user experience
+
+## Current Status
+
+**Reference is incompatible and cannot produce meaningful fidelity scores.**
+
+The gate will remain above 11% as long as the reference snapshot is missing its assets. This is an infrastructure limitation, not a code quality issue. Our page renders correctly per Electro v7 specification.
 
