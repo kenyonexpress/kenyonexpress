@@ -1,17 +1,17 @@
 # Mobile Gate Status (2026-10-28)
 
-## Current Measurement (2026-10-28 11:16 UTC+7, MAINTENANCE_LOOP_6 Cycle 16)
+## Current Measurement (2026-10-28 Cycle 17, MAINTENANCE_LOOP_6)
 
-**Measurement Date:** 2026-10-28 11:16 UTC+7 (Fresh measurement with pnpm start server)
+**Measurement Date:** 2026-10-28 (Fresh measurement with pnpm start server)
 **Method:** `scripts/compare.mjs --page=home --widths=380` via LOCAL_BASE=http://localhost:3311
 **Server:** pnpm start (Next.js production build)
 **Status:** 🔴 MEASUREMENT FAILED — structural incompatibility detected
 
-## Current Scores (Fresh 2026-10-28 11:16 UTC+7)
+## Current Scores (Fresh 2026-10-28 Cycle 17)
 
 | Width | Score | Best Known | Delta | Status |
 |-------|-------|-----------|-------|--------|
-| 380px | **61.47%** | 30.26% | +31.21% | 🔴 FAILED |
+| 380px | **43.33%** | 30.26% | +13.07% | 🔴 FAILED |
 
 **Height Ratio:** 0.31x (reference 17790px vs ours 5463px)
 **Alert:** Structural incompatibility — do NOT chase bands per compare.mjs guidance (HEIGHT RATIO < 0.62)
