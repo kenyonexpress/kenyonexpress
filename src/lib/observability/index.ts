@@ -8,5 +8,5 @@
  */
 
 export { initSentry } from './sentry'
-export { identifyUser, initPostHog, isPostHogEnabled, trackEvent } from './posthog'
+export { identifyUser, isPostHogEnabled, trackEvent } from './posthog'
 export type { EventProperties, TrackOptions } from './posthog'
