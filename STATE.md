@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-28 (M18-c242: STATE.md נמדד ב-202 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c242 DONE.
 Updated: 2026-10-28 (M18-c241: STATE.md נמדד ב-197 שורות, מתחת ל-300; הארכיון המלא כבר ב-docs/STATE-ARCHIVE.md, אין מה להעביר). לא נערכו קבצי קוד. המשך מ: M18-c241 DONE.
 Updated: 2026-10-28 (M03-c241: compare.mjs --page=category ב-380/768/1440 נדחה כל שלוש הפעמים (exit 5): kenyonexpress.co.il/product-category/hot-deals הוא ה-build שלנו, לא ייחוס WooCommerce, ולכן אין מספר. אין ב-refs ייחוס Electro v7 לקטגוריה (רק home ו-product). לא נערכו קבצי קוד.) המשך מ: M03-c241 BLOCKED.
 Updated: 2026-10-28 (M12-c238: אימות robots.txt production-safe. src/app/robots.ts: allow / ל-*, disallow לכל האזורים המאומתים והטוקנים (/redeem/, /coupon/, /gift/, /account/, /supplier/, /admin/, /checkout, /cart, /auth/, /api/, /login, /signup, /mfa, /admin-mfa, /debug/ ועוד), בלי noindex גורף. נתיבי ה-sitemap (/coupons, /s/<id>, /category, /product, /blog) לא נחסמים. sitemap ו-host מ-NEXT_PUBLIC_APP_URL בלי לוכסן כפול. robots.test.ts: 8/8 עברו. לא נערכו קבצי קוד.) המשך מ: M12-c238 DONE.
