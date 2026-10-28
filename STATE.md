@@ -116,3 +116,5 @@ Updated: 2026-10-29 (M01-c267: `compare.mjs --page=home` הורץ ב-380 / 768 /
 **המשך מ: M01-c267 BLOCKED gate-fail (home diff 39.85/36.59/27.52 at 380/768/1440, >11%; valid 200 measurement, matches c264)**
 Updated: 2026-10-29 (M03-c268: `compare.mjs --page=category` הורץ ב-380 / 768 / 1440 (dev :3000, 200). בכל שלושת הרוחבים הסקריפט מסרב: LIVE_CATEGORY הוא ה-build שלנו (32-34 הפניות /_next/, בלי wp-content), לא רפרנס; ב-refs/ עדיין אין HTML של Electro לקטגוריה (רק home-v7 ו-product-fresh). לא נוצר מספר diff, ולכן אין שער. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M03-c268 BLOCKED no-category-reference (compare category refuses at 380/768/1440; no refs/electro category html; no gate number)**
+Updated: 2026-10-29 (G05: mobile parity gate. home 39.85/36.59/27.52, product 23.40/21.93/16.50 at 380/768/1440, all >11%; /c and /c/<slug> have no Electro reference so compare refuses. Allowed paths src/app/page-sections, src/components/products, src/components/categories do not exist. Saved docs/PARITY-FINAL.md. No code or locked files edited.)
+**המשך מ: G05 BLOCKED gate-fail (6/12 numbers all >11%; 6/12 no-reference for /c and /c/<slug>)**
