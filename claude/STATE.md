@@ -255,3 +255,4 @@
 המשך מ: M15-c252 DONE (2026-10-28): prod build served on :3111, Playwright at 380/768/1440 on / and a real /product/<slug> (עוזרת-אישית-שירותי-משרד) — HTTP 200, 0 console errors/warnings, 0 pageerrors, 0 failed requests, 0 http>=400 after full scroll; no code change, no forbidden files touched
 המשך מ: M04-c253 DONE (2026-10-28): pnpm type-check (tsc --noEmit) exits 0 clean, no drift, no source fix needed; no forbidden files touched
 המשך מ: M06-c253 DONE (2026-10-28): pnpm build exits 0 clean (all routes generated), no source fix needed; drift limited to regenerated docs/M-CYCLE-STATUS.md timestamps, committed; no forbidden files touched
+המשך מ: M08-c253 DONE (2026-10-28): lighthouse mobile sampled+logged: / 81/79, /product/barbecue 84/80, LCP-bound 4.5-5.4s; below G23 95 target; no code changes, no forbidden files touched

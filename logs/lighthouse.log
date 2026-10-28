@@ -1,0 +1,4 @@
+M08-c253 2026-10-28 lighthouse mobile perf (localhost:3323, next start, simulated throttling, 2 runs each)
+home / 81 / 79 LCP 5.2-5.4 s TBT 20-30 ms CLS 0.001-0.004 FCP 1.5-2.0 s
+product /product/barbecue 84 / 80 LCP 4.5-5.1 s TBT 30 ms CLS 0 FCP 1.4-1.8 s
+target 95+ (G23): home FAIL (LCP), product FAIL (LCP). Sample-only, no code changes.
