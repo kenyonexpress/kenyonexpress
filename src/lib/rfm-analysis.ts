@@ -56,7 +56,7 @@ export interface UserSegmentInfo {
   campaign_hook_enabled: boolean
 }
 
-export interface SegmentUser {
+interface SegmentUser {
   user_id: string
   email: string
   full_name: string | null

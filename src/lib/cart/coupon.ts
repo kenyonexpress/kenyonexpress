@@ -48,7 +48,7 @@ export type CouponEvaluation =
   | { ok: true; code: string; discountAgorot: number; label: string }
   | { ok: false; reason: CouponFailure; message: string }
 
-export type CouponFailure =
+type CouponFailure =
   | 'unknown'
   | 'inactive'
   | 'expired'

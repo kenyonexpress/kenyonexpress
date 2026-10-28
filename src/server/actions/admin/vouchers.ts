@@ -8,7 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 
-export type AdminVoucherLookup = {
+type AdminVoucherLookup = {
   id: string
   code: string
   status: string

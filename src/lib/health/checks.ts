@@ -37,7 +37,7 @@ import { createClient } from '@supabase/supabase-js'
 
 export type DependencyStatus = 'ok' | 'down' | 'not_configured'
 
-export interface DependencyReport {
+interface DependencyReport {
   /** Stable machine name; the admin screen and the alert both key on it. */
   name: string
   status: DependencyStatus

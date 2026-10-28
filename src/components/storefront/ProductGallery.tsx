@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState } from 'react'
 
-export interface GalleryAsset {
+interface GalleryAsset {
   alt: string | null
   blurDataURL: string | null
 }

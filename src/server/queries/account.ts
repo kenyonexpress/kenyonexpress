@@ -28,7 +28,7 @@ export interface WalletSummary {
   accountId: string | null
 }
 
-export type WalletDirection = 'credit' | 'debit'
+type WalletDirection = 'credit' | 'debit'
 
 export interface WalletLedgerRow {
   id: string

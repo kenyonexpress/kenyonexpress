@@ -19,7 +19,7 @@ export interface MemberRow {
   full_name: string | null
 }
 
-export interface ProfileOption {
+interface ProfileOption {
   id: string
   email: string | null
   full_name: string | null

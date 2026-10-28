@@ -17,7 +17,7 @@ export const REDEEMABLE_SETTLEMENT_STATUSES = [
   'split_executed',
 ] as const
 
-export type RedeemableSettlementStatus = (typeof REDEEMABLE_SETTLEMENT_STATUSES)[number]
+type RedeemableSettlementStatus = (typeof REDEEMABLE_SETTLEMENT_STATUSES)[number]
 
 export type MarkOrderItemRedeemedPlan =
   | { ok: true; next: 'redeemed' }

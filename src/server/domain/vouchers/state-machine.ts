@@ -52,7 +52,7 @@ type TransitionRule = {
   guard?: (context: VoucherGuardContext) => VoucherGuardFailure | null
 }
 
-export type VoucherGuardFailure = 'WRONG_SUPPLIER' | 'PAST_EXPIRY' | 'NOT_YET_EXPIRED'
+type VoucherGuardFailure = 'WRONG_SUPPLIER' | 'PAST_EXPIRY' | 'NOT_YET_EXPIRED'
 
 /**
  * The single source of truth for legal transitions.

@@ -6,25 +6,25 @@ import { log } from './log'
  * Fetches actual observability data from external APIs
  */
 
-export interface SentryStats {
+interface SentryStats {
   totalEvents: number
   errorRate: number
   criticalErrors: number
 }
 
-export interface PostHogStats {
+interface PostHogStats {
   activeUsers: number
   conversionRate: number
   eventVolume: number
 }
 
-export interface AxiomStats {
+interface AxiomStats {
   logVolume: number
   avgLogLatency: number
   errorLogs: number
 }
 
-export interface VercelStats {
+interface VercelStats {
   deployments: number
   avgResponseTime: number
   bandwidth: number

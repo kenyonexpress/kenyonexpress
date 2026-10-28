@@ -40,7 +40,7 @@ const selectTriggerVariants = cva(
   },
 )
 
-export interface SelectTriggerProps
+interface SelectTriggerProps
   extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
     VariantProps<typeof selectTriggerVariants> {}
 

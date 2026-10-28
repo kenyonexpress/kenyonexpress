@@ -27,7 +27,7 @@ import { redact } from './scrub'
  * logger cannot drift from what Sentry redacts (SEC-SCRUB).
  */
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 const SEVERITY: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 }
 

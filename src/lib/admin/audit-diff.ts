@@ -14,7 +14,7 @@
  */
 
 /** One field that differs between the two snapshots. */
-export type AuditFieldChange = {
+type AuditFieldChange = {
   field: string
   before: unknown
   after: unknown

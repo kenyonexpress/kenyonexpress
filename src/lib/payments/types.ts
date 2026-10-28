@@ -1,6 +1,6 @@
 import type { Agorot } from '@/lib/commerce/money'
 
-export type PaymentProviderKind = 'cardcom' | 'mock'
+type PaymentProviderKind = 'cardcom' | 'mock'
 
 export interface CreateLowProfileInput {
   /** Correlation id stored as payments.id or ReturnValue */
@@ -88,7 +88,7 @@ export interface VerifyLowProfileResult {
   raw: Record<string, unknown>
 }
 
-export interface CreateDocumentLine {
+interface CreateDocumentLine {
   description: string
   quantity: number
   /** VAT-inclusive price of one unit, agorot. */

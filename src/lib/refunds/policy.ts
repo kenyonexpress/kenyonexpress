@@ -11,7 +11,7 @@ import { cancellationFee, isWithinCancellationWindow } from '@/lib/vouchers/canc
  */
 const DEFAULT_PHYSICAL_REFUND_BP = bp(BP_WHOLE)
 
-export type RefundKind = 'coupon' | 'physical'
+type RefundKind = 'coupon' | 'physical'
 
 export type RefundDecision =
   | { refundable: true; refundAgorot: Agorot; feeAgorot: Agorot }

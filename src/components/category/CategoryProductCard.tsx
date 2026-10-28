@@ -1,7 +1,7 @@
 'use client'
 
-import CardOfferDeadline from '@/components/category/CardOfferDeadline'
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import CardOfferDeadline from '@/components/category/CardOfferDeadline'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
@@ -38,7 +38,7 @@ import Link from 'next/link'
 const THUMB_MAX_PX = 186
 const THUMB_SIZES = `(max-width: 497px) calc(50vw - 63px), ${THUMB_MAX_PX}px`
 
-export type GalleryAsset = {
+type GalleryAsset = {
   alt: string | null
   blurDataURL: string | null
 }

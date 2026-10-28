@@ -2,7 +2,7 @@ import { loadPreferenceRows } from '@/lib/notifications/preference-store'
 import { type PreferenceRow, mayNotify } from '@/lib/notifications/preferences'
 import { type ExpoPushMessage, isExpoPushToken, sendExpoPush } from '@/lib/push/expo'
 import { type PushContent, buildPushContent } from '@/lib/push/templates'
-import { type WebPushLegResult, sendWebPushLeg } from '@/lib/push/web-leg'
+import { sendWebPushLeg } from '@/lib/push/web-leg'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -43,7 +43,7 @@ export type PushLegResult =
   | { outcome: 'sent'; recipients: number }
   | { outcome: 'retry'; reason: string }
 
-export type PushTargetRow = { expo_token: string; platform: string; locale: string }
+type PushTargetRow = { expo_token: string; platform: string; locale: string }
 
 /**
  * Android needs a channel to have been created by the app before a push can

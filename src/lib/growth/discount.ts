@@ -40,7 +40,7 @@ export type DiscountCampaign = {
   is_active: boolean
 }
 
-export type DiscountFailure =
+type DiscountFailure =
   | 'unknown'
   | 'inactive'
   | 'not-started'
@@ -64,7 +64,7 @@ export type DiscountEvaluation =
   | { ok: false; reason: DiscountFailure; message: string }
 
 /** Which ceiling actually bound the result. Reported so the UI can explain it. */
-export type CapReason = 'max-discount' | 'commission' | 'payable'
+type CapReason = 'max-discount' | 'commission' | 'payable'
 
 const MESSAGES: Record<DiscountFailure, string> = {
   unknown: 'קוד ההנחה לא נמצא',

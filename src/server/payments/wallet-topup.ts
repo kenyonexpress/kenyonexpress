@@ -52,7 +52,7 @@ export function isLegalTopupTransition(from: TopupState, to: TopupState): boolea
   return (TOPUP_TRANSITIONS[from] ?? []).includes(to)
 }
 
-export type TopupRefusal =
+type TopupRefusal =
   | 'not_signed_in'
   | 'amount_not_integer'
   | 'amount_below_minimum'

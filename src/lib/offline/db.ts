@@ -61,7 +61,7 @@ export interface CatalogSchema extends DBSchema {
   }
 }
 
-export interface CartItem {
+interface CartItem {
   product_id: string
   product_slug: string
   quantity: number

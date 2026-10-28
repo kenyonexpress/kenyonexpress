@@ -1,18 +1,18 @@
 'use client'
 
-import { cityByName } from '@/lib/geo/cities'
-import { MapPin } from 'lucide-react'
-import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import LocationPin from '@/components/product/LocationPin'
 import SupplierVerificationBadge from '@/components/supplier/SupplierVerificationBadge'
+import WishlistHeart from '@/components/wishlist/WishlistHeart'
+import { cityByName } from '@/lib/geo/cities'
+import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
 
-export type GalleryAsset = {
+type GalleryAsset = {
   alt: string | null
   blurDataURL: string | null
 }

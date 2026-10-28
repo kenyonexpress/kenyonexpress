@@ -38,26 +38,11 @@ import { type Agorot, agorot, divRoundHalfUp } from '@/lib/money'
  * function here takes the tier list as a parameter and defaults to
  * `CLUB_TIERS`, so the pure rule is unchanged for a caller that has no table.
  */
-
-const CLUB_WINDOW_DAYS = 365
-
-/** Order statuses that count towards club spend. Paid, and not reversed. */
-export const CLUB_SPEND_STATUSES = [
-  'paid',
-  'partially_fulfilled',
-  'fulfilled',
-  'platform_settled',
-] as const
-
-type ClubSpendStatus = (typeof CLUB_SPEND_STATUSES)[number]
-
-/** Ascending. Fixed: names are keyed by id in the message catalog. */
-export const CLUB_TIER_IDS = ['member', 'silver', 'gold', 'platinum'] as const
-
-export type ClubTierId = (typeof CLUB_TIER_IDS)[number]
-
-export function isClubTierId(value: unknown): value is ClubTierId {
-  return typeof value === 'string' && (CLUB_TIER_IDS as readonly string[]).includes(value)
+interface ClubTier {
+  key: 'basic' | 'silver' | 'gold' | 'platinum'
+  labelHe: string
+  /** Minimum trailing-12-month spend, agorot. */
+  minSpendAgorot: Agorot
 }
 
 const CLUB_TIERS: readonly ClubTier[] = [
