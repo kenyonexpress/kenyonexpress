@@ -72,3 +72,5 @@ Updated: 2026-10-28 (M03-c258: `compare.mjs --page=category` ב-380 / 768 / 1440
 **המשך מ: M03-c258 BLOCKED reference-gone (category gate refused at 380/768/1440, no diff measured; no category reference in refs/)**
 Updated: 2026-10-28 (M18-c258: STATE.md כבר מתחת ל-300 שורות (72), הארכיון המלא ב-docs/STATE-ARCHIVE.md. לא נדרש קיצור נוסף. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M18-c258 DONE**
+Updated: 2026-10-28 (M01-c259: `compare.mjs --page=home` ב-380 / 768 / 1440 לא הורץ: שרת ה-dev על :3000 היה למטה, אתחול חדש עלה אך מחזיר 500 על `/` בגלל כשל postcss של `src/app/globals.css` (SIGKILL, signal 9), כמו ב-c248..c251. אין מספר diff חדש. המדידה האחרונה התקפה (c258): 39.84 / 36.52 / 27.52 ב-380 / 768 / 1440, מעל 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M01-c259 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440; last valid c258: 39.84/36.52/27.52)**
