@@ -122,7 +122,6 @@
 **המשך מ: M09-c220 DONE (2026-10-26): knip re-audit — only @capacitor/android flagged (required by native android build); no unused deps; exports are public API, left intact; no code changes**
 **המשך מ: M06-c221 DONE (2026-10-26): pnpm build green; working tree clean (earlier drift in docs/M-CYCLE-STATUS.md + store page.tsx already committed by concurrent process); no code changes**
 **המשך מ: M09-c221 DONE (2026-10-26): knip re-audit — only @capacitor/android flagged (required by native android build); no unused deps; unused exports are public API/re-exports, left intact; no code changes**
-המשך מ: M10-c221 BLOCKED (migrations/pending still NOT verified applied: 48 files pending; Supabase MCP unauthenticated in this non-interactive session so apply_migration/list_migrations unavailable; db push forbidden; no code changes)
 **המשך מ: M16-c221 DONE (2026-10-26): /product/[slug] emits JSON-LD Product + BreadcrumbList (buildProductJsonLd/buildBreadcrumbJsonLd); json-ld.test.ts 26/26 pass; /product/[slug]/gift is noindex, no LD needed; no code changes**
 **המשך מ: M04-c222 DONE (2026-10-26): pnpm type-check (tsc --noEmit) passes clean, no drift; working tree clean, in sync with origin; no code changes**
 **המשך מ: M05-c222 DONE (2026-10-26): pnpm test 615 files pass / 7064 tests pass (2 files skipped); no drift, working tree clean; no code changes**
@@ -297,3 +296,4 @@
 המשך מ: M09-c259 DONE (2026-10-28): knip deps scan: only flagged @capacitor/android, which android/ gradle needs (project(':capacitor-android')), so kept; depcheck hits are false positives (tailwind/postcss, lighthouse/lint-staged CLIs); 141 unused exports are shadcn ui primitives, scripts and schema, left as public API; no code change; no forbidden files touched
 המשך מ: M17-c259 DONE (2026-10-28): RTL probe on / and /product at 380/768/1440: html lang=he dir=rtl, body direction rtl, scrollWidth==viewport (no sideways scroll), no left-aligned Hebrew text; rtl-lint hits on these routes are comments, symmetric left-0/right-0 bars, or unused .icon-badge; only dir=ltr Hebrew text is locked hero (untouched); email/phone ltr legit; no code change; no forbidden files touched
 המשך מ: M04-c260 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift to fix; no code change; no forbidden files touched
+המשך מ: M05-c260 DONE (2026-10-28): pnpm test 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; 0 failures, no drift to fix; no code change; no forbidden files touched
