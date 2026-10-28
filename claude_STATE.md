@@ -45,3 +45,4 @@ All code executed. Awaiting manual tasks.
 המשך מ: M13-c242 DONE-DEFERRED (SUPABASE_SERVICE_ROLE_KEY 401 on fresh dev server; /api/health 503 database=down, /api/ready 503 database+redis down; no code change)
 המשך מ: M05-c243 DONE (2026-10-28): pnpm test green (616 files passed, 2 skipped; 7072 tests passed, 28 skipped); only drift was docs/M-CYCLE-STATUS.md status rows, committed; no code changes, no forbidden files touched
 המשך מ: M12-c243 DONE (2026-10-28): robots.ts source production-safe, robots+sitemap vitest 12/12 pass, built .next copy is stale (no /gift/); live fetch blocked by Vercel checkpoint 403, apex 308s to www while host/sitemap declare apex; no code change
+המשך מ: M13-c245 DONE-DEFERRED (2026-10-28): SUPABASE_SERVICE_ROLE_KEY returns 401 against REST; /api/health and /api/ready cannot return 200 with real deps; routes' source reviewed, no code change

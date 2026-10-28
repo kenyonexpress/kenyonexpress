@@ -1,3 +1,4 @@
+**המשך מ: M04-c246 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); only drift was claude_STATE.md M13-c245 log line, committed; no code change, no forbidden files touched**
 **המשך מ: M16-c245 DONE (2026-10-28): re-verified /product/[slug] emits JSON-LD Product (buildProductJsonLd) + BreadcrumbList (בית > קטגוריה > מוצר) as two script nodes; src/lib/seo/json-ld.test.ts 26/26 pass; /product/[slug]/gift is noindex (no LD needed); no code changes, no forbidden files touched**
 **המשך מ: M07-c245 DONE (2026-10-28): TODO/FIXME re-scan: same 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md #1-3; none resolvable now; no code change, no forbidden files touched**
 **המשך מ: M18-c244 DONE (2026-10-28): claude/STATE.md already under 300 lines (203 incl. this line); older history already in docs/STATE-ARCHIVE.md — no trim needed; no forbidden files touched**
