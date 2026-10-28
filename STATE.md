@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-10-28 (M16-c256: אימות JSON-LD בעמודי מוצר. המסלול היחיד src/app/(store)/product/[slug]/page.tsx מרנדר שני סקריפטים ld+json: Product ו-BreadcrumbList (בית > קטגוריה > מוצר). json-ld.test.ts: 17/17 עברו. לא נערכו קבצי קוד.) **המשך מ: M16-c256 DONE**
+Updated: 2026-10-28 (M12-c259: אימות robots.txt. src/app/robots.ts: allow / + disallow לנתיבי redeem/coupon/gift/account/supplier/admin/checkout/cart/auth/api/login וכו'; robots.test.ts 8/8 עברו. בפרודקשן הנוכחי הקובץ ישן (חסר /gift/ /login /signup /mfa /debug/) ו-Host/Sitemap על apex ולא www; ייפתר בפריסה הבאה עם NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il. לא נערכו קבצי קוד.) **המשך מ: M12-c259 DONE**
 Updated: 2026-10-28 (M18-c246: STATE.md קוצר; הגרסה המלאה הועברה ל-docs/STATE-ARCHIVE.md. נשארו רק הרשומות האחרונות.)
 
 **המשך מ: M01-c242 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
@@ -74,3 +74,5 @@ Updated: 2026-10-28 (M18-c258: STATE.md כבר מתחת ל-300 שורות (72), 
 **המשך מ: M18-c258 DONE**
 Updated: 2026-10-28 (M01-c259: `compare.mjs --page=home` ב-380 / 768 / 1440 לא הורץ: שרת ה-dev על :3000 היה למטה, אתחול חדש עלה אך מחזיר 500 על `/` בגלל כשל postcss של `src/app/globals.css` (SIGKILL, signal 9), כמו ב-c248..c251. אין מספר diff חדש. המדידה האחרונה התקפה (c258): 39.84 / 36.52 / 27.52 ב-380 / 768 / 1440, מעל 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M01-c259 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440; last valid c258: 39.84/36.52/27.52)**
+Updated: 2026-10-28 (M02-c259: `compare.mjs --page=product` לא הורץ: שרת ה-dev על :3000 מחזיר 500 על כל route בגלל כשל postcss ב-`src/app/globals.css`, כמו ב-M01-c259. בנוסף המארח החי כבר אינו רפרנס (docs/PARITY-REFERENCE.md). אין מספר diff חדש; לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M02-c259 BLOCKED dev-server-500 (postcss, product gate not measured at 380/768/1440)**
