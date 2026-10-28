@@ -1,0 +1,8 @@
+M01-c194 Lighthouse mobile (performance), fresh next start :3541 (kenyonexpress-web/kenyonexpress, closeout/v1-final @ 15cb2d69d), 2026-10-29, route /
+width x 3 runs: perf score | FCP | LCP | TBT | CLS
+380 : 100/99/99 | 1.5 s | 1.5 s     | 20-30 ms | 0.027-0.040 | LCP element: <p> text
+768 : 79/79/79  | 1.5 s | 5.5-5.7 s | 20-30 ms | 0.002       | LCP element: <img>
+1440: 100/100/100 | 1.5 s | 1.5 s   | 20 ms    | 0.004       | LCP element: <p> text
+Diff vs M01-c190 (75/78/78 | 78/78/78 | 83/78/79, medians 78/78/79): 380 +21, 768 +1 (flat), 1440 +21.
+Cause: at 380 and 1440 the LCP element is now a text paragraph (1.5 s) instead of the hero image (4-5.5 s); at 768 it is still the image and the score is unchanged. Page weight 1.0-1.3 MB, server log clean, so the page rendered fully (not a failed-grid false positive like M03-c185).
+768 still below G23 95 target (LCP-bound by image). Measurement only, no code changes.
