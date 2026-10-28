@@ -34,6 +34,14 @@
 
 Note: `/product` alone is 404; the sample uses a real slug. Product best-practices 88 is below 90 and not investigated in this item.
 
+## M02-c185 sample (2026-10-29, mobile, prod build on :3101, 3 runs)
+
+| Page | Perf | A11y | BP | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| /product/צימר-מאסטר | 96 / 91 / 94 | 100 | 100 | 100 | 2.0-2.7 s | 30-170 ms | 0.068 |
+
+Perf is noisy on localhost (Lantern simulation), median 94, range 91-96. Best-practices recovered from 88 to 100. CLS rose from 0.013 to 0.068 (still under 0.1). Build was from 03:37, before the latest commits.
+
 ## Previous Results (Cycle 17: 2026-10-28 04:30-04:32 UTC, via pnpm lhci:autorun)
 
 ### Home Page (3 runs)
