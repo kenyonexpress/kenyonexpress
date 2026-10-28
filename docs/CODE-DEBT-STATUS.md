@@ -1,6 +1,47 @@
 # Code Debt Status (2026-10-28)
 
-## Latest Scan (2026-10-28 11:54 UTC+7, MAINTENANCE_LOOP_8, Cycle 18)
+## Latest Scan (2026-10-28 12:00 UTC+7, MAINTENANCE_LOOP_8, Cycle 19)
+
+**Scan Date:** 2026-10-28 12:00 UTC+7
+**Method:** `find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | xargs grep -H "TODO|FIXME|HACK"`
+**Environment:** autopilot branch  
+
+## Summary
+
+| Type | Count | Status |
+|------|-------|--------|
+| TODO | 6 | — |
+| FIXME | 0 | ✅ Clean |
+| HACK | 0 | ✅ Clean |
+| **Total** | **6** | ✅ No Growth (Cycle 19) |
+
+## By File
+
+### src/lib/payments/cardcom.ts (2 TODOs)
+- Line 249: `// TODO(cardcom): confirm the exact legacy refund endpoint + field names against`
+- Line 312: `* TODO(cardcom): confirm endpoint + field names against the live terminal`
+- **Status:** Blocked on Cardcom production credentials
+
+### src/lib/images/r2-migration.ts (4 TODOs)
+- Line 103: `// TODO: Query database for all product images`
+- Line 104: `// TODO: Batch upload to R2`
+- Line 105: `// TODO: Update product.images URLs to point to R2`
+- Line 106: `// TODO: Verify uploads and delete from source`
+- **Status:** Blocked on R2 service-role key
+
+## Delta Analysis (Cycle 19 vs Cycle 18)
+
+**Previous Scan:** 2026-10-28 11:54 UTC+7 (MAINTENANCE_LOOP_8, Cycle 18)
+- Count: 6 markers
+
+**Current Scan:** 2026-10-28 12:00 UTC+7 (MAINTENANCE_LOOP_8, Cycle 19)
+- Count: 6 markers
+
+**Delta:** **0** (unchanged, no growth, no cleanup goal queued)
+
+---
+
+## Previous Scan (2026-10-28 11:54 UTC+7, MAINTENANCE_LOOP_8, Cycle 18)
 
 **Scan Date:** 2026-10-28 11:54 UTC+7
 **Method:** `find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | xargs grep -l "TODO|FIXME|HACK"`
@@ -95,4 +136,3 @@ No action needed. All markers are tracked in docs/BACKLOG.md with known blockers
 - Item #174: R2 service-role key needed
 
 These are external dependencies blocking resolution, not code quality issues.
-
