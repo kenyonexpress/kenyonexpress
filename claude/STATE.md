@@ -1,3 +1,4 @@
+**המשך מ: M05-c259 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M07-c258 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers, all already filed in docs/BACKLOG.md (3 items, all older than 7 days, blocked on Cardcom prod creds / Supabase service key); no new markers, no forbidden files touched**
 **המשך מ: M05-c258 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M16-c257 DONE (2026-10-28): product/[slug] page renders JSON-LD Product + BreadcrumbList (json-ld.ts, 26 tests pass); gift sub-page is noindex; no code change, no forbidden files touched**
