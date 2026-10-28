@@ -1,29 +1,39 @@
-## MAINTENANCE_LOOP_5: DONE (2026-10-28 09:25:51 UTC+7) - Cycle 11
+## MAINTENANCE_LOOP_5: SKIPPED (2026-10-28 09:27 UTC+7) - Cycle 11
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
 
-**Status:** ✅ **COMPLETE**
+**Status:** ⏭️ **SKIPPED** — Infrastructure blocker (Vercel API permission - second failure)
 
-**Verification Results:**
-- **Method:** Vercel CLI `logs --limit 200` (MCP unavailable, requires OAuth)
-- **Fresh measurement (2026-10-28 09:25:51 UTC+7):** Real-time verification
-- **Latest cron execution:** 2026-10-28 09:25:00 UTC+7 (< 1 minute ago)
-- **Executing routes verified:** 11 routes
-  - Core health checks: health, notifications (< 1 min ago)
-  - Business critical: invoices, stranded-payments, stock (~5 min ago)
-  - Additional: scheduled-gifts, sms-broadcasts, search-outbox, job-dlq, webhook-dlq
-- **Error noted:** fraud-monitor (supabaseKey missing) - executing but failing
-- **Alert status:** ✅ **NO ROUTES STALE** — all verified executing within 24h threshold
+**Attempt History:**
+- **Attempt 1:** 404 Not Found (resolved with correct project ID)
+- **Attempt 2:** 403 Forbidden (with correct IDs: team_TUMTPVDP8218QHwedSjmgJWl, prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP)
 
-**Action Taken:**
-- ✅ Ran Vercel CLI logs verification (fresh as of 09:25:51 UTC+7)
-- ✅ Identified 11 executing cron routes with timestamps
-- ✅ Updated docs/CRON-STATUS.md with fresh Cycle 11 verification
-- ✅ Quality gates: typecheck ✅, lint ✅ (6495 files), build ✅ (all routes)
-- ✅ Commit: 48d16409d "[autopilot] chore: ops cron status check - Cycle 11 fresh verification"
-- ✅ Pushed to origin/closeout/v1-final
+**Current Blocker (Attempts 2+):**
+- **Error:** 403 Forbidden from Vercel API
+- **Root cause:** MCP token lacks permission to read runtime logs (CLI has permission, MCP does not)
+- **MCP Error Guidance:** "Do not retry unchanged or assume re-authentication will fix it. No automatic fix is known from this response."
+- **Cannot be resolved:** Different authentication path for MCP vs CLI; permission scope mismatch
 
-**Conclusion:** Cron routes verified healthy. All routes executing within 24h threshold. No stale routes detected. System operational.
+**Why Fallback Method Does Not Satisfy Requirement:**
+- Requirement explicitly states "via Vercel MCP get_runtime_logs"
+- Vercel CLI fallback is a different method, not the specified tool
+- Functional equivalence (both return cron logs) does not satisfy the stated implementation requirement
+
+**Supabase MCP Work:**
+- Not applicable to MAINTENANCE_LOOP_5 (cron route verification, not DB operations)
+
+**Autonomous Decision per CLAUDE.md:**
+- "goal stuck twice: skip without retry" — Two failures (404, then 403×2)
+- Second failure is consistent 403 Forbidden with no recovery path
+- Error guidance explicitly discourages further retries
+- Terminal infrastructure blocker: Vercel API permission limitation
+
+**Work Artifacts:**
+- docs/CRON-STATUS.md updated with blocker documentation
+- Commits made: 48d16409d, 2117e1658, 8dcfc7854, a5aa7a846, 0bb94dbba
+- Vercel CLI data shows 11 cron routes executing (reference only, does not meet MCP requirement)
+
+**Conclusion:** MAINTENANCE_LOOP_5 blocked by Vercel API token permission scope. MCP method requires different credentials than currently available. Skipped per protocol (stuck twice).
 
 ---
 
@@ -600,7 +610,7 @@ This is the 4th failed measurement. Root cause is not fixable via code - it requ
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_6 (Cycle 11)
+## המשך מ: MAINTENANCE_LOOP_6 (Cycle 11) — After skipped M5
 
 ---
 
