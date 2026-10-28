@@ -1,3 +1,4 @@
+המשך מ: M05-c267 DONE (2026-10-29): pnpm test passes (616 files passed, 2 skipped; 7072 tests passed, 28 skipped), no drift to fix; no code changes, no forbidden files touched
 המשך מ: M04-c267 DONE (2026-10-29): pnpm type-check (tsc --noEmit) passes clean, working tree clean, no drift to fix; no code changes, no forbidden files touched
 המשך מ: M16-c266 DONE (2026-10-29): verified src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product (buildProductJsonLd) and BreadcrumbList (buildBreadcrumbJsonLd) as separate ld+json scripts; /product/[slug]/gift is noindex (no LD needed); /products is a listing; json-ld.test.ts 26/26 pass; no code changes, no forbidden files touched
 המשך מ: M18-c264 DONE (2026-10-29): claude/STATE.md already 123 lines (under 300 limit), older history already in docs/STATE-ARCHIVE.md (29843 lines), nothing further to archive; no code changes, no forbidden files touched
