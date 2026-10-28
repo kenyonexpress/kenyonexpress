@@ -51,3 +51,4 @@ MAINTENANCE_LOOP_10: Appended cycles 1-10 to ~/ke-goals/queue.txt
 המשך מ: M13-c245 DONE-DEFERRED (2026-10-28): SUPABASE_SERVICE_ROLE_KEY returns 401 against REST; /api/health and /api/ready cannot return 200 with real deps; routes' source reviewed, no code change
 המשך מ: M03-c249 BLOCKED (compare.mjs --page=category at 380/768/1440 REFUSED: kenyonexpress.co.il serves our own Vercel build, no Electro category reference exists, no number produced; rows appended to docs/UI-PARITY-REPORT.md; no code change)
 המשך מ: M14-c258 DONE-DEFERRED (SENTRY_AUTH_TOKEN in repo .env.local is a placeholder; release vs HEAD 1b4db299 not verifiable)
+המשך מ: M15-c267 DONE-DEFERRED — / and /product console check (dev server, 1440px): Supabase 'Invalid API key' (400 + product_detail.supplier_load_failed) blocked on key recovery; remaining dev-only noise: CSP blocks va.vercel-scripts.com, React eval() notice, /api/cart requestfailed, /product/[slug] blocking-prerender Suspense warning.
