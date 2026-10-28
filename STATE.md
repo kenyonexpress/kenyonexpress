@@ -94,3 +94,5 @@ Updated: 2026-10-28 (M03-c263: `compare.mjs --page=category` הורץ ב-380 / 7
 **המשך מ: M03-c263 BLOCKED no-category-reference (compare category refuses at 380/768/1440; live host is our own build, no refs/electro-category html; no gate number)**
 Updated: 2026-10-29 (M12-c263: robots.txt נבדק. `src/app/robots.ts` + `robots.test.ts` 8/8 עוברים. allow `/`, disallow על /redeem/ /coupon/ /gift/ /account/ /supplier/ /scan /admin/ /checkout /cart /auth/ /api/ /reset-password /forgot-password /login /signup /mfa /admin-mfa /debug/. sitemap+host נגזרים מ-NEXT_PUBLIC_APP_URL בלי סלאש כפול; ברירת מחדל https://kenyonexpress.co.il, ב-.env.production.local https://kenyonexpress.co.il. לא נחסם /_next/ ולא /c/. לא נערכו קבצים נעולים ולא קוד.)
 **המשך מ: M12-c263 DONE**
+Updated: 2026-10-29 (M18-c263: STATE.md כבר 96 שורות (מתחת ל-300); ההיסטוריה המלאה כבר ב-docs/STATE-ARCHIVE.md. אין מה לקצר. לא נערכו קבצי קוד.)
+**המשך מ: M18-c263 DONE**
