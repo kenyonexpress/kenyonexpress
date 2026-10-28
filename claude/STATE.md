@@ -170,3 +170,4 @@
 המשך מ: M04-c240 DONE (pnpm type-check clean, tsc --noEmit exit 0; only drift was uncommitted M03-c240 line in claude_STATE.md, committed; no code changes)
 המשך מ: M05-c240 DONE (pnpm test 616 files / 7072 tests pass, 0 failures; only drift was regenerated timestamp in docs/M-CYCLE-STATUS.md, committed; no code changes, no forbidden files touched)
 המשך מ: M06-c240 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; working tree clean after build, no drift to fix; no code changes, no forbidden files touched
+המשך מ: M07-c240 DONE (2026-10-28): TODO/FIXME scan of src/scripts/migrations = 6 lines, all >7 days old (oldest 2026-07-24) and all already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds x2, R2 migration stub needing deferred service-role key); none resolvable now; BACKLOG re-verified; no forbidden files touched
