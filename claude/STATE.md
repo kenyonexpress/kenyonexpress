@@ -1,3 +1,4 @@
+**המשך מ: M09-c242 DONE (2026-10-28): knip re-scan — only flagged dep is @capacitor/android (required by capacitor.config/android platform, kept); 0 removable deps; dead exports unchanged since c241 (public API surfaces, left); no code changes, no forbidden files touched**
 **המשך מ: M09-c241 DONE (2026-10-28): knip scan — removed unused direct devDeps uuid + xcode (overrides kept, lockfile regenerated, tsc clean); 74 "unused exports" left as-is (public UI/action/lib API surfaces, no safe-to-remove proof); no forbidden files touched**
 **המשך מ: M07-c241 DONE (2026-10-28): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all already filed in docs/BACKLOG.md (3 items, all blocked on Cardcom creds / service-role key / feature work); no code change, no forbidden files touched**
 **המשך מ: M06-c241 DONE (2026-10-28): pnpm build passes clean; working tree had no drift (git status empty) so nothing to fix — no code change, no forbidden files touched**
