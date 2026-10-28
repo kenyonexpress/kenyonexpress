@@ -1,4 +1,3 @@
-**המשך מ: M05-c259 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M07-c258 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers, all already filed in docs/BACKLOG.md (3 items, all older than 7 days, blocked on Cardcom prod creds / Supabase service key); no new markers, no forbidden files touched**
 **המשך מ: M05-c258 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M16-c257 DONE (2026-10-28): product/[slug] page renders JSON-LD Product + BreadcrumbList (json-ld.ts, 26 tests pass); gift sub-page is noindex; no code change, no forbidden files touched**
@@ -297,3 +296,4 @@
 המשך מ: M17-c259 DONE (2026-10-28): RTL probe on / and /product at 380/768/1440: html lang=he dir=rtl, body direction rtl, scrollWidth==viewport (no sideways scroll), no left-aligned Hebrew text; rtl-lint hits on these routes are comments, symmetric left-0/right-0 bars, or unused .icon-badge; only dir=ltr Hebrew text is locked hero (untouched); email/phone ltr legit; no code change; no forbidden files touched
 המשך מ: M04-c260 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift to fix; no code change; no forbidden files touched
 המשך מ: M05-c260 DONE (2026-10-28): pnpm test 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; 0 failures, no drift to fix; no code change; no forbidden files touched
+המשך מ: M06-c260 DONE (2026-10-28): pnpm build green, all routes generated; drift was only STATE/M-CYCLE-STATUS timestamps, committed; no forbidden files touched

@@ -47,3 +47,4 @@ All code executed. Awaiting manual tasks.
 המשך מ: M12-c243 DONE (2026-10-28): robots.ts source production-safe, robots+sitemap vitest 12/12 pass, built .next copy is stale (no /gift/); live fetch blocked by Vercel checkpoint 403, apex 308s to www while host/sitemap declare apex; no code change
 המשך מ: M13-c245 DONE-DEFERRED (2026-10-28): SUPABASE_SERVICE_ROLE_KEY returns 401 against REST; /api/health and /api/ready cannot return 200 with real deps; routes' source reviewed, no code change
 המשך מ: M03-c249 BLOCKED (compare.mjs --page=category at 380/768/1440 REFUSED: kenyonexpress.co.il serves our own Vercel build, no Electro category reference exists, no number produced; rows appended to docs/UI-PARITY-REPORT.md; no code change)
+המשך מ: M14-c258 DONE-DEFERRED (SENTRY_AUTH_TOKEN in repo .env.local is a placeholder; release vs HEAD 1b4db299 not verifiable)
