@@ -1,0 +1,3 @@
+M02-c181 Lighthouse mobile (performance), fresh next start :3431, 2026-10-29
+/product/עוזרת-אישית-שירותי-משרד : 86 / 82 / 82 (3 runs; FCP 1.4-1.8 s, LCP 4.1-4.8 s, TBT 20-70 ms, CLS 0)
+Below G23 target 95 (LCP-bound). Prior M08-c265: 86/87. Measurement only, no code changes.
