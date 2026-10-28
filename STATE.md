@@ -1729,4 +1729,30 @@ Queue refreshed for next cycle. Next goal head: MAINTENANCE_LOOP_10.
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_8 (Cycle 18) — Code debt scan
+## MAINTENANCE_LOOP_8: DONE (2026-10-28 Cycle 18)
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew since last scan queue a cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+
+**Status:** ✅ **COMPLETE**
+
+**Scan Results (Cycle 18):**
+- **Current count:** 6 TODO markers (unchanged)
+  - cardcom.ts: 2 TODOs (blocked on Cardcom production credentials)
+  - r2-migration.ts: 4 TODOs (blocked on R2 service-role key)
+- **FIXME comments:** 0
+- **HACK comments:** 0
+- **Delta:** 0 (stable from Cycle 16, no growth)
+- **Cleanup goal:** NOT queued (no growth)
+
+**Action Taken:**
+- ✅ Scanned all .ts/.tsx/.js/.jsx files in src/
+- ✅ Found 6 markers (same as Cycle 16)
+- ✅ No growth detected
+- ✅ Updated docs/CODE-DEBT-STATUS.md
+- ✅ Quality gates: typecheck ✅, lint ✅
+
+**Conclusion:** Code debt markers unchanged. All 6 markers already filed in docs/BACKLOG.md (blocked on external dependencies). No cleanup goal queued.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_9 (Cycle 18) — DB performance check
