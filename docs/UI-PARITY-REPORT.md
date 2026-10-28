@@ -662,3 +662,12 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-28 06:48 | category | 380 | n/a | REFUSED | `fd2a5738-dirty` | live side is our-build |
 | 2026-10-28 06:48 | category | 768 | n/a | REFUSED | `fd2a5738-dirty` | live side is our-build |
 | 2026-10-28 06:48 | category | 1440 | n/a | REFUSED | `fd2a5738-dirty` | live side is our-build |
+| 2026-10-28 07:29 | product | 380 | n/a | REFUSED | `fd71eff1-dirty` | live side is our-build |
+| 2026-10-28 07:29 | product | 768 | n/a | REFUSED | `fd71eff1-dirty` | live side is our-build |
+| 2026-10-28 07:29 | product | 1440 | n/a | REFUSED | `fd71eff1-dirty` | live side is our-build |
+| 2026-10-28 08:08 | product | 380 | n/a | REFUSED | `784defc9-dirty` | live side is our-build |
+| 2026-10-28 08:08 | product | 768 | n/a | REFUSED | `784defc9-dirty` | live side is our-build |
+| 2026-10-28 08:08 | product | 1440 | n/a | REFUSED | `784defc9-dirty` | live side is our-build |
+| 2026-10-28 08:09 | category | 380 | n/a | REFUSED | `17396518-dirty` | live side is our-build |
+| 2026-10-28 08:09 | category | 768 | n/a | REFUSED | `17396518-dirty` | live side is our-build |
+| 2026-10-28 08:09 | category | 1440 | n/a | REFUSED | `17396518-dirty` | live side is our-build |
