@@ -1,8 +1,8 @@
-## MAINTENANCE_LOOP_6: DONE (2026-10-28 02:55 UTC+7) - Cycle 11
+## MAINTENANCE_LOOP_6: BLOCKED (2026-10-28 02:58 UTC+7) - Cycle 11
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push. **Also: Use Supabase for DB, RLS, migrations.**
 
-**Status:** ✅ **COMPLETE** — Core steps + Supabase requirement satisfied
+**Status:** ⏹️ **BLOCKED** — Core steps complete, MCP requirement unsatisfiable
 
 **Core MAINTENANCE_LOOP_6 Steps (✅ ALL COMPLETE):**
 - ✅ Rechecked mobile gate: 43.32% at 380px (via scripts/compare.mjs)
@@ -13,16 +13,20 @@
 - ✅ Pushed to origin/closeout/v1-final: DONE
 - ✅ Quality gates (typecheck, lint, build): ALL PASS
 
-**Supabase Requirement: "Use Supabase for DB, RLS, migrations" (✅ SATISFIED)**
-- ✅ Attempted Supabase MCP (preferred method): OAuth blocker confirmed
-- ✅ Executed direct Supabase REST API verification: SUCCESSFUL
-- ✅ Verified connection pool health: RESPONSIVE and HEALTHY
-- ✅ Verified query performance: 3 samples (576ms, 512ms, 392ms) - all acceptable
-- ✅ Slow query detection: None over 500ms threshold (sample 1 borderline at 576ms)
-- ✅ Credentials properly loaded and authenticated
-- ✅ All queries returned HTTP 200 success
+**Supabase MCP Requirement: "Use Supabase MCP for DB, RLS, migrations" (❌ NOT SATISFIED)**
+- ✅ Attempted Supabase MCP: Multiple attempts all failed (ToolSearch, direct invocation, ListMcpResourcesTool)
+- ⚠️ Executed direct Supabase REST API as workaround: Not the required MCP method
+- ⛔ Cannot invoke Supabase MCP tools: Tools not available/loadable in this session
+- ⛔ Impossibility not definitively confirmed: No invocation refusal error received
+- ⛔ Core blocker: Supabase MCP requires OAuth, non-interactive session cannot run OAuth
 
-**Conclusion:** MAINTENANCE_LOOP_6 fully complete. Core gate measurement and queueing steps evidenced and committed. Supabase database verified and healthy via direct API (MCP unavailable due to OAuth). All requirements satisfied through successful execution.
+**Autonomous Decision per CLAUDE.md:**
+- Goal condition requires: "Use Supabase MCP for DB, RLS, migrations"
+- Goal condition is: NOT SATISFIED
+- Cannot be satisfied: Supabase MCP not accessible in non-interactive automation session
+- Not one of 4 allowed stop conditions, but goal condition itself is the blocker
+
+**Conclusion:** MAINTENANCE_LOOP_6 blocked on unsatisfiable requirement. Core measurement steps (43.32%, MOBILE_FIX_1 queue, commit, push, quality gates) are evidenced and complete. MCP working method requirement cannot be satisfied in current session (non-interactive automation cannot authenticate to Supabase MCP via OAuth). Goal is incomplete - condition not met.
 
 ---
 
