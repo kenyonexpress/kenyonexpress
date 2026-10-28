@@ -1,3 +1,4 @@
+**המשך מ: M05-c254 DONE (2026-10-28): pnpm test green, 616 files passed / 2 skipped, 7072 tests passed / 28 skipped; no drift found, no code change, no forbidden files touched**
 **המשך מ: M18-c253 DONE (2026-10-28): claude/STATE.md already under 300 lines (261 incl. this line) and older history already in docs/STATE-ARCHIVE.md (29638 lines) — no trim needed; no forbidden files touched**
 **המשך מ: M07-c253 DONE (2026-10-28): TODO/FIXME re-scan: same 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md #1-3; none resolvable now; no forbidden files touched**
 **המשך מ: M13-c251 DONE (2026-10-28): local next dev with real .env.local: /api/health 200 (database ok, search not_configured), /api/ready 200 (database/redis/cardcom ok; meilisearch+r2 not_configured); service-role key valid (REST 200); prod domain 308-redirects only; no code change, no forbidden files touched**
