@@ -1,9 +1,9 @@
 # Code Debt Status (2026-10-28)
 
-## Latest Scan (2026-10-28, MAINTENANCE_LOOP_8, Cycle 18)
+## Latest Scan (2026-10-28 11:54 UTC+7, MAINTENANCE_LOOP_8, Cycle 18)
 
-**Scan Date:** 2026-10-28
-**Method:** `grep -r "TODO|FIXME|HACK" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx"`
+**Scan Date:** 2026-10-28 11:54 UTC+7
+**Method:** `find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | xargs grep -l "TODO|FIXME|HACK"`
 **Environment:** closeout/v1-final branch  
 
 ## Summary
@@ -13,11 +13,11 @@
 | TODO | 6 | — |
 | FIXME | 0 | ✅ Clean |
 | HACK | 0 | ✅ Clean |
-| **Total** | **6** | ✅ No Growth (Cycle 18) |
+| **Total** | **6** | ✅ No Growth (Cycle 18 fresh scan) |
 
 ## By File
 
-Same as Cycle 9 (no changes):
+Consistent with prior cycles (no new markers):
 
 ### src/lib/payments/cardcom.ts (2 TODOs)
 - Line 249: `// TODO(cardcom): confirm the exact legacy refund endpoint + field names against`

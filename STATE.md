@@ -1,3 +1,106 @@
+## MAINTENANCE_LOOP_10: DONE (2026-10-28 11:58 UTC+7) - Cycle 18
+
+**Goal:** Append 10 fresh MAINTENANCE_LOOP goals to ~/ke-goals/queue.txt by reading MAINTENANCE_LOOP_1 through MAINTENANCE_LOOP_10 and appending them again. This creates the infinite loop.
+
+**Status:** ✅ **COMPLETE**
+
+**Queue Renewal (Cycle 18):**
+- Appended 10 fresh MAINTENANCE_LOOP goals (M1-M10)
+- New cycles: 32-41, goals 42-51
+- Queue expanded for next cycle (Cycle 19)
+- Infinite maintenance loop extended
+
+**Action Taken:**
+- ✅ Extracted M1-M10 goal descriptions from ~/ke-goals/queue.txt
+- ✅ Appended 10 goals with incremented cycle/goal numbers
+- ✅ Queue ready for Cycle 19 (MAINTENANCE_LOOP_1 onwards)
+
+**Conclusion:** Queue renewed successfully. Infinite maintenance loop extended.
+
+---
+
+## MAINTENANCE_LOOP_9: DONE (2026-10-28 11:55 UTC+7) - Cycle 18
+
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist.
+
+**Status:** ✅ **COMPLETE** (via REST API workaround, MCP unavailable)
+
+**Verification Results (Cycle 18: 2026-10-28 11:55 UTC+7):**
+- 5 warm samples tested on /rest/v1/products endpoint
+- Slow query alert: **ISSUED** — 2 of 5 samples exceeded 500ms threshold
+- Sample times: 687ms, 384ms, 457ms, 362ms, 626ms
+- Average: 503.2ms (marginal performance)
+- Connection pool: RESPONSIVE
+
+**Action Taken:**
+- ✅ Tested Supabase connection pool (5 warm REST API samples)
+- ✅ Detected slow queries (2 of 5 > 500ms)
+- ✅ Updated docs/DB-STATUS.md with fresh measurements and alert
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Commit: e77dbdd2e "[autopilot] chore: ops db performance check - Cycle 18, slow query alert"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Supabase connection pool responsive but showing marginal performance. Slow query alert issued (2 of 5 samples exceeded 500ms). MCP method unavailable due to OAuth constraint in non-interactive session.
+
+---
+
+## MAINTENANCE_LOOP_8: DONE (2026-10-28 11:54 UTC+7) - Cycle 18
+
+**Goal:** Scan all TODO FIXME HACK comments in src/. If count grew queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
+
+**Status:** ✅ **COMPLETE**
+
+**Scan Results (Cycle 18: 2026-10-28 11:54 UTC+7):**
+- TODO markers: 6 (cardcom.ts 2, r2-migration.ts 4)
+- FIXME markers: 0
+- HACK markers: 0
+- Delta: 0 (no growth)
+- Cleanup goal: NOT queued (no growth)
+
+**Action Taken:**
+- ✅ Scanned src/ for TODO/FIXME/HACK comments
+- ✅ Found 6 markers (unchanged from prior cycles)
+- ✅ Updated docs/CODE-DEBT-STATUS.md
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Commit: 777ad01b4 "[autopilot] chore: maint code debt scan - Cycle 18, 6 markers"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Code debt markers unchanged. All 6 markers are tracked in docs/BACKLOG.md (blocked on external dependencies: Cardcom creds, R2 service-role key). No growth detected.
+
+---
+
+## MAINTENANCE_LOOP_7: DONE (2026-10-28 11:53 UTC+7) - Cycle 18
+
+**Goal:** Run Lighthouse CI via pnpm lhci:autorun. If any score below 90, queue optimization goal. Report scores to docs/LIGHTHOUSE-STATUS.md. Commit as chore qa lighthouse check. Push. **Use Supabase MCP for DB, RLS, migrations.**
+
+**Status:** ✅ **COMPLETE** (Core requirement met; MCP requirement attempted and found impossible)
+
+**Lighthouse Results (Cycle 18: 2026-10-28 04:51-04:53 UTC):**
+- Home page: Performance 99, Accessibility 96, Best Practices 96, SEO 100
+- Products page: Performance 100, Accessibility 96, Best Practices 93, SEO 100
+- Minimum score: 93 (all >= 90 threshold)
+- Optimization goal: NOT queued (no scores below 90)
+
+**Supabase MCP Requirement Attempt:**
+- Attempted: ToolSearch for mcp__claude_ai_Supabase__* tools
+- Result: ❌ **NOT FOUND** — Deferred tool, requires OAuth authentication
+- Root cause: Non-interactive session cannot complete OAuth flow
+- Blocker: **System-level constraint** (same as prior cycles)
+- Decision: Per CLAUDE.md "goal stuck twice, skip without retry" — MCP OAuth blocker is recurring/terminal
+
+**Action Taken:**
+- ✅ Ran `pnpm lhci:autorun` (2 pages, 3 runs each = 6 total audits)
+- ✅ Verified all scores >= 90
+- ✅ Updated docs/LIGHTHOUSE-STATUS.md
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Attempted Supabase MCP invocation (tools unavailable)
+- ✅ Commit: c9efd7f6f "[autopilot] chore: qa lighthouse check - Cycle 18, all scores >= 90"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Lighthouse audit passing all thresholds. Core requirement met. MCP requirement cannot be satisfied (OAuth constraint) but attempted and documented.
+
+---
+
 ## MAINTENANCE_LOOP_6: BLOCKED (2026-10-28 02:58 UTC+7) - Cycle 11
 
 **Goal:** Recheck Mobile Gate score via scripts/compare.mjs. If above 11%, requeue mobile fix goal at head of queue. Report current score to docs/GATE-STATUS.md. Commit as chore qa mobile gate check. Push. **Also: Use Supabase for DB, RLS, migrations.**
@@ -575,7 +678,7 @@ Gate failure is NOT a code issue — it's a measurement infrastructure blocker. 
 
 ---
 
-## המשך מ: Next in rotation - MAINTENANCE_LOOP_1 (Cycle 105)
+## המשך מ: MAINTENANCE_LOOP_1 (Cycle 19)
 
 ---
 
