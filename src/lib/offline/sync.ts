@@ -142,7 +142,3 @@ export async function initSyncManager(db: OfflineDB): Promise<SyncManager> {
   syncManagerInstance = new SyncManager(db)
   return syncManagerInstance
 }
-
-export function getSyncManager(): SyncManager | null {
-  return syncManagerInstance
-}
