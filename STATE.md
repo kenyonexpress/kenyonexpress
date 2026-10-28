@@ -319,43 +319,45 @@ Gate failure is NOT a code issue — it's a measurement infrastructure blocker. 
 
 ---
 
-## MAINTENANCE_LOOP_5: DONE (2026-10-28 11:17 UTC+7) - Cycle 16 (FULLY COMPLIANT)
+## MAINTENANCE_LOOP_5: SKIPPED (2026-10-28 11:17 UTC+7) - Cycle 16 (TERMINAL BLOCKERS)
 
-**Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push. Use Supabase MCP for DB, RLS, migrations. Run pnpm typecheck, lint, build.
+**Goal:** Check all cron routes last-run timestamp **via Vercel MCP get_runtime_logs**. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push. **Use Supabase MCP** for DB, RLS, migrations.
 
-**Status:** ✅ **COMPLETE & VERIFIED**
+**Status:** ⏹️ **SKIPPED** (Terminal Blockers - Unfixable in Current Environment)
 
-**Verification Results:**
-- **Vercel MCP get_runtime_logs:** ATTEMPTED - Got 403 Forbidden (MCP token lacks permission)
-- **Fallback Method:** Vercel CLI `logs --limit 5000 --since 24h` (successfully retrieved cron logs)
-- **Timestamp:** 2026-10-28 11:15:38 UTC+7
-- **Routes executing in last 24h:** 7 unique routes
-  - health, notifications (3 executions each, last at 11:15:00 UTC+7)
-  - stranded-payments, invoices, stock (1 execution each, last at 11:10:00 UTC+7)
-  - stock-notifications, search-reindex (1 execution each, last at 11:07:00 UTC+7)
-- **Alert status:** ✅ **NO ROUTES STALE** — all executing within 24h threshold
+**Why Skipped (Per CLAUDE.md: "goal שנתקע פעמיים: לדלג"):**
 
-**Supabase MCP Attempt:**
-- ⛔ Supabase MCP tools: Not available without OAuth authentication
-- ✅ Fallback: REST API query performance test (5 warm samples, average 459ms)
-- ✅ Database connectivity verified healthy
+1. **Vercel MCP get_runtime_logs Blocker:**
+   - Requirement: Use Vercel MCP tool explicitly
+   - Attempt result: 403 Forbidden (API permission scope)
+   - Root cause: MCP bearer token lacks permission to read runtime logs
+   - Blocker: Different authentication path from Vercel CLI (CLI has permission, MCP does not)
+   - Terminal: No automatic fix available from API error response
 
-**Quality Gates (Verified 2026-10-28 11:17 UTC+7):**
-- ✅ **pnpm typecheck:** PASS (tsc --noEmit clean)
-- ✅ **pnpm lint:** PASS (6495 files, no fixes applied)
-- ✅ **pnpm build:** PASS (all 293 routes successfully prerendered)
+2. **Supabase MCP Blocker:**
+   - Requirement: Use Supabase MCP for DB verification
+   - Attempt result: Tools not available - ToolSearch returned "No matching deferred tools found"
+   - Root cause: Supabase MCP requires interactive OAuth authentication
+   - Session constraint: Non-interactive automation session (kenyon-loop.sh) cannot complete OAuth flow
+   - Terminal: System-level constraint, cannot be worked around
 
-**Action Taken:**
-- ✅ Attempted mcp__claude_ai_Vercel__get_runtime_logs (got 403, documented blocker)
-- ✅ Used Vercel CLI fallback (successful - 7 routes verified)
-- ✅ Attempted Supabase MCP (unavailable - OAuth required, used REST fallback)
-- ✅ Updated docs/CRON-STATUS.md with fresh verification data
-- ✅ Ran all quality gates (typecheck, lint, build all passing)
-- ✅ Commit: 113a60554 "[autopilot] chore: ops cron status check"
-- ✅ Pushed to origin/closeout/v1-final
-- ✅ STATE.md updated with Cycle 16 completion
+**Autonomous Decision (Per CLAUDE.md Protocol):**
+- Goal condition requires BOTH: Vercel MCP AND Supabase MCP
+- Both MCP methods have failed multiple times with same blockers:
+  - Cycle 11 (2026-10-28 09:27): Vercel MCP 403, skipped after first failure
+  - Cycle 10 (2026-10-28 23:35): Vercel MCP 403, Supabase OAuth unavailable
+  - Cycle 16 (2026-10-28 11:17): Both failed again
+- Rule applies: "goal stuck twice, skip without retry"
+- This is the third+ attempt with identical blockers
+- **DECISION: SKIP (do not retry)**
 
-**Conclusion:** Goal condition fully satisfied. All MCP calls attempted (Vercel MCP: 403 blocker documented; Supabase MCP: OAuth unavailable, fallback used). All quality gates passing. Cron routes verified healthy with no stale routes detected.
+**What Was Completed (Not in Scope Due to MCP Requirement):**
+- ✅ Cron routes verified via CLI (7 routes, no stale routes)
+- ✅ docs/CRON-STATUS.md updated with findings
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Committed and pushed with [autopilot] prefix
+
+**Conclusion:** Goal condition unsatisfiable in current environment. Core MCP requirements (Vercel MCP, Supabase MCP) blocked by API permissions and OAuth constraints. Skipping per established protocol. Cron functionality verified via alternative methods for operational awareness.
 
 ---
 
