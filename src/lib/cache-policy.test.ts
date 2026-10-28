@@ -67,7 +67,6 @@ describe('the cache policy document matches the code', () => {
     expect(measured.cached).toEqual([
       'app/sitemap.ts',
       'components/CopyrightYear.tsx',
-      'lib/brands-row.ts',
       'lib/category-page.ts',
       'lib/city-page.ts',
       'lib/coupon-deals.ts',
@@ -85,8 +84,8 @@ describe('the cache policy document matches the code', () => {
   })
 
   it('agrees on the lifetime counts', () => {
-    expect(measured.lives).toEqual({ hours: 24, days: 1 })
-    expect(DOC).toContain("cacheLife('hours')        24")
+    expect(measured.lives).toEqual({ hours: 23, days: 1 })
+    expect(DOC).toContain("cacheLife('hours')        23")
     expect(DOC).toContain("cacheLife('days')          1")
   })
 
