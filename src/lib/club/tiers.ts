@@ -8,7 +8,7 @@ import { type Agorot, agorot } from '@/lib/money'
  * not listed here: nothing in checkout grants one yet, and a tier page that
  * promises a benefit the system does not apply is a false claim.
  */
-export interface ClubTier {
+interface ClubTier {
   key: 'basic' | 'silver' | 'gold' | 'platinum'
   labelHe: string
   /** Minimum trailing-12-month spend, agorot. */

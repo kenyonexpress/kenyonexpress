@@ -15,7 +15,7 @@ import { z } from 'zod'
 
 const PAYOUT_STATUSES = ['draft', 'pending_approval', 'approved', 'paid', 'cancelled'] as const
 
-export type PayoutStatus = (typeof PAYOUT_STATUSES)[number]
+type PayoutStatus = (typeof PAYOUT_STATUSES)[number]
 
 /** What the admin actually needs to tell apart, which is not the enum. */
 export type PayoutState = PayoutStatus | 'rolled_over'

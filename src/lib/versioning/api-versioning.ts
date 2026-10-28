@@ -30,7 +30,7 @@ export const CURRENT_API_VERSION: ApiVersion = API_VERSIONS[API_VERSIONS.length 
 /** Header a client sets to pin a version without changing its URLs. */
 const API_VERSION_HEADER = 'x-api-version'
 
-export type VersionSource = 'path' | 'header' | 'default'
+type VersionSource = 'path' | 'header' | 'default'
 
 export interface ResolvedApiVersion {
   /** The version to serve, or the caller's unknown request when unsupported. */

@@ -11,7 +11,7 @@
  */
 export const DELETE_CONFIRMATION_PHRASE = 'מחק את החשבון שלי'
 
-export type DeletionRefusal = 'not_signed_in' | 'confirmation_mismatch'
+type DeletionRefusal = 'not_signed_in' | 'confirmation_mismatch'
 
 export type DeletionPlan =
   | { ok: true; userId: string }

@@ -566,7 +566,7 @@ const tokenizedChargeInputSchema = z.object({
   description: z.string().min(1),
 })
 
-export type TokenizedChargeInput = z.input<typeof tokenizedChargeInputSchema>
+type TokenizedChargeInput = z.input<typeof tokenizedChargeInputSchema>
 
 /**
  * Charge a previously tokenized card (one-click checkout).
@@ -600,7 +600,7 @@ const refundChargeInputSchema = z
     path: ['partialAmountAgorot'],
   })
 
-export type RefundChargeInput = z.input<typeof refundChargeInputSchema>
+type RefundChargeInput = z.input<typeof refundChargeInputSchema>
 
 /**
  * Refund (or same-day cancel) a settled charge by its transaction id.
@@ -625,7 +625,7 @@ const webhookSignatureInputSchema = z.object({
   previousSecret: z.string().min(1).nullish(),
 })
 
-export type WebhookSignatureInput = z.input<typeof webhookSignatureInputSchema>
+type WebhookSignatureInput = z.input<typeof webhookSignatureInputSchema>
 
 /**
  * Is a webhook call carrying a secret we recognise?

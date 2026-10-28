@@ -19,7 +19,7 @@
 const TOPIC = process.env.NTFY_TOPIC ?? 'kenyon-ofir-limit'
 const BASE = process.env.NTFY_BASE_URL ?? 'https://ntfy.sh'
 
-export type AlertPriority = 'default' | 'high' | 'urgent'
+type AlertPriority = 'default' | 'high' | 'urgent'
 
 export type AlertArgs = {
   title: string

@@ -16,7 +16,7 @@
  * each failure shape without a database.
  */
 
-export type PaymentStatus =
+type PaymentStatus =
   | 'initiated'
   | 'redirected'
   | 'succeeded'

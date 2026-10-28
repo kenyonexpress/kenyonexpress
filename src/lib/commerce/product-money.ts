@@ -45,7 +45,7 @@ export type ProductMoneyType = 'coupon' | 'physical' | 'recurring'
 export const SPLIT_TOTAL = 100
 
 /** Field keys the publish gate can complain about, for the form to highlight. */
-export type ProductMoneyField =
+type ProductMoneyField =
   | 'platform_percent'
   | 'supplier_split_percent'
   | 'discount_percent'
@@ -93,7 +93,7 @@ export function round2(value: number): number {
   return Math.round(value * 100) / 100
 }
 
-export interface SplitPair {
+interface SplitPair {
   platformPercent: number
   supplierSplitPercent: number
 }
@@ -433,7 +433,7 @@ function trimOrNull(value: string | null | undefined): string | null {
  *   of letting `price_ils` go stale behind an edit and quietly loosen
  *   `products_coupon_price_within_price`.
  */
-export interface ProductMoneyWrite {
+interface ProductMoneyWrite {
   /**
    * Mirrors products.type. Migration 091 holds the two equal with a CHECK, so
    * writing it is naming a fact rather than choosing one; a row where the two
@@ -589,7 +589,7 @@ export interface MoneyPreview {
  * So the admin sees the shape without being able to set it independently of the
  * type that determines it.
  */
-export type CommissionShape = 'coupon_absolute' | 'physical_percent'
+type CommissionShape = 'coupon_absolute' | 'physical_percent'
 
 export interface CommissionTypeView {
   shape: CommissionShape

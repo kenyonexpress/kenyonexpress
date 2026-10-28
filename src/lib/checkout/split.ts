@@ -6,7 +6,7 @@ import {
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import type { CalculateSplitInput } from '@/lib/validations/checkout'
 
-export type SplitLineView = {
+type SplitLineView = {
   id: string
   productType: 'coupon' | 'physical'
   quantity: number

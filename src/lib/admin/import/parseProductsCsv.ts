@@ -61,9 +61,9 @@ const productImportRowSchema = z.object({
   ),
 })
 
-export type ProductImportRow = z.infer<typeof productImportRowSchema>
+type ProductImportRow = z.infer<typeof productImportRowSchema>
 
-export interface ProductImportRowError {
+interface ProductImportRowError {
   /** 1-based physical row in the source file, as Excel numbers it. 0 = file-level error. */
   row: number
   /** Offending column name, or null for file-level / whole-row problems. */

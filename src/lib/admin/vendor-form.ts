@@ -24,7 +24,7 @@ const vendorFormSchema = z.object({
   status: vendorStatusSchema.default('pending'),
 })
 
-export type VendorFormInput = z.infer<typeof vendorFormSchema>
+type VendorFormInput = z.infer<typeof vendorFormSchema>
 
 export type VendorParseResult = { ok: true; data: VendorFormInput } | { ok: false; error: string }
 

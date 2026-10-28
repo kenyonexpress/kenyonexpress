@@ -118,7 +118,7 @@ export function supplierLocation(supplier: SupplierLocationInput | null): Suppli
  * fails, emptying every category grid. So nothing selects them yet; this
  * interface is what starts working, per field, the moment they exist.
  */
-export interface ProductLocationOverride {
+interface ProductLocationOverride {
   city?: string | null
   latitude?: number | null
   longitude?: number | null

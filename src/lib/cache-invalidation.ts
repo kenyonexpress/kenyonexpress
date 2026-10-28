@@ -1,6 +1,6 @@
 import { purgeCacheForResource } from './cache'
 
-export interface CacheInvalidationEvent {
+interface CacheInvalidationEvent {
   resource: 'product' | 'category' | 'order' | 'coupon' | 'supplier'
   id: string | number
   reason: string

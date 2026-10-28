@@ -34,7 +34,7 @@ const WEBP_QUALITY = 80
 const AVIF_QUALITY = 55
 const BLUR_WIDTH = 16
 
-export type Rendition = {
+type Rendition = {
   format: 'webp' | 'avif'
   width: number
   height: number

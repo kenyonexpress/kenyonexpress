@@ -39,10 +39,10 @@ const fieldSchemas = {
     .max(10_000_000, 'מחיר משלוח גבוה מדי'),
 } as const
 
-export type LogisticsKey = keyof typeof fieldSchemas
+type LogisticsKey = keyof typeof fieldSchemas
 const LOGISTICS_KEYS = Object.keys(fieldSchemas) as LogisticsKey[]
 
-export type LogisticsFields = Partial<{
+type LogisticsFields = Partial<{
   cancellation_window_days: number | null
   payout_cadence: PayoutCadence | null
   full_address: string | null

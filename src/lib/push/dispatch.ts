@@ -35,7 +35,7 @@ export type PushLegResult =
   | { outcome: 'sent'; recipients: number }
   | { outcome: 'retry'; reason: string }
 
-export type PushTargetRow = { expo_token: string; platform: string; locale: string }
+type PushTargetRow = { expo_token: string; platform: string; locale: string }
 
 /**
  * Android needs a channel to have been created by the app before a push can

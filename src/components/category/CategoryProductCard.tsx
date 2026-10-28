@@ -37,7 +37,7 @@ import Link from 'next/link'
 const THUMB_MAX_PX = 186
 const THUMB_SIZES = `(max-width: 497px) calc(50vw - 63px), ${THUMB_MAX_PX}px`
 
-export type GalleryAsset = {
+type GalleryAsset = {
   alt: string | null
   blurDataURL: string | null
 }

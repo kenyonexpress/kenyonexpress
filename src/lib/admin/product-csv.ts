@@ -92,7 +92,7 @@ export function parseCsv(input: string): ParsedCsv {
   return { header: header.map((h) => h.trim()), rows }
 }
 
-export type CsvRowResult =
+type CsvRowResult =
   | { ok: true; line: number; form: FormData }
   | { ok: false; line: number; error: string }
 

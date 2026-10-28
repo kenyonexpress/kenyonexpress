@@ -51,13 +51,13 @@ export interface SettlementLineInput {
 }
 
 /** Per-unit money snapshot, used to stamp each issued voucher. */
-export interface VoucherUnitAmounts {
+interface VoucherUnitAmounts {
   faceValue: Agorot
   paidOnSite: Agorot
   balanceDue: Agorot
 }
 
-export interface SettlementLineResult {
+interface SettlementLineResult {
   id: string
   productType: CommissionProductType
   quantity: number

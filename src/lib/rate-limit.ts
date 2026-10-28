@@ -18,7 +18,7 @@ import {
 import { evaluateWindow } from './rate-limit/sliding-window'
 import { type UpstashConfig, upstashConfig } from './rate-limit/upstash'
 
-export type RateLimitBackend = 'upstash' | 'postgres' | 'open'
+type RateLimitBackend = 'upstash' | 'postgres' | 'open'
 
 export type RateLimitDecision = {
   allowed: boolean

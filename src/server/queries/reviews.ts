@@ -22,7 +22,7 @@ import { cacheLife, cacheTag } from 'next/cache'
  * apply a migration.
  */
 
-export interface ApprovedReview {
+interface ApprovedReview {
   id: string
   rating: number
   body: string | null

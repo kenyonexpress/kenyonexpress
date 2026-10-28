@@ -18,7 +18,7 @@
  * hands them to someone who has been paid BACK.
  */
 
-export type ItemStatus = 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+type ItemStatus = 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
 
 const PAID_OR_LATER = ['paid', 'partially_fulfilled', 'fulfilled', 'platform_settled'] as const
 

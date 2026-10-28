@@ -54,9 +54,9 @@ export interface LocalPayment {
   kind: 'charge' | 'refund' | null
 }
 
-export type DiscrepancyKind = 'missing_locally' | 'amount_mismatch' | 'missing_remotely'
+type DiscrepancyKind = 'missing_locally' | 'amount_mismatch' | 'missing_remotely'
 
-export interface Discrepancy {
+interface Discrepancy {
   kind: DiscrepancyKind
   transactionId: string
   terminalAgorot: number | null

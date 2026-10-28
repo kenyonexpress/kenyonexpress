@@ -41,7 +41,7 @@ export interface RecurringProductBilling {
   billing_interval_count: number | null
 }
 
-export type SubscriptionPlanRefusal =
+type SubscriptionPlanRefusal =
   | 'guest_has_no_subscription'
   | 'no_payment_token'
   | 'product_not_billable'

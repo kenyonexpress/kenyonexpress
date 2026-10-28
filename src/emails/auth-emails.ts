@@ -89,7 +89,7 @@ export function buildPasswordResetEmail(input: PasswordResetInput): BuiltEmail |
   return { subject, html, text }
 }
 
-export type SecurityEventKind = 'password_changed' | 'email_changed' | 'new_sign_in'
+type SecurityEventKind = 'password_changed' | 'email_changed' | 'new_sign_in'
 
 const EVENT_COPY: Record<SecurityEventKind, { subject: string; line: string }> = {
   password_changed: {
