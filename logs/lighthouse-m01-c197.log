@@ -1,0 +1,7 @@
+M01-c197 Lighthouse (performance), fresh next start :3581 (closeout/v1-final @ e74558eab), 2026-10-29, route /
+width x 3 runs: perf score | FCP | LCP | TBT | CLS  (CLI, simulated throttling, explicit screenEmulation width; 1440 = desktop preset)
+380 : 91/78/79  | 1.5-2.0 s | 3.3/5.5/5.1 s | 20 ms | 0.025-0.054
+768 : 79/79/79  | 2.0 s     | 5.3 s         | 20 ms | 0.002-0.021 (runs 1-2 identical, likely cached result)
+1440: 98/98/99  | 0.4-0.5 s | 1.0-1.1 s     | 0 ms  | 0.004-0.024
+Diff vs M01-c196 (100/100/100 | 100/100/97 | 100/100/100): 380 median -21 (79 vs 100), 768 median -21 (79 vs 100), 1440 -2 (98 vs 100). Mobile LCP 5.1-5.3s vs 1.5s in c196.
+Caveat: c196 harness settings not recorded in log; mobile gap matches c188-c192 era (77-84, LCP-bound) so likely harness/noise difference, not a regression. Measurement only, no code changes.
