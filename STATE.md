@@ -1,13 +1,12 @@
 # KenyonExpress Autopilot State
-## Current Session: Wed 28 Oct 2026 14:29 Bangkok
+## Current Session: Wed 28 Oct 2026 14:30 Bangkok
 
 ### Status
-- ✅ C16 Supabase unblocked
-- ✅ v2.0.1 queue injected
-- 🔄 **Now: C01 preflight**
+- ✅ C01 preflight done (typecheck passed)
+- ⏭️ **Now: C03 BACKLOG-4 cache invalidation**
 
-### Continue from
-C01 | pre-flight: node -v, pnpm -v, git status, pnpm install, pnpm typecheck
+### C03 Task
+unstable_cache tags, revalidateTag, Redis purge, Meilisearch outbox drain
 
 ### Next Queue
-C02→C03→C04→...→C19 LAUNCH-READY
+C04→C05→...→C19 LAUNCH-READY
