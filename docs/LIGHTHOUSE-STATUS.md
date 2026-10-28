@@ -3,6 +3,15 @@
 **Last Updated:** 2026-10-28 (MAINTENANCE_LOOP_7, Cycle 17)
 **Status:** ✅ ALL SCORES >= 90 (Cycle 17 verified)
 
+## M08-c244 sample (2026-10-28, mobile, prod build on :3101, 2 runs each)
+
+| Page | Perf | A11y | BP | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| / | 97 / 97 | 96 | 96 | 100 | 2.6 s | 0 ms | 0-0.039 |
+| /product/צימר-מאסטר | 99 / 99 | 96 | 88 | 100 | 2.2 s | 0 ms | 0.013 |
+
+Note: `/product` alone is 404; the sample uses a real slug. Product best-practices 88 is below 90 and not investigated in this item.
+
 ## Latest Results (Cycle 17: 2026-10-28 04:30-04:32 UTC, via pnpm lhci:autorun)
 
 ### Home Page (3 runs)
