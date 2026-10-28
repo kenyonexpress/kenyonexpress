@@ -1,0 +1,5 @@
+m03-c182 #1: {"run":1,"score":84,"FCP":"1.8 s","LCP":"4.3 s","SI":"1.8 s","TBT":"30 ms","CLS":"0.029","TTFB":"Root document took 10 ms","blocking":"1,040 ms","unusedJS":"133 KiB","legacyJS":"-"}
+m03-c182 #2: {"run":2,"score":81,"FCP":"2.4 s","LCP":"4.4 s","SI":"2.4 s","TBT":"20 ms","CLS":"0.014","TTFB":"Root document took 10 ms","blocking":"1,050 ms","unusedJS":"133 KiB","legacyJS":"-"}
+m03-c182 #3: {"run":3,"score":82,"FCP":"1.8 s","LCP":"4.6 s","SI":"2.4 s","TBT":"20 ms","CLS":"0.014","TTFB":"Root document took 30 ms","blocking":"1,060 ms","unusedJS":"133 KiB","legacyJS":"-"}
+
+m03-c182 scores: 84 / 81 / 82  (median 82)
