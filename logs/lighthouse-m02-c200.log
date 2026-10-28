@@ -1,0 +1,8 @@
+m02-c200: NOT MEASURED. pnpm build at HEAD 3d68a151d fails, so no valid prod server to run Lighthouse against.
+1) Ambiguous app routes: /c/[slug] (src/app/(store)/c/[slug]) vs /c/[code] (src/app/c/[code]/route.ts).
+2) With /c/[code] moved aside temporarily (restored after, git status clean), Turbopack still fails with 25 errors:
+   duplicate declarations (api/payments/verify-card/route.ts VERIFICATION_AMOUNT_AGOROT, (auth)/signup/SignupForm.tsx handleSubmit),
+   missing deps (@aws-sdk/client-s3, @aws-sdk/s3-request-presigner, @pdf-lib/fontkit),
+   missing exports (PRIMARY_KEY, parseCity, pushOutboxRow, ...).
+next dev not used: dev-mode scores are not comparable with the c195-c199 prod numbers (mobile median 81).
+Last valid: m02-c199 mobile 79/81/81 (median 81, LCP-bound), below G23 95.
