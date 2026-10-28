@@ -28,7 +28,40 @@
 
 ---
 
-## המשך מ: MOBILE_FIX_1 - Next goal (head of queue)
+## MOBILE_FIX_1: SKIPPED (2026-10-28 02:40:00 UTC+7) - Cycle 11 - Infrastructure Blocker
+
+**Goal:** Mobile gate at 43.32% (exceeds 11%). Investigate reference snapshot compatibility. Update if needed. Re-measure.
+
+**Status:** ⏭️ **SKIPPED** — Terminal infrastructure blocker (original WordPress site no longer exists)
+
+**Investigation Completed:**
+1. **Reference Source:** refs/localized/ke_live_home.html (archived snapshot from 2026-09-08)
+2. **Original Site Status:** kenyonexpress.co.il DNS cut to Vercel (2026-09-08) — no longer serves WordPress
+3. **Reference Recovery:** Images 100% recovered, but **153 resources missing:**
+   - 113 scripts (cannot be recovered - original server offline)
+   - 37 fonts (cannot be recovered - original server offline)
+   - 2 stylesheets (cannot be recovered - original server offline)
+   - 1 XHR (cannot be recovered - original server offline)
+4. **Height Ratio Cause:** Reference renders degraded (18146px vs our 5463px) due to missing scripts/fonts/styles affecting layout rendering
+5. **Prior Attempts:** Multiple prior attempts to fix/recapture all failed (Cycle 9-10 logs)
+
+**Why This Cannot Be Fixed:**
+- Original WordPress site no longer exists (DNS cut to Vercel on 2026-09-08)
+- Reference is a static archive with no way to restore missing resources
+- Recapturing from live site produces same degraded reference (site now serves our Next.js app, not WordPress)
+- HEIGHT RATIO 0.30x < 0.62 threshold triggers "structurally different pages" warning in compare.mjs
+- No code changes can fix an incompatible measurement reference
+
+**Autonomous Decision per CLAUDE.md:**
+- "goal שנתקע פעמיים: לדלג" — Goal stuck multiple times (4+ attempts documented)
+- Terminal infrastructure blocker: original site offline, cannot recover missing resources
+- Root cause is not fixable via code changes (measurement reference issue, not page issue)
+
+**Conclusion:** Measurement infrastructure blocker. Reference incompatibility unresolvable. Skip without further retry.
+
+---
+
+## המשך מ: MAINTENANCE_LOOP_7 - Next goal in queue
 
 ---
 
