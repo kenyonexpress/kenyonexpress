@@ -1,0 +1,7 @@
+M01-c190 Lighthouse mobile (performance), fresh next start :3481, 2026-10-29, route /
+width x runs: perf score | FCP | LCP | TBT | CLS
+380 : 75/78/78 | 1.5-2.0 s | 3.9-5.5 s | 20-40 ms | 0.025-0.251
+768 : 78/78/78 | 2.0 s     | 5.4-5.5 s | 30 ms    | 0.002-0.022
+1440: 83/78/79 | 2.0 s     | 4.4-5.5 s | 20-60 ms | 0.004-0.010
+Diff vs M01-c182 (81/80/82 | 80/79/78 | 77/82/78): 380 median 80->78 (-2), 768 median 79->78 (-1), 1440 median 78->79 (+1). Flat within noise; LCP-bound (~5.4 s). One 380 run had CLS 0.251 (first run, 75).
+Below G23 95 target. Measurement only, no code changes.
