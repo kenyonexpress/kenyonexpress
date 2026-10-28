@@ -1,3 +1,28 @@
+## MAINTENANCE_LOOP_9: DONE (2026-10-28 11:55 UTC+7) - Cycle 18
+
+**Goal:** Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist.
+
+**Status:** ✅ **COMPLETE** (via REST API workaround, MCP unavailable)
+
+**Verification Results (Cycle 18: 2026-10-28 11:55 UTC+7):**
+- 5 warm samples tested on /rest/v1/products endpoint
+- Slow query alert: **ISSUED** — 2 of 5 samples exceeded 500ms threshold
+- Sample times: 687ms, 384ms, 457ms, 362ms, 626ms
+- Average: 503.2ms (marginal performance)
+- Connection pool: RESPONSIVE
+
+**Action Taken:**
+- ✅ Tested Supabase connection pool (5 warm REST API samples)
+- ✅ Detected slow queries (2 of 5 > 500ms)
+- ✅ Updated docs/DB-STATUS.md with fresh measurements and alert
+- ✅ Quality gates: typecheck ✅, lint ✅, build ✅
+- ✅ Commit: e77dbdd2e "[autopilot] chore: ops db performance check - Cycle 18, slow query alert"
+- ✅ Pushed to origin/closeout/v1-final
+
+**Conclusion:** Supabase connection pool responsive but showing marginal performance. Slow query alert issued (2 of 5 samples exceeded 500ms). MCP method unavailable due to OAuth constraint in non-interactive session.
+
+---
+
 ## MAINTENANCE_LOOP_8: DONE (2026-10-28 11:54 UTC+7) - Cycle 18
 
 **Goal:** Scan all TODO FIXME HACK comments in src/. If count grew queue cleanup goal. Report delta in docs/CODE-DEBT-STATUS.md. Commit as chore maint code debt scan. Push.
@@ -624,7 +649,7 @@ Gate failure is NOT a code issue — it's a measurement infrastructure blocker. 
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_9 (Cycle 18)
+## המשך מ: MAINTENANCE_LOOP_10 (Cycle 18)
 
 ---
 
