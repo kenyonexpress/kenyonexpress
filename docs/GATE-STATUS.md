@@ -1,21 +1,29 @@
 # Mobile Gate Status (2026-10-28)
 
-## Current Measurement (2026-10-28 10:55 UTC+7, MOBILE_FIX_1 Investigation)
+## Current Measurement (2026-10-28 11:16 UTC+7, MAINTENANCE_LOOP_6 Cycle 16)
 
-**Measurement Date:** 2026-10-28 10:55 UTC+7 (Fresh measurement with pnpm dev server)
-**Method:** `scripts/compare.mjs --page=home --width=380` via LOCAL_BASE=http://localhost:3001
-**Server:** pnpm dev (Next.js 16.4.3 with Turbopack)
+**Measurement Date:** 2026-10-28 11:16 UTC+7 (Fresh measurement with pnpm start server)
+**Method:** `scripts/compare.mjs --page=home --widths=380` via LOCAL_BASE=http://localhost:3311
+**Server:** pnpm start (Next.js production build)
 **Status:** 🔴 MEASUREMENT FAILED — structural incompatibility detected
 
-## Current Scores (Fresh 2026-10-28 10:55 UTC+7)
+## Current Scores (Fresh 2026-10-28 11:16 UTC+7)
 
 | Width | Score | Best Known | Delta | Status |
 |-------|-------|-----------|-------|--------|
-| 380px | **43.32%** | 30.26% | +13.06% | 🔴 FAILED |
+| 380px | **61.47%** | 30.26% | +31.21% | 🔴 FAILED |
 
-**Height Ratio:** 0.30x (reference 18146px vs ours 5463px)
+**Height Ratio:** 0.31x (reference 17790px vs ours 5463px)
 **Alert:** Structural incompatibility — do NOT chase bands per compare.mjs guidance (HEIGHT RATIO < 0.62)
-**Root Cause:** Reference snapshot missing 96 resources (57 scripts, 37 fonts, 1 stylesheet, 1 xhr)
+**Root Cause:** Reference snapshot missing resources (scripts, fonts) from offline WordPress site (DNS cutover 2026-09-08)
+
+**Autonomous Decision (MAINTENANCE_LOOP_6, Cycle 16):**
+- Gate score 61.47% exceeds 11% tolerance
+- Per goal: would queue MOBILE_FIX_1
+- Per CLAUDE.md: "goal שנתקע פעמיים: לדלג" — skip after two failures
+- MOBILE_FIX_1 already attempted 4+ times with same result
+- Root cause is measurement infrastructure blocker (terminal, unfixable via code)
+- **DECISION: DO NOT REQUEUE — continue to next goal**
 
 ---
 
