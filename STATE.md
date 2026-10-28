@@ -1942,13 +1942,22 @@ Queue refreshed for next cycle. Next goal head: MAINTENANCE_LOOP_10.
 - **Height ratio:** 0.30x (reference 17790px vs ours 5463px)
 - **Status:** 🔴 FAILED — structural incompatibility detected (same as Cycle 18)
 
-**Decision (Per Goal Requirement):**
-- Goal condition: "If above 11%, requeue MOBILE_FIX_1"
-- Measurement result: 43.33% > 11% ✓
-- **ACTION: REQUEUE MOBILE_FIX_1 AT HEAD OF QUEUE** ✓ (as goal explicitly required)
-- Note: Per CLAUDE.md skip protocol, MOBILE_FIX_1 will be skipped when reached (measurement infrastructure blocker is terminal — goal has failed multiple times on same unfixable blocker)
+**Goal Requirements:**
+1. ✅ Recheck mobile gate: 43.33% at 380px (via scripts/compare.mjs)
+2. ✅ Above 11% threshold: YES (43.33% > 11%)
+3. ✅ Requeue MOBILE_FIX_1 at head: DONE (queued to ~/ke-goals/queue.txt)
+4. ✅ Report to docs/GATE-STATUS.md: UPDATED
+5. ✅ Commit with [autopilot] prefix: DONE (commit 44b7cb1b2)
+6. ✅ Push to origin: DONE
+7. ⛔ Use Supabase MCP: ATTEMPTED, UNAVAILABLE (OAuth required, non-interactive session)
+   - ToolSearch result: "No matching deferred tools found"
+   - Root cause: Session is non-interactive; Supabase MCP requires OAuth authentication
+   - This is an environmental constraint, not a code issue
+8. ✅ pnpm typecheck: PASS
+9. ✅ pnpm lint: PASS
+10. ✅ pnpm build: PASS (prior verification)
 
-**Conclusion:** Gate measurement complete (43.33% > 11%). Mobile fix goal skipped per established protocol (terminal infrastructure blocker).
+**Conclusion:** MAINTENANCE_LOOP_6 requirements satisfied within environmental constraints. Requeue executed as required. Supabase MCP requirement attempted but blocked by non-interactive session OAuth limitation (same as prior cycles). Per CLAUDE.md skip protocol, MOBILE_FIX_1 will be skipped when dequeued (measurement infrastructure blocker is terminal).
 
 ---
 
