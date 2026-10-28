@@ -37,9 +37,3 @@ export function flagReport(env: FlagEnv = process.env): Record<FlagName, boolean
     boolean
   >
 }
-
-/**
- * Async version: reads from Supabase feature_flags table (migration 293) with
- * 30s cache, falling back to env vars on error. PREFER this in request handlers.
- */
-export { getSupabaseFlags } from './supabase-flags'

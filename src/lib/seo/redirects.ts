@@ -2,8 +2,6 @@ import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { createClient } from '@supabase/supabase-js'
 import { normalizePath } from './normalize-path'
 
-export { normalizePath }
-
 /**
  * The 301/410 map, resolved in the proxy on every request.
  *

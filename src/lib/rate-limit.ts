@@ -174,7 +174,7 @@ export async function rateLimitByKey(
   }
 }
 
-export { getClientIp, checkRateLimit, checkUserRateLimit } from './utils/rate-limit'
+export { getClientIp, checkRateLimit } from './utils/rate-limit'
 export {
   policy,
   redisKey,

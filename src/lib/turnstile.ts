@@ -6,6 +6,5 @@
 
 export {
   verifyTurnstile,
-  turnstileConfigured,
   TURNSTILE_FIELD,
 } from './security/turnstile'
