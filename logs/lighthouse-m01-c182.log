@@ -1,0 +1,7 @@
+M01-c182 Lighthouse mobile (performance), fresh next start :3441, 2026-10-29, route /
+width x runs: perf score | FCP | LCP | TBT | CLS
+380 : 81/80/82 | 1.5-2.0 s | 4.4-4.9 s | 30-120 ms | 0.04-0.071
+768 : 80/79/78 | 1.5-1.8 s | 5.2-5.5 s | 20-60 ms  | 0.001-0.024
+1440: 77/82/78 | 2.0 s     | 4.4-5.7 s | 30-110 ms | 0.013
+Diff vs M08-c265 (/ 88/83 at default viewport): about -3 to -10, LCP-bound. Below G23 95 target.
+Measurement only, no code changes.
