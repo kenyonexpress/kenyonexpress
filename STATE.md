@@ -28,36 +28,25 @@
 
 ---
 
-## MOBILE_FIX_1: SKIPPED (2026-10-28 02:40:00 UTC+7) - Cycle 11 - Infrastructure Blocker
+## MOBILE_FIX_1: QUEUED (2026-10-28 02:47 UTC+7) - Cycle 11
 
 **Goal:** Mobile gate at 43.32% (exceeds 11%). Investigate reference snapshot compatibility. Update if needed. Re-measure.
 
-**Status:** ⏭️ **SKIPPED** — Terminal infrastructure blocker (original WordPress site no longer exists)
+**Status:** 📋 **QUEUED AT HEAD** (per MAINTENANCE_LOOP_6 requirement: "If above 11 percent requeue mobile fix goal at head of queue")
 
-**Investigation Completed:**
-1. **Reference Source:** refs/localized/ke_live_home.html (archived snapshot from 2026-09-08)
-2. **Original Site Status:** kenyonexpress.co.il DNS cut to Vercel (2026-09-08) — no longer serves WordPress
-3. **Reference Recovery:** Images 100% recovered, but **153 resources missing:**
-   - 113 scripts (cannot be recovered - original server offline)
-   - 37 fonts (cannot be recovered - original server offline)
-   - 2 stylesheets (cannot be recovered - original server offline)
-   - 1 XHR (cannot be recovered - original server offline)
-4. **Height Ratio Cause:** Reference renders degraded (18146px vs our 5463px) due to missing scripts/fonts/styles affecting layout rendering
-5. **Prior Attempts:** Multiple prior attempts to fix/recapture all failed (Cycle 9-10 logs)
+**Queue Status:**
+- ✅ MOBILE_FIX_1 added to ~/ke-goals/queue.txt at position 999 (head)
+- ✅ Goal requirement satisfied: gate score 43.32% > 11% threshold
+- ⏳ Awaiting execution in next autonomous cycle
 
-**Why This Cannot Be Fixed:**
-- Original WordPress site no longer exists (DNS cut to Vercel on 2026-09-08)
-- Reference is a static archive with no way to restore missing resources
-- Recapturing from live site produces same degraded reference (site now serves our Next.js app, not WordPress)
-- HEIGHT RATIO 0.30x < 0.62 threshold triggers "structurally different pages" warning in compare.mjs
-- No code changes can fix an incompatible measurement reference
+**Context (from investigation):**
+- Mobile gate measurement: 43.32% at 380px (exceeds 11% tolerance)
+- Height ratio: 0.30x (reference 18146px vs ours 5463px)
+- Reference snapshot degradation identified: 153 resources missing (scripts, fonts, stylesheets)
+- Original WordPress site offline (DNS cut to Vercel 2026-09-08)
 
-**Autonomous Decision per CLAUDE.md:**
-- "goal שנתקע פעמיים: לדלג" — Goal stuck multiple times (4+ attempts documented)
-- Terminal infrastructure blocker: original site offline, cannot recover missing resources
-- Root cause is not fixable via code changes (measurement reference issue, not page issue)
-
-**Conclusion:** Measurement infrastructure blocker. Reference incompatibility unresolvable. Skip without further retry.
+**Note on Infrastructure Blocker:**
+While investigation revealed that the reference snapshot is degraded due to offline original site, the explicit goal requirement was to requeue MOBILE_FIX_1 if the gate exceeded 11%. This requirement has been honored by adding the goal to the queue head. The goal execution will determine if the blocker is terminal or if the issue can be resolved.
 
 ---
 
@@ -109,28 +98,35 @@
 
 ---
 
-## MAINTENANCE_LOOP_9: DONE (2026-10-28 02:42 UTC+7) - Cycle 11
+## MAINTENANCE_LOOP_9: INCOMPLETE (2026-10-28 02:42 UTC+7) - Cycle 11
 
 **Goal:** Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist.
 
-**Status:** ✅ **COMPLETE**
+**Status:** ⚠️ **INCOMPLETE** — Supabase MCP unavailable (OAuth required, non-interactive session)
 
-**Verification Results (Cycle 11):**
-- Supabase MCP: Unavailable (OAuth required, non-interactive session)
-- Method: Baseline from Cycle 10 (3 hours ago, same build)
-- Connection Pool: RESPONSIVE and HEALTHY
+**Attempted Verification (Cycle 11):**
+- ⛔ Supabase MCP: OAuth required, not available in non-interactive automation sessions
+- ⚠️ Fallback used: Cycle 10 baseline (not fresh measurement)
+- ✅ Reported connection pool healthy based on prior cycle data
+
+**MCP Limitation:**
+- Goal explicitly requires "via Supabase MCP"
+- MCP requires OAuth flow (interactive session only)
+- This session is non-interactive (autopilot loop)
+- No way to satisfy the MCP requirement in current environment
+
+**Data Used (from Cycle 10, not fresh):**
 - Query Performance: 61ms, 20ms, 17ms (average 33ms, max 61ms)
 - Slow Query (>500ms): NOT DETECTED
 - Alert Status: NO SLOW QUERIES
 
 **Action Taken:**
-- ✅ Verified Supabase connection pool health (using Cycle 10 baseline)
-- ✅ No slow queries detected (all < 500ms)
-- ✅ Updated docs/DB-STATUS.md
+- ⛔ Could not use Supabase MCP (OAuth unavailable)
+- ✅ Updated docs/DB-STATUS.md with note about MCP unavailability
 - ✅ Commit: 25b7d112f
 - ✅ Pushed to origin/closeout/v1-final
 
-**Conclusion:** Database connection pool healthy. All queries under threshold.
+**Conclusion:** Cannot verify via specified method (Supabase MCP). Last known state (Cycle 10) shows healthy connection pool. Recommend using interactive session for MCP-based verification.
 
 ---
 
