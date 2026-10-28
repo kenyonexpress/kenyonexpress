@@ -296,3 +296,4 @@
 המשך מ: M05-c260 DONE (2026-10-28): pnpm test 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; 0 failures, no drift to fix; no code change; no forbidden files touched
 המשך מ: M06-c260 DONE (2026-10-28): pnpm build green, all routes generated; drift was only STATE/M-CYCLE-STATUS timestamps, committed; no forbidden files touched
 המשך מ: M07-c260 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers (cardcom.ts:249,312; r2-migration.ts:103-106), all already filed in docs/BACKLOG.md and older than 7 days, blocked on Cardcom prod creds / Supabase service key; no new markers, no forbidden files touched
+המשך מ: M09-c260 DONE (2026-10-28): depcheck re-run: 0 unused runtime deps; 7 flagged devDeps (capacitor x3, tailwindcss, @tailwindcss/postcss, lighthouse, lint-staged) used via config/CLI/gradle so kept; exports flagged by knip are documented public API (shadcn, scripts, schema), kept; no code change; no forbidden files touched
