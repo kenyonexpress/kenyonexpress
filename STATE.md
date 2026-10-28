@@ -2185,3 +2185,5 @@ Queue refreshed for next cycle. Next goal head: MAINTENANCE_LOOP_10.
 ---
 
 ## המשך מ: MAINTENANCE_LOOP_7 (Cycle 19) — Resume Lighthouse CI next
+
+- M09-c245 DONE: unused deps scan — 13 zero-import candidates all implicit (types, biome, husky, lint-staged, capacitor platforms, @mdx-js/loader peer of @next/mdx, coverage-v8); nothing removed. המשך מ: M09-c245 DONE
