@@ -295,3 +295,4 @@
 המשך מ: M15-c258 DONE (2026-10-28): headless chromium on / and /product/<slug> at 380+1440 (dev server): 0 console errors, 0 pageerrors; only dev-mode next/image aspect-ratio warnings on home deal cards at 1440 and one aborted /api/cart fetch (server returned 200); no code change; no forbidden files touched
 המשך מ: M16-c258 DONE
 המשך מ: M04-c259 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift to fix; no code change; no forbidden files touched
+המשך מ: M06-c259 DONE (2026-10-28): pnpm build exit 0, all routes generated, no build errors to fix; committed only regenerated docs/M-CYCLE-STATUS.md drift; no forbidden files touched
