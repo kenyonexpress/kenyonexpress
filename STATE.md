@@ -98,3 +98,5 @@ Updated: 2026-10-29 (M18-c263: STATE.md כבר 96 שורות (מתחת ל-300); 
 **המשך מ: M18-c263 DONE**
 Updated: 2026-10-29 (M01-c264: `compare.mjs --page=home` נמדד מחדש ב-380 / 768 / 1440 מול `file://refs/electro-home-v7.html` (dev :3000, 200, COMPARE_ALLOW_PENDING_IMAGES=1). OVERALL first 2600px: 380 = 39.85% (c263: 39.85%), 768 = 36.53% (36.53%), 1440 = 27.53% (27.53%). ללא שינוי. ב-380/768 יחס גובה 2.10x/1.71x (supabase.admin_key_invalid) ולכן לא מספר שער תקף. כולם מעל סף 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M01-c264 BLOCKED gate-fail (home diff 39.85/36.53/27.53 at 380/768/1440, >11%; unchanged from c263)**
+Updated: 2026-10-29 (M02-c264: `compare.mjs --page=product` נמדד מחדש ב-380 / 768 / 1440 מול `file://refs/electro-product-fresh.html` (dev :3000, 200), מוצר `עוזרת-אישית-שירותי-משרד`, עם COMPARE_ALLOW_GRID_MISMATCH=1 COMPARE_ALLOW_PENDING_IMAGES=1 (אינדיקטיבי). OVERALL first 2600px: 380 = 23.4% (c262: 23.4%), 768 = 21.93% (21.93%), 1440 = 15.89% (16.5%). כולם מעל סף 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M02-c264 BLOCKED gate-fail (product diff 23.4/21.93/15.89 at 380/768/1440, >11%; indicative only, grid-count mismatch)**
