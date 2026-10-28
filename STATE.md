@@ -70,3 +70,5 @@ Updated: 2026-10-28 (M01-c258: `compare.mjs --page=home` נמדד מחדש ב-38
 **המשך מ: M01-c258 BLOCKED gate-fail (home diff 39.84/36.52/27.52 at 380/768/1440, >11%; unchanged from c257)**
 Updated: 2026-10-28 (M03-c258: `compare.mjs --page=category` ב-380 / 768 / 1440 סורב שוב בכל שלושת הרוחבים (reference-gone): `kenyonexpress.co.il/product-category/hot-deals/` הוא ה-build שלנו (32-34 הפניות `/_next/`), ואין ב-refs/ קובץ reference לקטגוריה. שרת dev החזיר 200 על `/category/hot-deals`. אין מספר diff. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M03-c258 BLOCKED reference-gone (category gate refused at 380/768/1440, no diff measured; no category reference in refs/)**
+Updated: 2026-10-28 (M18-c258: STATE.md כבר מתחת ל-300 שורות (72), הארכיון המלא ב-docs/STATE-ARCHIVE.md. לא נדרש קיצור נוסף. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M18-c258 DONE**
