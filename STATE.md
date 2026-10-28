@@ -194,6 +194,40 @@ While investigation revealed that the reference snapshot is degraded due to offl
 
 ---
 
+## MOBILE_FIX_1: DONE (2026-10-28 10:55 UTC+7) - HEIGHT RATIO Investigation Complete
+
+**Goal:** Mobile gate at 43.32% (exceeds 11% tolerance). Investigate HEIGHT RATIO structural difference (0.30x). Check reference snapshot compatibility. Update reference if needed. Re-measure and report to docs/GATE-STATUS.md.
+
+**Status:** ✅ **INVESTIGATION COMPLETE** — Structural incompatibility identified and documented
+
+**Findings:**
+- Fresh re-measurement: 43.32% at 380px (confirmed)
+- HEIGHT RATIO: 0.30x (reference 18146px vs ours 5463px)
+- Root cause: Reference snapshot missing 96 resources (57 scripts, 37 fonts, 1 stylesheet, 1 xhr)
+- Our page renders correctly per spec (all assets load, proper CSS/layout)
+- Reference snapshot degraded because original WordPress site offline (DNS cut 2026-09-08)
+
+**Key Conclusion:** 
+Gate failure is NOT a code issue — it's a measurement infrastructure blocker. The reference snapshot cannot produce meaningful fidelity scores without being updated from a working source. Our page renders correctly; the reference is broken.
+
+**Options documented in docs/GATE-STATUS.md:**
+1. Update reference (requires original site archive/backup — NOT AVAILABLE)
+2. Accept as measurement limitation (infrastructure blocker)
+3. NOT recommended: Restructure page to match broken reference height
+
+**Action Taken:**
+- ✅ Fresh measurement via pnpm dev server (LOCAL_BASE=http://localhost:3001)
+- ✅ Investigated HEIGHT RATIO 0.30x structural difference
+- ✅ Checked reference snapshot compatibility (INCOMPATIBLE)
+- ✅ Determined reference cannot be updated (original site offline)
+- ✅ Updated docs/GATE-STATUS.md with full analysis
+- ✅ Committed findings with detailed explanation
+- ✅ Quality gates all pass: typecheck ✅, lint ✅, build ✅
+
+**Conclusion:** Goal requirements met. Investigation complete. Reference snapshot is unrecoverable without external intervention (site archive).
+
+---
+
 ## המשך מ: Cycle 12 - MAINTENANCE_LOOP_1 at queue head (goals 82 onwards)
 
 ---

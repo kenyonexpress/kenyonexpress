@@ -183,3 +183,6 @@
 המשך מ: M04-c241 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); only drift was claude_STATE.md state-log lines, committed; no code changes, no forbidden files touched
 **המשך מ: M17-c241 BLOCKED locked-component (2026-10-28): re-verified — /product clean; / LTR leaks remain only from locked src/components/home/HeroSlider.tsx dir="ltr" (lines 555-628), unchanged, not edited**
 המשך מ: M04-c242 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); only drift was compare-log rows in docs/UI-PARITY-REPORT.md, committed; no code changes, no forbidden files touched
+המשך מ: M05-c242 DONE (2026-10-28): pnpm test green (616 files passed, 2 skipped; 7072 tests passed, 28 skipped); only drift was docs/M-CYCLE-STATUS.md status rows, committed; no code changes, no forbidden files touched
+המשך מ: M06-c242 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; working tree clean after build, no drift to fix; no code changes, no forbidden files touched
+המשך מ: M08-c242 DONE (2026-10-28): Lighthouse mobile perf / = 94, product sample = 96/97 (log: logs/lighthouse-m08-c242.log); sample-only, no code changes, no forbidden files touched
