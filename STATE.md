@@ -29,3 +29,7 @@ Updated: 2026-10-28 (M01-c249: `compare.mjs --page=home` ב-380 / 768 / 1440 ל�
 **המשך מ: M01-c249 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440)**
 Updated: 2026-10-28 (M02-c249: `compare.mjs --page=product` ב-380 / 768 / 1440 סורב בשלושת הרוחבים: `kenyonexpress.co.il/product/מוצר-לדוגמא/` מגיש את הבילד שלנו (33-34 הפניות `/_next/`, אין wp-content). גם צד ה-mine לא תקין: dev על :3000 מחזיר 500 (postcss SIGKILL), ו-`pnpm start` על הבילד הקיים מחזיר 500 על `/` ועל דף המוצר. אין מספר diff. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M02-c249 BLOCKED reference-gone (product gate refused at 380/768/1440, no diff measured; local server also 500)**
+Updated: 2026-10-28 (M01-c250: `compare.mjs --page=home` ב-380 / 768 / 1440 לא הורץ: שרת ה-dev על :3000 היה למטה, אתחול חדש עלה אך מחזיר 500 על `/` בגלל כשל postcss של `src/app/globals.css`, כמו ב-c248/c249. אין מספר diff ולכן אין diff לרשום. הסירובים הקודמים (reference-gone, תמונות שלא נטענו ב-refs) עדיין תקפים. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M01-c250 BLOCKED dev-server-500 (postcss failure, gate not measured at 380/768/1440)**
+Updated: 2026-10-28 (M18-c250: STATE.md מאומת ב-33 שורות (מתחת ל-300); ההיסטוריה המלאה ב-docs/STATE-ARCHIVE.md. לא נדרש קיצוץ נוסף, לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M18-c250 DONE**
