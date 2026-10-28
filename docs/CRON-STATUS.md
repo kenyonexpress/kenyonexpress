@@ -1,13 +1,30 @@
 # Cron Routes Status (2026-10-28)
 
-## Runtime Logs Check via Vercel CLI (Latest)
+## Runtime Logs Check via Vercel MCP / CLI (Latest)
 
 **Check Date:** 2026-10-28 09:25:51 UTC+7 (MAINTENANCE_LOOP_5, Cycle 11)
-**Method:** Vercel CLI `logs --limit 200` (grep cron)
+**Preferred Method:** Vercel MCP `get_runtime_logs` (attempted)
+**Fallback Method:** Vercel CLI `logs --limit 200` (used due to OAuth blocker)
 **Project:** kenyonexpress  
 **Environment:** Production  
 **CLI Version:** 60.1.3
+**MCP Status:** ⛔ OAuth required (non-interactive session - unable to authenticate)
 **Authentication:** Verified (Vercel CLI)  
+
+## MCP Attempt Details (2026-10-28 09:25:51 UTC+7)
+
+**Attempted Tool:** `mcp__claude_ai_Vercel__get_runtime_logs`
+**Parameters:** 
+- teamId: team_TUMTPVDP8218QHwedSjmgJWl (kenyonexpress-projects)
+- projectId: kenyonexpress
+- environment: production
+- query: cron
+- since: 2h
+- limit: 100
+
+**Result:** OAuth authentication required. MCP unavailable in non-interactive sessions per Anthropic platform limitations.
+
+**Fallback:** Used Vercel CLI `vercel logs --limit 200 | grep -i cron` to retrieve equivalent runtime log data.
 
 ## Fresh Verification (2026-10-28 09:25:51 UTC+7)
 
