@@ -15,4 +15,4 @@ C03 cache invalidation (autopilot)
 ### Ofir Action
 NONE. iPhone will ping on LAUNCH-READY or hard block.
 
-המשך מ: M06-c248 DONE
+המשך מ: M04-c251 DONE
