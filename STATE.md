@@ -201,3 +201,5 @@ Updated: 2026-10-28 (M01-c242: `compare.mjs --page=home` ב-380 / 768 / 1440 ה�
 **המשך מ: M01-c242 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
 Updated: 2026-10-28 (M03-c242: `compare.mjs --page=category` ב-380 / 768 / 1440 הורץ מול dev על :3000 (200) ו**סורב** בשלושת הרוחבים, ללא מספר diff. `kenyonexpress.co.il` מגיש את הבילד שלנו (32-34 הפניות `/_next/`, אין wp-content), כך שהשוואה תהיה בילד מול עצמו. לא נערכו קבצי קוד ולא קבצים נעולים; הסירוב לא עוקף. ראה docs/PARITY-REFERENCE.md.)
 **המשך מ: M03-c242 BLOCKED reference-gone (category gate refused at 380/768/1440, no diff measured)**
+Updated: 2026-10-28 (M02-c243: `compare.mjs --page=product` ב-380 / 768 / 1440 הורץ שוב מול dev על :3000 (200) ו**סורב** בשלושת הרוחבים, ללא מספר diff. `kenyonexpress.co.il/product/מוצר-לדוגמא/` מגיש את הבילד שלנו (33-34 הפניות `/_next/`, אין wp-content), כך שהשוואה תהיה בילד מול עצמו. שלוש שורות `REFUSED` נוספו ל-`docs/UI-PARITY-REPORT.md`. לא נערכו קבצי קוד ולא קבצים נעולים; הסירוב לא עוקף. ראה docs/PARITY-REFERENCE.md.)
+**המשך מ: M02-c243 BLOCKED reference-gone (product gate refused at 380/768/1440, no diff measured)**
