@@ -296,3 +296,4 @@
 המשך מ: M16-c258 DONE
 המשך מ: M04-c259 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift to fix; no code change; no forbidden files touched
 המשך מ: M06-c259 DONE (2026-10-28): pnpm build exit 0, all routes generated, no build errors to fix; committed only regenerated docs/M-CYCLE-STATUS.md drift; no forbidden files touched
+המשך מ: M09-c259 DONE (2026-10-28): knip deps scan: only flagged @capacitor/android, which android/ gradle needs (project(':capacitor-android')), so kept; depcheck hits are false positives (tailwind/postcss, lighthouse/lint-staged CLIs); 141 unused exports are shadcn ui primitives, scripts and schema, left as public API; no code change; no forbidden files touched
