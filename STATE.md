@@ -15,3 +15,5 @@ Updated: 2026-10-28 (M01-c245: `compare.mjs --page=home` ב-380 / 768 / 1440 ה�
 Updated: 2026-10-28 (M01-c246: `compare.mjs --page=home` ב-380 / 768 / 1440 הורץ שוב מול dev על :3000 (200) ו**סורב** בשלושת הרוחבים, ללא מספר diff. `kenyonexpress.co.il` מגיש את הבילד שלנו (32/30/30 הפניות `/_next/`, אין wp-content), כך שהשוואה תהיה בילד מול עצמו. לא נערכו קבצי קוד ולא קבצים נעולים; הסירוב לא עוקף. ראה docs/PARITY-REFERENCE.md.)
 **המשך מ: M01-c246 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
 **המשך מ: M18-c246 DONE**
+Updated: 2026-10-28 (M01-c247: `compare.mjs --page=home` ב-380 / 768 / 1440 הורץ שוב מול dev על :3000 (200). מול `kenyonexpress.co.il` סורב בשלושת הרוחבים (reference-gone, 30-32 הפניות `/_next/`). מול `refs/electro-home-v7.html` (--live=file://) עבר את בדיקת הזהות אך סורב בשלושת הרוחבים: תמונות שלא נטענו ב-reference (12/8/4 ב-380/768/1440, 0 מקומית). לא הופעל COMPARE_ALLOW_PENDING_IMAGES כדי לא לייצר מספר מטעה. אין מספר diff. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M01-c247 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
