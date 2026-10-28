@@ -1,3 +1,4 @@
+**המשך מ: M09-c241 DONE (2026-10-28): knip scan — removed unused direct devDeps uuid + xcode (overrides kept, lockfile regenerated, tsc clean); 74 "unused exports" left as-is (public UI/action/lib API surfaces, no safe-to-remove proof); no forbidden files touched**
 **המשך מ: M07-c241 DONE (2026-10-28): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all already filed in docs/BACKLOG.md (3 items, all blocked on Cardcom creds / service-role key / feature work); no code change, no forbidden files touched**
 **המשך מ: M06-c241 DONE (2026-10-28): pnpm build passes clean; working tree had no drift (git status empty) so nothing to fix — no code change, no forbidden files touched**
 **המשך מ: M05-c241 DONE (2026-10-28): pnpm test 7070 pass; 2 failures were cache-policy drift after brands-row removal (M09-c240) — docs/CACHE-POLICY.md + cache-policy.test.ts updated (13→12 modules, hours 24→23); no forbidden files touched**
