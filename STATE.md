@@ -55,3 +55,8 @@ Updated: 2026-10-28 (M03-c255: `compare.mjs --page=category` ב-380 / 768 / 1440
 **המשך מ: M03-c255 BLOCKED reference-gone (category gate refused at 380/768/1440, no diff measured; no category reference in refs/)**
 
 **המשך מ: M05-c255 DONE (pnpm test: 501 files, 5843 passed, 12 skipped; no drift to fix)**
+
+Updated: 2026-10-28 (M12-c255: robots.ts אומת production-safe: allow "/", ללא disallow גלובלי, disallow ל-/redeem/ /coupon/ /gift/ /account/ /supplier/ /admin/ /checkout /cart /auth/ /api/ ועוד, sitemap+host מ-siteUrl() ללא סלאש כפול; robots.test.ts 8/8 עבר. לא נערכו קבצים.)
+**המשך מ: M12-c255 DONE**
+Updated: 2026-10-28 (M01-c256: `compare.mjs --page=home` נמדד מחדש ב-380 / 768 / 1440 מול `file://refs/electro-home-v7.html` על `next dev --webpack`, עם COMPARE_ALLOW_PENDING_IMAGES=1 (מספרים אינדיקטיביים). OVERALL first 2600px: 380 = 39.83% (c254: 39.85%), 768 = 36.52% (36.53%), 1440 = 27.52% (27.53%). שינוי זניח (≤0.02pp). כולם מעל סף 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M01-c256 BLOCKED gate-fail (home diff 39.83/36.52/27.52 at 380/768/1440, >11%; unchanged from c254/c255)**
