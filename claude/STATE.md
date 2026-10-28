@@ -236,3 +236,4 @@
 המשך מ: M04-c250 DONE (2026-10-28): pnpm type-check green on closeout/v1-final, no type errors; drift = UI-PARITY-REPORT.md row, committed; untracked lighthouse artifacts left; no forbidden files touched
 המשך מ: M05-c250 DONE (2026-10-28): pnpm test green on closeout/v1-final — 616 files / 7072 tests pass, 2 files + 28 tests skipped; no drift, no code change; no forbidden files touched
 המשך מ: M06-c250 DONE (2026-10-28): pnpm build green on closeout/v1-final; drift = docs/M-CYCLE-STATUS.md timestamps, committed; untracked lighthouse artifacts left; no forbidden files touched
+המשך מ: M07-c250 DONE (2026-10-28): TODO/FIXME scan over src/scripts/migrations/e2e/tests/packages/supabase — 6 hits (cardcom.ts:249,312; r2-migration.ts:103-106), all older than 7 days and already filed in docs/BACKLOG.md (3 items, Cardcom creds / service-role key blockers); none resolvable now; no forbidden files touched
