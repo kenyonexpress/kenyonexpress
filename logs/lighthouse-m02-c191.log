@@ -1,0 +1,5 @@
+M02-c191 Lighthouse /product/barbecue, fresh next start :3517, 2026-10-29 (2 runs each; .env.local exported, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked)
+380 mobile: 81 / 81 (LCP 5.0-5.1 s, TBT 20-59 ms, CLS 0.018)
+768 mobile: 80 / 82 (LCP 4.6-5.1 s, TBT 24-135 ms, CLS 0.001)
+1440 desktop: 99 / 99 (LCP 1.0 s, TBT 0, CLS 0.012)
+vs M02-c188 (380 80/80, 768 81/80, 1440 99/99): flat within noise. Mobile below G23 95 target (LCP-bound). Measurement only, no code changes.
