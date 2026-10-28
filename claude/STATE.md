@@ -1,3 +1,4 @@
+**המשך מ: M06-c251 DONE (2026-10-28): pnpm build exits 0, no tracked drift (only untracked lighthouse artifacts, not committed); no source fix needed; no forbidden files touched**
 **המשך מ: M07-c249 DONE (2026-10-28): TODO/FIXME re-scan: same 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md #1-3 (Cardcom prod creds / R2 feature + service-role key); none resolvable now; no code change, no forbidden files touched**
 **המשך מ: M18-c248 DONE (2026-10-28): claude/STATE.md already under 300 lines (228 incl. this line) and older history already in docs/STATE-ARCHIVE.md — no trim needed; no forbidden files touched**
 **המשך מ: M18-c247 DONE (2026-10-28): claude/STATE.md already under 300 lines (222 incl. this line) and older history already in docs/STATE-ARCHIVE.md (29638 lines) — no trim needed; no forbidden files touched**
