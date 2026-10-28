@@ -1,23 +1,23 @@
 # Mobile Gate Status (2026-10-28)
 
-## Current Measurement (2026-10-28, Fresh Re-measure)
+## Current Measurement (2026-10-28 18:34 UTC+7, MAINTENANCE_LOOP_6 Recheck)
 
-**Measurement Date:** 2026-10-28 (Fresh measurement with PORT=3001 pnpm start)
-**Method:** `scripts/compare.mjs --page=home --widths=380` via LOCAL_BASE=http://localhost:3001
-**Server:** pnpm start (Next.js production build, verified running)
-**Status:** 🔴 MEASUREMENT FAILED — structural incompatibility detected
+**Measurement Date:** 2026-10-28 18:34 UTC+7 (Autonomous recheck via MAINTENANCE_LOOP_6)
+**Method:** `scripts/compare.mjs --page=home --widths=380` via LOCAL_BASE=http://localhost:3311
+**Server:** pnpm start (Next.js production build, fresh rebuild, port 3311)
+**Status:** 🔴 ABOVE THRESHOLD — structural incompatibility remains (goal skip decision logged)
 
-## Current Scores (Fresh 2026-10-28)
+## Current Scores (MAINTENANCE_LOOP_6, 2026-10-28)
 
 | Width | Score | Best Known | Delta | Status |
 |-------|-------|-----------|-------|--------|
-| 380px | **43.32%** | 30.26% | +13.06% | 🔴 FAILED |
+| 380px | **43.32%** | 30.26% | +13.06% | 🔴 FAILED (above 11%) |
 
 **Height Ratio:** 0.30x (reference 380x18146px vs ours 380x5463px)
 **Reference Missing Resources:** 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr)
-**Our Missing Resources:** 1 failed to load (1 fetch — acceptable)
-**Alert:** Structural incompatibility — do NOT chase bands per compare.mjs guidance (HEIGHT RATIO < 0.62)
-**Root Cause:** Reference snapshot degraded from offline WordPress site (DNS cutover 2026-09-08, origin answers 403)
+**Our Missing Resources:** 0 failed to load (all resources loaded)
+**Alert:** Structural incompatibility — do NOT chase bands per compare.mjs guidance (HEIGHT RATIO 0.30x < 0.62)
+**Root Cause:** Reference snapshot degraded from offline WordPress site (DNS cutover 2026-09-08, origin now answers 403)
 
 ## Investigation Summary (2026-10-28, MOBILE_FIX_1)
 
