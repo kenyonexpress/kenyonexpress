@@ -22,3 +22,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M06-c256 DONE (pnpm build passes; drift = M-CYCLE-STATUS timestamp + lighthouse log committed)
 
 המשך מ: M09-c256 DONE (no unused deps: @capacitor/*, @mdx-js/loader, @types/* are implicit/required; no dead exports found in src; no code changes)
+
+המשך מ: M06-c261 DONE (pnpm build passes; drift = M-CYCLE-STATUS timestamp + lighthouse log committed)
