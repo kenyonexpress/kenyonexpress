@@ -1,7 +1,29 @@
 # Lighthouse CI Status
 
-**Last Updated:** 2026-10-28 (MAINTENANCE_LOOP_7, Cycle 17)
-**Status:** ✅ ALL SCORES >= 90 (Cycle 17 verified)
+**Last Updated:** 2026-10-28 11:53 UTC+7 (MAINTENANCE_LOOP_7, Cycle 18)
+**Status:** ✅ ALL SCORES >= 90 (Cycle 18 verified)
+
+## Latest Results (Cycle 18: 2026-10-28 04:51-04:53 UTC, via pnpm lhci:autorun)
+
+### Home Page (3 runs)
+- **Performance:** 99/100 ✅
+- **Accessibility:** 96/100 ✅
+- **Best Practices:** 96/100 ✅
+- **SEO:** 100/100 ✅
+- **Runs:** 3 (all consistent)
+
+### Products Page (3 runs)
+- **Performance:** 100/100 ✅
+- **Accessibility:** 96/100 ✅
+- **Best Practices:** 93/100 ✅
+- **SEO:** 100/100 ✅
+- **Runs:** 3 (all consistent)
+
+**Threshold:** 90/100 - **PASSING**
+
+**Summary:** All metrics consistently at or above threshold across 6 test runs (3 home + 3 products). Minimum score: 93. No performance optimization required.
+
+---
 
 ## M08-c244 sample (2026-10-28, mobile, prod build on :3101, 2 runs each)
 
@@ -12,7 +34,7 @@
 
 Note: `/product` alone is 404; the sample uses a real slug. Product best-practices 88 is below 90 and not investigated in this item.
 
-## Latest Results (Cycle 17: 2026-10-28 04:30-04:32 UTC, via pnpm lhci:autorun)
+## Previous Results (Cycle 17: 2026-10-28 04:30-04:32 UTC, via pnpm lhci:autorun)
 
 ### Home Page (3 runs)
 - **Performance:** 100/100 ✅
@@ -27,10 +49,6 @@ Note: `/product` alone is 404; the sample uses a real slug. Product best-practic
 - **Best Practices:** 93/100 ✅
 - **SEO:** 100/100 ✅
 - **Runs:** 6 (all consistent)
-
-**Threshold:** 90/100 - **PASSING**
-
-**Summary:** All metrics consistently at or above threshold across 9 test runs (3 home + 6 products). Minimum score: 93. No performance optimization required.
 
 ---
 
