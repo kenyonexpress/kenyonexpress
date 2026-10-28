@@ -1,0 +1,7 @@
+M01-c196 Lighthouse (performance), fresh next start :3569 (kenyonexpress-web/kenyonexpress, closeout/v1-final @ 542921490), 2026-10-29, route /
+width x 3 runs: perf score | FCP | LCP | TBT | CLS
+380 : 100/100/100 | 1.5 s | 1.5 s | 20-40 ms | 0.001-0.026 | mobile, 1258-1288 KB
+768 : 100/100/97  | 1.5 s | 1.5 s | 20 ms    | 0.001-0.094 | mobile, 1241-1306 KB (97 = CLS 0.094 outlier run)
+1440: 100/100/100 | 0.4 s | 0.4 s | 0 ms     | 0.009-0.032 | desktop preset, 839-854 KB
+Diff vs M01-c195 (99/99/99 | 99/99/99 | 98/99/98): 380 +1, 768 +1 (median), 1440 +2 (desktop preset). Flat/slightly up, all >= 97, above G23 95 for /.
+Server log clean (0 failures), page fully rendered. Measurement only, no code changes.
