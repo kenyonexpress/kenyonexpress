@@ -53,3 +53,5 @@ Updated: 2026-10-28 (M01-c255: `compare.mjs --page=home` נמדד מחדש ב-38
 **המשך מ: M01-c255 BLOCKED gate-fail (home diff 39.85/36.53/27.53 at 380/768/1440, >11%; unchanged from c254)**
 Updated: 2026-10-28 (M03-c255: `compare.mjs --page=category` ב-380 / 768 / 1440 סורב שוב בכל שלושת הרוחבים (reference-gone): `kenyonexpress.co.il/product-category/hot-deals/` הוא ה-build שלנו (32-34 הפניות `/_next/`), ואין ב-refs/ קובץ reference לקטגוריה. אין מספר diff. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M03-c255 BLOCKED reference-gone (category gate refused at 380/768/1440, no diff measured; no category reference in refs/)**
+
+**המשך מ: M05-c255 DONE (pnpm test: 501 files, 5843 passed, 12 skipped; no drift to fix)**
