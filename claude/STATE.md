@@ -210,3 +210,4 @@
 המשך מ: M06-c245 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final, all routes compiled; working tree clean, no drift to commit; no code changes, no forbidden files touched
 המשך מ: M11-c245 DONE (2026-10-28): sitemap.xml reachable (apex 308 -> www 200 application/xml, 75 URLs, lastmod 2026-10-24 = last deploy build time); robots.txt points to it; sitemap+robots tests 19/19 pass; no code changes, no forbidden files touched
 המשך מ: M06-c246 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final, all routes compiled; working tree clean, no drift to commit; no code changes, no forbidden files touched
+המשך מ: M07-c246 DONE (2026-10-28): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and all already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / R2 migration feature + service-role key deferred); none resolvable now; BACKLOG re-verified; no forbidden files touched
