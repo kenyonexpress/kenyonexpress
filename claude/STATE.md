@@ -247,3 +247,4 @@
 המשך מ: M05-c251 DONE (2026-10-28): pnpm test green (616 files passed/2 skipped, 7072 tests passed/28 skipped); drift = docs/M-CYCLE-STATUS.md timestamps, committed; untracked lighthouse artifacts left; no forbidden files touched
 המשך מ: M09-c251 DONE (2026-10-28): knip re-run (SUPABASE_DB_URL stub so drizzle config loads) — only flagged dep is @capacitor/android (native android/ platform pkg, kept); dead-export set unchanged from M09-c248/c249/c250 (intentional public surface); no code change, no forbidden files touched
 המשך מ: M04-c252 DONE (2026-10-28): pnpm type-check green (tsc --noEmit, 0 errors); no tracked drift; untracked lighthouse artifacts left; no forbidden files touched
+המשך מ: M07-c252 DONE (2026-10-28): TODO/FIXME scan of src/scripts/migrations found 6 lines = the 3 open BACKLOG items (cardcom x2 need prod creds, r2-migration stub needs service-role key); none new, none resolvable now; BACKLOG stamp refreshed; no forbidden files touched
