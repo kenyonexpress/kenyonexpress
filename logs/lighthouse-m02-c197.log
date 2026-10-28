@@ -1,0 +1,5 @@
+m02-c197 #1: {"run":1,"score":79,"FCP":"1.4 s","LCP":"5.6 s","SI":"1.4 s","TBT":"20 ms","CLS":"0","TTFB":"Root document took 10 ms","blocking":"600 ms","unusedJS":"130 KiB","legacyJS":"-"}
+m02-c197 #2: {"run":2,"score":81,"FCP":"1.4 s","LCP":"5.1 s","SI":"1.4 s","TBT":"20 ms","CLS":"0","TTFB":"Root document took 10 ms","blocking":"570 ms","unusedJS":"129 KiB","legacyJS":"-"}
+m02-c197 #3: {"run":3,"score":82,"FCP":"1.4 s","LCP":"4.9 s","SI":"1.4 s","TBT":"20 ms","CLS":"0","TTFB":"Root document took 10 ms","blocking":"570 ms","unusedJS":"129 KiB","legacyJS":"-"}
+
+m02-c197 scores: 79 / 81 / 82  (median 81)
