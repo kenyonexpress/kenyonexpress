@@ -1,3 +1,4 @@
+**המשך מ: M07-c245 DONE (2026-10-28): TODO/FIXME re-scan: same 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md #1-3; none resolvable now; no code change, no forbidden files touched**
 **המשך מ: M18-c244 DONE (2026-10-28): claude/STATE.md already under 300 lines (203 incl. this line); older history already in docs/STATE-ARCHIVE.md — no trim needed; no forbidden files touched**
 **המשך מ: M07-c244 DONE (2026-10-28): TODO/FIXME scan: 6 markers in src/ (cardcom.ts x2, r2-migration.ts x4), all >7d old and already filed in docs/BACKLOG.md #1-3 (Cardcom prod creds / R2 feature + service-role key); none resolvable now; no code change, no forbidden files touched**
 **המשך מ: M18-c243 DONE (2026-10-28): claude/STATE.md already under 300 lines (197 incl. this line) and older history already archived in docs/STATE-ARCHIVE.md (29638 lines) — no trim needed; no forbidden files touched**
@@ -202,3 +203,5 @@
 המשך מ: M09-c244 DONE (2026-10-28): knip --dependencies re-run. Only unused devDep: @capacitor/android (android/ platform) - kept deliberately; no unused deps removed; remaining unused exports are ui-kit/money/payments/ledger public surface, left. No source changed, no forbidden files touched
 המשך מ: M16-c244 DONE (2026-10-28): verified product/[slug] page (single template for all products) emits JSON-LD Product + BreadcrumbList via src/lib/seo/json-ld.ts; json-ld tests 26/26 pass; no code changes, no forbidden files touched
 המשך מ: M04-c245 DONE (2026-10-28): pnpm type-check exit 0 on closeout/v1-final, no type errors; working tree clean, no drift to fix; no code changes, no forbidden files touched
+המשך מ: M05-c245 DONE (2026-10-28): pnpm test exit 0 on closeout/v1-final, 616 files passed / 2 skipped, 7072 tests passed / 28 skipped; no drift to fix; no code changes, no forbidden files touched
+המשך מ: M06-c245 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final, all routes compiled; working tree clean, no drift to commit; no code changes, no forbidden files touched
