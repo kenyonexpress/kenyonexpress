@@ -1,12 +1,16 @@
 # KenyonExpress Autopilot State
-## Current Session: Wed 28 Oct 2026 14:30 Bangkok
+## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
 ### Status
-- ✅ C01 preflight done (typecheck passed)
-- ⏭️ **Now: C03 BACKLOG-4 cache invalidation**
+- ✅ C01 preflight DONE
+- ✅ C02 Supabase MCP OAuth DONE
+- ✅ C16 unblocked
+- ✅ v2.0.1 queue injected (F15-F19+TAG)
+- ✅ C03-C19 handed to autopilot
+- 🤖 Autopilot runs autonomously
 
-### C03 Task
-unstable_cache tags, revalidateTag, Redis purge, Meilisearch outbox drain
+### Continue from
+C03 cache invalidation (autopilot)
 
-### Next Queue
-C04→C05→...→C19 LAUNCH-READY
+### Ofir Action
+NONE. iPhone will ping on LAUNCH-READY or hard block.
