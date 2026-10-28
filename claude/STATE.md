@@ -187,3 +187,5 @@
 המשך מ: M05-c242 DONE (2026-10-28): pnpm test green (616 files passed, 2 skipped; 7072 tests passed, 28 skipped); only drift was docs/M-CYCLE-STATUS.md status rows, committed; no code changes, no forbidden files touched
 המשך מ: M06-c242 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; working tree clean after build, no drift to fix; no code changes, no forbidden files touched
 המשך מ: M08-c242 DONE (2026-10-28): Lighthouse mobile perf / = 94, product sample = 96/97 (log: logs/lighthouse-m08-c242.log); sample-only, no code changes, no forbidden files touched
+המשך מ: M04-c243 DONE (2026-10-28): pnpm type-check exit 0 on closeout/v1-final, no type errors; only drift was a pending claude_STATE.md row (M13-c242), committed; no code changes, no forbidden files touched
+המשך מ: M05-c243 DONE (2026-10-28): pnpm test green (616 files passed, 2 skipped; 7072 tests passed, 28 skipped); only drift was docs/M-CYCLE-STATUS.md status rows, committed; no code changes, no forbidden files touched
