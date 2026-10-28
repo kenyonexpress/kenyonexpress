@@ -1,4 +1,4 @@
-**המשך מ: M17-c258 DONE (2026-10-28): RTL check on / and /product: rtl-lint hits in home/product/layout trees are comments only, sole dir="ltr" is footer email input (intentional); no code change, no forbidden files touched**
+**המשך מ: M05-c259 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M07-c258 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers, all already filed in docs/BACKLOG.md (3 items, all older than 7 days, blocked on Cardcom prod creds / Supabase service key); no new markers, no forbidden files touched**
 **המשך מ: M05-c258 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M16-c257 DONE (2026-10-28): product/[slug] page renders JSON-LD Product + BreadcrumbList (json-ld.ts, 26 tests pass); gift sub-page is noindex; no code change, no forbidden files touched**
@@ -292,3 +292,7 @@
 המשך מ: M04-c258 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no type fixes needed; committed only the regenerated docs/M-CYCLE-STATUS.md drift; no forbidden files touched
 המשך מ: M06-c258 DONE (2026-10-28): pnpm build exit 0, all routes generated, no build errors to fix; committed only the regenerated docs/M-CYCLE-STATUS.md drift; no forbidden files touched
 המשך מ: M10-c258 DONE-DEFERRED (2026-10-28): re-probed REST with service key: 301 (suppliers.verification_status), 305 (orders.gift_scheduled_at), 306 (suppliers.open_weekends) still 400 and 310 tables fraud_alerts, fraud_ip_signup_log still 404 = NOT applied (000 is infra preflight only); Supabase MCP (ixvwfbuvfxxsjiywhbbb) needs OAuth, unavailable in this non-interactive session so cannot apply; db push forbidden; no code change; no forbidden files touched
+המשך מ: M15-c258 DONE (2026-10-28): headless chromium on / and /product/<slug> at 380+1440 (dev server): 0 console errors, 0 pageerrors; only dev-mode next/image aspect-ratio warnings on home deal cards at 1440 and one aborted /api/cart fetch (server returned 200); no code change; no forbidden files touched
+המשך מ: M16-c258 DONE
+המשך מ: M04-c259 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift to fix; no code change; no forbidden files touched
+המשך מ: M06-c259 DONE (2026-10-28): pnpm build exit 0, all routes generated, no build errors to fix; committed only regenerated docs/M-CYCLE-STATUS.md drift; no forbidden files touched
