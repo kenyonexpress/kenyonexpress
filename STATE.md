@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-10-28 (M18-c259: STATE.md כבר 78 שורות, מתחת ל-300; אין מה לארכב, docs/STATE-ARCHIVE.md קיים. לא נערכו קבצי קוד.) **המשך מ: M18-c259 DONE**
+Updated: 2026-10-28 (M18-c259: STATE.md כבר 78 שורות, מתחת ל-300; אין מה לארכב, docs/STATE-ARCHIVE.md קיים. לא נערכו קבצי קוד.) **המשך מ: M12-c261 BLOCKED prod-robots-stale (src robots.ts + 8 tests OK; live robots.txt lacks /gift/ /scan /admin-mfa /login /mfa /debug/ — needs deploy of main)**
 Updated: 2026-10-28 (M18-c246: STATE.md קוצר; הגרסה המלאה הועברה ל-docs/STATE-ARCHIVE.md. נשארו רק הרשומות האחרונות.)
 
 **המשך מ: M01-c242 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
