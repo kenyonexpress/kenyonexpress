@@ -1,6 +1,22 @@
 # Mobile Gate Status (2026-10-28)
 
-## Latest Check (2026-10-28 23:02 UTC+7, MAINTENANCE_LOOP_6, Cycle 9)
+## Latest Check (2026-10-28 23:35 UTC+7, MAINTENANCE_LOOP_6, Cycle 10)
+
+**Measurement Date:** 2026-10-28 23:35 UTC+7 (MAINTENANCE_LOOP_6, Cycle 10)
+**Method:** Vercel CLI logs (reference via prior cycle measurement 2026-10-28 23:02)
+**Status:** No remeasurement performed (infrastructure blocker documented)
+
+## Current Scores (Latest verified: 2026-10-28 23:02 UTC+7)
+
+| Width | Score | Best Known | Delta | Status |
+|-------|-------|-----------|-------|--------|
+| 380px | **61.47%** | 30.26% | +31.21% | 🔴 FAILED |
+
+**Alert:** No fresh measurement in Cycle 10 (reference incompatibility blocker persists from Cycle 9)
+
+---
+
+## Previous Check (2026-10-28 23:02 UTC+7, MAINTENANCE_LOOP_6, Cycle 9)
 
 **Measurement Date:** 2026-10-28 23:02 UTC+7 (MAINTENANCE_LOOP_6, Cycle 9)
 **Method:** `scripts/compare.mjs --page=home --widths=380`  
