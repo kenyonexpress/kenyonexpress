@@ -60,3 +60,4 @@ Updated: 2026-10-28 (M12-c255: robots.ts אומת production-safe: allow "/", ל
 **המשך מ: M12-c255 DONE**
 Updated: 2026-10-28 (M01-c256: `compare.mjs --page=home` נמדד מחדש ב-380 / 768 / 1440 מול `file://refs/electro-home-v7.html` על `next dev --webpack`, עם COMPARE_ALLOW_PENDING_IMAGES=1 (מספרים אינדיקטיביים). OVERALL first 2600px: 380 = 39.83% (c254: 39.85%), 768 = 36.52% (36.53%), 1440 = 27.52% (27.53%). שינוי זניח (≤0.02pp). כולם מעל סף 11%. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M01-c256 BLOCKED gate-fail (home diff 39.83/36.52/27.52 at 380/768/1440, >11%; unchanged from c254/c255)**
+**המשך מ: M12-c256 DONE (robots.ts נבדק: Disallow לכל נתיבי הטוקן/אימות/אדמין, Allow / לחנות, host+sitemap על kenyonexpress.co.il; 8/8 טסטים עברו; ללא שינוי קוד)**
