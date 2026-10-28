@@ -205,3 +205,4 @@ Updated: 2026-10-28 (M02-c243: `compare.mjs --page=product` ב-380 / 768 / 1440 
 **המשך מ: M02-c243 BLOCKED reference-gone (product gate refused at 380/768/1440, no diff measured)**
 Updated: 2026-10-28 (M01-c244: `compare.mjs --page=home` ב-380 / 768 / 1440 הורץ שוב מול dev על :3000 (200) ו**סורב** בשלושת הרוחבים, ללא מספר diff. המסמך ב-`kenyonexpress.co.il` ללא סימני WordPress או Next, כך שאין צד שמאל למדידה. שלוש שורות `REFUSED` נוספו ל-`docs/UI-PARITY-REPORT.md`. לא נערכו קבצי קוד ולא קבצים נעולים; הסירוב לא עוקף. ראה docs/PARITY-REFERENCE.md.)
 **המשך מ: M01-c244 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
+**המשך מ: M06-c244 DONE (pnpm build עבר נקי; הדריפט היחיד היה 6 שורות REFUSED של product/category ב-docs/UI-PARITY-REPORT.md, נעשה להן commit)**
