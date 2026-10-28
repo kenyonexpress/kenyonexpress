@@ -1,0 +1,4 @@
+M08-c248 Lighthouse mobile (performance), server on :3311 (pid 47060), 2026-10-28
+/ : 83 / 79 (2 runs; TBT 30-57 ms, LCP 4.6-5.1 s)
+/product/עוזרת-אישית-שירותי-משרד : 83 / 84 (2 runs; TBT 15-29 ms, LCP 4.5 s)
+Note: /product alone is 404 (no index route); sample product slug used. Lower than c242 (94 / 96-97, on :3000) - different server/process, likely not a regression. Sample-only, no code changes.
