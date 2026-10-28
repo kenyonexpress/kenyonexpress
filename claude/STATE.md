@@ -145,3 +145,4 @@
 המשך מ: M16-c267 DONE
 המשך מ: M01-c268 DONE (2026-10-29): compare.mjs --page=home --widths=380,768,1440 on fresh next start :3417 (BUILD_ID current, all scripts 200; first try on :3399 hit a foreign stale server, discarded): 380 = 43.32% (best known 30.26, live 17790px vs ours 5463px, height ratio 0.31x so not a true pixel gate), 768 = 44.73% (best known 29), 1440 = 39.85% (best known 8.29); all 3 FAIL the 11% gate and are worse than best known; worst bands at 1440 y900-1500 ~60%; measurement only, no code changes; no forbidden files touched
 המשך מ: M04-c268 DONE (2026-10-29): pnpm type-check = 0 errors (tsc --noEmit clean), no type drift to fix; committed pending doc drift (claude_STATE.md, docs/M-CYCLE-STATUS.md, docs/UI-PARITY-REPORT.md); no forbidden files touched
+המשך מ: M06-c268 DONE (2026-10-29): pnpm build passes clean (exit 0, all routes generated), working tree had no drift to fix or commit; no forbidden files touched
