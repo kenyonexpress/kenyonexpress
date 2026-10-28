@@ -195,3 +195,4 @@
 המשך מ: M05-c243 DONE (2026-10-28): pnpm test green (616 files passed, 2 skipped; 7072 tests passed, 28 skipped); only drift was docs/M-CYCLE-STATUS.md status rows, committed; no code changes, no forbidden files touched
 המשך מ: M06-c243 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; working tree clean after build, no drift to fix; no code changes, no forbidden files touched
 המשך מ: M07-c243 DONE (2026-10-28): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and all already filed in docs/BACKLOG.md (3 items, creds/feature-work blockers); BACKLOG stamp updated; no forbidden files touched
+המשך מ: M05-c244 DONE (2026-10-28): pnpm test green (616 files passed, 2 skipped; 7072 tests passed, 28 skipped); only drift was docs/CODE-DEBT-STATUS.md scan stamp, committed; no code changes, no forbidden files touched
