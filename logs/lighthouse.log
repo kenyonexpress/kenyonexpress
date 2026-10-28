@@ -6,3 +6,8 @@ M02-c184 2026-10-29 lighthouse mobile perf (localhost:3340, next start, default 
 product /product/barbecue 80 / 81 / 80 LCP 5.1-5.5 s TBT 10-30 ms CLS 0 FCP 1.4 s
 home 100 / 81 LCP 1.5-5.0 s TBT 20-30 ms CLS 0.004 FCP 1.5 s
 target 95+ (G23): product FAIL (LCP), home unstable (one run 81, LCP). Sample-only, no code changes.
+M01-c186 2026-10-29 lighthouse re-measure home / (localhost:3461, next start, 1 run per width, perf only)
+380 mobile 96 LCP 2.7 s TBT 30 ms CLS 0.046 FCP 1.5 s
+768 mobile 79 LCP 5.3 s TBT 20 ms CLS 0.002 FCP 2.0 s
+1440 desktop 98 LCP 1.1 s TBT 0 ms CLS 0.004 FCP 0.5 s
+diff vs M02-c184 (home mobile 100/81): 380 ~ -4 vs best run / +15 vs low run; 768 -2 vs 81. target 95+: 380 PASS, 768 FAIL (LCP), 1440 PASS. Sample-only, no code changes.
