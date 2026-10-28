@@ -1,3 +1,4 @@
+המשך מ: M06-c262 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; working tree clean before and after build, no drift to fix; no code changes, no forbidden files touched
 המשך מ: M09-c261 DONE (2026-10-28): knip run; 4 flagged deps (drizzle-orm, postgres, pg, @capacitor/android) verified in use (src/db/schema, scripts/*, cap sync) so none removed; de-exported ~120 unused type exports across 73 src files (barrel re-exports and validations/ kept); value exports in payments/ledger/server actions left as staged API; tsc 0 errors, biome 0 warnings, vitest 7072 passed; type-only change so no visual delta; no forbidden files touched
 המשך מ: M04-c261 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit, no errors); no drift to fix; no source changed, no forbidden files touched
 המשך מ: M05-c239 DONE (2026-10-28): pnpm test 616 files passed/2 skipped, 7072 tests passed/28 skipped, no failures; working tree clean, no drift to fix; no code changes
