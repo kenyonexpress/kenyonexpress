@@ -1,3 +1,4 @@
+**המשך מ: M16-c259 DONE (2026-10-28): product page src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList (json-ld.test.ts 26/26 pass); /product/[slug]/gift is noindex so exempt; no code change, no forbidden files touched**
 **המשך מ: M05-c259 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
 **המשך מ: M07-c258 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers, all already filed in docs/BACKLOG.md (3 items, all older than 7 days, blocked on Cardcom prod creds / Supabase service key); no new markers, no forbidden files touched**
 **המשך מ: M05-c258 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
@@ -297,4 +298,3 @@
 המשך מ: M04-c259 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, 0 errors, no drift to fix; no code change; no forbidden files touched
 המשך מ: M06-c259 DONE (2026-10-28): pnpm build exit 0, all routes generated, no build errors to fix; committed only regenerated docs/M-CYCLE-STATUS.md drift; no forbidden files touched
 המשך מ: M09-c259 DONE (2026-10-28): knip deps scan: only flagged @capacitor/android, which android/ gradle needs (project(':capacitor-android')), so kept; depcheck hits are false positives (tailwind/postcss, lighthouse/lint-staged CLIs); 141 unused exports are shadcn ui primitives, scripts and schema, left as public API; no code change; no forbidden files touched
-המשך מ: M10-c259 DONE-DEFERRED (2026-10-28): re-probed REST: 301/305/306 columns still 400, 310 tables fraud_alerts/fraud_ip_signup_log still 404 = NOT applied; Supabase MCP (ixvwfbuvfxxsjiywhbbb) needs OAuth, unavailable in non-interactive session; db push forbidden; no code change; no forbidden files touched
