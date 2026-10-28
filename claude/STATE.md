@@ -1,3 +1,4 @@
+**המשך מ: M15-c240 DONE (2026-10-28): / and /product/<slug> console-clean (0 errors/warnings/failed requests) at 380/768/1440 on fresh next start; earlier errors were stale .next/server/route-cache HTML (gitignored build output, cleared) — no code change, no forbidden files touched**
 **המשך מ: M13-c239 DONE (2026-10-28): /api/health 200 (database ok) + /api/ready 200 (database, redis, cardcom ok; meilisearch, r2 not_configured) against real .env.local deps — no code change, no forbidden files touched**
 **המשך מ: M06-c239 DONE (2026-10-28): pnpm build exit 0 (all routes generated); drift = auto-generated docs/M-CYCLE-STATUS.md timestamps, committed; no forbidden files touched**
 **המשך מ: M04-c239 DONE (2026-10-28): pnpm type-check exit 0 (tsc --noEmit clean) — no drift, no code change, no forbidden files touched**
