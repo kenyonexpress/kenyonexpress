@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-28 (M16-c256: אימות JSON-LD בעמודי מוצר. המסלול היחיד src/app/(store)/product/[slug]/page.tsx מרנדר שני סקריפטים ld+json: Product ו-BreadcrumbList (בית > קטגוריה > מוצר). json-ld.test.ts: 17/17 עברו. לא נערכו קבצי קוד.) **המשך מ: M16-c256 DONE**
 Updated: 2026-10-28 (M18-c246: STATE.md קוצר; הגרסה המלאה הועברה ל-docs/STATE-ARCHIVE.md. נשארו רק הרשומות האחרונות.)
 
 **המשך מ: M01-c242 BLOCKED reference-gone (home gate refused at 380/768/1440, no diff measured)**
