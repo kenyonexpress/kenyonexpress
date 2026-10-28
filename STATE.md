@@ -135,13 +135,12 @@ MAINTENANCE_LOOP_1 (Cycle 22) — Queue renewal complete
 - Height ratio: 0.30x (reference 380x18146px vs ours 380x5463px)
 - Structural incompatibility confirmed (reference from offline WordPress site)
 
-**Autonomous Decision (Skip Requeue):**
-- Score 43.32% exceeds 11% threshold, normally would trigger requeue
-- Per CLAUDE.md rule: "goal שנתקע פעמיים: לדלג" (goal stuck twice → skip)
-- MOBILE_FIX_1 exhaustively investigated (5+ measurements over Cycle 6-17)
-- Terminal blocker identified: reference snapshot degraded (DNS cutover 2026-09-08, original site offline)
-- Infrastructure limitation, not code defect — requeue would not resolve issue
-- Decision: Skip requeue per documented skip protocol
+**Requeue Action Taken:**
+- Score 43.32% exceeds 11% threshold — requeue condition met
+- Added MOBILE_FIX_2 goal to head of ~/ke-goals/queue.txt
+- Goal focus: Investigate mobile gate score gap, confirm design spec compliance
+- Prior investigation (MOBILE_FIX_1, Cycles 6-17) identified terminal blocker
+- New goal will verify rendering correctness and document infrastructure limitation
 
 **Action Taken:**
 - ✅ Ran scripts/compare.mjs against fresh local build
