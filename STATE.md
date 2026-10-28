@@ -98,35 +98,36 @@ While investigation revealed that the reference snapshot is degraded due to offl
 
 ---
 
-## MAINTENANCE_LOOP_9: INCOMPLETE (2026-10-28 02:42 UTC+7) - Cycle 11
+## MAINTENANCE_LOOP_9: BLOCKED (2026-10-28 02:50 UTC+7) - Cycle 11
 
 **Goal:** Verify Supabase connection pool and query performance via Supabase MCP. Alert in docs/DB-STATUS.md if slow queries over 500ms exist.
 
-**Status:** ⚠️ **INCOMPLETE** — Supabase MCP unavailable (OAuth required, non-interactive session)
+**Status:** ❌ **BLOCKED** — Supabase MCP requires OAuth authentication (unavailable in non-interactive automation session)
 
-**Attempted Verification (Cycle 11):**
-- ⛔ Supabase MCP: OAuth required, not available in non-interactive automation sessions
-- ⚠️ Fallback used: Cycle 10 baseline (not fresh measurement)
-- ✅ Reported connection pool healthy based on prior cycle data
+**Attempted MCP Usage (Cycle 11, per goal instruction):**
+- ⛔ Attempted to load: `mcp__claude_ai_Supabase__execute_sql`, `mcp__claude_ai_Supabase__query_performance`
+- ⛔ Result: MCP server unavailable — requires OAuth flow
+- ⛔ Session type: Non-interactive (automation/autopilot loop)
+- ⛔ No OAuth capability available in this context
 
-**MCP Limitation:**
-- Goal explicitly requires "via Supabase MCP"
-- MCP requires OAuth flow (interactive session only)
-- This session is non-interactive (autopilot loop)
-- No way to satisfy the MCP requirement in current environment
+**Why This Cannot Be Completed:**
+- Goal instruction: "Use Supabase MCP for DB, RLS, migrations"
+- MCP server constraint: Requires interactive OAuth authentication
+- Session constraint: Non-interactive automation (kenyon-loop.sh / autopilot)
+- Result: Supabase MCP tools cannot be loaded or invoked
 
-**Data Used (from Cycle 10, not fresh):**
+**Fallback Data (Cycle 10 baseline, not fresh per spec):**
 - Query Performance: 61ms, 20ms, 17ms (average 33ms, max 61ms)
 - Slow Query (>500ms): NOT DETECTED
-- Alert Status: NO SLOW QUERIES
+- Alert Status: NO SLOW QUERIES (but not verified via required method)
 
 **Action Taken:**
-- ⛔ Could not use Supabase MCP (OAuth unavailable)
-- ✅ Updated docs/DB-STATUS.md with note about MCP unavailability
-- ✅ Commit: 25b7d112f
-- ✅ Pushed to origin/closeout/v1-final
+- ✅ Attempted Supabase MCP invocation as instructed
+- ✅ Documented authentication failure (ToolSearch returned 0 tools)
+- ✅ Reported last known baseline state (Cycle 10) in docs/DB-STATUS.md
+- ⛔ Cannot satisfy MCP requirement in current environment
 
-**Conclusion:** Cannot verify via specified method (Supabase MCP). Last known state (Cycle 10) shows healthy connection pool. Recommend using interactive session for MCP-based verification.
+**Conclusion:** Requirement "Use Supabase MCP" cannot be satisfied. MCP requires interactive OAuth unavailable in non-interactive automation context. Recommend using interactive session for future Supabase MCP-based verifications.
 
 ---
 
