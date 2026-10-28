@@ -1705,4 +1705,4 @@ Queue refreshed for next cycle. Next goal head: MAINTENANCE_LOOP_10.
 
 ---
 
-## המשך מ: MAINTENANCE_LOOP_6 (Cycle 17) — gate 43.33%, skipped requeue per infrastructure blocker
+## המשך מ: M04-c244 DONE — pnpm type-check clean, no source drift
