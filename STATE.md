@@ -27,3 +27,5 @@ Updated: 2026-10-28 (M12-c248: robots.txt אומת production-safe. `src/app/rob
 **המשך מ: M12-c248 DONE**
 Updated: 2026-10-28 (M01-c249: `compare.mjs --page=home` ב-380 / 768 / 1440 לא הורץ: שרת ה-dev על :3000 עלה (Ready) אך מחזיר 500 על `/` כי תהליך ה-postcss של `src/app/globals.css` נהרג ב-SIGKILL (signal 9), כמו ב-c248. אין מספר diff ולכן אין diff לרשום. גם כשהשרת תקין, הריצות הקודמות סורבו (reference-gone מול `kenyonexpress.co.il`; ומול `refs/electro-home-v7.html` תמונות שלא נטענו). לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M01-c249 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440)**
+Updated: 2026-10-28 (M02-c249: `compare.mjs --page=product` ב-380 / 768 / 1440 סורב בשלושת הרוחבים: `kenyonexpress.co.il/product/מוצר-לדוגמא/` מגיש את הבילד שלנו (33-34 הפניות `/_next/`, אין wp-content). גם צד ה-mine לא תקין: dev על :3000 מחזיר 500 (postcss SIGKILL), ו-`pnpm start` על הבילד הקיים מחזיר 500 על `/` ועל דף המוצר. אין מספר diff. לא נערכו קבצי קוד ולא קבצים נעולים.)
+**המשך מ: M02-c249 BLOCKED reference-gone (product gate refused at 380/768/1440, no diff measured; local server also 500)**
