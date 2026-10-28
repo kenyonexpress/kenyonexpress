@@ -150,11 +150,6 @@ export function shekelsFromIlsPlain(value: number | string | null | undefined): 
   return shekelsFromIls(value).replaceAll(LRI, '').replaceAll(PDI, '')
 }
 
-/** Whole shekels, no agorot, no isolate. `399 ₪`, not `399.00 ₪`. */
-export function shekelsFromIlsPlainRounded(value: number | string | null | undefined): string {
-  return shekelsFromIlsRounded(value).replaceAll(LRI, '').replaceAll(PDI, '')
-}
-
 /**
  * `399 ₪`, not `399.00 ₪`. Agorot appear only when the price has them.
  *
