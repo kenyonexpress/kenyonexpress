@@ -201,3 +201,4 @@
 המשך מ: M08-c244 DONE (2026-10-28): Lighthouse mobile prod build, home perf 97/97 a11y 96 bp 96 seo 100; product perf 99/99 a11y 96 bp 88 seo 100; logged in docs/LIGHTHOUSE-STATUS.md; no forbidden files touched
 המשך מ: M09-c244 DONE (2026-10-28): knip --dependencies re-run. Only unused devDep: @capacitor/android (android/ platform) - kept deliberately; no unused deps removed; remaining unused exports are ui-kit/money/payments/ledger public surface, left. No source changed, no forbidden files touched
 המשך מ: M16-c244 DONE (2026-10-28): verified product/[slug] page (single template for all products) emits JSON-LD Product + BreadcrumbList via src/lib/seo/json-ld.ts; json-ld tests 26/26 pass; no code changes, no forbidden files touched
+המשך מ: M04-c245 DONE (2026-10-28): pnpm type-check exit 0 on closeout/v1-final, no type errors; working tree clean, no drift to fix; no code changes, no forbidden files touched
