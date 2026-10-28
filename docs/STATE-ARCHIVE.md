@@ -29636,3 +29636,6 @@ M15-c185: Console check on / and /product/<slug> at 380/768/1440 (dev server). /
 RESULT: BLOCKED migration 301 unapplied, Supabase MCP unauthorized
 line only, and the full block for each goal is in the root file.
 **המשך מ: M18-c210 DONE (2026-10-26): claude/STATE.md trimmed 299 -> 118 lines (duplicates dropped, older resume lines moved to docs/STATE-ARCHIVE.md); no code change**
+
+**המשך מ: M07-c258 DONE (2026-10-28): TODO/FIXME scan of src, migrations, scripts found 6 markers, all already filed in docs/BACKLOG.md (3 items, all older than 7 days, blocked on Cardcom prod creds / Supabase service key); no new markers, no forbidden files touched**
+**המשך מ: M05-c258 DONE (2026-10-28): pnpm test green (616 files passed, 7072 tests passed, 28 skipped); no drift found, no code change, no forbidden files touched**
