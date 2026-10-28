@@ -1,0 +1,4 @@
+M08-c265 Lighthouse mobile (performance), next-server v16.4.3 on :3324 (pid 12656), 2026-10-29
+/ : 88 / 83 (2 runs; TBT 0 ms, LCP 3.7-4.4 s)
+/product/עוזרת-אישית-שירותי-משרד : 86 / 87 (2 runs; TBT 0 ms, LCP 3.9 s)
+Note: /product alone is 404 (no index route); sample product slug used. Both pages below G23 target 95 (LCP-bound). Sample-only, no code changes.

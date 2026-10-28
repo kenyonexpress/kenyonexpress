@@ -26,3 +26,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M06-c261 DONE (pnpm build passes; drift = M-CYCLE-STATUS timestamp + lighthouse log committed)
 
 המשך מ: M05-c262 DONE (pnpm test: 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; drift = M-CYCLE-STATUS timestamp committed)
+
+המשך מ: M05-c266 DONE (pnpm test: 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; drift = M-CYCLE-STATUS timestamp committed)
