@@ -1,22 +1,18 @@
-## MAINTENANCE_LOOP_5: SKIPPED (2026-10-28 09:26:30 UTC+7) - Cycle 11
+## MAINTENANCE_LOOP_5: SKIPPED (2026-10-28 09:27 UTC+7) - Cycle 11
 
 **Goal:** Check all cron routes last-run timestamp via Vercel MCP get_runtime_logs. Alert in docs/CRON-STATUS.md if any route stale over 24h. Commit as chore ops cron status check. Push.
 
-**Status:** ⏭️ **SKIPPED** — Infrastructure blocker (Vercel API permission)
+**Status:** ⏭️ **SKIPPED** — Infrastructure blocker (Vercel API permission - second failure)
 
-**Blocker Details:**
-- **Required method:** Vercel MCP `get_runtime_logs`
-- **Attempted parameters:** 
-  - teamId: team_TUMTPVDP8218QHwedSjmgJWl (validated)
-  - projectId: prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP (validated)
-  - environment: production
-  - query: cron
-  - since: 2h
-  - limit: 100
-- **Result 1 (first attempt):** 404 Not Found (incorrect project ID - resolved)
-- **Result 2 (second attempt with correct ID):** 403 Forbidden - "Vercel API request failed (403: forbidden). Forbidden"
-- **Root cause:** The Vercel API token in use lacks permission to read runtime logs for this project
-- **Cannot be fixed:** Token permissions are controlled by Vercel account settings, not this codebase
+**Attempt History:**
+- **Attempt 1:** 404 Not Found (resolved with correct project ID)
+- **Attempt 2:** 403 Forbidden (with correct IDs: team_TUMTPVDP8218QHwedSjmgJWl, prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP)
+
+**Current Blocker (Attempts 2+):**
+- **Error:** 403 Forbidden from Vercel API
+- **Root cause:** MCP token lacks permission to read runtime logs (CLI has permission, MCP does not)
+- **MCP Error Guidance:** "Do not retry unchanged or assume re-authentication will fix it. No automatic fix is known from this response."
+- **Cannot be resolved:** Different authentication path for MCP vs CLI; permission scope mismatch
 
 **Why Fallback Method Does Not Satisfy Requirement:**
 - Requirement explicitly states "via Vercel MCP get_runtime_logs"
@@ -25,20 +21,19 @@
 
 **Supabase MCP Work:**
 - Not applicable to MAINTENANCE_LOOP_5 (cron route verification, not DB operations)
-- Would apply to other maintenance loops if they included schema changes or query performance checks
 
 **Autonomous Decision per CLAUDE.md:**
-- Infrastructure blocker identified that cannot be resolved in this session
-- Goal involves external service API permission limits (Vercel account settings)
-- Skipped per protocol: infrastructure blockers that prevent tool usage are terminal failures
-- No retry attempted (permission blocker, not transient failure)
+- "goal stuck twice: skip without retry" — Two failures (404, then 403×2)
+- Second failure is consistent 403 Forbidden with no recovery path
+- Error guidance explicitly discourages further retries
+- Terminal infrastructure blocker: Vercel API permission limitation
 
-**Work Artifacts (Documentation Only):**
-- docs/CRON-STATUS.md updated with blocker details
-- Commits made documenting the attempts and blocker
-- Vercel CLI data shows 11 cron routes executing (for reference, though method doesn't match requirement)
+**Work Artifacts:**
+- docs/CRON-STATUS.md updated with blocker documentation
+- Commits made: 48d16409d, 2117e1658, 8dcfc7854, a5aa7a846, 0bb94dbba
+- Vercel CLI data shows 11 cron routes executing (reference only, does not meet MCP requirement)
 
-**Conclusion:** MAINTENANCE_LOOP_5 blocked by external API permission limitation. Vercel MCP method cannot be completed. Skipped per protocol.
+**Conclusion:** MAINTENANCE_LOOP_5 blocked by Vercel API token permission scope. MCP method requires different credentials than currently available. Skipped per protocol (stuck twice).
 
 ---
 
