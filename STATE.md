@@ -30,3 +30,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M05-c266 DONE (pnpm test: 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; drift = M-CYCLE-STATUS timestamp committed)
 
 המשך מ: M02-c184 DONE (lighthouse mobile sample on :3340 next start: home 100/81, product /product/barbecue 80/81/80, LCP-bound 5.1-5.5s; below G23 95 target; logged to logs/lighthouse.log; no code changes)
+
+המשך מ: M01-c186 DONE (lighthouse home /: 380=96 LCP 2.7s CLS 0.046, 768=79 LCP 5.3s, 1440=98 LCP 1.1s; vs M02-c184 home mobile 100/81: 768 still LCP-bound below 95, 380 now 96; logged to logs/lighthouse.log; no code changes)
