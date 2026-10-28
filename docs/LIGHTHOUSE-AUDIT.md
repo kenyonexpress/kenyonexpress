@@ -232,3 +232,16 @@ Lighthouse mobile, performance only, against localhost:3000 (same dev server as 
 | /product/אוזניות-איירפודס-3 | 68 | 11.8 s | 260 ms | 0.002 |
 
 Both are below the G23 target of 95. LCP is high, most likely from dev-mode compilation on first hit. Re-measure against `next build && next start` before acting; no code was changed.
+
+## M03-c191 sample — mobile performance, 2026-10-29
+
+Lighthouse mobile, performance only, `/category/phones-computers` on localhost:3000 (same server as c207/c214; HTML still carries turbopack markers, so it is most likely a dev server, not a production build). The category route is `/category/<slug>`; `/c` returns 404.
+
+| Throttling | Run | Perf | LCP | TBT | CLS |
+|---|---|---|---|---|---|
+| simulate | 1 | 85 | 3.3 s | 310 ms | 0.007 |
+| simulate | 2 | 72 | 8.3 s | 200 ms | 0 |
+| provided | 1 | 100 | 0.3 s | 0 ms | 0 |
+| provided | 2 | 100 | 0.3 s | 10 ms | 0.007 |
+
+Modelled (simulate) runs swing 13 points on an unchanged tree and sit below the G23 target of 95; unthrottled (provided) runs are 100. Per docs/PERFORMANCE-BUDGET.md the localhost simulate number is not a reliable regression signal. Re-measure the modelled score against a `next build && next start` or a deployed URL before acting. No code was changed.
