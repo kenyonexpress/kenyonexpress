@@ -209,3 +209,4 @@
 המשך מ: M05-c245 DONE (2026-10-28): pnpm test exit 0 on closeout/v1-final, 616 files passed / 2 skipped, 7072 tests passed / 28 skipped; no drift to fix; no code changes, no forbidden files touched
 המשך מ: M06-c245 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final, all routes compiled; working tree clean, no drift to commit; no code changes, no forbidden files touched
 המשך מ: M11-c245 DONE (2026-10-28): sitemap.xml reachable (apex 308 -> www 200 application/xml, 75 URLs, lastmod 2026-10-24 = last deploy build time); robots.txt points to it; sitemap+robots tests 19/19 pass; no code changes, no forbidden files touched
+המשך מ: M06-c246 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final, all routes compiled; working tree clean, no drift to commit; no code changes, no forbidden files touched
