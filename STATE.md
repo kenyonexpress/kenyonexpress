@@ -23,3 +23,5 @@ Updated: 2026-10-28 (M04-c247: `pnpm type-check` (tsc --noEmit) עבר נקי, e
 **המשך מ: M04-c247 DONE**
 Updated: 2026-10-28 (M01-c248: `compare.mjs --page=home` ב-380 / 768 / 1440 לא הורץ: שרת ה-dev על :3000 מחזיר 500 בכל בקשה אחרי שני אתחולים, כי תהליך ה-postcss של `src/app/globals.css` נהרג ב-SIGKILL (signal 9). אין מספר diff, ולכן אין diff לרשום. הסירוב הקודם מול `kenyonexpress.co.il` (reference-gone) עדיין תקף. לא נערכו קבצי קוד ולא קבצים נעולים.)
 **המשך מ: M01-c248 BLOCKED dev-server-500 (postcss SIGKILL, gate not measured at 380/768/1440)**
+Updated: 2026-10-28 (M12-c248: robots.txt אומת production-safe. `src/app/robots.ts` מחזיר allow `/` ו-disallow ל-redeem, coupon, gift, account, supplier, scan, admin, checkout, cart, auth, api, reset-password, forgot-password, login, signup, mfa, admin-mfa, debug. אין disallow כללי של `/`. ה-sitemap וה-host מבוססים על `siteUrl()` עם ברירת מחדל `https://kenyonexpress.co.il` וללא סלאש סופי. `vitest run src/app/robots.test.ts` עבר, 8 מתוך 8. לא נערכו קבצי קוד ולא קבצים נעולים. לא אומת הערך של NEXT_PUBLIC_APP_URL בפרודקשן.)
+**המשך מ: M12-c248 DONE**
