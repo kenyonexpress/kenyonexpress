@@ -102,3 +102,4 @@
 המשך מ: M17-c260 DONE (2026-10-28): RTL verified on / and /product/[slug]: html lang=he dir=rtl, no physical ml/mr/pl/pr/text-left/right in home/product components; only dir=ltr are the email input (correct) and hero promo text inside forbidden hero files (untouched); no code change; no forbidden files touched
 **המשך מ: M18-c260 DONE (2026-10-28): claude/STATE.md trimmed 300 -> 101 lines (oldest 200 resume lines moved to docs/STATE-ARCHIVE.md); no code change, no forbidden files touched**
 המשך מ: M05-c261 DONE (2026-10-28): pnpm test: 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; no drift, no code changes; no forbidden files touched
+המשך מ: M04-c262 DONE (2026-10-28): pnpm type-check clean (tsc --noEmit, 0 errors); no drift, no code changes; no forbidden files touched
