@@ -451,3 +451,5 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-28 04:28 | home | 380 | 43.33% | **FAIL** | `007728334-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 141 failed to load (101 script, 37  |
 | 2026-10-28 04:38 | home | 380 | 43.33% | **FAIL** | `6dc9e8e94` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 96 failed to load (57 script, 37 fo |
 | 2026-10-28 04:42 | home | 380 | 43.32% | **FAIL** | `a6d466a92` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-28 06:33 | home | 380 | 43.33% | **FAIL** | `97f9cb1c1` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); OURS dropped 2 script (unhydrated, not a fidelity score); ref 141 failed to load (101 script, 37  |
+| 2026-10-28 06:35 | home | 380 | 43.32% | **FAIL** | `97f9cb1c1-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
