@@ -11,20 +11,25 @@
 **MCP Status:** ⛔ OAuth required (non-interactive session - unable to authenticate)
 **Authentication:** Verified (Vercel CLI)  
 
-## MCP Attempt Details (2026-10-28 09:25:51 UTC+7)
+## MCP Attempt Details (2026-10-28 09:26 UTC+7)
 
 **Attempted Tool:** `mcp__claude_ai_Vercel__get_runtime_logs`
 **Parameters:** 
 - teamId: team_TUMTPVDP8218QHwedSjmgJWl (kenyonexpress-projects)
-- projectId: kenyonexpress
+- projectId: prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP (kenyonexpress)
 - environment: production
 - query: cron
 - since: 2h
 - limit: 100
 
-**Result:** OAuth authentication required. MCP unavailable in non-interactive sessions per Anthropic platform limitations.
+**Result:** 
+- Status Code: 403 Forbidden
+- Error: "Vercel API request failed (403: forbidden). Forbidden"
+- Root Cause: Insufficient permissions - the Vercel API token in use does not have permission to read runtime logs for this project
+- MCP Tool Status: ✅ Responsive and found project (correct IDs validated)
+- Blocker: Permission/scope limitation on the Vercel authentication token
 
-**Fallback:** Used Vercel CLI `vercel logs --limit 200 | grep -i cron` to retrieve equivalent runtime log data.
+**Fallback:** Used Vercel CLI `vercel logs --limit 200 | grep -i cron` to retrieve equivalent runtime log data (CLI has appropriate permissions).
 
 ## Fresh Verification (2026-10-28 09:25:51 UTC+7)
 
