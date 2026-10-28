@@ -1,3 +1,4 @@
+המשך מ: M06-c263 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; only drift was docs/M-CYCLE-STATUS.md regenerated timestamps (Last Run/Next Cycle), committed; no code changes, no forbidden files touched
 המשך מ: M05-c263 DONE (2026-10-28): pnpm test 616 files passed/2 skipped, 7072 tests passed/28 skipped, no failures; working tree clean, no drift to fix; no code changes, no forbidden files touched
 המשך מ: M07-c262 DONE (2026-10-28): TODO/FIXME rescan of src+scripts finds only the 6 known hits (cardcom.ts:249,312; r2-migration.ts:103-106), all >7 days old and all already filed in docs/BACKLOG.md #1-#3 (blocked on Cardcom prod creds / deferred service-role key); no new markers, no code changed, no forbidden files touched
 המשך מ: M06-c262 DONE (2026-10-28): pnpm build exit 0 on closeout/v1-final; working tree clean before and after build, no drift to fix; no code changes, no forbidden files touched
