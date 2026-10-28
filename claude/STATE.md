@@ -1,3 +1,4 @@
+**המשך מ: M04-c257 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, zero errors; no drift found, no code change, no forbidden files touched**
 **המשך מ: M04-c256 DONE (2026-10-28): pnpm type-check (tsc --noEmit) clean, zero errors; no drift found, no code change, no forbidden files touched**
 **המשך מ: M18-c256 DONE (2026-10-28): claude/STATE.md already under 300 lines (281 incl. this line) and older history already in docs/STATE-ARCHIVE.md — no trim needed; no forbidden files touched**
 **המשך מ: M18-c255 DONE (2026-10-28): claude/STATE.md already under 300 lines (275 incl. this line) and older history already in docs/STATE-ARCHIVE.md (29638 lines) — no trim needed; no forbidden files touched**
