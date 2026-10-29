@@ -52,7 +52,7 @@ export default function CitiesRow() {
                     alt=""
                     fill
                     unoptimized
-                    loading="eager"
+                    loading="lazy"
                     sizes={`${C.image.size}px`}
                     className="object-contain transition-transform duration-300 group-hover:scale-105"
                     fallbackClassName="absolute inset-0"
