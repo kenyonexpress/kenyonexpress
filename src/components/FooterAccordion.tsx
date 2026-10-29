@@ -19,7 +19,7 @@ function AccordionSection({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-4 px-4 text-right flex justify-between items-center text-white text-button-small hover:bg-gray-700 transition-colors"
+        className="w-full py-4 px-4 text-start flex justify-between items-center text-white text-button-small hover:bg-gray-700 transition-colors"
         aria-expanded={isOpen}
       >
         {title}

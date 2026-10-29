@@ -6,24 +6,25 @@ should be replaced with logical properties that flip automatically.
 
 ## Summary
 
-- Generated: 2026-10-28
-- Files scanned: 1555
-- Files with violations: 55
-- Total violations: 104
+- Generated: 2026-10-29
+- Files scanned: 2064
+- Files with violations: 62
+- Total violations: 125
 
 ### By token
 
 | Physical | Count |
 | --- | --- |
-| `right-` | 19 |
+| `right-` | 22 |
 | `mr-` | 18 |
 | `text-right` | 16 |
-| `left:` | 14 |
+| `left:` | 15 |
 | `left-` | 14 |
-| `right:` | 7 |
+| `text-left` | 13 |
+| `right:` | 8 |
+| `text-align:right` | 7 |
 | `border-l` | 6 |
-| `text-left` | 4 |
-| `text-align:right` | 3 |
+| `text-align:left` | 3 |
 | `margin-left` | 2 |
 | `rounded-r` | 1 |
 
@@ -35,8 +36,8 @@ should be replaced with logical properties that flip automatically.
 | src/__tests__/ux48-a11y-wcag-aa.test.ts | 130 | `right:` | `inset-inline-end:` |
 | src/__tests__/ux48-a11y-wcag-aa.test.ts | 131 | `left:` | `inset-inline-start:` |
 | src/__tests__/ux48-a11y-wcag-aa.test.ts | 131 | `right:` | `inset-inline-end:` |
-| src/app/(admin)/admin/discounts/page.tsx | 77 | `text-right` | `text-end` |
-| src/app/(admin)/admin/growth/page.tsx | 180 | `text-right` | `text-end` |
+| src/app/(admin)/admin/discounts/page.tsx | 78 | `text-right` | `text-end` |
+| src/app/(admin)/admin/growth/page.tsx | 183 | `text-right` | `text-end` |
 | src/app/(admin)/admin/observability/page.tsx | 183 | `text-left` | `text-start` |
 | src/app/(admin)/admin/observability/page.tsx | 184 | `text-left` | `text-start` |
 | src/app/(admin)/admin/observability/page.tsx | 185 | `text-right` | `text-end` |
@@ -63,10 +64,22 @@ should be replaced with logical properties that flip automatically.
 | src/app/(store)/developers/page.tsx | 278 | `border-l` | `border-s` |
 | src/app/(store)/product/[slug]/opengraph-image.tsx | 82 | `left-` | `start-` |
 | src/app/(supplier)/supplier/payouts/page.tsx | 78 | `mr-` | `me-` |
-| src/app/api/cron/abandoned-cart/route.ts | 113 | `text-align:right` | `text-align: end` |
+| src/app/admin/affiliate/page.tsx | 205 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 206 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 207 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 208 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 209 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 210 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 211 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 212 | `text-left` | `text-start` |
+| src/app/admin/affiliate/page.tsx | 213 | `text-left` | `text-start` |
+| src/app/api/cron/abandoned-cart/route.ts | 210 | `text-align:right` | `text-align: end` |
+| src/app/api/cron/wishlist-digest/route.ts | 79 | `text-align:left` | `text-align: start` |
 | src/app/error-pages.test.ts | 10 | `left-` | `start-` |
 | src/app/error-pages.test.ts | 32 | `right-` | `end-` |
-| src/app/globals.css | 490 | `left:` | `inset-inline-start:` |
+| src/app/error-pages.test.tsx | 7 | `right-` | `end-` |
+| src/app/error-pages.test.tsx | 37 | `right-` | `end-` |
+| src/app/globals.css | 500 | `left:` | `inset-inline-start:` |
 | src/app/not-found.tsx | 8 | `left-` | `start-` |
 | src/app/not-found.tsx | 51 | `text-right` | `text-end` |
 | src/app/not-found.tsx | 56 | `left-` | `start-` |
@@ -90,9 +103,9 @@ should be replaced with logical properties that flip automatically.
 | src/components/a11y/SkipLink.tsx | 15 | `left-` | `start-` |
 | src/components/a11y/SkipLink.tsx | 15 | `right-` | `end-` |
 | src/components/a11y/SkipLink.tsx | 32 | `right-` | `end-` |
-| src/components/admin/CategoryDialog.tsx | 78 | `right-` | `end-` |
+| src/components/admin/CategoryDialog.tsx | 79 | `right-` | `end-` |
 | src/components/admin/CouponDealForm.tsx | 362 | `right-` | `end-` |
-| src/components/admin/ProductForm.tsx | 1448 | `text-right` | `text-end` |
+| src/components/admin/ProductForm.tsx | 1474 | `text-right` | `text-end` |
 | src/components/admin/ReferralQueueRow.tsx | 61 | `mr-` | `me-` |
 | src/components/admin/reports/SalesChart.tsx | 68 | `right:` | `inset-inline-end:` |
 | src/components/admin/reports/SalesChart.tsx | 68 | `left:` | `inset-inline-start:` |
@@ -116,22 +129,31 @@ should be replaced with logical properties that flip automatically.
 | src/components/ScrollRestoration.test.tsx | 103 | `left:` | `inset-inline-start:` |
 | src/components/ScrollRestoration.test.tsx | 147 | `left:` | `inset-inline-start:` |
 | src/components/ScrollRestoration.tsx | 75 | `left:` | `inset-inline-start:` |
-| src/components/shared/share-buttons.test.tsx | 54 | `right-` | `end-` |
+| src/components/shared/share-buttons.test.tsx | 55 | `right-` | `end-` |
 | src/lib/cart/format.test.ts | 54 | `left-` | `start-` |
 | src/lib/cart/format.test.ts | 62 | `left-` | `start-` |
 | src/lib/electro-hero-tokens.ts | 108 | `right-` | `end-` |
+| src/lib/growth/abandoned-cart-email.test.ts | 163 | `right-` | `end-` |
+| src/lib/growth/abandoned-cart-email.ts | 105 | `text-align:right` | `text-align: end` |
+| src/lib/growth/abandoned-cart-email.ts | 106 | `text-align:left` | `text-align: start` |
+| src/lib/growth/abandoned-cart-email.ts | 113 | `text-align:right` | `text-align: end` |
+| src/lib/growth/abandoned-cart-email.ts | 120 | `text-align:right` | `text-align: end` |
+| src/lib/growth/abandoned-cart-email.ts | 121 | `text-align:left` | `text-align: start` |
+| src/lib/growth/abandoned-cart-email.ts | 124 | `text-align:right` | `text-align: end` |
+| src/lib/growth/stacking.ts | 20 | `left:` | `inset-inline-start:` |
 | src/lib/money-format.test.ts | 10 | `left-` | `start-` |
 | src/lib/money-format.test.ts | 22 | `left-` | `start-` |
 | src/lib/money-format.ts | 52 | `left-` | `start-` |
 | src/lib/money.ts | 55 | `right:` | `inset-inline-end:` |
+| src/lib/pwa/install-surface.ts | 18 | `right:` | `inset-inline-end:` |
 | src/lib/vouchers/offline-scan.ts | 4 | `right:` | `inset-inline-end:` |
 | src/server/actions/contact.ts | 79 | `text-align:right` | `text-align: end` |
 | src/server/actions/newsletter.ts | 114 | `text-align:right` | `text-align: end` |
-| src/styles/category-page.css | 759 | `left:` | `inset-inline-start:` |
-| src/styles/category-page.css | 903 | `left:` | `inset-inline-start:` |
+| src/styles/category-page.css | 803 | `left:` | `inset-inline-start:` |
+| src/styles/category-page.css | 947 | `left:` | `inset-inline-start:` |
 | src/styles/icons.css | 126 | `right:` | `inset-inline-end:` |
 | src/styles/mini-cart.css | 289 | `right-` | `end-` |
 | src/styles/newsletter.css | 2 | `margin-left` | `margin-inline-start` |
-| src/styles/product-card-deals.css | 329 | `left:` | `inset-inline-start:` |
+| src/styles/product-card-deals.css | 333 | `left:` | `inset-inline-start:` |
 | src/styles/tokens.css | 315 | `right-` | `end-` |
 | src/styles/tokens.ts | 141 | `left-` | `start-` |
