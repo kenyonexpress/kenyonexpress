@@ -32,6 +32,12 @@ async function handle(request: Request): Promise<Response> {
     }
   }
 
+  // C15: 10/min per IP burst ceiling across auth routes
+  const burst = await rateLimit('auth-burst', ip)
+  if (!burst.allowed) {
+    return NextResponse.json({ error: 'יותר מדי בקשות — נסו שוב בעוד דקה' }, { status: 429 })
+  }
+
   // F64: Turnstile verification
   if (!(await verifyTurnstile(formData.get(TURNSTILE_FIELD), ip))) {
     return NextResponse.json({ error: 'אימות האנושיות נכשל. נסו שוב.' }, { status: 400 })
