@@ -84,6 +84,9 @@ export async function generateMetadata({ params }: Props) {
       type: 'website',
       locale: 'he_IL',
     },
+    // Next does not merge `twitter` into the root's: without this the card
+    // carries the site-wide title instead of the product's.
+    twitter: { card: 'summary_large_image', title, description },
   }
 }
 
