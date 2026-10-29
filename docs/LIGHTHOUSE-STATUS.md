@@ -34,6 +34,15 @@
 
 Note: `/product` alone is 404; the sample uses a real slug. Product best-practices 88 is below 90 and not investigated in this item.
 
+## M08-c270 sample (2026-10-30, mobile, DEV server on :3000, 2 runs each)
+
+| Page | Perf | A11y | BP | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| / | 84 / 85 | 100 | 96 | 100 | 4.1-4.3 s | 0 ms | 0.001-0.004 |
+| /product/צימר-מאסטר | 85 / 87 | 100 | 96 | 100 | 4.0-4.1 s | 0 ms | 0.001 |
+
+Not comparable to the earlier prod-build samples: these ran against `next dev`, because `pnpm build` currently fails with "Ambiguous app routes: /c/[slug] vs /c/[code]". Perf below 90 here is dev-mode overhead, not a measured regression. Fixing the route clash is needed before a prod-build sample (and the G23 95+ target) can be re-measured. `/product` alone is 404; a real slug was used.
+
 ## M02-c185 sample (2026-10-29, mobile, prod build on :3101, 3 runs)
 
 | Page | Perf | A11y | BP | SEO | LCP | TBT | CLS |
