@@ -336,18 +336,21 @@ export default async function ProductPage({ params }: Props) {
             customer pays the full price however it divides. */}
         <div className="pdp-details">
           {product.description_he && (
-            <section aria-label="תיאור המוצר">
-              <h2 className="pdp-details__title">תיאור המוצר</h2>
+            <details className="pdp-acc" open>
+              <summary className="pdp-acc__summary">תיאור המוצר</summary>
               <p className="pdp-details__text">{product.description_he}</p>
-            </section>
+            </details>
           )}
 
           {!isCoupon && (
-            <ShippingInfo
-              requiresShipping={product.requires_shipping}
-              weightGrams={product.weight_grams}
-              warrantyMonths={product.warranty_months}
-            />
+            <details className="pdp-acc">
+              <summary className="pdp-acc__summary">משלוח ואחריות</summary>
+              <ShippingInfo
+                requiresShipping={product.requires_shipping}
+                weightGrams={product.weight_grams}
+                warrantyMonths={product.warranty_months}
+              />
+            </details>
           )}
 
           {/* Supplier details: rendered for every product (coupon and physical).
@@ -361,12 +364,15 @@ export default async function ProductPage({ params }: Props) {
               longitude: product.longitude,
             }}
           />
-          <SupplierInfo
-            supplier={supplier}
-            productType={productType}
-            productName={product.name_he}
-            whatsappEnabled={readWhatsAppEnabled(product)}
-          />
+          <details className="pdp-acc" open>
+            <summary className="pdp-acc__summary">פרטי הספק</summary>
+            <SupplierInfo
+              supplier={supplier}
+              productType={productType}
+              productName={product.name_he}
+              whatsappEnabled={readWhatsAppEnabled(product)}
+            />
+          </details>
         </div>
 
         {/* Related products */}

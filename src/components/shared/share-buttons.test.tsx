@@ -1,8 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import FacebookShareButton from './FacebookShareButton'
+import CopyLinkButton from './CopyLinkButton'
 import WhatsAppFloat from './WhatsAppFloat'
 import WhatsAppShareButton from './WhatsAppShareButton'
 
@@ -110,32 +111,24 @@ describe('the WhatsApp share button', () => {
   })
 })
 
-describe('the Facebook share button', () => {
-  const open = vi.fn()
+describe('the copy-link button', () => {
+  const writeText = vi.fn()
 
   beforeEach(() => {
-    open.mockReset()
-    vi.stubGlobal('open', open)
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { href: 'https://kenyonexpress.co.il/product/spa' },
-    })
+    writeText.mockReset()
+    writeText.mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
   })
 
   afterEach(() => {
     vi.unstubAllGlobals()
   })
 
-  it('sends the sharer a URL and nothing else', () => {
-    // Facebook removed the `quote` parameter in 2017 and ignores it silently.
-    // Everything the post shows comes from the Open Graph tags it scrapes, so a
-    // text parameter here would be a message nobody ever reads.
-    const element = FacebookShareButton({})
-    ;(element as { props: { onClick: () => void } }).props.onClick()
-    const url = new URL(String(open.mock.calls[0]?.[0]))
-    expect(url.host).toBe('www.facebook.com')
-    expect([...url.searchParams.keys()]).toEqual(['u'])
-    expect(url.searchParams.get('u')).toBe('https://kenyonexpress.co.il/product/spa')
+  it('copies the URL it was given and confirms', async () => {
+    render(<CopyLinkButton url="https://kenyonexpress.co.il/product/spa" />)
+    fireEvent.click(screen.getByRole('button', { name: 'העתקת קישור' }))
+    await screen.findByText('הקישור הועתק')
+    expect(writeText).toHaveBeenCalledWith('https://kenyonexpress.co.il/product/spa')
   })
 })
 

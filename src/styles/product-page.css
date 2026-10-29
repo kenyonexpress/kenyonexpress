@@ -580,3 +580,19 @@
 .city-tag--link:hover {
   text-decoration: underline;
 }
+
+/* Accordion: native <details>, no client JS. The panel's own heading is hidden
+   because the summary already names it; display:none keeps it out of the
+   accessibility tree so the section is not announced twice. */
+.pdp-acc {
+  border-block-end: 1px solid var(--pdp-rule, #dee2e6);
+}
+.pdp-acc__summary {
+  cursor: pointer;
+  padding-block: 12px;
+  font-weight: 600;
+  list-style-position: inside;
+}
+.pdp-acc .pdp-details__title {
+  display: none;
+}

@@ -60,7 +60,9 @@ describe('SupplierInfo', () => {
     )
     expect(html).toContain('אלקטרו פלוס')
     expect(html).not.toContain('tel:')
-    expect(html).not.toContain('wa.me')
+    // No supplier channel; the store's own customer-service link replaces it.
+    expect(html).not.toContain('פנייה לספק')
+    expect(html).toContain('פנייה לשירות הלקוחות')
     expect(html).not.toContain('waze.com')
   })
 
@@ -126,7 +128,9 @@ describe('the WhatsApp opt-in', () => {
     // admin ticks it, and the column does not exist yet at all -- so an
     // omitted prop must mean silence, not a published phone number.
     const html = renderToStaticMarkup(<SupplierInfo supplier={reachable} productType="coupon" />)
-    expect(html).not.toContain('wa.me')
+    // No supplier channel; the store's own customer-service link replaces it.
+    expect(html).not.toContain('פנייה לספק')
+    expect(html).toContain('פנייה לשירות הלקוחות')
     expect(html).not.toContain('בוואטסאפ')
   })
 
@@ -135,6 +139,8 @@ describe('the WhatsApp opt-in', () => {
       <SupplierInfo supplier={reachable} productType="coupon" whatsappEnabled />,
     )
     expect(html).toContain('wa.me/972524635550')
+    expect(html).toContain('פנייה לספק')
+    expect(html).not.toContain('פנייה לשירות הלקוחות')
   })
 
   it('still shows nothing when there is no WhatsApp-capable number', () => {
@@ -145,7 +151,9 @@ describe('the WhatsApp opt-in', () => {
     const html = renderToStaticMarkup(
       <SupplierInfo supplier={landlineOnly} productType="coupon" whatsappEnabled />,
     )
-    expect(html).not.toContain('wa.me')
+    // No supplier channel; the store's own customer-service link replaces it.
+    expect(html).not.toContain('פנייה לספק')
+    expect(html).toContain('פנייה לשירות הלקוחות')
     expect(html).toContain('03-1234567')
   })
 
