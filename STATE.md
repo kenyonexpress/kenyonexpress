@@ -55,3 +55,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: G107 DONE (2026-10-30): /partner/redeem (reuses ScanClient), 8-digit PIN resolved per caller suppliers in lookup+redeem routes, redeem route calls redeem_voucher_locked (pg advisory xact lock + vouchers_redemption_events audit) with fallback to redeem_voucher until 313 is applied; migrations/pending/313_partner_redeem.sql NOT applied (Supabase MCP unauthorized); tsc/biome/vitest clean on touched files; docs/G107-REDEEM.md; no forbidden files touched
 
 המשך מ: M05-c269 DONE (pnpm test: 622 files passed, 2 skipped; 7117 tests passed, 28 skipped; fixed drift: flag tables, push/send error body, product-import cache tag + error handling, migrations 164/311-314 inventory + preflights + manifest, CACHE-POLICY doc)
+
+המשך מ: M04-c270 DONE (pnpm type-check: tsc --noEmit clean, no drift, no code changes)
