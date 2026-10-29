@@ -70,3 +70,18 @@ M01-c225 2026-10-29 lighthouse (next start :5701, /, simulated throttling, 2 run
 768 mobile 100/100 LCP 1.1 s TBT 20-30 ms CLS 0.003 (low mode of bimodal LCP)
 1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0.001
 note: dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits); home rendered 72 product links. vs c224: 380 +7/+2, 768 +13/+15 (bimodal LCP), 1440 +1. target 95+ (G23): 768 and 1440 PASS, 380 FAIL (LCP). Sample-only, no code changes.
+M03-c225 2026-10-29 lighthouse (next start :5801, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 94/86 LCP 2.9/4.0 s TBT 30 ms CLS 0-0.006
+768 mobile 87/83 LCP 4.0-4.6 s TBT 30-50 ms CLS 0-0.001
+1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0
+note: grid rendered real content (2 product links) so sample is valid; dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c223: 380 -6/-14 (c223 was low mode of bimodal LCP), 768 +3/-1, 1440 =. target 95+ (G23): 380 and 768 FAIL (LCP), 1440 PASS. Sample-only, no code changes.
+M01-c226 2026-10-29 lighthouse (next start :5901, /, simulated throttling, 2 runs each)
+380 mobile 78/85 LCP 6.0/4.3 s TBT 30-60 ms CLS 0.003
+768 mobile 80/82 LCP 5.4/4.9 s TBT 30 ms CLS 0.002
+1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0.012
+note: home rendered 72 product links; dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c225: 380 -7/-1, 768 -20/-18 (c225 was low mode of bimodal LCP), 1440 =. target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M02-c226 2026-10-29 lighthouse (next start :6101, /product/barbecue, simulated throttling, 2 runs each)
+380 mobile 89/85 LCP 3.8/4.3 s TBT 25-27 ms CLS 0.001
+768 mobile 87/89 LCP 3.8-4.0 s TBT 23-29 ms CLS 0.039
+1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001-0.012
+note: h1 present (real content); dummy-length (>=40 chars) SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c224: 380 +5/+5, 768 +13/+4, 1440 -1 (noise; c224 was high-LCP outlier). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
