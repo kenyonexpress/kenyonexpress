@@ -311,3 +311,9 @@ M02-c259 2026-10-29 lighthouse (next start :10102, existing build, /product/barb
 768 mobile 88/87 LCP 3.9/4.0 s TBT 27/26 ms CLS 0.038
 1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.011/0.001
 note: h1 present, HTTP 200, valid sample; dummy-length (60 char) SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c256 81/84, 84/85, 99/99: 380 +8/0, 768 +4/+2, 1440 = (noise, bimodal LCP). Mobile below G23 95 target (LCP-bound). Sample-only, no code changes.
+
+M03-c259 2026-10-29 lighthouse (next start :10201, existing build, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 100/100 LCP 1.1/1.1 s TBT 30/30 ms CLS 0
+768 mobile 84/88 LCP 4.6/3.9 s TBT 50/30 ms CLS 0/0.001
+1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0/0.012
+note: h1 present, HTTP 200, 2 product links rendered, so valid sample; dummy-length (60 char) SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c258 83/88, 83/83, 100/100: 380 +17/+12 (low mode of bimodal LCP), 768 +1/+5, 1440 = (noise). 380 and 1440 meet G23 95; 768 below target (LCP-bound). Sample-only, no code changes.
