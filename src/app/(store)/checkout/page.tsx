@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import TierBadge from '@/components/club/TierBadge'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { NO_VERIFICATION, type ShippingVerification } from '@/lib/checkout/verified-shipping'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
@@ -7,6 +8,7 @@ import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import { loadShippingVerification } from '@/server/checkout/verified-shipping'
+import { getMyTier } from '@/server/queries/club'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -114,6 +116,7 @@ async function CheckoutPageBody({
   let address = EMPTY_ADDRESS
   let verification: ShippingVerification = NO_VERIFICATION
   let walletBalance = 0
+  const tier = user && user.is_anonymous !== true ? await getMyTier() : null
   let savedCards: { id: string; last4: string | null; brand: string | null; isDefault: boolean }[] =
     []
 
@@ -184,6 +187,11 @@ async function CheckoutPageBody({
     <div className="checkout-page">
       <CheckoutBreadcrumb />
       <h1 className="checkout-page__title">קופה</h1>
+      {tier && (
+        <p className="checkout-page__tier">
+          חבר/ת מועדון: <TierBadge tierKey={tier.tierKey} nameHe={tier.tierNameHe} />
+        </p>
+      )}
       <CheckoutForm
         cart={cart}
         clientRef={randomUUID()}

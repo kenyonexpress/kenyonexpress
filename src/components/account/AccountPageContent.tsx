@@ -4,6 +4,7 @@ import SecurityClient from '@/app/(account)/account/security/SecurityClient'
 import AddressManager from '@/components/account/AddressManager'
 import ProfileDetailsForm from '@/components/account/ProfileDetailsForm'
 import PasskeyManager from '@/components/auth/PasskeyManager'
+import TierBadge from '@/components/club/TierBadge'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import type { Agorot } from '@/lib/money'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
@@ -91,7 +92,9 @@ export default function AccountPageContent({
             {tier && (
               <section className="account-card" aria-label="מועדון הלקוחות">
                 <h2 className="account-card__title">מועדון הלקוחות</h2>
-                <p className="account-row__title">דרגה: {tier.tierNameHe}</p>
+                <p className="account-row__title">
+                  דרגה: <TierBadge tierKey={tier.tierKey} nameHe={tier.tierNameHe} />
+                </p>
                 <p className="account-row__meta">
                   רכישות ב-12 החודשים האחרונים: {formatIls(tier.spendAgorot)}
                   {tier.nextTierNameHe

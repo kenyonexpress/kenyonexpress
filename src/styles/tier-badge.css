@@ -1,0 +1,32 @@
+.tier-badge {
+  display: inline-block;
+  padding-block: 2px;
+  padding-inline: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+  line-height: 20px;
+  white-space: nowrap;
+  background: var(--util-fff4d6);
+  color: var(--util-8a6100);
+}
+
+.tier-badge--silver {
+  background: #eceff1;
+  color: #37474f;
+}
+
+.tier-badge--gold {
+  background: #fed700;
+  color: #1a1a1a;
+}
+
+.tier-badge--platinum {
+  background: #1a1a1a;
+  color: #fed700;
+}
+
+.checkout-page__tier {
+  margin-block: 0 12px;
+  font-size: 14px;
+}

@@ -16,6 +16,7 @@ export interface ClubTierRow {
 }
 
 export interface MyTier {
+  tierKey: string
   tierNameHe: string
   benefits: string[]
   spendAgorot: Agorot
@@ -42,12 +43,14 @@ export async function getMyTier(): Promise<MyTier | null> {
   const [{ data: row, error: rowError }, { data: tiers, error: tiersError }] = await Promise.all([
     supabase
       .from('v_user_tier' as never)
-      .select('spend_agorot, tier_name_he, tier_benefits_json, next_tier_name_he, to_next_agorot')
+      .select(
+        'spend_agorot, tier_key, tier_name_he, tier_benefits_json, next_tier_name_he, to_next_agorot',
+      )
       .eq('user_id', user.id)
       .maybeSingle(),
     supabase
       .from('club_tiers' as never)
-      .select('name_he, min_spend_agorot, benefits_json, sort_order')
+      .select('key, name_he, min_spend_agorot, benefits_json, sort_order')
       .order('min_spend_agorot', { ascending: true })
       .limit(2),
   ])
@@ -60,12 +63,14 @@ export async function getMyTier(): Promise<MyTier | null> {
 
   const r = row as {
     spend_agorot: number
+    tier_key: string | null
     tier_name_he: string | null
     tier_benefits_json: unknown
     next_tier_name_he: string | null
     to_next_agorot: number
   } | null
   const list = (tiers ?? []) as {
+    key: string
     name_he: string
     min_spend_agorot: number
     benefits_json: unknown
@@ -73,6 +78,7 @@ export async function getMyTier(): Promise<MyTier | null> {
 
   if (r?.tier_name_he) {
     return {
+      tierKey: r.tier_key ?? '',
       tierNameHe: r.tier_name_he,
       benefits: benefitList(r.tier_benefits_json),
       spendAgorot: agorot(Number(r.spend_agorot)),
@@ -84,6 +90,7 @@ export async function getMyTier(): Promise<MyTier | null> {
   if (!lowest) return null
   const next = list[1] ?? null
   return {
+    tierKey: lowest.key,
     tierNameHe: lowest.name_he,
     benefits: benefitList(lowest.benefits_json),
     spendAgorot: agorot(0),
