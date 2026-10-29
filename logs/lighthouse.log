@@ -85,3 +85,13 @@ M02-c226 2026-10-29 lighthouse (next start :6101, /product/barbecue, simulated t
 768 mobile 87/89 LCP 3.8-4.0 s TBT 23-29 ms CLS 0.039
 1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001-0.012
 note: h1 present (real content); dummy-length (>=40 chars) SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c224: 380 +5/+5, 768 +13/+4, 1440 -1 (noise; c224 was high-LCP outlier). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M03-c226 2026-10-29 lighthouse (next start :6201, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 85/89 LCP 4.3/3.6 s TBT 27-50 ms CLS 0.000
+768 mobile 84/89 LCP 4.4/3.6 s TBT 26-29 ms CLS 0.001
+1440 desktop 100/100 LCP 0.8/0.6 s TBT 0 ms CLS 0.000
+note: grid rendered (2 product links) so valid sample; dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c225: 380 -9/+3, 768 -3/+6, 1440 =. target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M02-c227 2026-10-29 lighthouse (next start :6301 after fresh pnpm build, /product/barbecue, simulated throttling, 2 runs each)
+380 mobile 86/85 LCP 4.3/4.5 s TBT 20-30 ms CLS 0.001
+768 mobile 84/87 LCP 4.5/4.0 s TBT 30 ms CLS 0.001
+1440 desktop 99/99 LCP 0.8-0.9 s TBT 0 ms CLS 0.001
+note: h1 present (real content); dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY, SENTRY_DSN blank via process env (no file edits). vs c226: 380 -3/0, 768 -3/-2, 1440 =/= (noise). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
