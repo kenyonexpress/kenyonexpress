@@ -1,5 +1,6 @@
 'use client'
 
+import { passkeysEnabled } from '@/lib/auth/passkeys-flag'
 import { createClient } from '@/lib/supabase/client'
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser'
 import { useEffect, useState } from 'react'
@@ -20,7 +21,12 @@ export default function PasskeyBanner() {
     let cancelled = false
     async function check() {
       try {
-        if (!browserSupportsWebAuthn() || localStorage.getItem(DISMISS_KEY) === '1') return
+        if (
+          !passkeysEnabled() ||
+          !browserSupportsWebAuthn() ||
+          localStorage.getItem(DISMISS_KEY) === '1'
+        )
+          return
         const supabase = createClient()
         const { data: auth, error: authError } = await supabase.auth.getUser()
         if (authError || !auth.user) return

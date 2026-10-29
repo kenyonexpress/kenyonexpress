@@ -1,5 +1,6 @@
 'use client'
 
+import { passkeysEnabled } from '@/lib/auth/passkeys-flag'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser'
 import { useEffect, useState } from 'react'
@@ -17,7 +18,7 @@ export default function PasskeySignIn({ next }: { next?: string }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setSupported(browserSupportsWebAuthn())
+    setSupported(passkeysEnabled() && browserSupportsWebAuthn())
   }, [])
   if (!supported) return null
 
