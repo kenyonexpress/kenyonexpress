@@ -1,0 +1,6 @@
+M02-c260 Lighthouse (performance), fresh next start :6901, 2026-10-29, route /product/מוצר-לדוגמא
+width x 2 runs: perf | FCP | LCP | TBT | CLS (CLI, simulated throttling, explicit width emulation, same method as c258; 1440 = desktop preset)
+380 : 83/82 | 1.4 s | 4.6-4.8 s | 20 ms | 0.019
+768 : 82/82 | 1.4 s | 4.9-5.0 s | 10-20 ms | 0.001
+1440: 100/99 | 0.3 s | 0.8-0.9 s | 0 ms | 0.006-0.018
+Vs c258 82/87, 81/81, 99/99: noise. Mobile LCP-bound, below G23 95. Measurement only.
