@@ -609,6 +609,18 @@ export default function ProductForm({
                 dir="ltr"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
+              {/* Slider is a second control for the same state; it has no
+                  name so only the number input is submitted. */}
+              <input
+                type="range"
+                aria-label="עמלת פלטפורמה - מחוון"
+                min="0"
+                max="100"
+                step="0.5"
+                value={normalizePercent(platformPercent) ?? 0}
+                onChange={(e) => handlePlatformPercent(e.target.value)}
+                className="mt-2 w-full accent-brand"
+              />
             </div>
             <div>
               <label
