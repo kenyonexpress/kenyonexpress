@@ -294,3 +294,4 @@
 המשך מ: M04-c269 DONE (2026-10-30): pnpm type-check clean (tsc --noEmit, 0 errors); committed drifted docs only (M-CYCLE-STATUS, UI-PARITY-REPORT, C81/DEPLOYFIX/G114 notes); logs/ and STATE.md.bak left untracked; no forbidden files touched
 המשך מ: M06-c269 DONE (2026-10-30): pnpm build passes clean; committed drifted docs/M-CYCLE-STATUS.md only; logs/ and STATE.md.bak left untracked; no forbidden files touched
 המשך מ: M09-c269 DONE (2026-10-30): depcheck re-run: 0 unused runtime deps; same 7 devDeps flagged (capacitor x3, tailwindcss, @tailwindcss/postcss, lighthouse, lint-staged) used via config/CLI/husky so kept; dead exports already pruned in c262/c268, remaining are public lib/ledger/payments API, server actions, generated types; no code change; no forbidden files touched
+המשך מ: M06-c270 DONE (2026-10-30): pnpm build passes clean; no tracked drift to commit; logs/ and STATE.md.bak left untracked; no forbidden files touched
