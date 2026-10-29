@@ -353,3 +353,15 @@ M01-c265 2026-10-29 lighthouse (next start :10801, existing build, /, simulated 
 768 mobile 80/78 LCP 5.5/6.1 s TBT 30/30 ms CLS 0.002
 1440 desktop (desktop preset) 100/100 LCP 0.3 s TBT 0 ms CLS 0.001/0.013
 note: HTTP 200, h1 present; dummy-length (60 char) SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c263 83/84, 81/77, 100/100: 380 -3/+2, 768 -1/+1, 1440 = (noise, bimodal LCP). Mobile below G23 95 target (LCP-bound); 1440 meets it. Sample-only, no code changes.
+
+M03-c265 2026-10-29 lighthouse (next start :10901, existing build, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 99/100 LCP 1.1/1.1 s TBT 30/30 ms CLS 0
+768 mobile 100/100 LCP 1.1/1.1 s TBT 20/20 ms CLS 0
+1440 desktop (desktop preset) 100/100 LCP 0.3/0.3 s TBT 0 ms CLS 0.011/0.011
+note: HTTP 200; dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). Supabase unreachable so catalogue fetch fails and HTML is byte-identical to the c262 sample (no product links in it; earlier "grid renders" notes not reproduced). vs c262 99/100, 100/100, 100/100: = / = / =. All three at/above G23 95 on this sample. Sample-only, no code changes.
+
+M01-c267 2026-10-29 lighthouse / re-measure (next start :3370, existing build, simulated throttling, 2 runs each)
+380 mobile 84/79 LCP 4.4/4.9 s TBT 30 ms CLS 0.003 FCP 1.7/2.4 s
+768 mobile 82/76 LCP 4.3/5.4 s TBT 30 ms CLS 0-0.003 FCP 2.4 s
+1440 desktop (desktop preset) 100/100 LCP 0.8 s TBT 0 ms CLS 0.013/0.001 FCP 0.3-0.4 s
+note: HTTP 200; .env.local exported, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked; homepage.cms_read_failed (Invalid API key) in server log. vs c265 (380 80/86, 768 80/78, 1440 100/100): 380 +4/-7, 768 +2/-2, 1440 = (noise, bimodal LCP). Mobile below G23 95 (LCP-bound); 1440 meets it. Sample-only, no code changes.
