@@ -37,3 +37,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M02-c251 DONE (lighthouse re-measure /product/barbecue on :3251 fresh build: 380 mobile 83 (LCP 4.7s), 768 mobile 80 (LCP 5.1s), 1440 desktop 99 (LCP 1.0s); vs c213 80/79/99 noise; mobile below G23 95 (LCP-bound); logs/lighthouse-m02-c251.log; no code changes)
 המשך מ: M02-c266 DONE (lighthouse re-measure /product/barbecue on :3266 fresh build: 380 mobile 79 (LCP 5.6s), 768 mobile 80 (LCP 5.1s), 1440 desktop 99 (LCP 1.0s); vs c251 83/80/99 noise; mobile below G23 95 (LCP-bound); logs/lighthouse-m02-c266.log; no code changes)
 המשך מ: C14 BLOCKED (push unsubscribe + /api/push/send + migration 311 + docs/C14-PUSH.md written, tests pass; 311 not applied: Supabase MCP unauthorized this session)
+
+המשך מ: C18 DONE
