@@ -1,0 +1,7 @@
+M01-c206 Lighthouse (performance), fresh next start :3701 (kenyonexpress-web/kenyonexpress, closeout/v1-final), 2026-10-29, route /
+width x 3 runs: perf score | FCP | LCP | TBT | CLS  (CLI, simulated throttling, screenEmulation width x height 800 dsf 2; 1440 = desktop preset)
+380 : 99/100/100 | 1.5 s | 1.5 s | 20-30 ms | 0.025-0.043 (median 100)
+768 : 100/100/100 | 1.5 s | 1.5 s | 20 ms | 0.002-0.023 (median 100)
+1440: 100/100/100 | 0.4 s | 0.4 s | 0 ms | 0.009-0.021 (median 100)
+Diff vs M01-c204 (81/78/99 medians): 380 +19, 768 +22, 1440 +1. Matches the high band of c196/c198 (100/100/100); c197/c200/c201/c204 were the LCP-bound low band (~78-83 mobile). Run-to-run bimodal, not a code change.
+All >=99, above G23 95 for /. Measurement only, no code changes. Server log clean.
