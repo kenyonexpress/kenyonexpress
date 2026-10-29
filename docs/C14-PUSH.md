@@ -10,5 +10,5 @@
 - `migrations/pending/311_pg_cron_push_expiry_reminders.sql`: pg_cron job `push-expiry-reminders`, daily 06:00 UTC, `net.http_post` to `/api/push/send`. Needs `app.settings.base_url` and `app.settings.cron_secret` (same as 291). Rollback: `SELECT cron.unschedule('push-expiry-reminders');`
 
 ## Status
-- Code, unit tests, biome: done.
-- Migration 311 is NOT applied: the Supabase MCP is not authorized in this session. Apply with `apply_migration` on project ixvwfbuvfxxsjiywhbbb, then set the two `app.settings.*` values.
+- Code, unit tests (`src/app/api/push`, 3 passing), biome: done.
+- Migration 311 applied to production on 2026-10-29 (`cron.schedule` jobid 142, `push-expiry-reminders`, `0 6 * * *`). See STATE.md "C14 CLOSED".

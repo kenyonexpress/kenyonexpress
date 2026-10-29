@@ -46,3 +46,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 - המשך מ: C19 LAUNCH-GATE re-run
 
 המשך מ: C02 BLOCKED (code shipped: copy-link, customer-service fallback, accordion, Facebook removed; compare not measurable, lighthouse mobile 80 < 90; docs/C02-PRODUCT.md)
+
+המשך מ: C14 DONE
