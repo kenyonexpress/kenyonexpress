@@ -1,3 +1,4 @@
+המשך מ: M14-c269 DONE-DEFERRED (2026-10-30): SENTRY_AUTH_TOKEN absent from .env.local (empty in .env.production/.env.vercel), cannot query Sentry release; HEAD 7a99acefc; re-verify after token is set
 המשך מ: M07-c269 DONE (2026-10-30): TODO/FIXME scan of tracked src found 6 TODOs (cardcom.ts:249,312; r2-migration.ts:103-106), all older than 7 days and already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / R2 stub needs service-role key); nothing resolvable now; no forbidden files touched
 המשך מ: G099 DONE (2026-10-30): prod READY j3fz3922p after 2 failed redeploys (pnpmfile checksum, stray root middleware.ts); deploy-watch.sh now queues DEPLOY-FIX, ntfy only after 3 fails; docs/G099-DEPLOY.md
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
@@ -291,3 +292,4 @@
 המשך מ: G113 DONE (2026-10-30): manifest (standalone, 192/512/maskable) already shipped; sw.js v2 adds stale-while-revalidate for /images + /_next/image; install banner now gated on 3rd view (ke:views) instead of first purchase; tsc+biome clean, 46 pwa tests pass; docs/G113-PWA.md; no forbidden files touched
 המשך מ: M04-c269 DONE (2026-10-30): pnpm type-check clean (tsc --noEmit, 0 errors); committed drifted docs only (M-CYCLE-STATUS, UI-PARITY-REPORT, C81/DEPLOYFIX/G114 notes); logs/ and STATE.md.bak left untracked; no forbidden files touched
 המשך מ: M06-c269 DONE (2026-10-30): pnpm build passes clean; committed drifted docs/M-CYCLE-STATUS.md only; logs/ and STATE.md.bak left untracked; no forbidden files touched
+המשך מ: M09-c269 DONE (2026-10-30): depcheck re-run: 0 unused runtime deps; same 7 devDeps flagged (capacitor x3, tailwindcss, @tailwindcss/postcss, lighthouse, lint-staged) used via config/CLI/husky so kept; dead exports already pruned in c262/c268, remaining are public lib/ledger/payments API, server actions, generated types; no code change; no forbidden files touched
