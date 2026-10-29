@@ -7,7 +7,20 @@ import CrispChat from '@/components/shared/CrispChat'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 import MobileContentWrapper from '@/components/store/MobileContentWrapper'
+import { SPLASH_IMAGES } from '@/lib/pwa/splash'
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
+
+// iOS launch screens. Set here because src/app/layout.tsx is locked; the
+// object replaces the root appleWebApp, so its fields are repeated.
+export const metadata: Metadata = {
+  appleWebApp: {
+    capable: true,
+    title: 'Kenyon',
+    statusBarStyle: 'default',
+    startupImage: SPLASH_IMAGES,
+  },
+}
 // cart-page.css is imported by the root layout, one request for the whole
 // site. See the note there before moving it back down here.
 
