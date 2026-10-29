@@ -13,11 +13,8 @@ import {
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
-import { excludeDeleted } from '@/lib/soft-delete'
-import { createClient } from '@/lib/supabase/server'
-import type { TablesUpdate } from '@/types/database'
-import { revalidatePath, updateTag } from 'next/cache'
-import { upsertProduct } from './products'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { upsertProductNoRedirect } from './products'
 
 /**
  * Server side of the CSV/xlsx product import (`/admin/products/import`).
@@ -416,6 +413,8 @@ export async function importProductsBatch(
 export type ProductImportState = {
   error?: string
   imported?: number
+  /** Commit failed: every product created in this run was removed again. */
+  rolledBack?: number
   failures?: { line: number; error: string }[]
   unknownColumns?: string[]
   /** Dry run: what would be imported, nothing written. */
@@ -460,17 +459,41 @@ async function runImport(formData: FormData): Promise<ProductImportState> {
     }
   }
 
+  // ALL OR NOTHING. Rows are validated up front, but a write can still fail
+  // (slug collision, schema drift). On the first failure every product created
+  // in this run is removed, so a file never half-imports.
   const failures: { line: number; error: string }[] = []
-  let imported = 0
+  const created: string[] = []
   for (const row of mapped.rows) {
     if (!row.ok) {
       failures.push({ line: row.line, error: row.error })
-      continue
+      break
     }
-    const result = await upsertProduct(null, row.form)
-    if (result && 'error' in result) failures.push({ line: row.line, error: result.error })
-    else imported++
+    const result = await upsertProductNoRedirect(row.form)
+    if (result && 'error' in result) {
+      failures.push({ line: row.line, error: result.error })
+      break
+    }
+    if (result && 'id' in result && result.id) created.push(result.id)
   }
+  if (failures.length > 0) {
+    const rolledBack = await rollbackCreated(created)
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'deleted',
+      entityType: 'products',
+      entityId: 'csv-import',
+      changes: { old: { created: created.length }, new: { rolled_back: rolledBack } },
+    })
+    return {
+      error: 'הייבוא בוטל: אף מוצר לא נשמר',
+      failures,
+      rolledBack,
+      unknownColumns: mapped.unknownColumns,
+    }
+  }
+  const imported = created.length
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
@@ -480,4 +503,13 @@ async function runImport(formData: FormData): Promise<ProductImportState> {
     changes: { old: null, new: { imported, failed: failures.length, rows: mapped.rows.length } },
   })
   return { imported, failures, unknownColumns: mapped.unknownColumns }
+}
+
+/** Hard-deletes drafts this import just inserted. Returns how many were removed. */
+async function rollbackCreated(ids: string[]): Promise<number> {
+  if (ids.length === 0) return 0
+  const admin = createAdminClient()
+  await admin.from('product_variants').delete().in('product_id', ids)
+  const { data } = await admin.from('products').delete().in('id', ids).select('id')
+  return data?.length ?? 0
 }

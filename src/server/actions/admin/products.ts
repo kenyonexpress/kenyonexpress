@@ -22,7 +22,7 @@ import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
-export type ProductFormState = { error: string } | { success: string } | null
+export type ProductFormState = { error: string } | { success: string; id?: string } | null
 
 const PRODUCT_AUDIT_SELECT =
   'id, slug, name_he, status, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
@@ -30,6 +30,7 @@ const PRODUCT_AUDIT_SELECT =
 async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
+  opts: { redirectOnSuccess: boolean } = { redirectOnSuccess: true },
 ): Promise<ProductFormState> {
   let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
@@ -483,6 +484,7 @@ async function runUpsertProduct(
       },
     },
   })
+  if (!opts.redirectOnSuccess) return { success: 'created', id: productId }
   redirect('/admin/products')
 }
 
@@ -756,6 +758,16 @@ export async function upsertProduct(
   formData: FormData,
 ): Promise<ProductFormState> {
   return withActionContext('admin.product.upsert', () => runUpsertProduct(_, formData))
+}
+
+/**
+ * Same write as `upsertProduct` (schema, money, policy, audit) but returns the
+ * new id instead of redirecting, so the CSV import can loop and roll back.
+ */
+export async function upsertProductNoRedirect(formData: FormData): Promise<ProductFormState> {
+  return withActionContext('admin.product.upsert_import', () =>
+    runUpsertProduct(null, formData, { redirectOnSuccess: false }),
+  )
 }
 
 export async function deleteProduct(id: string): Promise<{ error?: string }> {
