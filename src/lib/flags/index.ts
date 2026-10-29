@@ -12,6 +12,8 @@ export const FLAGS = {
   'tzimmer-calendar': 'FLAG_TZIMMER_CALENDAR',
   'monthly-billing': 'FLAG_MONTHLY_BILLING',
   'maintenance-banner': 'FLAG_MAINTENANCE_BANNER',
+  // Live card charges. OFF until Cardcom production credentials are in place.
+  payment_production: 'FLAG_PAYMENT_PRODUCTION',
 } as const
 
 export type FlagName = keyof typeof FLAGS

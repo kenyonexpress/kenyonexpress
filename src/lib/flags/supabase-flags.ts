@@ -22,6 +22,7 @@ const FLAG_DB_KEYS: Record<string, string> = {
   'courses-monthly': 'courses_monthly',
   'tzimmer-calendar': 'tzimmer_calendar',
   'monthly-billing': 'monthly_billing',
+  payment_production: 'payment_production',
 }
 
 /**
@@ -82,6 +83,7 @@ function readEnvFlag(flagName: string, env: NodeJS.ProcessEnv): boolean {
     'courses-monthly': 'FLAG_COURSES_MONTHLY',
     'tzimmer-calendar': 'FLAG_TZIMMER_CALENDAR',
     'monthly-billing': 'FLAG_MONTHLY_BILLING',
+    payment_production: 'FLAG_PAYMENT_PRODUCTION',
   }
   const envName = envMap[flagName]
   if (!envName) return false
@@ -98,5 +100,6 @@ function buildFallbackMap(env: NodeJS.ProcessEnv): Record<string, boolean> {
     'courses-monthly': readEnvFlag('courses-monthly', env),
     'tzimmer-calendar': readEnvFlag('tzimmer-calendar', env),
     'monthly-billing': readEnvFlag('monthly-billing', env),
+    payment_production: readEnvFlag('payment_production', env),
   }
 }

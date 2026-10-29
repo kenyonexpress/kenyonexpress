@@ -56,6 +56,7 @@ describe('flags integration', () => {
         'courses-monthly': false,
         'tzimmer-calendar': false,
         'monthly-billing': false,
+        payment_production: false,
         'maintenance-banner': true,
       })
     })
@@ -70,8 +71,8 @@ describe('flags integration', () => {
       expect(FLAGS['maintenance-banner']).toBe('FLAG_MAINTENANCE_BANNER')
     })
 
-    it('has exactly 5 flags', () => {
-      expect(Object.keys(FLAGS)).toHaveLength(5)
+    it('has exactly 6 flags', () => {
+      expect(Object.keys(FLAGS)).toHaveLength(6)
     })
   })
 })
