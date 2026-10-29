@@ -56,6 +56,7 @@ const mockProps = {
     } as CustomerVoucher,
   ],
   tier: {
+    tierKey: 'silver',
     tierNameHe: 'כסף',
     spendAgorot: mockAgorot(500000),
     nextTierNameHe: 'זהב',

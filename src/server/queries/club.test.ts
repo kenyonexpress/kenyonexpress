@@ -4,20 +4,8 @@ vi.mock('server-only', () => ({}))
 
 let viewRow: unknown = null
 const tiers = [
-  {
-    name_he: 'ארד',
-    min_spend_agorot: 0,
-    benefits_json: [],
-    cashback_bonus_percent: 0,
-    sort_order: 10,
-  },
-  {
-    name_he: 'כסף',
-    min_spend_agorot: 50_000,
-    benefits_json: [],
-    cashback_bonus_percent: 0,
-    sort_order: 20,
-  },
+  { key: 'bronze', name_he: 'ארד', min_spend_agorot: 0, benefits_json: [], sort_order: 10 },
+  { key: 'silver', name_he: 'כסף', min_spend_agorot: 50_000, benefits_json: [], sort_order: 20 },
 ]
 
 function query(table: string) {
@@ -48,12 +36,14 @@ describe('getMyTier', () => {
   it('reads the view row when the customer has spend', async () => {
     viewRow = {
       spend_agorot: 83_500,
+      tier_key: 'silver',
       tier_name_he: 'כסף',
       tier_benefits_json: ['משלוח חינם', 3],
       next_tier_name_he: 'זהב',
       to_next_agorot: 116_500,
     }
     await expect(getMyTier()).resolves.toEqual({
+      tierKey: 'silver',
       tierNameHe: 'כסף',
       benefits: ['משלוח חינם'],
       spendAgorot: 83_500,
@@ -65,6 +55,7 @@ describe('getMyTier', () => {
 
   it('puts a customer with no paid spend on the lowest tier', async () => {
     await expect(getMyTier()).resolves.toEqual({
+      tierKey: 'bronze',
       tierNameHe: 'ארד',
       benefits: [],
       spendAgorot: 0,
