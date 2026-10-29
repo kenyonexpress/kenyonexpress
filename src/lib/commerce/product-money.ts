@@ -433,7 +433,7 @@ function trimOrNull(value: string | null | undefined): string | null {
  *   of letting `price_ils` go stale behind an edit and quietly loosen
  *   `products_coupon_price_within_price`.
  */
-interface ProductMoneyWrite {
+export interface ProductMoneyWrite {
   /**
    * Mirrors products.type. Migration 091 holds the two equal with a CHECK, so
    * writing it is naming a fact rather than choosing one; a row where the two

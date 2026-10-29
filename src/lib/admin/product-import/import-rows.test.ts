@@ -119,12 +119,12 @@ describe('validateImportRow', () => {
     expect(row.money?.price_ils).toBe(199.9)
   })
 
-  it('lowercases the slug and rejects an invalid one in Hebrew', () => {
+  it('lowercases the slug and rejects an invalid one in Hebrew; accepts a Hebrew slug', () => {
     const upper = validateImportRow({ line: 2, record: { ...goodRecord, slug: 'Test-Product' } })
     expect(upper.errors).toEqual([])
     expect(upper.data?.slug).toBe('test-product')
 
-    const bad = validateImportRow({ line: 2, record: { ...goodRecord, slug: 'עברית' } })
+    const bad = validateImportRow({ line: 2, record: { ...goodRecord, slug: 'bad slug ₪' } })
     expect(bad.errors.some((e) => e.includes('קישור'))).toBe(true)
     expect(bad.data).toBeUndefined()
   })

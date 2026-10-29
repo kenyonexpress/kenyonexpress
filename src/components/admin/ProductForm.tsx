@@ -145,9 +145,7 @@ export default function ProductForm({
     product?.discount_percent != null ? String(product.discount_percent) : '',
   )
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
-  const [isPhysicalShipping, setIsPhysicalShipping] = useState(
-    Boolean(product?.is_physical_shipping),
-  )
+  const [isPhysicalShipping] = useState(Boolean(product?.is_physical_shipping))
   const [city, setCity] = useState(product?.city ?? '')
   const [fullAddress, setFullAddress] = useState(product?.full_address ?? '')
 
