@@ -125,3 +125,5 @@ Updated: 2026-10-29 (G05: mobile parity gate. home 39.85/36.59/27.52, product 23
 
 - המשך מ: M02-c190 DONE — mobile Lighthouse /product (prod build, :3612): 65/86/85, median 85 (LCP 4.2-4.4s, TBT 30ms, CLS 0). Below G23 target 95. Note: .env.production.local has placeholder SUPABASE_SERVICE_ROLE_KEY/SENTRY_DSN; next start needs process-env overrides.
 - המשך מ: M01-c223 DONE (2026-10-29): lighthouse re-measure / on fresh :5101 next start, 2 runs each: 380 mobile 83/85 (LCP 4.2-4.6s), 768 mobile 78/84 (LCP 5.7/4.5s), 1440 desktop 99/99 (LCP 0.9-1.0s); vs c221 84/80, 74/85, 99/99: 380 -1/+5, 768 +4/-1, 1440 = (noise); TBT<=29ms CLS<=0.001; mobile below G23 95 target (LCP-bound); logged to ke-autopilot-v2/repo/logs/lighthouse.log; no code changes; no forbidden files touched
+Updated: 2026-10-29 (C12: responsive parity. home 39.85/36.59/27.52, product 23.40/21.93/16.50 at 380/768/1440, all >11%; category/cart/checkout have no Electro reference so no number. Details in docs/C12-parity.md. No code or locked files edited.)
+**המשך מ: C12 BLOCKED gate-fail (home/product >11% at all widths; category/cart/checkout no reference)**
