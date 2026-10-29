@@ -591,3 +591,24 @@ node scripts/check-rls-coverage.mjs
 - [ ] After 50 orders OR ₪100K revenue: Incorporation (bv'm)
 
 **Ready to launch?** Complete all pre-launch items, then proceed with LAUNCH-CHECKLIST.md verification commands.
+
+## G116 launch gate — HOLD (2026-10-30)
+
+No tag v2.1.0, no LAUNCH.flag, no hey LAUNCH.
+
+| Check | Result |
+|---|---|
+| type-check | clean (0 errors) |
+| lint | clean |
+| build | passes |
+| test | FAIL: 11 failed / 7106 passed (8 files: catalogue-cache-invalidation, migration-manifest, pending-migrations-inventory x3, operational-flags x2, discarded-read-inventory, log-coverage, auth-coverage, tokens) |
+
+Items not DONE:
+- G101 home parity: unmeasurable/over 11%
+- G102 product parity: 54.22/41.81/26.23% vs 11%
+- G103 /c/tel-aviv parity: 19.44/12.90/11.36% vs 11%
+- G104 checkout: gate unmeasured; migration 312 pending/unapplied
+- G105, G107, G110, G114: no DONE entry in claude/STATE.md
+- G115 lighthouse: BLOCKED locked-component (layout.tsx), mobile perf 82-88
+
+Also: migrations 164/312/314 unapplied (Supabase MCP unauthorized this session).
