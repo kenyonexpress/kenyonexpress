@@ -28,26 +28,26 @@ describe('cardVerifyEnabled', () => {
   })
 
   it('is off when the flag row is missing', async () => {
-    expect(await cardVerifyEnabled({} as NodeJS.ProcessEnv)).toBe(false)
+    expect(await cardVerifyEnabled({} as unknown as NodeJS.ProcessEnv)).toBe(false)
   })
   it('is off when the flag is false', async () => {
     state.result = { data: { bool_value: false }, error: null }
-    expect(await cardVerifyEnabled({} as NodeJS.ProcessEnv)).toBe(false)
+    expect(await cardVerifyEnabled({} as unknown as NodeJS.ProcessEnv)).toBe(false)
   })
   it('is on when the flag is true', async () => {
     state.result = { data: { bool_value: true }, error: null }
-    expect(await cardVerifyEnabled({} as NodeJS.ProcessEnv)).toBe(true)
+    expect(await cardVerifyEnabled({} as unknown as NodeJS.ProcessEnv)).toBe(true)
   })
   it('fails closed on a read error or throw', async () => {
     state.result = { data: null, error: { message: 'x' } }
-    expect(await cardVerifyEnabled({} as NodeJS.ProcessEnv)).toBe(false)
+    expect(await cardVerifyEnabled({} as unknown as NodeJS.ProcessEnv)).toBe(false)
     state.result = 'throw'
-    expect(await cardVerifyEnabled({} as NodeJS.ProcessEnv)).toBe(false)
+    expect(await cardVerifyEnabled({} as unknown as NodeJS.ProcessEnv)).toBe(false)
   })
   it('FLAG_CARD_VERIFY_ENABLED=1 overrides', async () => {
     state.result = 'throw'
-    expect(await cardVerifyEnabled({ FLAG_CARD_VERIFY_ENABLED: '1' } as NodeJS.ProcessEnv)).toBe(
-      true,
-    )
+    expect(
+      await cardVerifyEnabled({ FLAG_CARD_VERIFY_ENABLED: '1' } as unknown as NodeJS.ProcessEnv),
+    ).toBe(true)
   })
 })
