@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { mintSessionFor } from '@/server/auth/mint-session'
 import { WA_OTP_MAX_ATTEMPTS, otpMatches } from '@/server/auth/wa-otp'
+import { recordOtpAttempt, waOtpEnabled } from '@/server/auth/wa-otp-gate'
 import { markMilestoneVerified } from '@/server/verification/user-milestones'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -17,6 +18,9 @@ import { type NextRequest, NextResponse } from 'next/server'
  * C65: Also marks phone verification milestone as verified when successful.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  if (!(await waOtpEnabled())) {
+    return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 })
+  }
   const body = (await request.json().catch(() => null)) as {
     phone?: unknown
     code?: unknown
@@ -53,6 +57,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     attempts: number
   } | null
   if (!row || row.attempts >= WA_OTP_MAX_ATTEMPTS) {
+    await recordOtpAttempt({ phone, kind: 'verify', channel: 'whatsapp', outcome: 'expired' })
     return NextResponse.json({ ok: false, error: 'expired' }, { status: 400 })
   }
 
@@ -66,6 +71,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       phone,
       attemptType: 'whatsapp_otp',
       success: false,
+    })
+    await recordOtpAttempt({
+      phone,
+      userId: row.user_id,
+      kind: 'verify',
+      channel: 'whatsapp',
+      outcome: 'wrong_code',
     })
     return NextResponse.json({ ok: false, error: 'wrong_code' }, { status: 400 })
   }
@@ -106,6 +118,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     verified_via: 'sign_in',
   })
 
+  await recordOtpAttempt({
+    phone,
+    userId: row.user_id,
+    kind: 'verify',
+    channel: 'whatsapp',
+    outcome: 'ok',
+  })
   return NextResponse.json({ ok: true })
 }
 
