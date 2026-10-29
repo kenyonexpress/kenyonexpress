@@ -591,3 +591,15 @@ node scripts/check-rls-coverage.mjs
 - [ ] After 50 orders OR ₪100K revenue: Incorporation (bv'm)
 
 **Ready to launch?** Complete all pre-launch items, then proceed with LAUNCH-CHECKLIST.md verification commands.
+
+
+---
+
+## C93 BLOCKED list (2026-10-30)
+
+Launch is on HOLD. Open items, see docs/LAUNCH-CHECKLIST.md for detail:
+1. Fix type-check (108), lint (29), vitest suite load failures, and the `/c/[slug]` vs `/c/[code]` route conflict so `pnpm build` passes.
+2. Supabase DB password rejected by db.sh; reauthorize Supabase MCP, then apply migration 164 (club tiers).
+3. Mobile Lighthouse below 90 and home/product parity above 11% (re-measure once build is green).
+4. Locked HeroSlider `<p dir=ltr>` Hebrew nodes (needs your decision, file is locked).
+5. Cloudflare token missing.

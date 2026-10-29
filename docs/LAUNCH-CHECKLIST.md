@@ -1,5 +1,23 @@
 # Launch Checklist
 
+## C93 FINAL VERDICT (2026-10-30): HOLD, not PUSH-NOW
+
+Run on `main` @ 11c1392f7, clean tree. No tag, no LAUNCH.flag, no hey LAUNCH.
+
+| Gate | Result |
+|---|---|
+| `pnpm type-check` | FAIL: 108 errors (e.g. missing `RatingSummary` export, `PushNotificationsToggle` undefined, `handleSubmit` redeclared in SignupForm, `CommissionLineInput` missing) |
+| `pnpm lint` | FAIL: 29 errors, 41 warnings |
+| `pnpm test` | FAIL: search, backup-pointer, invoices/receipt pdf, r2-service suites fail to load |
+| `pnpm build` | FAIL: ambiguous routes `/c/[slug]` vs `/c/[code]` |
+| Playwright 2x | NOT RUN (no buildable app) |
+| Lighthouse 380/768/1440 | NOT RUN; last measurements mobile ~78-89 on 380/768 (LCP 4-6s), below 90 |
+| compare.mjs <11% | Last known FAIL (C02, C12: product parity over 11%) |
+
+BLOCKED items (all non cf-token-missing): type-check, lint, test, build, playwright, lighthouse, visual parity, locked-component M17-c268 (hero `<p dir=ltr>` in HeroSlider), Supabase DB creds rejected (C82/C83, migration 164 unapplied).
+
+---
+
 **Generated:** 2026-10-25  
 **Branch:** autopilot  
 **Commit:** 956c86c63  
