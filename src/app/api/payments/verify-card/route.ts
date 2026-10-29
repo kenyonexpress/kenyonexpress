@@ -1,23 +1,15 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import { cardVerifyEnabled } from '@/lib/payments/card-verify-gate'
 import { VERIFICATION_AMOUNT_AGOROT, completeCardVerification } from '@/lib/payments/verify-card'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
-const VERIFICATION_AMOUNT_AGOROT = agorot(1)
-
-// CARDCOM_1ILS_VERIFY is a kill switch: the flow is live by default and only an
-// explicit "0"/"false" turns it off.
-function verifyEnabled(): boolean {
-  const raw = process.env.CARDCOM_1ILS_VERIFY?.trim().toLowerCase()
-  return raw !== '0' && raw !== 'false'
-}
-
 async function handlePOST(_request: NextRequest): Promise<NextResponse> {
-  if (!verifyEnabled()) {
+  if (!(await cardVerifyEnabled())) {
     return NextResponse.json({ error: 'verification_disabled' }, { status: 503 })
   }
 
