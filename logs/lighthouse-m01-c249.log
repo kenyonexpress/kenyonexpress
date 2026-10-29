@@ -1,0 +1,7 @@
+M01-c249 Lighthouse (performance), fresh next start :5501 (kenyonexpress-web/kenyonexpress, closeout/v1-final), 2026-10-29, route /, 2 runs each
+Emulation: explicit screenEmulation width (380x800, 768x1024 mobile dsf2) / --preset=desktop for 1440 (same method as c243)
+380 mobile : 100/100 | LCP 1.5 s | TBT 20 ms | CLS 0.025
+768 mobile : 78/78 | LCP 5.9-6.0 s | TBT 20 ms | CLS 0.001
+1440 desktop: 100/100 | LCP 0.4 s | TBT 0 ms | CLS 0.009
+Diff vs M01-c243 (83/78, 78/78, 98/98): 380 +17/+22, 768 0/0, 1440 +2/+2.
+380 and 1440 are back in the high band, 768 stays LCP-bound. Same method as c243, so host variance, not code. G23 not claimed met. Measurement only.
