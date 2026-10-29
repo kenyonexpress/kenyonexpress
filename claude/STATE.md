@@ -1,3 +1,4 @@
+המשך מ: G109 DONE (2026-10-30): legal pages verified (C18 content), 91 tests pass, docs/G109-LEGAL.md; no forbidden files touched
 המשך מ: G101 BLOCKED (home gate unmeasurable: structural-mismatch abort + pending images; last ledger 43/45/40% vs 11%; docs/G101-HOME.md; no code changed)
 המשך מ: G100 DONE (2026-10-30): autopilot lane retired (tmux killed, launchd unloaded+plist .disabled, worktree/local/origin branch deleted); 160 autopilot-only commits preserved in ~/ke-goals/autopilot-final-0db4ad4f6.bundle; docs/G100-ARCH.md; no forbidden files touched
 המשך מ: M18-c268 DONE (2026-10-29): claude/STATE.md 255 lines (under 300 limit), older history already in docs/STATE-ARCHIVE.md (29843 lines), nothing further to archive; no code changes, no forbidden files touched
