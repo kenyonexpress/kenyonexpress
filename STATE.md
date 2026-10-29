@@ -57,3 +57,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M05-c269 DONE (pnpm test: 622 files passed, 2 skipped; 7117 tests passed, 28 skipped; fixed drift: flag tables, push/send error body, product-import cache tag + error handling, migrations 164/311-314 inventory + preflights + manifest, CACHE-POLICY doc)
 
 המשך מ: M04-c270 DONE (pnpm type-check: tsc --noEmit clean, no drift, no code changes)
+המשך מ: M05-c270 DONE (pnpm test: 622 files passed, 2 skipped; 7117 tests passed, 28 skipped; no code changes; drift = STATE + M-CYCLE-STATUS timestamp committed)
