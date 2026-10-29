@@ -192,3 +192,21 @@ M02-c240 2026-10-29 lighthouse (next start :7601, existing build, /product/barbe
 768 mobile 84/85 LCP 4.5/4.3 s TBT 29/26 ms CLS 0.038
 1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001
 note: h1 present, 10 product links (real content); dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c234 86/85, 87/84, 99/100: 380 -1/-1, 768 -3/+1, 1440 =/-1 (noise). mobile below G23 95 target (LCP-bound); desktop PASS. Sample-only, no code changes.
+
+M02-c243 2026-10-29 lighthouse (next start :7701, existing build, /product/barbecue, simulated throttling, 2 runs each)
+380 mobile 83/87 LCP 4.6/4.0 s TBT 25/26 ms CLS 0.001
+768 mobile 85/84 LCP 4.3/4.5 s TBT 25/29 ms CLS 0.038
+1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001
+note: h1 present; dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c240 85/84, 84/85, 99/99: 380 -2/+3, 768 +1/-1, 1440 = (noise). mobile below G23 95 target (LCP-bound); desktop PASS. Sample-only, no code changes.
+
+M01-c244 2026-10-29 lighthouse (next start :8201, existing build, /, simulated throttling, 2 runs each)
+380 mobile 88/84 LCP 3.8/4.4 s TBT 26/30 ms CLS 0.001
+768 mobile 84/85 LCP 4.4/4.3 s TBT 23/30 ms CLS 0.038
+1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001-0.011
+note: dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c238 86/82, 80/83, 100/100: 380 +2/+2, 768 +4/+2, 1440 -1/-1 (noise). mobile below G23 95 target (LCP-bound); desktop PASS. Sample-only, no code changes.
+
+M01-c246 2026-10-29 lighthouse (next start :8301, existing build, /, simulated throttling, 2 runs each)
+380 mobile 84/85 LCP 4.5/4.4 s TBT 20/30 ms CLS 0.003
+768 mobile 100/100 LCP 1.1/1.1 s TBT 30/30 ms CLS 0.003
+1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0.001
+note: dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c244 88/84, 84/85, 99/99: 380 -4/+1, 768 +16/+15 (low mode of bimodal LCP, as c233 380), 1440 +1/+1 (noise). 380 below G23 95 target (LCP-bound); 768/1440 PASS this sample. Sample-only, no code changes.
