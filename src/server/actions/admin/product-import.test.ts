@@ -5,6 +5,7 @@ const upsert = vi.fn()
 const removed: { table: string; ids: string[] }[] = []
 
 vi.mock('server-only', () => ({}))
+vi.mock('next/cache', () => ({ updateTag: vi.fn() }))
 vi.mock('@/lib/admin/audit', () => ({ writeAuditLog: vi.fn() }))
 vi.mock('@/lib/admin/rbac', () => ({
   requireAdminSession: async () => ({ userId: 'u1', role: 'admin' }),

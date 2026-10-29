@@ -114,6 +114,18 @@ const OPERATIONAL: { envName: string; labelHe: string; effectHe: string; money: 
     money: false,
   },
   {
+    envName: 'NEXT_PUBLIC_PASSKEYS_ENABLED',
+    labelHe: 'מפתחות גישה',
+    effectHe: 'כשכבוי: אין כניסה עם מפתח גישה. הכניסה באימייל או בטלפון ממשיכה לעבוד.',
+    money: false,
+  },
+  {
+    envName: 'NEXT_PUBLIC_TURNSTILE_ENABLED',
+    labelHe: 'בדיקת בוט (Turnstile)',
+    effectHe: 'כשכבוי: טפסים נשלחים בלי אתגר בוט.',
+    money: false,
+  },
+  {
     envName: 'SENTRY_DEBUG_ROUTES',
     labelHe: 'מסלולי בדיקת Sentry',
     effectHe: 'כשדולק: /debug/sentry זורק שגיאות מכוונות. חייב להיות כבוי בפרודקשן.',

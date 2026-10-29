@@ -267,6 +267,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     hasPreflight: false,
   },
   {
+    number: '164',
+    file: '164_club_tiers.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
     number: '165',
     file: '165_revoke_anon_helpers.sql',
     state: 'cancelled',
@@ -641,6 +647,30 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   {
     number: '310',
     file: '310_fraud_detection_tables.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '311',
+    file: '311_pg_cron_push_expiry_reminders.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '312',
+    file: '312_payment_production_flag.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '313',
+    file: '313_partner_redeem.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '314',
+    file: '314_wa_otp_enabled_flag.sql',
     state: 'pending',
     hasPreflight: true,
   },

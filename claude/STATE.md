@@ -1,3 +1,4 @@
+המשך מ: M07-c269 DONE (2026-10-30): TODO/FIXME scan of tracked src found 6 TODOs (cardcom.ts:249,312; r2-migration.ts:103-106), all older than 7 days and already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / R2 stub needs service-role key); nothing resolvable now; no forbidden files touched
 המשך מ: G099 DONE (2026-10-30): prod READY j3fz3922p after 2 failed redeploys (pnpmfile checksum, stray root middleware.ts); deploy-watch.sh now queues DEPLOY-FIX, ntfy only after 3 fails; docs/G099-DEPLOY.md
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
 המשך מ: G109 DONE (2026-10-30): legal pages verified (C18 content), 91 tests pass, docs/G109-LEGAL.md; no forbidden files touched
@@ -289,3 +290,4 @@
 המשך מ: G112 DONE (2026-10-30): JSON-LD Product/Offer/Breadcrumb/Organization/WebSite, DB sitemap, robots, www canonical, OG already shipped and verified; added product twitter card; tsc clean, 671 app tests pass; docs/G112-SEO.md; no forbidden files touched
 המשך מ: G113 DONE (2026-10-30): manifest (standalone, 192/512/maskable) already shipped; sw.js v2 adds stale-while-revalidate for /images + /_next/image; install banner now gated on 3rd view (ke:views) instead of first purchase; tsc+biome clean, 46 pwa tests pass; docs/G113-PWA.md; no forbidden files touched
 המשך מ: M04-c269 DONE (2026-10-30): pnpm type-check clean (tsc --noEmit, 0 errors); committed drifted docs only (M-CYCLE-STATUS, UI-PARITY-REPORT, C81/DEPLOYFIX/G114 notes); logs/ and STATE.md.bak left untracked; no forbidden files touched
+המשך מ: M06-c269 DONE (2026-10-30): pnpm build passes clean; committed drifted docs/M-CYCLE-STATUS.md only; logs/ and STATE.md.bak left untracked; no forbidden files touched

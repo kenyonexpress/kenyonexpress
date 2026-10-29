@@ -27,10 +27,21 @@ export type ProductFormState = { error: string } | { success: string; id?: strin
 const PRODUCT_AUDIT_SELECT =
   'id, slug, name_he, status, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
 
+async function requireCatalogWriter(): Promise<AdminSessionInfo | null> {
+  try {
+    return await requireSection('catalog', 'write')
+  } catch {
+    return null
+  }
+}
+
+type UpsertOptions = { redirectOnSuccess: boolean }
+const REDIRECT_AFTER_UPSERT: UpsertOptions = { redirectOnSuccess: true }
+
 async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
-  opts: { redirectOnSuccess: boolean } = { redirectOnSuccess: true },
+  opts: UpsertOptions = REDIRECT_AFTER_UPSERT,
 ): Promise<ProductFormState> {
   let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {

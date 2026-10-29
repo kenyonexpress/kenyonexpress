@@ -1089,3 +1089,8 @@ site. The two have to change together.
 - `305_add_gift_scheduled_at_column.sql` - F59 additive `orders.gift_scheduled_at timestamptz` column read by the scheduled-gifts cron. Timestamp, no money.
 - `306_suppliers_open_weekends.sql` - F63 additive nullable `suppliers.open_weekends boolean` read by the weekend filter chip. Boolean, no money.
 - `310_fraud_detection_tables.sql` - F66 `fraud_alerts` and `fraud_ip_signup_log` tables plus additive nullable `orders.device_fingerprint text`, admin-only RLS. No money. The copy that sat in `supabase/migrations/` was removed so the number means one thing.
+- `164_club_tiers.sql` - C11 `compute_tier(user_id)`: club tier from trailing-12-month paid spend, integer agorot. Self-contained and idempotent: re-creates `club_tiers` and its seed exactly as the applied `282_club_tiers.sql`, so it is safe whether or not 282 ran. SECURITY INVOKER, so a customer computes only their own tier. Number 164 was unused; 165 stays cancelled.
+- `311_pg_cron_push_expiry_reminders.sql` - C14 daily 06:00 UTC pg_cron job `push-expiry-reminders` that calls `/api/push/send` for the T-7 and T-1 voucher-expiry notices. Needs pg_cron and pg_net (161) and the `app.settings.base_url` / `app.settings.cron_secret` database settings, as 291 does.
+- `312_payment_production_flag.sql` - G104 seeds the `payment_production` flag in `feature_flags` as `false`: checkout creates no live charge. Boolean, no money.
+- `313_partner_redeem.sql` - G107 `vouchers.partner_pin` (8 digits), `vouchers_redemption_events` audit table and the advisory-locked `redeem_voucher_locked`. No money.
+- `314_wa_otp_enabled_flag.sql` - G111 seeds the `wa_otp_enabled` flag in `feature_flags` as `false`: the WhatsApp sign-in code routes answer 404. Boolean, no money.

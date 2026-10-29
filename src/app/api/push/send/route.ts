@@ -34,7 +34,7 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   )
   if (error) {
     log.error('push.send_enqueue_failed', { reason: error.message })
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: false, error: 'enqueue_failed' }, { status: 500 })
   }
 
   const drained = await drainNotifications(request)
