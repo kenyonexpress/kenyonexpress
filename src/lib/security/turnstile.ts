@@ -2,18 +2,22 @@ import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 
 /**
- * Cloudflare Turnstile, on the two public forms a bot can reach without an
- * account: contact and signup.
+ * Cloudflare Turnstile on every public form a bot can reach: checkout,
+ * supplier/apply, contact, signup and login.
  *
- * OFF UNLESS CONFIGURED, like phone sign-in. The widget needs a site key and
- * the check needs a secret, both created in the Cloudflare dashboard. Until
- * `TURNSTILE_SECRET_KEY` is set the check passes, so the forms keep working and
- * the honeypot and rate limits remain the defence. Once it is set, a missing or
- * rejected token fails closed.
+ * Flag `turnstile_enabled` (env `NEXT_PUBLIC_TURNSTILE_ENABLED`, so server and
+ * widget agree): ON only if both keys are present, and an explicit `0`/`false`
+ * switches it off even then. While off the check passes, so the forms keep
+ * working and the honeypot and rate limits remain the defence. While on, a
+ * missing or rejected token fails closed.
  */
-export function turnstileConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
-  return Boolean(env.TURNSTILE_SECRET_KEY)
+export function turnstileEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  if (!env.TURNSTILE_SECRET_KEY || !env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return false
+  const flag = env.NEXT_PUBLIC_TURNSTILE_ENABLED?.trim().toLowerCase()
+  return flag !== '0' && flag !== 'false'
 }
+
+export const turnstileConfigured = turnstileEnabled
 
 export const TURNSTILE_FIELD = 'cf-turnstile-response'
 
@@ -27,7 +31,7 @@ export async function verifyTurnstile(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<boolean> {
   const secret = env.TURNSTILE_SECRET_KEY
-  if (!secret) {
+  if (!secret || !turnstileEnabled(env)) {
     if (!warnedMissingKey) {
       log.warn('turnstile.env_missing', {
         message: 'TURNSTILE_SECRET_KEY not set, verification skipped. See docs/TURNSTILE-SETUP.md',
