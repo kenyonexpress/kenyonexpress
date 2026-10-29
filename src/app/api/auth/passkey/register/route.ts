@@ -4,6 +4,7 @@ import {
   openChallenge,
   sealChallenge,
 } from '@/lib/auth/challenge-cookie'
+import { passkeysEnabled } from '@/lib/auth/passkeys-flag'
 import { relyingParty } from '@/lib/auth/webauthn-config'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -23,6 +24,8 @@ import { type NextRequest, NextResponse } from 'next/server'
  * delete their own rows, not insert).
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  if (!passkeysEnabled())
+    return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 })
   const supabase = await createClient()
   const {
     data: { user },

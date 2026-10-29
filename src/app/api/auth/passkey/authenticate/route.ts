@@ -4,6 +4,7 @@ import {
   openChallenge,
   sealChallenge,
 } from '@/lib/auth/challenge-cookie'
+import { passkeysEnabled } from '@/lib/auth/passkeys-flag'
 import { relyingParty } from '@/lib/auth/webauthn-config'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -22,6 +23,8 @@ import { type NextRequest, NextResponse } from 'next/server'
  * credential's owner in on this response.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  if (!passkeysEnabled())
+    return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 })
   const ip = await getClientIp()
   if (!(await checkRateLimit(`passkey-auth:${ip}`, 30, 600))) {
     return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
