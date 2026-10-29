@@ -27,14 +27,16 @@ vi.mock('@/lib/supabase/admin', () => ({
     from: (table: string) => ({
       update: (row: unknown) => {
         writes.push({ table, op: 'update', row })
-        const chain: Promise<{ error: null }> & Record<string, unknown> = Object.assign(
-          Promise.resolve({ error: null }),
-          {
-            eq: () => chain,
-            select: () => chain,
-            maybeSingle: async () => ({ data: claim, error: null }),
-          },
-        )
+        type Chain = Promise<{ error: null }> & {
+          eq: () => Chain
+          select: () => Chain
+          maybeSingle: () => Promise<{ data: unknown; error: null }>
+        }
+        const chain: Chain = Object.assign(Promise.resolve({ error: null }), {
+          eq: () => chain,
+          select: () => chain,
+          maybeSingle: async () => ({ data: claim, error: null }),
+        })
         return chain
       },
       insert: (row: unknown) => {
