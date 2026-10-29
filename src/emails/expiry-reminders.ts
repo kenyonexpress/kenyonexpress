@@ -16,7 +16,7 @@ export interface VoucherExpiryInput {
   expiresAt?: string | null
   productName?: string | null
   supplierName?: string | null
-  /** Origin with no trailing slash, e.g. https://kenyonexpress.co.il */
+  /** Origin with no trailing slash, e.g. https://www.kenyonexpress.co.il */
   siteUrl: string
 }
 

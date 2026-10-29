@@ -192,7 +192,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                   code: coupon.code,
                   collectAmountAgorot: coupon.collect_amount_agorot,
                   expiresAt: coupon.expires_at,
-                  siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
+                  siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il',
                 }),
               )
               return (

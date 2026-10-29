@@ -93,6 +93,16 @@ const headersWithPolicy = (
 const nextConfig: NextConfig = {
   cacheComponents: true,
   /**
+   * Canonical host is https://www.kenyonexpress.co.il (the apex 308s to it).
+   * `src/app/layout.tsx` is a locked file and still falls back to the apex when
+   * this variable is unset, so the default is supplied here instead: Next
+   * inlines `process.env.NEXT_PUBLIC_APP_URL` at build time, and an explicit
+   * value in the environment wins over this one.
+   */
+  env: {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il',
+  },
+  /**
    * `.mdx` joins the page extensions so blog posts can be files rather than
    * database rows.
    *

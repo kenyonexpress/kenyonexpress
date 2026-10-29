@@ -111,7 +111,7 @@ export interface SecurityAlertInput {
   fullName?: string | null
   /** ISO timestamp of the event. Rendered in Hebrew; omitted if unparseable. */
   occurredAt?: string | null
-  /** Origin with no trailing slash, e.g. https://kenyonexpress.co.il */
+  /** Origin with no trailing slash, e.g. https://www.kenyonexpress.co.il */
   siteUrl: string
 }
 

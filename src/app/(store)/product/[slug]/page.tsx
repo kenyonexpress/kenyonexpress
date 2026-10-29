@@ -185,7 +185,7 @@ export default async function ProductPage({ params }: Props) {
   // something costs, and this page has previously rendered a price the cart
   // disagreed with. `couponOffer` is the object the commission engine bills
   // from, so the advertised price and the charged price cannot diverge.
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il'
   const productLd = buildProductJsonLd({
     name: product.name_he,
     description: product.description_he ?? null,

@@ -59,7 +59,7 @@ async function AffiliateContent({ searchParams }: Props) {
   if (!user) redirect('/login?next=/account/affiliate')
   const sp = await searchParams
   const errorKey = typeof sp.error === 'string' ? sp.error : null
-  const site = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il').replace(
+  const site = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il').replace(
     /\/+$/,
     '',
   )

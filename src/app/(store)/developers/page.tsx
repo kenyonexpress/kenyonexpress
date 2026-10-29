@@ -141,7 +141,7 @@ export default function DevelopersPage() {
 
             <div className="bg-foreground text-background rounded-lg p-4 font-mono text-sm overflow-x-auto mb-4">
               <pre>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  "https://kenyonexpress.co.il/api/partners/v1/products?page=1&limit=20"`}</pre>
+  "https://www.kenyonexpress.co.il/api/partners/v1/products?page=1&limit=20"`}</pre>
             </div>
 
             <div className="bg-muted rounded p-4">
@@ -188,7 +188,7 @@ export default function DevelopersPage() {
 
             <div className="bg-foreground text-background rounded-lg p-4 font-mono text-sm overflow-x-auto mb-4">
               <pre>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  "https://kenyonexpress.co.il/api/partners/v1/categories"`}</pre>
+  "https://www.kenyonexpress.co.il/api/partners/v1/categories"`}</pre>
             </div>
 
             <div className="bg-muted rounded p-4 mb-4">

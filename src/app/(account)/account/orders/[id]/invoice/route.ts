@@ -32,7 +32,7 @@ export async function GET(
     return NextResponse.redirect(
       new URL(
         `/login?next=${encodeURIComponent(`/account/orders/${id}`)}`,
-        process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
+        process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il',
       ),
     )
   }
