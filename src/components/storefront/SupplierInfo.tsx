@@ -2,6 +2,7 @@ import { EcMapPointer, EcPhone } from '@/components/icons/electro-icons'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
+import { storeWhatsAppLink } from '@/lib/whatsapp'
 import Link from 'next/link'
 
 export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow) | null
@@ -85,6 +86,13 @@ export default function SupplierInfo({
   // suppressing. A supplier whose ONLY reachable detail is a WhatsApp number
   // that the admin has not opted in would otherwise render an empty <ul> under
   // the heading instead of the "details coming soon" line.
+  // The supplier-inquiry button is the WhatsApp link above. When the supplier
+  // has not opted in (or has no WhatsApp-capable number) the shopper is sent to
+  // the store's own customer service instead of to a dead end.
+  const serviceHref = showWhatsApp
+    ? null
+    : storeWhatsAppLink(productName ? `שאלה על: ${productName}` : 'שאלה על דיל')
+
   const hasAnyVisible = Boolean(
     contact.name || contact.addressLine || contact.telHref || showWhatsApp,
   )
@@ -149,13 +157,27 @@ export default function SupplierInfo({
                 className="inline-flex items-center gap-1.5 font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover"
               >
                 <WhatsAppIcon size={16} />
-                שליחת הודעה בוואטסאפ
+                פנייה לספק בוואטסאפ
               </a>
             </li>
           )}
         </ul>
       ) : (
         <p className="pdp-details__list pdp-details__label">פרטי הספק יתעדכנו בקרוב.</p>
+      )}
+
+      {serviceHref && (
+        <p className="pdp-details__note">
+          <a
+            href={serviceHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover"
+          >
+            <WhatsAppIcon size={16} />
+            פנייה לשירות הלקוחות
+          </a>
+        </p>
       )}
 
       <p className="pdp-details__note">{FULFILMENT_NOTE[productType]}</p>
