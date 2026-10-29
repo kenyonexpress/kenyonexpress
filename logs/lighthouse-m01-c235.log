@@ -1,0 +1,7 @@
+M01-c235 Lighthouse (performance), fresh next start :4901 (kenyonexpress-web/kenyonexpress, closeout/v1-final), 2026-10-29, route /, 2 runs each
+380 mobile : 100/99 | LCP 1.5 s | TBT 20-30 ms | CLS 0.024-0.049
+768 mobile : 79/79  | LCP 5.5-5.7 s | TBT 20 ms | CLS 0.002-0.024
+1440 desktop: 100/100 | LCP 0.4 s | TBT 0 ms | CLS 0.009-0.021
+Diff vs M01-c230 (100/100, 100/100, 100/100): 380 0/-1, 768 -21/-21, 1440 0/0.
+Diff vs M01-c229 (80/78, 78/78, 98/98): 380 +20/+21, 768 +1/+1, 1440 +2/+2.
+768 is back in the 78-79 LCP-bound band (5.5 s) seen in c218-c229; 380 stays at the high c230 values. Bimodal host variance, not a code change. Measurement only.
