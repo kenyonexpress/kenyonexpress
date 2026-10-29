@@ -1,0 +1,5 @@
+M02-c231 Lighthouse /product/barbecue, next start :4801, 2026-10-29 (single run each)
+380 mobile 79 LCP 5.3 s TBT 30 ms CLS 0.018 FCP 1.8 s
+768 mobile 88 LCP 3.9 s TBT 10 ms CLS 0.001 FCP 1.5 s
+1440 desktop 99 LCP 0.8 s TBT 0 ms CLS 0.018 FCP 0.4 s
+vs M02-c229 (82/81/99): -3/+7/=, noise. target 95+: 380 FAIL (LCP), 768 FAIL (LCP), 1440 PASS. Measurement only, no code changes.
