@@ -1,0 +1,6 @@
+M01-c242 Lighthouse (performance), fresh next start :5301 (kenyonexpress-web/kenyonexpress, closeout/v1-final), 2026-10-29, route /, 2 runs each
+380 mobile : 100/99 | LCP 1.5 s | TBT 20 ms | CLS 0.037-0.04
+768 mobile : 79/78 | LCP 5.7-5.9 s | TBT 20-30 ms | CLS 0.002
+1440 desktop: 100/98 | LCP 0.4-1.1 s | TBT 0 ms | CLS 0.009-0.021
+Diff vs M01-c241 (100/99, 79/79, 100/100): 380 0/0, 768 0/-1, 1440 0/-2.
+768 stays in the LCP-bound band (as c235/c241). Host variance, not code. G23 not claimed met. Measurement only.
