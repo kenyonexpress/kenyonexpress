@@ -1,0 +1,3 @@
+M02-c263 Lighthouse mobile (performance), fresh build + next start :4402 (HEAD dcef4eb9c, closeout/v1-final), 2026-10-29
+/product/עוזרת-אישית-שירותי-משרד : 81 / 81 (2 runs; TBT 20-30 ms, LCP 4.8-5.0 s, CLS 0)
+Note: /product alone is 404 (no index route); sample product slug used. Below G23 target 95 (LCP-bound); prior c265 86/87 on :3324. Measurement only, no code changes.
