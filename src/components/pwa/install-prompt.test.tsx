@@ -36,7 +36,7 @@ function fireInstallPrompt() {
 
 beforeEach(() => {
   localStorage.clear()
-  localStorage.setItem('ke:purchased', '1')
+  localStorage.setItem('ke:views', '2')
   document.documentElement.removeAttribute('data-pwa-prompt')
   vi.stubGlobal('matchMedia', ((query: string) => ({
     matches: false,
@@ -56,14 +56,28 @@ describe('InstallPrompt', () => {
     expect(document.documentElement.hasAttribute('data-pwa-prompt')).toBe(false)
   })
 
-  it('is never offered before a first purchase', () => {
-    localStorage.removeItem('ke:purchased')
+  it('is never offered before the third view', () => {
+    localStorage.setItem('ke:views', '1')
     render(<InstallPrompt />)
     fireInstallPrompt()
     act(() => {
       window.dispatchEvent(new Event('scroll'))
     })
     expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+  })
+
+  it('counts each load and offers the install on the third', () => {
+    localStorage.setItem('ke:views', '0')
+    for (const expected of [false, false, true]) {
+      const { unmount } = render(<InstallPrompt />)
+      fireInstallPrompt()
+      act(() => {
+        window.dispatchEvent(new Event('scroll'))
+      })
+      expect(!!screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBe(expected)
+      unmount()
+    }
+    expect(localStorage.getItem('ke:views')).toBe('3')
   })
 
   it('appears after an interaction, and reserves its own space', () => {

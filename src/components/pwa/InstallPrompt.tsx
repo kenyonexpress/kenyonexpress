@@ -21,13 +21,16 @@ import { useEffect, useState } from 'react'
 
 const DISMISSED_KEY = 'ke:pwa-install-dismissed'
 
-/**
- * Written by PurchaseMarker on the order confirmation page. The install offer
- * is made only after a first purchase: that is the moment the app is worth
- * having (order status, coupons, QR at the counter), and asking earlier is
- * asking a stranger.
- */
+/** Written by PurchaseMarker on the order confirmation page. */
 export const PURCHASED_KEY = 'ke:purchased'
+
+/**
+ * Page loads counted so far, and the one on which the offer is first made. The
+ * first two views are a stranger looking around; by the third they have come
+ * back or gone deeper, which is the earliest the app is worth asking about.
+ */
+export const VIEWS_KEY = 'ke:views'
+export const INSTALL_AT_VIEW = 3
 const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
 /**
@@ -81,7 +84,11 @@ export default function InstallPrompt() {
     // case offering to install it is nonsense.
     if (window.matchMedia('(display-mode: standalone)').matches) return
     if (localStorage.getItem(DISMISSED_KEY) === '1') return
-    if (localStorage.getItem(PURCHASED_KEY) !== '1') return
+    // Counted before the path check: a view on the cart is still a view. Not
+    // gated on the dismissal either, which returned above and so stops counting.
+    const views = (Number.parseInt(localStorage.getItem(VIEWS_KEY) ?? '', 10) || 0) + 1
+    localStorage.setItem(VIEWS_KEY, String(views))
+    if (views < INSTALL_AT_VIEW) return
     if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
 
     const onPrompt = (event: Event) => {

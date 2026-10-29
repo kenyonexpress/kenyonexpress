@@ -12,6 +12,9 @@
  *                     construction, so a stale hit is impossible: a changed
  *                     file has a different URL.
  *   /icons/**         cache-first. Same reasoning, changed rarely and by hand.
+ *   /images/** and    stale-while-revalidate. Same URL can change content (a
+ *   /_next/image      replaced product photo), so serve the cached copy at once
+ *                     and refresh it in the background for the next view.
  *   navigations       network-FIRST, with the offline shell as the fallback
  *                     only when the network actually fails. A document is
  *                     never served from cache while the network works.
@@ -33,7 +36,7 @@
  * worker can be replaced on the next load rather than on the next tab close.
  */
 
-const VERSION = 'ke-v1'
+const VERSION = 'ke-v2'
 const STATIC_CACHE = `${VERSION}-static`
 const OFFLINE_URL = '/offline'
 
@@ -77,6 +80,10 @@ function isImmutableAsset(url) {
   return url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/')
 }
 
+function isRevalidatedAsset(url) {
+  return url.pathname.startsWith('/images/') || url.pathname.startsWith('/_next/image')
+}
+
 function shouldBypass(request, url) {
   if (request.method !== 'GET') return true
   if (url.origin !== self.location.origin) return true
@@ -107,6 +114,27 @@ self.addEventListener('fetch', (event) => {
             return response
           }),
       ),
+    )
+    return
+  }
+
+  if (isRevalidatedAsset(url)) {
+    event.respondWith(
+      caches.open(STATIC_CACHE).then(async (cache) => {
+        const hit = await cache.match(request)
+        const refresh = fetch(request)
+          .then((response) => {
+            if (response.ok && response.type === 'basic') cache.put(request, response.clone())
+            return response
+          })
+          .catch(() => undefined)
+        if (hit) {
+          // Keep the worker alive until the background refresh lands.
+          event.waitUntil(refresh)
+          return hit
+        }
+        return (await refresh) ?? Response.error()
+      }),
     )
     return
   }
