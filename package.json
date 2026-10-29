@@ -67,7 +67,7 @@
     "@radix-ui/react-tabs": "^1.2.1",
     "@sentry/nextjs": "10.75.3",
     "@sentry/node": "10.75.3",
-    "@simplewebauthn/browser": "13.3.0",
+    "@simplewebauthn/browser": "14.0.0",
     "@simplewebauthn/server": "13.3.3",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
