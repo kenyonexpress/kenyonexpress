@@ -1,0 +1,6 @@
+M02-c253 Lighthouse (performance), fresh next start :6201 (kenyonexpress-web/kenyonexpress, closeout/v1-final), 2026-10-29, route /product/מוצר-לדוגמא, 2 runs each
+Emulation: explicit screenEmulation width (380x800, 768x1024 mobile dsf2) / --preset=desktop for 1440 (same method as c252-M02)
+380 mobile : 83/84 | LCP 4.5-4.7 s | TBT 20 ms | CLS 0.019
+768 mobile : 82/83 | LCP 4.7-4.9 s | TBT 10-20 ms | CLS 0.001
+1440 desktop: 99/99 | LCP 0.9 s | TBT 0 ms | CLS 0.018
+Diff vs M02-c252 (380 84/82, 768 82/81, 1440 99/99): 380 -1/+2, 768 0/+2, 1440 0/0 (noise). Mobile LCP-bound below G23 95. Measurement only. G23 not claimed met.
