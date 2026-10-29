@@ -1,3 +1,4 @@
+המשך מ: G099 DONE (2026-10-30): prod READY j3fz3922p after 2 failed redeploys (pnpmfile checksum, stray root middleware.ts); deploy-watch.sh now queues DEPLOY-FIX, ntfy only after 3 fails; docs/G099-DEPLOY.md
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
 המשך מ: G109 DONE (2026-10-30): legal pages verified (C18 content), 91 tests pass, docs/G109-LEGAL.md; no forbidden files touched
 המשך מ: G101 BLOCKED (home gate unmeasurable: structural-mismatch abort + pending images; last ledger 43/45/40% vs 11%; docs/G101-HOME.md; no code changed)
@@ -287,4 +288,3 @@
 המשך מ: G111 DONE (2026-10-30): passkeys (passkeys_enabled, default on) + Meta WA OTP + email fallback already shipped; added wa_otp_enabled flag (default off, routes 404 when off), otp_attempts 3 per 15min per phone, migration 314 in pending (unapplied, MCP unauthed); tsc+biome clean, 421 auth/flags/rate-limit tests pass; docs/G111-AUTH.md; no forbidden files touched
 המשך מ: G112 DONE (2026-10-30): JSON-LD Product/Offer/Breadcrumb/Organization/WebSite, DB sitemap, robots, www canonical, OG already shipped and verified; added product twitter card; tsc clean, 671 app tests pass; docs/G112-SEO.md; no forbidden files touched
 המשך מ: G113 DONE (2026-10-30): manifest (standalone, 192/512/maskable) already shipped; sw.js v2 adds stale-while-revalidate for /images + /_next/image; install banner now gated on 3rd view (ke:views) instead of first purchase; tsc+biome clean, 46 pwa tests pass; docs/G113-PWA.md; no forbidden files touched
-המשך מ: G115 BLOCKED locked-component (2026-10-30): perf>=90 fails mobile home 82/84, product 88/85, category 768 87 (a11y/seo/1440 pass; category a11y 96 seo 92); shell ceiling in layout.tsx (same as C86); no code changed; docs/G115-LH.md; no forbidden files touched
