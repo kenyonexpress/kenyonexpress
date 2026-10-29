@@ -463,3 +463,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-28 20:18 | home | 380 | 43.32% | **FAIL** | `fb24966e7-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-28 20:20 | home | 768 | 44.73% | **FAIL** | `fb24966e7-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-28 20:21 | home | 1440 | 39.85% | **FAIL** | `fb24966e7-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-29 19:40 | product | 380 | 54.22% | **FAIL** | `1b374efe7-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-29 19:42 | product | 768 | 41.81% | **FAIL** | `1b374efe7-dirty` | ref 98 failed to load (76 stylesheet, 21 script, 1 xhr) |
+| 2026-10-29 19:43 | product | 1440 | 26.23% | **FAIL** | `1b374efe7-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
