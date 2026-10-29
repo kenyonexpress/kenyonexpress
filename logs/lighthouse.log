@@ -45,3 +45,28 @@ M01-c223 2026-10-29 lighthouse (next start :5101, /, simulated throttling, 2 run
 768 mobile 78/84 LCP 5.7/4.5 s TBT 25-29 ms CLS 0.001
 1440 desktop 99/99 LCP 0.9-1.0 s TBT 0 ms CLS 0.001
 note: dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c221: 380 -1/+5, 768 +4/-1, 1440 =/= (noise). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M02-c223 2026-10-29 lighthouse (next start :5201, /product/barbecue, simulated throttling, 2 runs each)
+380 mobile 89/87 LCP 3.8-4.0 s TBT 21-24 ms CLS 0.001
+768 mobile 85/89 LCP 3.8-4.3 s TBT 26-31 ms CLS 0.038
+1440 desktop 100/99 LCP 0.8-0.9 s TBT 0 ms CLS 0.001-0.011
+note: page rendered real content (h1 present); SENTRY_DSN/SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY set to 45-char dummy values via process env (no file edits). vs c219: 380 +1/+3, 768 +1/+4, 1440 +1/=. target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M03-c223 2026-10-29 lighthouse (next start :5301, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 100/100 LCP 1.1 s TBT 30 ms CLS 0-0.006
+768 mobile 84/84 LCP 4.6 s TBT 20-50 ms CLS 0
+1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0-0.011
+note: grid rendered real content (2 product links) so sample is valid; SENTRY_DSN (URL-shaped)/SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY set to dummy values via process env (no file edits). vs c221: 380 +11 (low mode of bimodal LCP, same as c220), 768 -2/-5, 1440 +1. target 95+ (G23): 768 FAIL (LCP), 380 and 1440 PASS. Sample-only, no code changes.
+M01-c224 2026-10-29 lighthouse (next start :5401, /, simulated throttling, 2 runs each)
+380 mobile 78/84 LCP 5.9/4.5 s TBT 30-50 ms CLS 0.003
+768 mobile 87/85 LCP 4.0-4.3 s TBT 30 ms CLS 0.003
+1440 desktop 99/99 LCP 0.8-0.9 s TBT 0 ms CLS 0.001
+note: dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c223: 380 -5/-1, 768 +9/+1, 1440 =/= (noise). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M02-c224 2026-10-29 lighthouse (next start :5601, /product/barbecue, simulated throttling, 2 runs each)
+380 mobile 84/80 LCP 4.5/5.3 s TBT 25-28 ms CLS 0.003
+768 mobile 74/85 LCP 7.1/4.2 s TBT 25 ms CLS 0.003
+1440 desktop 100/100 LCP 0.8 s TBT 0 ms CLS 0.001-0.012
+note: h1 present (real content); dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c223: 380 -5/-7, 768 -11/-4, 1440 =/+1 (noise). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M01-c225 2026-10-29 lighthouse (next start :5701, /, simulated throttling, 2 runs each)
+380 mobile 85/86 LCP 4.2-4.3 s TBT 30 ms CLS 0.003
+768 mobile 100/100 LCP 1.1 s TBT 20-30 ms CLS 0.003 (low mode of bimodal LCP)
+1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0.001
+note: dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits); home rendered 72 product links. vs c224: 380 +7/+2, 768 +13/+15 (bimodal LCP), 1440 +1. target 95+ (G23): 768 and 1440 PASS, 380 FAIL (LCP). Sample-only, no code changes.
