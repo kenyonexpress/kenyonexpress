@@ -5,7 +5,7 @@ import { useCart } from '@/components/cart/CartProvider'
 import { EcAddToCart } from '@/components/icons/electro-icons'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
-import ShareButton from '@/components/shared/ShareButton'
+import NativeShareButton from '@/components/shared/NativeShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import ProductQuestionLink from '@/components/storefront/ProductQuestionLink'
@@ -451,6 +451,7 @@ export default function ProductInfo({
               .filter(Boolean)
               .join('\n')}
           />
+          <NativeShareButton title={name} url={productUrl} />
           <FacebookShareButton />
           <ShareButton
             title={name}
