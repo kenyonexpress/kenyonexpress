@@ -121,7 +121,8 @@ export const RATE_LIMIT_POLICIES = {
   'push-subscribe': { limit: 20, windowSeconds: 3600, reason: 'browser push subscribe, per user' },
   // rc5 F15. Sign-in factors: per phone and per IP for sending, per phone for
   // guessing, per IP for passkey assertions.
-  'wa-otp-send': { limit: 5, windowSeconds: 3600, reason: 'WhatsApp code send, per phone' },
+  // G111: otp_attempts, 3 sends per 15 minutes per phone (replaces 5/hour).
+  'wa-otp-send': { limit: 3, windowSeconds: 900, reason: 'otp_attempts: 3 per 15min, per phone' },
   'wa-otp-send-ip': { limit: 20, windowSeconds: 3600, reason: 'WhatsApp code send, per IP' },
   'wa-otp-verify': { limit: 10, windowSeconds: 3600, reason: 'WhatsApp code guesses, per phone' },
   'passkey-register': { limit: 20, windowSeconds: 3600, reason: 'passkey enrolment, per user' },

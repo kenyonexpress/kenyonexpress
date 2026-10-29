@@ -23,6 +23,7 @@ const FLAG_DB_KEYS: Record<string, string> = {
   'tzimmer-calendar': 'tzimmer_calendar',
   'monthly-billing': 'monthly_billing',
   payment_production: 'payment_production',
+  wa_otp_enabled: 'wa_otp_enabled',
 }
 
 /**
@@ -84,6 +85,7 @@ function readEnvFlag(flagName: string, env: NodeJS.ProcessEnv): boolean {
     'tzimmer-calendar': 'FLAG_TZIMMER_CALENDAR',
     'monthly-billing': 'FLAG_MONTHLY_BILLING',
     payment_production: 'FLAG_PAYMENT_PRODUCTION',
+    wa_otp_enabled: 'FLAG_WA_OTP_ENABLED',
   }
   const envName = envMap[flagName]
   if (!envName) return false
@@ -101,5 +103,6 @@ function buildFallbackMap(env: NodeJS.ProcessEnv): Record<string, boolean> {
     'tzimmer-calendar': readEnvFlag('tzimmer-calendar', env),
     'monthly-billing': readEnvFlag('monthly-billing', env),
     payment_production: readEnvFlag('payment_production', env),
+    wa_otp_enabled: readEnvFlag('wa_otp_enabled', env),
   }
 }

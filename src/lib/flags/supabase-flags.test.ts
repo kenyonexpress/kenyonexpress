@@ -33,6 +33,7 @@ describe('getSupabaseFlags', () => {
       'tzimmer-calendar': true,
       'monthly-billing': false,
       payment_production: false,
+      wa_otp_enabled: false,
     })
     expect(mockFetch).toHaveBeenCalledOnce()
   })
@@ -111,6 +112,7 @@ describe('getSupabaseFlags', () => {
       'tzimmer-calendar': false,
       'monthly-billing': false,
       payment_production: false,
+      wa_otp_enabled: false,
     })
     expect(mockFetch).not.toHaveBeenCalled()
   })
@@ -138,6 +140,7 @@ describe('getSupabaseFlags', () => {
       'tzimmer-calendar': false,
       'monthly-billing': false,
       payment_production: false,
+      wa_otp_enabled: false,
     })
   })
 
@@ -261,6 +264,7 @@ describe('getSupabaseFlags', () => {
       'tzimmer-calendar': false,
       'monthly-billing': false,
       payment_production: false,
+      wa_otp_enabled: false,
     })
   })
 })

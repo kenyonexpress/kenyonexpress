@@ -15,6 +15,7 @@ describe('phase 2 flags', () => {
         'payment_production',
         'physical-products',
         'tzimmer-calendar',
+        'wa_otp_enabled',
       ].sort(),
     )
   })
