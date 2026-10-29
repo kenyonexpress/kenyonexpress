@@ -1,0 +1,5 @@
+m02-c208: NOT MEASURED. pnpm build at HEAD 793021b33 fails, so no valid prod server to run Lighthouse against.
+Error: Ambiguous app routes: /c/[slug] (src/app/(store)/c/[slug]) vs /c/[code] (src/app/c/[code]/route.ts). Same as m02-c200.
+next dev not used: dev-mode scores are not comparable with the c195-c199 prod numbers (mobile median 81).
+Last valid: m02-c199 /product/barbecue mobile 79/81/81 (median 81, LCP-bound), below G23 95.
+Build log: /tmp/build-c208.log. Measurement only, no code changes; no forbidden files touched.
