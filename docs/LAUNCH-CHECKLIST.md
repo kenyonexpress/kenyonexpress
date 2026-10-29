@@ -390,3 +390,26 @@ cat docs/LIGHTHOUSE-FINAL.md
 ```
 
 **Can we launch?** ⚠️  **NOT YET** - Resolve blockers first, then decision needed on performance.
+
+---
+
+## C19 Launch Gate Re-evaluation (2026-10-30)
+
+**VERDICT: HOLD.** No `LAUNCH.flag`, no `v2.0.0-final-rc1` tag, no "hey LAUNCH".
+
+LAUNCH.flag requires C01-C18 all DONE, or BLOCKED only on Cardcom + Turnstile. Current claude/STATE.md shows other blockers:
+
+| Item | Status | Reason |
+|------|--------|--------|
+| C01 | BLOCKED locked-component | Home compare 380=12.83% / 768=13.80% (gate <11%), mobile LH 78; fix lives in HeroSection/HeroSlider |
+| C03 | BLOCKED | Category parity unmeasurable, migration 306 unapplied, Supabase MCP unauthenticated |
+| C04 | BLOCKED | Checkout E2E impossible, catalogue unreadable (42703 suppliers.open_weekends) |
+| C05 | BLOCKED | Live RLS check impossible, Supabase MCP unauthenticated |
+| C06-ACCOUNT | BLOCKED | redemption_code missing on prod, Supabase MCP unauthenticated |
+| C07 | BLOCKED | PWA gate unmeasurable (Lighthouse 13 has no PWA category) |
+| C10 | BLOCKED cardcom-prod-creds-pending | Allowed blocker |
+| C11 | BLOCKED supabase-mcp-unauthenticated | Migration 164 not applied |
+
+**Playwright 2x green:** not run. Last full-suite attempts (docs/E2E-STATUS.md) showed real failures (consent banner, add-to-cart, category 404, product thumbnails) and a ~60 min runtime. The Supabase MCP and `.env.local` blockers above are unchanged, so a green run cannot happen yet.
+
+**Unblock path (Ofir):** re-authenticate Supabase MCP, apply pending migrations (306, 164, 298 redemption_code), Cardcom prod creds, then re-run C01/C03-C05/C11 and C19.
