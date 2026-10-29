@@ -34,3 +34,8 @@ M02-c213 Lighthouse /product/barbecue, next start :3671, 2026-10-29 (single run 
 768 mobile 79 LCP 5.3 s TBT 20 ms CLS 0.001 FCP 1.8 s
 1440 desktop 99 LCP 1.0 s TBT 0 ms CLS 0.018 FCP 0.4 s
 vs M02-c203 (380 82, 768 85, 1440 99): 380 -2, 768 -6 (within single-run noise, LCP 4.2-5.4 s band). target 95+: 380 FAIL (LCP), 768 FAIL (LCP), 1440 PASS. Measurement only, no code changes.
+M03-c217 2026-10-29 lighthouse re-measure /category/hot-deals (localhost:3841, next start, 1 run per width, perf only)
+380 mobile 80 LCP 4.6 s TBT 20 ms CLS 0.015 FCP 2.4 s
+768 mobile 83 LCP 4.4 s TBT 40 ms CLS 0.001 FCP 1.8 s
+1440 desktop 99 LCP 0.9 s TBT 0 ms CLS 0.023 FCP 0.4 s
+diff vs M03-c188 (83/83/99): 380 -3, 768 =, 1440 =. target 95+: 380 FAIL (LCP), 768 FAIL (LCP), 1440 PASS. Sample-only, no code changes.
