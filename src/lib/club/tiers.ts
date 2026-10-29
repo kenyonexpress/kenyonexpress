@@ -7,11 +7,12 @@ export interface ClubTier {
   rank: number
 }
 
-/** Mirror of the club_tiers seed in migration 243; the table is the source of truth. */
+/** Mirror of the club_tiers seed in migration 164; the table is the source of truth. */
 export const DEFAULT_CLUB_TIERS: readonly ClubTier[] = [
   { code: 'bronze', nameHe: 'ברונזה', minSpendAgorot: agorot(0), rank: 1 },
   { code: 'silver', nameHe: 'כסף', minSpendAgorot: agorot(200_000), rank: 2 },
   { code: 'gold', nameHe: 'זהב', minSpendAgorot: agorot(500_000), rank: 3 },
+  { code: 'platinum', nameHe: 'פלטינום', minSpendAgorot: agorot(1_500_000), rank: 4 },
 ]
 
 export interface ClubStanding {

@@ -17,9 +17,14 @@ describe('clubStanding', () => {
   it('computes integer progress', () => {
     expect(clubStanding(agorot(350_000)).progressPercent).toBe(50)
   })
-  it('caps at gold', () => {
-    const s = clubStanding(agorot(900_000))
-    expect(s.current.code).toBe('gold')
+  it('promotes gold to platinum at the threshold', () => {
+    expect(clubStanding(agorot(900_000)).current.code).toBe('gold')
+    expect(clubStanding(agorot(1_499_999)).current.code).toBe('gold')
+    expect(clubStanding(agorot(1_500_000)).current.code).toBe('platinum')
+  })
+  it('caps at platinum', () => {
+    const s = clubStanding(agorot(2_000_000))
+    expect(s.current.code).toBe('platinum')
     expect(s.next).toBeNull()
     expect(s.progressPercent).toBe(100)
   })

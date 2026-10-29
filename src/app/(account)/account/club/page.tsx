@@ -1,3 +1,4 @@
+import { ClubTierBadge } from '@/components/account/ClubTierBadge'
 import { formatIls } from '@/lib/account/format'
 import { DEFAULT_CLUB_TIERS } from '@/lib/club/tiers'
 import { getMyClubStanding } from '@/server/queries/club'
@@ -17,7 +18,7 @@ export default async function ClubPage() {
           <section className="account-card">
             <h2 className="account-card__title">הדרגה שלי</h2>
             <p className="account-row__title">
-              <span className="account-chip account-chip--default">{standing.current.nameHe}</span>
+              <ClubTierBadge tier={standing.current} />
             </p>
             <p className="account-row__meta">
               רכישות ב-12 חודשים: {formatIls(standing.spendAgorot)}

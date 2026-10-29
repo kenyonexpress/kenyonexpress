@@ -1,8 +1,10 @@
+import { ClubTierBadge } from '@/components/account/ClubTierBadge'
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { getWalletSummary } from '@/server/queries/account'
 import { getCashbackTracker } from '@/server/queries/cashback'
+import { getMyClubTier } from '@/server/queries/club'
 import { getMyOrders } from '@/server/queries/orders'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
@@ -10,11 +12,12 @@ import Link from 'next/link'
 export const metadata = { title: 'האזור האישי' }
 
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons, cashback] = await Promise.all([
+  const [wallet, orders, coupons, cashback, clubTier] = await Promise.all([
     getWalletSummary(),
     getMyOrders(),
     getCustomerVouchers(),
     getCashbackTracker(),
+    getMyClubTier(),
   ])
 
   const lastOrder = orders[0] ?? null
@@ -26,7 +29,10 @@ export default async function AccountOverviewPage() {
 
   return (
     <>
-      <h1 className="account-title">האזור האישי</h1>
+      <h1 className="account-title">
+        האזור האישי
+        {clubTier ? <ClubTierBadge tier={clubTier} /> : null}
+      </h1>
       <p className="account-subtitle">סקירה מהירה של החשבון שלך</p>
 
       <div className="wallet-balance">

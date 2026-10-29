@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto'
+import { ClubTierBadge } from '@/components/account/ClubTierBadge'
 import { validateCartView } from '@/lib/checkout/validate-cart'
+import { DEFAULT_CLUB_TIERS } from '@/lib/club/tiers'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
+import { computeTier } from '@/server/queries/club'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -163,12 +166,17 @@ async function CheckoutPageBody({
       }))
   }
 
+  const tierCode = user ? await computeTier(user.id) : null
+  const clubTier = DEFAULT_CLUB_TIERS.find((t) => t.code === tierCode) ?? null
   const { resume, channel } = await searchParams
 
   return (
     <div className="checkout-page">
       <CheckoutBreadcrumb />
-      <h1 className="checkout-page__title">קופה</h1>
+      <h1 className="checkout-page__title">
+        קופה
+        {clubTier ? <ClubTierBadge tier={clubTier} /> : null}
+      </h1>
       <CheckoutForm
         cart={cart}
         clientRef={randomUUID()}

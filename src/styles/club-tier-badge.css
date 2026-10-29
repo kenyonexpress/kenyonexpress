@@ -1,0 +1,26 @@
+/* Club tier badge (profile + checkout). Inline, so it never moves the line it sits on. */
+.club-tier-badge {
+  display: inline-block;
+  margin-inline-start: 8px;
+  padding-inline: 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 22px;
+  vertical-align: middle;
+  color: #333e48;
+  background: #e8e8e8;
+}
+.club-tier-badge--bronze {
+  background: #e6c9a8;
+}
+.club-tier-badge--silver {
+  background: #d9dde1;
+}
+.club-tier-badge--gold {
+  background: #fed700;
+}
+.club-tier-badge--platinum {
+  background: #333e48;
+  color: #fff;
+}
