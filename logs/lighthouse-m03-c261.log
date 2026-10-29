@@ -1,0 +1,6 @@
+M03-c261 Lighthouse (performance), next start :3851 (build of kenyonexpress-web/kenyonexpress, 2026-10-29 12:08), route /category/hot-deals, 1 run per width
+380 mobile 80 | FCP 2.4 s | LCP 4.6 s | TBT 40 ms | CLS 0.014
+768 mobile 81 | FCP 2.4 s | LCP 4.4 s | TBT 20 ms | CLS 0.005
+1440 desktop 99 | FCP 0.6 s | LCP 1.0 s | TBT 0 ms | CLS 0.014
+diff vs M03-c217 (80/83/99): 380 =, 768 -2, 1440 =. target 95+: 380 FAIL (LCP), 768 FAIL (LCP), 1440 PASS.
+CAVEAT: server log shows catalogue.category_products_failed (PG 42703: column suppliers_1.open_weekends does not exist) while serving this route, so the page likely rendered without products; numbers may not represent a populated category. Needs a migration for suppliers.open_weekends or a query fix (separate item). Measurement only, no code changes.
