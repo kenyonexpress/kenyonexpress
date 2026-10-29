@@ -21,7 +21,6 @@ import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-d
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
-import { getProductReviews } from '@/server/queries/reviews'
 import '@/styles/product-page.css'
 import { alternatesFor } from '@/lib/seo/alternates'
 import Link from 'next/link'
@@ -174,9 +173,6 @@ export default async function ProductPage({ params }: Props) {
   // disagreed with. `couponOffer` is the object the commission engine bills
   // from, so the advertised price and the charged price cannot diverge.
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-  // Anon-readable by policy, so this read keeps the page cacheable; the
-  // rating in the JSON-LD and the visible list below come from the same rows.
-  const { summary: reviewSummary } = await getProductReviews(product.id, 0)
   const productLd = buildProductJsonLd({
     name: product.name_he,
     description: product.description_he ?? null,
@@ -190,7 +186,8 @@ export default async function ProductPage({ params }: Props) {
     fullPriceIls: isCoupon ? null : oldPrice,
     couponOffer,
     stockQuantity: product.stock_quantity ?? null,
-    rating: reviewSummary,
+    // No rating: the storefront has no reviews UI, and an AggregateRating with
+    // no visible reviews behind it is a structured-data policy violation.
   })
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
