@@ -48,3 +48,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: C02 BLOCKED (code shipped: copy-link, customer-service fallback, accordion, Facebook removed; compare not measurable, lighthouse mobile 80 < 90; docs/C02-PRODUCT.md)
 
 המשך מ: C14 DONE
+המשך מ: C88 DONE (2026-10-30): turnstile_enabled flag (NEXT_PUBLIC_TURNSTILE_ENABLED; on only with both keys), verify lib + widget gated, tests with fetch mock pass, docs/C88-TURNSTILE.md; no forbidden files, no migrations
