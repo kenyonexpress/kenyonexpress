@@ -1,0 +1,6 @@
+M02-c254 Lighthouse (performance), fresh next start :3654 (existing build 12:08, no src/public diff since), 2026-10-29, route /product/מוצר-לדוגמא
+width x 2 runs: perf | FCP | LCP | TBT | CLS (CLI, simulated throttling, explicit width emulation, same method as c252/c253; 1440 = desktop preset)
+380 : 81/83 | 1.8 s | 4.5-4.9 s | 20 ms | 0.019
+768 : 81/87 | 1.8 s | 3.9-5.0 s | 20 ms | 0.001
+1440: 99/99 | 0.4 s | 0.9-1.0 s | 0 ms | 0.006
+Vs c253 83/84, 82/83, 99/99: noise. Mobile LCP-bound, below G23 95. Measurement only.
