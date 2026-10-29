@@ -1,0 +1,8 @@
+M01-c205 Lighthouse (performance), fresh next start :3691 (kenyonexpress-web/kenyonexpress, closeout/v1-final), 2026-10-29, route /
+width x 3 runs: perf score | FCP | LCP | TBT | CLS  (CLI, simulated throttling, screenEmulation width x 800 dsf 2; 1440 = desktop preset)
+380 : 100/100/99 | 1.5 s | 1.5 s | 20-30 ms | 0.025-0.043 (median 100)
+768 : 100/100/100 | 1.5 s | 1.5 s | 20-30 ms | 0.002-0.021 (median 100)
+1440: 100/100/100 | 0.4 s | 0.4 s | 0 ms | 0.014-0.023 (median 100)
+Diff vs M01-c204 (81/78/99 medians): 380 +19, 768 +22, 1440 +1.
+Sample validity: page rendered fully (200, 130 product links in HTML, 67 images fetched, no 42703 errors). LCP element in all runs is the cookie-consent banner paragraph (body > section > p), not the hero image that bound LCP at 4.4-5.7 s in c186..c204; LCP == FCP, TTFB 13 ms, render delay 172 ms. So the jump is an LCP-element change, not a verified render-speed gain; hero-image LCP not re-measured here. Treat as unconfirmed until reproduced. /api/health 503 (meili url unparseable) is unrelated.
+Mobile meets G23 95 in this sample, but see caveat. Measurement only, no code changes.
