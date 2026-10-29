@@ -466,3 +466,11 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-29 19:40 | product | 380 | 54.22% | **FAIL** | `1b374efe7-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
 | 2026-10-29 19:42 | product | 768 | 41.81% | **FAIL** | `1b374efe7-dirty` | ref 98 failed to load (76 stylesheet, 21 script, 1 xhr) |
 | 2026-10-29 19:43 | product | 1440 | 26.23% | **FAIL** | `1b374efe7-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-29 19:49 | category | 380 | n/a | **UNMEASURED** | `8dd017c88-dirty` | screenshot failed: page.addStyleTag: Execution context was destroyed, most likely because of a navigation |
+| 2026-10-29 19:51 | category | 380 | n/a | **UNMEASURED** | `8dd017c88-dirty` | screenshot failed: page.addStyleTag: Execution context was destroyed, most likely because of a navigation |
+| 2026-10-29 19:52 | category | 380 | 19.44% | **FAIL** | `8dd017c88-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-29 19:54 | category | 768 | 12.90% | **FAIL** | `8dd017c88-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-29 19:56 | category | 1440 | 11.36% | **FAIL** | `8dd017c88-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-29 19:58 | category | 380 | 19.44% | **FAIL** | `8dd017c88-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-29 20:00 | category | 768 | 12.90% | **FAIL** | `8dd017c88-dirty` | ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
+| 2026-10-29 20:02 | category | 1440 | 11.36% | **FAIL** | `8dd017c88-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
