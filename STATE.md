@@ -52,3 +52,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 
 המשך מ: C89 DONE (passkeys_enabled flag default on, routes+UI already built, 6 route tests + flag tests pass; live-DB table check not possible: db.sh password rejected, see docs/C89-PASSKEYS.md)
 המשך מ: C92 DONE (F11-F14 audited; category select gap fixed; 164/306 unapplied, DB auth rejected; docs/C92-FEATURE-AUDIT.md)
+המשך מ: G107 DONE (2026-10-30): /partner/redeem (reuses ScanClient), 8-digit PIN resolved per caller suppliers in lookup+redeem routes, redeem route calls redeem_voucher_locked (pg advisory xact lock + vouchers_redemption_events audit) with fallback to redeem_voucher until 313 is applied; migrations/pending/313_partner_redeem.sql NOT applied (Supabase MCP unauthorized); tsc/biome/vitest clean on touched files; docs/G107-REDEEM.md; no forbidden files touched

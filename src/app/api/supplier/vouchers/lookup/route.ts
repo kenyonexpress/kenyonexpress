@@ -3,6 +3,7 @@ import { identityScopedClient } from '@/lib/supabase/bearer'
 import { getSupplierMemberships } from '@/lib/supplier/rbac'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
+import { isPartnerPin, resolvePartnerPin } from '@/server/domain/vouchers/pin'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { toPublicOutcome, validateVoucherRedemption } from '@/server/domain/vouchers/redemption'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
@@ -137,6 +138,12 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       return respond({ outcome: 'not_found', message: MESSAGES.not_found }, 404)
     }
     shortCode = normalizeVoucherCode(verified.c)
+  } else if (code && isPartnerPin(code)) {
+    try {
+      shortCode = await resolvePartnerPin(code, await getSupplierMemberships())
+    } catch {
+      return respond({ outcome: 'unavailable', message: MESSAGES.unavailable }, 503)
+    }
   } else if (code) {
     shortCode = normalizeVoucherCode(code)
   }

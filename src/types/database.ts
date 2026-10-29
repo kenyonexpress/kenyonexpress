@@ -4804,6 +4804,17 @@ export type Database = {
         Args: { p_product_id: string }
         Returns: number
       }
+      redeem_voucher_locked: {
+        Args: {
+          p_code: string
+          p_input_kind: string
+          p_scan_method: string
+          p_idempotency_key: string
+          p_ip: unknown
+          p_user_agent: string
+        }
+        Returns: Json
+      }
       redeem_voucher: {
         Args: {
           p_code: string

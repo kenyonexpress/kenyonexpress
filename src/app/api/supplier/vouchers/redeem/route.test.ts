@@ -26,6 +26,12 @@ const adminUpdate = vi.fn()
 const staffRow = vi.fn()
 const membershipRow = vi.fn()
 
+const resolvePartnerPin = vi.fn()
+vi.mock('@/server/domain/vouchers/pin', async (orig) => ({
+  ...(await orig<typeof import('@/server/domain/vouchers/pin')>()),
+  resolvePartnerPin: (...a: unknown[]) => resolvePartnerPin(...a),
+}))
+vi.mock('@/lib/supplier/rbac', () => ({ getSupplierMemberships: async () => ['sup-1'] }))
 vi.mock('@/lib/supabase/bearer', () => ({
   identityScopedClient: (request: unknown) => identityScopedClient(request),
 }))
@@ -143,10 +149,11 @@ describe('supplier scan endpoint', () => {
       // caller about who they are. The RPC derives that itself.
       await POST(request({ code: 'ABCD123456', supplier_id: 'sup-other' }))
       const [fn, args] = rpc.mock.calls[0] as [string, Record<string, unknown>]
-      expect(fn).toBe('redeem_voucher')
+      expect(fn).toBe('redeem_voucher_locked')
       expect(Object.keys(args).sort()).toEqual([
         'p_code',
         'p_idempotency_key',
+        'p_input_kind',
         'p_ip',
         'p_scan_method',
         'p_user_agent',
@@ -179,6 +186,36 @@ describe('supplier scan endpoint', () => {
       checkRateLimit.mockResolvedValue(false)
       const response = await POST(request({ code: 'ABCD123456' }))
       expect(response.status).toBe(429)
+      expect(rpc).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('before migration 313 is applied', () => {
+    it('falls back to the unlocked RPC when the locked one does not exist', async () => {
+      rpc
+        .mockResolvedValueOnce({ data: null, error: { message: 'no function', code: '42883' } })
+        .mockResolvedValueOnce({ data: SUCCESS, error: null })
+      const response = await POST(request({ code: 'ABCD123456' }))
+      expect(response.status).toBe(200)
+      expect((rpc.mock.calls[1] as [string])[0]).toBe('redeem_voucher')
+    })
+  })
+
+  describe('the 8-digit counter PIN', () => {
+    it('resolves to the voucher code and records the input kind', async () => {
+      resolvePartnerPin.mockResolvedValue('ABCD123456')
+      const response = await POST(request({ code: '1234 5678' }))
+      expect(response.status).toBe(200)
+      expect(resolvePartnerPin).toHaveBeenCalledWith('1234 5678', ['sup-1'])
+      const [, args] = rpc.mock.calls[0] as [string, Record<string, unknown>]
+      expect(args.p_code).toBe('ABCD123456')
+      expect(args.p_input_kind).toBe('pin')
+    })
+
+    it('answers not_found for an unknown PIN without reaching the RPC', async () => {
+      resolvePartnerPin.mockResolvedValue(null)
+      const response = await POST(request({ code: '00000000' }))
+      expect(response.status).toBe(404)
       expect(rpc).not.toHaveBeenCalled()
     })
   })

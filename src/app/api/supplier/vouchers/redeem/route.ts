@@ -4,10 +4,12 @@ import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
+import { getSupplierMemberships } from '@/lib/supplier/rbac'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { expireWalletPasses } from '@/lib/wallet/notify'
 import { trackServerEvent } from '@/server/analytics/track'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
+import { isPartnerPin, resolvePartnerPin } from '@/server/domain/vouchers/pin'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -224,7 +226,9 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // Resolve the short code. A QR payload must pass the HMAC check first; a bad
   // signature never reaches redeem_voucher and is logged as invalid_signature.
   let shortCode: string | null = null
+  let inputKind: 'qr' | 'code' | 'pin' = 'code'
   if (qr_payload) {
+    inputKind = 'qr'
     const verified = verifyVoucherQrPayload(qr_payload)
     if (!verified) {
       await recordRefusedScan({
@@ -237,6 +241,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       return respond({ outcome: 'not_found', message: OUTCOME_MESSAGES.not_found }, 404)
     }
     shortCode = normalizeVoucherCode(verified.c)
+  } else if (code && isPartnerPin(code)) {
+    // 8-digit counter PIN, resolved among the caller's own suppliers only.
+    inputKind = 'pin'
+    try {
+      shortCode = await resolvePartnerPin(code, await getSupplierMemberships())
+    } catch (error) {
+      log.error('voucher.pin_resolve_failed', {
+        reason: error instanceof Error ? error.message : 'unknown',
+      })
+      return respond({ outcome: 'invalid_request', message: 'שגיאת מערכת, נסה שוב' }, 503)
+    }
   } else if (code) {
     shortCode = normalizeVoucherCode(code)
   }
@@ -254,13 +269,23 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return respond({ outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited }, 429)
   }
 
-  const { data, error } = await supabase.rpc('redeem_voucher', {
+  const rpcArgs = {
     p_code: shortCode,
     p_scan_method: method,
     p_idempotency_key: idempotency_key ?? null,
     p_ip: scanContext.ip,
     p_user_agent: scanContext.userAgent,
+  }
+  let { data, error } = await supabase.rpc('redeem_voucher_locked', {
+    ...rpcArgs,
+    p_input_kind: inputKind,
   })
+  // Migration 313 not applied yet (42883 Postgres, PGRST202 PostgREST): fall
+  // back to the unlocked RPC, which still burns atomically, so a deploy that
+  // lands before the migration does not stop every till. Remove once 313 is live.
+  if (error && (error.code === '42883' || error.code === 'PGRST202')) {
+    ;({ data, error } = await supabase.rpc('redeem_voucher', rpcArgs))
+  }
 
   if (error) {
     // The RPC only raises on infrastructure failure; a redemption refusal is a
