@@ -34,7 +34,9 @@ export default function HomePage() {
   // them from the root layout would repeat the same two nodes on the checkout,
   // the account area and every product, which says nothing new and dilutes the
   // one page that should carry the site's identity.
-  const siteLd = buildSiteJsonLd(process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il')
+  const siteLd = buildSiteJsonLd(
+    process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il',
+  )
 
   return (
     <>

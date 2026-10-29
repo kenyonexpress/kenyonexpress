@@ -67,7 +67,7 @@ export default async function CityPage({ params }: Props) {
   const cities = region.cities.map((s) => cityBySlug(s)).filter((c) => c !== null)
 
   // Same shape the category route uses, so the two trails cannot disagree.
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il'
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
       { name: 'בית', path: '/' },

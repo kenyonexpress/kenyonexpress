@@ -25,7 +25,7 @@ export interface OrderConfirmationInput {
   /** Grand total actually paid on the site, in agorot. */
   totalAgorot: number
   itemCount?: number
-  /** Origin with no trailing slash, e.g. https://kenyonexpress.co.il */
+  /** Origin with no trailing slash, e.g. https://www.kenyonexpress.co.il */
   siteUrl: string
 }
 

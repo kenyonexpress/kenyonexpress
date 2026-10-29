@@ -93,7 +93,7 @@ export default async function MetaVerificationPage() {
             required
             dir="ltr"
             className="w-full rounded-md border px-3 py-2"
-            placeholder="https://kenyonexpress.co.il"
+            placeholder="https://www.kenyonexpress.co.il"
           />
         </div>
 

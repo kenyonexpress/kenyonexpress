@@ -68,7 +68,7 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
   // telephone Google treats as somewhere you can visit, and the page already
   // renders both, so the node is built from the same values rather than from a
   // second read that could drift from them.
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il'
   const localBusinessLd = buildLocalBusinessJsonLd({
     id,
     name: supplier.name,

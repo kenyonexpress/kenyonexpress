@@ -370,7 +370,7 @@ async function CategoryPageBody({
 
   // The same trail the visible breadcrumb renders, as BreadcrumbList: the two
   // are built from one `crumbs` array so they cannot disagree.
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il'
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
       { name: 'בית', path: '/' },

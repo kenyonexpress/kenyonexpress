@@ -971,7 +971,7 @@ export async function finalizeOrder(input: {
     await sendVoucherEmail(admin, {
       orderId: order.id,
       userId: order.user_id,
-      siteUrl: (process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il').replace(
+      siteUrl: (process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il').replace(
         /\/+$/,
         '',
       ),

@@ -58,7 +58,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     item_count: number
   }[]
 
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il').replace(
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il').replace(
     /\/+$/,
     '',
   )

@@ -27,7 +27,7 @@ import {
 const orderEmail = buildOrderConfirmationEmail({
   orderId: '...',
   totalAgorot: 12900,
-  siteUrl: 'https://kenyonexpress.co.il'
+  siteUrl: 'https://www.kenyonexpress.co.il'
 })
 
 await sendBuiltEmail(orderEmail, {

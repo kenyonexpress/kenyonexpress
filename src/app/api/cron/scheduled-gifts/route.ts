@@ -35,7 +35,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   }
 
   const admin = createAdminClient()
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il'
   const now = new Date().toISOString()
 
   // Check orders where gift_scheduled_at <= now

@@ -43,7 +43,7 @@ function hashIp(ip: string): string {
 }
 
 const siteUrl = () =>
-  (process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il').replace(/\/+$/, '')
+  (process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il').replace(/\/+$/, '')
 
 async function runSubscribeToNewsletter(
   _prev: NewsletterState,

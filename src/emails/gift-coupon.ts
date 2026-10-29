@@ -20,7 +20,7 @@ export interface GiftInput {
   claimToken: string
   /** ISO timestamp of the coupon expiry. */
   expiresAt?: string | null
-  /** Origin with no trailing slash, e.g. https://kenyonexpress.co.il */
+  /** Origin with no trailing slash, e.g. https://www.kenyonexpress.co.il */
   siteUrl: string
 }
 
