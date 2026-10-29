@@ -1,0 +1,6 @@
+M02-c264 Lighthouse (performance), fresh build + next start :7301, 2026-10-29, route /product/מוצר-לדוגמא
+width x 2 runs: perf | LCP | TBT | CLS (CLI, simulated throttling, explicit width emulation, same method as c261; 1440 = desktop preset)
+380 : 83/84 | LCP 4.6-4.7 s | TBT 20 ms | CLS 0.019
+768 : 82/83 | LCP 4.7-4.9 s | TBT 20 ms | CLS 0.001
+1440: 99/99 | LCP 0.9 s | TBT 0 ms | CLS 0.006-0.018
+Vs c261 87/83, 83/83, 99/99: noise. Mobile LCP-bound, below G23 95. Measurement only.
