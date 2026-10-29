@@ -222,3 +222,15 @@ M01-c247 2026-10-29 lighthouse (next start :8501, existing build, /, simulated t
 768 mobile 80/80 LCP 5.2/5.3 s TBT 36/25 ms CLS 0.002
 1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001
 note: dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c246 84/85, 100/100, 100/100: 380 -6/-1, 768 -20/-20 (c246 was low mode of bimodal LCP), 1440 -1/-1 (noise). mobile below G23 95 target (LCP-bound). Sample-only, no code changes.
+
+M03-c247 2026-10-29 lighthouse (next start :8601, existing build, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 87/86 LCP 3.9/4.1 s TBT 30 ms CLS 0-0.006
+768 mobile 83/82 LCP 4.6/4.7 s TBT 50 ms CLS 0
+1440 desktop 99/99 LCP 0.9/1.0 s TBT 0 ms CLS 0
+note: h1 present, product link rendered, so valid sample; dummy-length (60 char) SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c237 88/85, 86/88, 100/99: 380 -1/+1, 768 -3/-6, 1440 -1/0 (noise). mobile below G23 95 target (LCP-bound); desktop PASS. Sample-only, no code changes.
+
+M01-c248 2026-10-29 lighthouse (next start :8701, existing build, /, simulated throttling, 2 runs each)
+380 mobile 84/85 LCP 4.5/4.3 s TBT 26/27 ms CLS 0.003
+768 mobile 85/87 LCP 4.3/3.9 s TBT 26/25 ms CLS 0.003
+1440 desktop 100/99 LCP 0.8/0.9 s TBT 0 ms CLS 0.013
+note: dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c247 78/84, 80/80, 99/99: 380 +6/+1, 768 +5/+7, 1440 +1/0 (noise, bimodal LCP). mobile below G23 95 target (LCP-bound). Sample-only, no code changes.
