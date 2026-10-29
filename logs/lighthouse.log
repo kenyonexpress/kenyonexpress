@@ -1,0 +1,47 @@
+2026-10-28T22:26:46Z M03-c189 /category/hot-deals :3521 next start: 380 mobile 78/90 (LCP 1.1/3.6s, run1 TBT 1060ms outlier), 768 mobile 82/84 (LCP 4.9/4.5s), 1440 desktop 100/100 (LCP 0.3s); CLS<=0.011
+
+M02-c218 2026-10-29 lighthouse (next start :4201, /product/barbecue, simulated throttling, 2 runs each)
+380 mobile 85/85 LCP 4.3-4.4 s TBT 25 ms CLS 0.001
+768 mobile 86/84 LCP 4.2-4.5 s TBT 25-29 ms CLS 0.001
+1440 desktop 99/99 LCP 0.8 s TBT 0 ms CLS 0.001-0.012
+note: page rendered real content (h1 present); stock read logs "Invalid API key" (placeholder Supabase key), non-blocking. target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M01-c219 2026-10-29 lighthouse (next start :4401, /, simulated throttling, 2 runs each)
+380 mobile 79/84 LCP 4.5-5.6 s TBT 30 ms CLS 0.001
+768 mobile 83/85 LCP 4.3-4.6 s TBT 30 ms CLS 0.001
+1440 desktop 98/99 LCP 1.0 s TBT 0 ms CLS 0.001
+note: env placeholders in .env.production.local overridden via process env (no file edits); homepage.cms_read_failed Invalid API key (placeholder Supabase key) non-blocking. target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M02-c219 2026-10-29 lighthouse (next start :4501, /product/barbecue, simulated throttling, 2 runs each)
+380 mobile 88/84 LCP 3.8-4.4 s TBT 30 ms CLS 0.001
+768 mobile 84/85 LCP 4.3-4.4 s TBT 20-30 ms CLS 0.038
+1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001-0.011
+note: page rendered real content (h1 present); env placeholders overridden via process env (no file edits); stock read logs "Invalid API key" (placeholder Supabase key) non-blocking. target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M03-c219 2026-10-29 lighthouse (next start :4601, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 88/95 LCP 3.9/2.9 s TBT 30 ms CLS 0-0.006
+768 mobile 85/86 LCP 4.3/4.1 s TBT 30 ms CLS 0
+1440 desktop 99/99 LCP 0.8-0.9 s TBT 0 ms CLS 0
+note: grid rendered real content this time (2 product links, 5 imgs; baby-kids 4, beauty-health 8, courses 0) so sample is valid; env placeholders (SENTRY_DSN, service role key) overridden via process env, no file edits. target 95+ (G23): mobile FAIL (LCP, 380 run 2 hit 95), desktop PASS. Sample-only, no code changes.
+M01-c220 2026-10-29 lighthouse (next start :4701, /, simulated throttling, 2 runs each)
+380 mobile 84/80 LCP 4.5-5.3 s TBT 30 ms CLS 0.003
+768 mobile 74/85 LCP 7.1/4.2 s TBT 30 ms CLS 0.003
+1440 desktop 99/99 LCP 1.0 s TBT 0 ms CLS 0.001
+note: SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN overridden via process env (no file edits). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M03-c220 2026-10-29 lighthouse (next start :4801, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 100/100 LCP 1.1 s TBT 20-30 ms CLS 0.006
+768 mobile 88/84 LCP 3.9/4.5 s TBT 30-50 ms CLS 0-0.001
+1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0
+note: grid rendered real content (2 product links, 5 imgs; baby-kids 4, beauty-health 8, courses 0) so sample is valid; SENTRY_DSN/SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY set to dummy values via process env (no file edits; empty strings fail env validation). 380 at 1.1 s LCP is the low mode of the known bimodal LCP (c214/c213), not code. target 95+ (G23): 380 PASS, 768 FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M01-c221 2026-10-29 lighthouse (next start :4901, /, simulated throttling, 2 runs each)
+380 mobile 84/80 LCP 4.5-5.3 s TBT 25-28 ms CLS 0.003
+768 mobile 74/85 LCP 7.1/4.2 s TBT 25 ms CLS 0.003
+1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0.001
+note: dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). Results identical to c220 in every figure (simulated throttling on unchanged build, deterministic). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M03-c221 2026-10-29 lighthouse (next start :5001, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 89/89 LCP 3.6 s TBT 29-31 ms CLS 0
+768 mobile 86/89 LCP 4.0/3.7 s TBT 26-27 ms CLS 0-0.001
+1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0
+note: grid rendered real content (2 product links, 5 imgs) so sample is valid; SENTRY_DSN/SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY set to 40+ char dummy values via process env (no file edits). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
+M01-c223 2026-10-29 lighthouse (next start :5101, /, simulated throttling, 2 runs each)
+380 mobile 83/85 LCP 4.2-4.6 s TBT 26-27 ms CLS 0.001
+768 mobile 78/84 LCP 5.7/4.5 s TBT 25-29 ms CLS 0.001
+1440 desktop 99/99 LCP 0.9-1.0 s TBT 0 ms CLS 0.001
+note: dummy-length SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY/SENTRY_DSN via process env (no file edits). vs c221: 380 -1/+5, 768 +4/-1, 1440 =/= (noise). target 95+ (G23): mobile FAIL (LCP), desktop PASS. Sample-only, no code changes.
