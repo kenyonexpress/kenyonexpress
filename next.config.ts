@@ -247,6 +247,7 @@ const nextConfig: NextConfig = {
       { source: '/privacy-policy', destination: '/privacy', permanent: true },
       { source: '/refund_returns', destination: '/returns', permanent: true },
       { source: '/cancellation-policy', destination: '/returns', permanent: true },
+      { source: '/cookies', destination: '/cookie-policy', permanent: true },
     ]
   },
   turbopack: {
