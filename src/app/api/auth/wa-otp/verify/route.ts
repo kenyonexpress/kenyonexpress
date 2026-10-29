@@ -1,5 +1,6 @@
 import { recordAuthAttempt } from '@/lib/auth/auth-fallback'
 import { toE164Israeli } from '@/lib/auth/phone-otp'
+import { getSupabaseFlags } from '@/lib/flags/supabase-flags'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -18,7 +19,7 @@ import { type NextRequest, NextResponse } from 'next/server'
  * C65: Also marks phone verification milestone as verified when successful.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  if (!(await waOtpEnabled())) {
+  if (!(await getSupabaseFlags()).wa_otp_enabled) {
     return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 })
   }
   const body = (await request.json().catch(() => null)) as {

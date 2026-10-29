@@ -14,6 +14,8 @@ export const FLAGS = {
   'maintenance-banner': 'FLAG_MAINTENANCE_BANNER',
   // Live card charges. OFF until Cardcom production credentials are in place.
   payment_production: 'FLAG_PAYMENT_PRODUCTION',
+  // WhatsApp sign-in codes over the Meta Cloud API. OFF until the AUTHENTICATION template is approved.
+  wa_otp_enabled: 'FLAG_WA_OTP_ENABLED',
 } as const
 
 export type FlagName = keyof typeof FLAGS

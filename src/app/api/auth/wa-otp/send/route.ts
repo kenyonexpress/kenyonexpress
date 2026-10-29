@@ -1,5 +1,6 @@
 import { toE164Israeli } from '@/lib/auth/phone-otp'
 import { sendEmail } from '@/lib/email/resend'
+import { getSupabaseFlags } from '@/lib/flags/supabase-flags'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -26,8 +27,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 const GENERIC = { ok: true, message: 'אם המספר רשום אצלנו, שלחנו קוד כניסה בוואטסאפ או במייל.' }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  // Dark until Meta business verification (flag wa_otp_enabled, default off).
-  if (!(await waOtpEnabled())) {
+  if (!(await getSupabaseFlags()).wa_otp_enabled) {
     return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 })
   }
   const body = (await request.json().catch(() => null)) as { phone?: unknown } | null
@@ -36,11 +36,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const ip = await getClientIp()
   if (
-    !(await checkRateLimit(
-      `wa-otp-send:${phone}`,
-      WA_OTP_SEND_LIMIT,
-      WA_OTP_SEND_WINDOW_SECONDS,
-    )) ||
+    !(await checkRateLimit(`wa-otp-send:${phone}`, 3, 900)) ||
     !(await checkRateLimit(`wa-otp-send-ip:${ip}`, 20, 3600))
   ) {
     await recordOtpAttempt({
