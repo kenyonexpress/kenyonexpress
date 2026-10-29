@@ -1,3 +1,4 @@
+המשך מ: M14-c269 DONE-DEFERRED (2026-10-30): SENTRY_AUTH_TOKEN absent from .env.local (empty in .env.production/.env.vercel), cannot query Sentry release; HEAD 7a99acefc; re-verify after token is set
 המשך מ: M07-c269 DONE (2026-10-30): TODO/FIXME scan of tracked src found 6 TODOs (cardcom.ts:249,312; r2-migration.ts:103-106), all older than 7 days and already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / R2 stub needs service-role key); nothing resolvable now; no forbidden files touched
 המשך מ: G099 DONE (2026-10-30): prod READY j3fz3922p after 2 failed redeploys (pnpmfile checksum, stray root middleware.ts); deploy-watch.sh now queues DEPLOY-FIX, ntfy only after 3 fails; docs/G099-DEPLOY.md
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
