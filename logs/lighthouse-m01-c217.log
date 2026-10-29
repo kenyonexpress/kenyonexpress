@@ -1,0 +1,6 @@
+M01-c217 Lighthouse (performance), fresh next start :4001 (kenyonexpress-web/kenyonexpress, closeout/v1-final), 2026-10-29, route /
+width x 2 runs: perf score | LCP | TBT | CLS
+380 : 83/78 | 4.7-5.5 s | 20 ms | 0.001-0.004
+768 : 82/78 | 4.8-5.5 s | 20 ms | 0.001-0.004
+1440: 99/99 | 1.0 s | 0 ms | 0.022
+Diff vs M01-c216 (380 83/78, 768 84/78, 1440 98/99): 380 =, 768 -2/0, 1440 +1/0 (noise). Mobile below G23 95 (LCP-bound). Measurement only, no code changes.
