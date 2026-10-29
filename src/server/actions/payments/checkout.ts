@@ -25,14 +25,7 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
-import { isValidUnitCode } from '@/lib/coupons/unit-codes'
-import { couponStackingViolations } from '@/lib/fraud/coupon-stacking'
-import { enqueueFraudReview, hasBlockingFraudFlag } from '@/lib/fraud/review-queue'
-import {
-  checkCheckoutVelocity,
-  normalizeVelocityEmail,
-  normalizeVelocityPhone,
-} from '@/lib/fraud/velocity'
+import { getSupabaseFlags } from '@/lib/flags/supabase-flags'
 import { giftSendAt } from '@/lib/gifts/send-at'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
@@ -1291,6 +1284,14 @@ async function runSubmitCheckout(
   _prev: CheckoutFormState,
   formData: FormData,
 ): Promise<CheckoutFormState> {
+  // payment_production=false (the default): no live charge is created. The mock
+  // terminal moves no money, so tests and previews still run end to end.
+  if (!loadCardcomEnv().useMock && !(await getSupabaseFlags()).payment_production) {
+    return {
+      error: 'התשלום באתר טרם נפתח. ההזמנה לא נשלחה ולא בוצע חיוב.',
+      code: 'payment_disabled',
+    }
+  }
   const supabase = await createClient()
   // Guest-first: no sign-in before paying. A shopper without a session gets an
   // anonymous one here, and Google is offered AFTER payment on the return page

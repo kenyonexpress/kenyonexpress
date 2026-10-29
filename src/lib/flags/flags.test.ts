@@ -12,6 +12,7 @@ describe('phase 2 flags', () => {
         'courses-monthly',
         'maintenance-banner',
         'monthly-billing',
+        'payment_production',
         'physical-products',
         'tzimmer-calendar',
       ].sort(),
@@ -29,5 +30,13 @@ describe('phase 2 flags', () => {
 
   it('uses ASCII env names', () => {
     for (const n of Object.values(FLAGS)) expect(n).toMatch(/^[A-Z0-9_]+$/)
+  })
+})
+
+describe('payment_production', () => {
+  it('is OFF unless FLAG_PAYMENT_PRODUCTION is 1 or true', () => {
+    expect(isFlagOn('payment_production', {})).toBe(false)
+    expect(isFlagOn('payment_production', { FLAG_PAYMENT_PRODUCTION: 'false' })).toBe(false)
+    expect(isFlagOn('payment_production', { FLAG_PAYMENT_PRODUCTION: '1' })).toBe(true)
   })
 })

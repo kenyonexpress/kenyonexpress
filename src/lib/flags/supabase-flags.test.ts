@@ -32,6 +32,7 @@ describe('getSupabaseFlags', () => {
       'courses-monthly': false,
       'tzimmer-calendar': true,
       'monthly-billing': false,
+      payment_production: false,
     })
     expect(mockFetch).toHaveBeenCalledOnce()
   })
@@ -109,6 +110,7 @@ describe('getSupabaseFlags', () => {
       'courses-monthly': true,
       'tzimmer-calendar': false,
       'monthly-billing': false,
+      payment_production: false,
     })
     expect(mockFetch).not.toHaveBeenCalled()
   })
@@ -135,6 +137,7 @@ describe('getSupabaseFlags', () => {
       'courses-monthly': false,
       'tzimmer-calendar': false,
       'monthly-billing': false,
+      payment_production: false,
     })
   })
 
@@ -257,6 +260,7 @@ describe('getSupabaseFlags', () => {
       'courses-monthly': false,
       'tzimmer-calendar': false,
       'monthly-billing': false,
+      payment_production: false,
     })
   })
 })
