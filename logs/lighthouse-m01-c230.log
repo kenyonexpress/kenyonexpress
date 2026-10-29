@@ -1,0 +1,8 @@
+M01-c230 Lighthouse (performance), fresh next start :4701 (kenyonexpress-web/kenyonexpress, closeout/v1-final, same .next build as c229, BUILD_ID 07:17), 2026-10-29, route /
+width x 2 runs: perf score | LCP | TBT | CLS
+380 : 100/100 | 1.5 s | 20 ms | 0.022-0.025
+768 : 100/100 | 1.5 s | 20-40 ms | 0.002
+1440: 100/100 | 0.4 s | 0 ms | 0.009 (desktop preset)
+Cross-check with scripts/_lh-runs.mjs default mobile (2 runs): 100/100, FCP=LCP 1.5 s, TBT 20 ms, CLS 0.004-0.024.
+Diff vs M01-c229 (380 80/78, 768 78/78, 1440 98/98): 380 +20/+22, 768 +22/+22, 1440 +2/+2.
+Same build, page content intact (795 KB HTML, 246 img tags, product links present), so the jump is not a code change. Most likely Lantern simulation/CPU-benchmark variance on the host; prior ~20 runs all gave 78-87 mobile. Treat as unconfirmed outlier, not proof G23 is met; needs a repeat on a deployment. Measurement only, no code changes.
