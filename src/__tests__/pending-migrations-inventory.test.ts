@@ -255,12 +255,18 @@ describe('the pending migration inventory', () => {
     // it burned its number and sits in migrations/cancelled/, asserted below.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '000_infrastructure_dependencies.sql',
+      '164_club_tiers.sql',
       '301_supplier_verification_status.sql',
       '305_add_gift_scheduled_at_column.sql',
       '306_suppliers_open_weekends.sql',
       '310_fraud_detection_tables.sql',
+      '311_pg_cron_push_expiry_reminders.sql',
+      '312_payment_production_flag.sql',
+      '313_partner_redeem.sql',
+      '314_wa_otp_enabled_flag.sql',
       'preflight_000.sql',
       'preflight_162.sql',
+      'preflight_164.sql',
       'preflight_169.sql',
       'preflight_170.sql',
       'preflight_171.sql',
@@ -300,6 +306,10 @@ describe('the pending migration inventory', () => {
       'preflight_305.sql',
       'preflight_306.sql',
       'preflight_310.sql',
+      'preflight_311.sql',
+      'preflight_312.sql',
+      'preflight_313.sql',
+      'preflight_314.sql',
     ])
   })
 

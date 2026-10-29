@@ -35,10 +35,13 @@ async function requireCatalogWriter(): Promise<AdminSessionInfo | null> {
   }
 }
 
+type UpsertOptions = { redirectOnSuccess: boolean }
+const REDIRECT_AFTER_UPSERT: UpsertOptions = { redirectOnSuccess: true }
+
 async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
-  opts: { redirectOnSuccess: boolean } = { redirectOnSuccess: true },
+  opts: UpsertOptions = REDIRECT_AFTER_UPSERT,
 ): Promise<ProductFormState> {
   const session = await requireCatalogWriter()
   if (!session) return { error: 'אין הרשאה' }

@@ -65,7 +65,7 @@ always safe - it costs a cache miss, never a wrong answer. It is worth revisitin
 when the catalogue is large enough that a full cold rebuild is expensive, and
 not before.
 
-**Who invalidates.** Eight modules, and **not all of them are admin**:
+**Who invalidates.** Nine modules, and **not all of them are admin**:
 
 ```
 server/actions/admin/products.ts        6 calls
@@ -75,8 +75,9 @@ server/actions/admin/approvals.ts       2
 server/actions/admin/coupon-deals.ts    2
 server/actions/admin/reviews.ts         1
 server/actions/admin/product-location.ts 1
+server/actions/admin/product-import.ts  1
 server/actions/supplier/profile.ts      1
-                                       21
+                                       22
 ```
 
 **Corrected 2026-09-08.** This list said "four modules, all admin" and totalled

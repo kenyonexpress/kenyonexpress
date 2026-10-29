@@ -3,8 +3,11 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { mapCsvToForms, parseCsv, previewRow } from '@/lib/admin/product-csv'
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { updateTag } from 'next/cache'
 import { upsertProductNoRedirect } from './products'
 
 export type ProductImportState = {
@@ -106,7 +109,14 @@ async function runImport(formData: FormData): Promise<ProductImportState> {
 async function rollbackCreated(ids: string[]): Promise<number> {
   if (ids.length === 0) return 0
   const admin = createAdminClient()
-  await admin.from('product_variants').delete().in('product_id', ids)
-  const { data } = await admin.from('products').delete().in('id', ids).select('id')
+  const { error: variantsError } = await admin
+    .from('product_variants')
+    .delete()
+    .in('product_id', ids)
+  if (variantsError)
+    log.error('product_import.rollback_variants_failed', { reason: variantsError.message })
+  const { data, error } = await admin.from('products').delete().in('id', ids).select('id')
+  if (error) log.error('product_import.rollback_failed', { reason: error.message })
+  updateTag(CATALOGUE_TAG)
   return data?.length ?? 0
 }
