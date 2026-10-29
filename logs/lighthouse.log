@@ -158,3 +158,15 @@ M02-c234 2026-10-29 lighthouse (next start :7501, existing build, /product/barbe
 768 mobile 87/84 LCP 4.0/4.5 s TBT 30 ms CLS 0.038
 1440 desktop 99/100 LCP 0.9/0.7 s TBT 0 ms CLS 0.001-0.012
 note: h1 present, 10 product links (real content); dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c232 86/87, 84/87, 99/99: 380 0/-2, 768 +3/-3, 1440 =/+1 (noise). mobile below G23 95 target (LCP-bound); desktop PASS. Sample-only, no code changes.
+
+M01-c236 2026-10-29 lighthouse (next start :7701, existing build, /, simulated throttling, 2 runs each)
+380 mobile 83/84 LCP 4.7/4.5 s TBT 30 ms CLS 0.003
+768 mobile 80/76 LCP 5.3/6.9 s TBT 30 ms CLS 0.002
+1440 desktop 99/99 LCP 1.0 s TBT 0 ms CLS 0.001-0.013
+note: home rendered product links so valid sample; dummy-length SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). vs c234 80/84, 80/80, 100/99: 380 +3/0, 768 0/-4, 1440 -1/0 (noise, bimodal LCP). 380 and 768 below G23 95 target (LCP-bound). Sample-only, no code changes.
+
+M03-c236 2026-10-29 lighthouse (next start :7801, existing build, /category/hot-deals, simulated throttling, 2 runs each)
+380 mobile 89/89 LCP 3.7/3.6 s TBT 29/27 ms CLS 0
+768 mobile 84/89 LCP 4.5/3.6 s TBT 48/25 ms CLS 0-0.001
+1440 desktop 99/99 LCP 0.9 s TBT 0 ms CLS 0
+note: grid rendered (2 product links), h1 present, so valid sample; dummy-length (60 char) SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked (no file edits). screenEmulation width overridden per breakpoint. vs c233 100/100, 84/83, 100/100: 380 -11 (c233 was low mode of bimodal LCP), 768 0/+6, 1440 -1. mobile below G23 95 target (LCP-bound); desktop PASS. Sample-only, no code changes.
