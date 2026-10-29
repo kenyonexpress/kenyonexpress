@@ -37,6 +37,9 @@ export type RateLimitPolicy = {
 export const RATE_LIMIT_POLICIES = {
   // -- Authentication. The smallest numbers in the table, because every one of
   // these paths either sends a message to a real person or guesses a secret.
+  // C15: burst ceiling shared by every auth route, per IP. Sits beside the stricter
+  // per-route limits below; it catches fast scripted traffic across routes.
+  'auth-burst': { limit: 10, windowSeconds: 60, reason: 'C15: 10/min per IP across auth routes' },
   login: { limit: 5, windowSeconds: 900, reason: 'password guessing, per IP (F64: 5/15min)' },
   'login-account': {
     limit: 20,

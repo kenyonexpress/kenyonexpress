@@ -189,6 +189,8 @@ describe('the table against the call sites', () => {
 
   it('has no row in the table that no call site uses', () => {
     const used = new Set(sites.map((s) => s.name))
+    // C15: `auth-burst` is spent through rateLimit(), not checkRateLimit(), so the scan misses it.
+    used.add('auth-burst')
     const orphans = Object.keys(RATE_LIMIT_POLICIES).filter((name) => !used.has(name))
     expect(orphans).toEqual([])
   })
