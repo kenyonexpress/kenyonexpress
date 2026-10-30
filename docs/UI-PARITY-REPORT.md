@@ -943,3 +943,9 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-30 07:35 | category | 380 | n/a | REFUSED | `f2cdf8ec-dirty` | live side is our-build |
 | 2026-10-30 07:35 | category | 768 | n/a | REFUSED | `f2cdf8ec-dirty` | live side is our-build |
 | 2026-10-30 07:35 | category | 1440 | n/a | REFUSED | `f2cdf8ec-dirty` | live side is our-build |
+| 2026-10-30 07:54 | home | 380 | 39.83% | **FAIL** | `1b42c096-dirty` |  |
+| 2026-10-30 07:56 | home | 768 | 36.52% | **FAIL** | `1b42c096-dirty` |  |
+| 2026-10-30 07:58 | home | 1440 | 27.53% | **FAIL** | `1b42c096-dirty` |  |
+| 2026-10-30 08:01 | home | 380 | 39.85% | **FAIL** | `1b42c096-dirty` |  |
+| 2026-10-30 08:03 | home | 768 | 36.53% | **FAIL** | `1b42c096-dirty` |  |
+| 2026-10-30 08:05 | home | 1440 | 27.53% | **FAIL** | `1b42c096-dirty` |  |
