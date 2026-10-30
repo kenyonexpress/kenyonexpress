@@ -29843,3 +29843,4 @@ line only, and the full block for each goal is in the root file.
 המשך מ: M09-c238 DONE (2026-10-28): knip --dependencies re-run. Only unused devDeps: @capacitor/android (android/ platform), uuid + xcode (security pins via pnpm overrides/patches) - kept deliberately; no unused deps removed; remaining unused exports are ui-kit/money/payments/ledger public surface, left. No source changed, no forbidden files touched
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
 המשך מ: G109 DONE (2026-10-30): legal pages verified (C18 content), 91 tests pass, docs/G109-LEGAL.md; no forbidden files touched
+המשך מ: M05-c274 DONE (2026-10-30): pnpm test passes (622 files passed, 2 skipped; 7117 tests passed, 28 skipped), no test drift; committed regenerated docs/M-CYCLE-STATUS.md timestamps; archived 2 oldest STATE lines; no forbidden files touched
