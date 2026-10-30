@@ -47,7 +47,7 @@ const LEDGER: Record<string, Policy> = {
   // Sets the coupon cookie and 307s home. A redirect that sets a cookie is
   // per-caller by construction; NextResponse.redirect carries no
   // Cache-Control and Vercel does not cache a header-less 3xx.
-  'src/app/c/[code]/route.ts': 'redirect',
+  'src/app/coupon-qr/[code]/route.ts': 'redirect',
   'src/app/feed.xml/route.ts': 'public',
   'src/app/merchant.xml/route.ts': 'public',
 }

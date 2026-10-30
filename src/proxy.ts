@@ -2,10 +2,6 @@ import { AFFILIATE_COOKIE, AFFILIATE_COOKIE_MAX_AGE_S, isLinkCode } from '@/lib/
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
-import { edgeClientAddress, edgeShieldPolicyFor } from '@/lib/rate-limit/edge-shield'
-import { graduatedRateLimit } from '@/lib/rate-limit/graduated'
-import { tooManyRequests } from '@/lib/rate-limit/headers'
-import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { CSP_NONCE_HEADER, generateNonce } from '@/lib/security/csp-nonce'
@@ -24,6 +20,7 @@ import {
 import { maintenanceFlagOn } from '@/lib/security/maintenance-flag'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { wpLegacyTarget } from '@/lib/seo/wp-legacy'
+import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { recordAffiliateClick } from '@/server/affiliate/clicks'
 import { createServerClient } from '@supabase/ssr'
 import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server'
@@ -120,6 +117,18 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
   // it.
   if (pathname.startsWith('/monitoring')) return forward(request, requestId, nonce, pathname)
 
+  // A printed coupon QR lands on /c/<8-digit code>. The category page owns
+  // /c/<slug>, and Next refuses two different dynamic segment names ('code'
+  // and 'slug') at one path, which stopped the dev server and the build. The
+  // QR handler lives at /coupon-qr/<code> and this rewrite keeps the printed
+  // URL working; the visitor never sees the internal path.
+  const couponQr = /^\/c\/(\d{8})\/?$/.exec(pathname)
+  if (couponQr) {
+    const url = request.nextUrl.clone()
+    url.pathname = `/coupon-qr/${couponQr[1]}`
+    return withRequestId(NextResponse.rewrite(url), requestId, pathname, nonce)
+  }
+
   // Maintenance mode (MAINTENANCE_MODE=1). Payments, webhooks, crons, admin and
   // login are exempt; see lib/security/maintenance.ts for why.
   // rc5 F19: also the feature_flags row (cached 30s, fails open). Page visits
@@ -192,37 +201,33 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
 
   let supabaseResponse = forward(request, requestId, nonce, pathname)
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    requireAnonKey(),
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        // `headers` is the SECOND argument and it is not decoration. A response
-        // that carries a rotated session cookie must not be stored by a CDN or
-        // a reverse proxy: a cached one is served to the next visitor, session
-        // token included. @supabase/ssr 0.12 passes
-        // `Cache-Control: private, no-cache, no-store, must-revalidate,
-        // max-age=0` plus `Expires` and `Pragma` here, and an adapter that
-        // takes one parameter drops them silently - ours did, and so did the
-        // example in every version of this file before 0.12.
-        //
-        // Only on the FIRST cookie write per client, by the library's design;
-        // the object is empty afterwards. That is fine here because the proxy
-        // builds a client per request.
-        setAll(cookiesToSet, headers) {
-          for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
-          supabaseResponse = forward(request, requestId, nonce, pathname)
-          for (const { name, value, options } of cookiesToSet)
-            supabaseResponse.cookies.set(name, value, options)
-          for (const [key, value] of Object.entries(headers ?? {}))
-            supabaseResponse.headers.set(key, value)
-        },
+  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      // `headers` is the SECOND argument and it is not decoration. A response
+      // that carries a rotated session cookie must not be stored by a CDN or
+      // a reverse proxy: a cached one is served to the next visitor, session
+      // token included. @supabase/ssr 0.12 passes
+      // `Cache-Control: private, no-cache, no-store, must-revalidate,
+      // max-age=0` plus `Expires` and `Pragma` here, and an adapter that
+      // takes one parameter drops them silently - ours did, and so did the
+      // example in every version of this file before 0.12.
+      //
+      // Only on the FIRST cookie write per client, by the library's design;
+      // the object is empty afterwards. That is fine here because the proxy
+      // builds a client per request.
+      setAll(cookiesToSet, headers) {
+        for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
+        supabaseResponse = forward(request, requestId, nonce, pathname)
+        for (const { name, value, options } of cookiesToSet)
+          supabaseResponse.cookies.set(name, value, options)
+        for (const [key, value] of Object.entries(headers ?? {}))
+          supabaseResponse.headers.set(key, value)
       },
     },
-  )
+  })
 
   // Refresh the Supabase session — do not remove, required for cookie rotation.
   const {
