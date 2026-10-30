@@ -2,13 +2,14 @@ import { requireSection } from '@/lib/admin/rbac'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { updateClubTier } from '@/server/actions/admin/club-tiers'
-import type { ClubTierRow } from '@/server/queries/club'
+import type { ClubTierBenefitRow, ClubTierRow } from '@/server/queries/club'
 
 export const metadata = { title: 'דרגות מועדון' }
 
 const ERRORS: Record<string, string> = {
   forbidden: 'אין הרשאה לעריכת דרגות.',
-  invalid: 'בדקו את הערכים: שם עד 40 תווים, סף בשקלים עם עד שתי ספרות אחרי הנקודה.',
+  invalid:
+    'בדקו את הערכים: שם עד 40 תווים, סכומים בשקלים עם עד שתי ספרות אחרי הנקודה, קאשבק 0 עד 100.',
   save_failed: 'השמירה נכשלה. נסו שוב.',
 }
 
@@ -29,6 +30,12 @@ export default async function ClubTiersPage({ searchParams }: Props) {
     )
     .order('sort_order', { ascending: true })
   const tiers = (data ?? []) as ClubTierRow[]
+  const { data: benefitData } = await createAdminClient()
+    .from('club_tier_benefits' as never)
+    .select('tier_id, cashback_percent, early_access_hours, gift_value_agorot')
+  const benefitsByTier = new Map(
+    ((benefitData ?? []) as ClubTierBenefitRow[]).map((b) => [b.tier_id, b]),
+  )
 
   return (
     <div dir="rtl" className="max-w-3xl space-y-6">
@@ -105,6 +112,44 @@ export default async function ClubTiersPage({ searchParams }: Props) {
                 min={0}
                 defaultValue={t.sort_order}
                 className="rounded-md border border-border px-2 py-1"
+              />
+            </label>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="flex flex-col gap-1 text-sm">
+              קאשבק (אחוזים)
+              <input
+                name="cashback_percent"
+                type="number"
+                min={0}
+                max={100}
+                defaultValue={benefitsByTier.get(t.id)?.cashback_percent ?? 0}
+                className="rounded-md border border-border px-2 py-1"
+                dir="ltr"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              גישה מוקדמת (שעות)
+              <input
+                name="early_access_hours"
+                type="number"
+                min={0}
+                max={720}
+                defaultValue={benefitsByTier.get(t.id)?.early_access_hours ?? 0}
+                className="rounded-md border border-border px-2 py-1"
+                dir="ltr"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              שווי מתנה (ש&quot;ח)
+              <input
+                name="gift_value_ils"
+                inputMode="decimal"
+                defaultValue={agorotToIls(
+                  agorot(Number(benefitsByTier.get(t.id)?.gift_value_agorot ?? 0)),
+                ).toFixed(2)}
+                className="rounded-md border border-border px-2 py-1"
+                dir="ltr"
               />
             </label>
           </div>

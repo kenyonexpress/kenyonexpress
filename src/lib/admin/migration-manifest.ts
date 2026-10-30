@@ -674,4 +674,16 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '318',
+    file: '318_club_tier_benefits.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '319',
+    file: '319_affiliate_links_product.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const

@@ -22,6 +22,12 @@ const schema = z.object({
   benefits: z.string().max(2000),
   cashback_bonus_percent: z.coerce.number().min(0).max(100),
   sort_order: z.coerce.number().int().min(0).max(10_000),
+  cashback_percent: z.coerce.number().int().min(0).max(100),
+  early_access_hours: z.coerce.number().int().min(0).max(720),
+  gift_value_ils: z
+    .string()
+    .trim()
+    .regex(/^\d+(\.\d{1,2})?$/),
   active: z.enum(['on']).optional(),
 })
 
@@ -40,6 +46,9 @@ async function runUpdateClubTier(formData: FormData): Promise<void> {
     benefits: formData.get('benefits') ?? '',
     cashback_bonus_percent: formData.get('cashback_bonus_percent') ?? '0',
     sort_order: formData.get('sort_order') ?? '0',
+    cashback_percent: formData.get('cashback_percent') ?? '0',
+    early_access_hours: formData.get('early_access_hours') ?? '0',
+    gift_value_ils: formData.get('gift_value_ils') ?? '0',
     active: formData.get('active') ?? undefined,
   })
   if (!parsed.success) redirect(`${PAGE}?error=invalid`)
@@ -69,13 +78,26 @@ async function runUpdateClubTier(formData: FormData): Promise<void> {
     .eq('id', d.id)
   if (error) redirect(`${PAGE}?error=save_failed`)
 
+  // Benefit values live in club_tier_benefits (318), one row per tier.
+  const benefitPatch = {
+    tier_id: d.id,
+    cashback_percent: d.cashback_percent,
+    early_access_hours: d.early_access_hours,
+    gift_value_agorot: ilsToAgorot(d.gift_value_ils),
+    updated_at: patch.updated_at,
+  }
+  const { error: benefitError } = await createAdminClient()
+    .from('club_tier_benefits' as never)
+    .upsert(benefitPatch as never, { onConflict: 'tier_id' })
+  if (benefitError) redirect(`${PAGE}?error=save_failed`)
+
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
     action: 'updated',
     entityType: 'club_tiers',
     entityId: String(d.id),
-    changes: { old: null, new: patch },
+    changes: { old: null, new: { ...patch, ...benefitPatch } },
   })
 
   revalidatePath(PAGE)

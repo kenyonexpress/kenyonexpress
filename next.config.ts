@@ -258,6 +258,9 @@ const nextConfig: NextConfig = {
       { source: '/refund_returns', destination: '/returns', permanent: true },
       { source: '/cancellation-policy', destination: '/returns', permanent: true },
       { source: '/cookies', destination: '/cookie-policy', permanent: true },
+      // C103: the short addresses from the brief for the affiliate screens.
+      { source: '/u/affiliate', destination: '/account/affiliate', permanent: false },
+      { source: '/admin/affiliate', destination: '/admin/affiliates', permanent: false },
     ]
   },
   turbopack: {

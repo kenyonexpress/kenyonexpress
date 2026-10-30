@@ -1095,3 +1095,7 @@ site. The two have to change together.
 - `313_partner_redeem.sql` - G107 `vouchers.partner_pin` (8 digits), `vouchers_redemption_events` audit table and the advisory-locked `redeem_voucher_locked`. No money.
 - `314_wa_otp_enabled_flag.sql` - G111 seeds the `wa_otp_enabled` flag in `feature_flags` as `false`: the WhatsApp sign-in code routes answer 404. Boolean, no money.
 - `315_products_supplier_transfer_days.sql` - C97 adds nullable `products.supplier_transfer_days` (integer 0-90). No money.
+- `316_notification_consents_view.sql` - read view over notification consents. No money.
+- `317_user_passkeys_phone_verifications.sql` - C100 `user_passkeys` view and `user_phone_verifications` table. No money.
+- `318_club_tier_benefits.sql` - C102 `club_tier_benefits` (cashback_percent smallint, early_access_hours integer, gift_value_agorot bigint), one row per club tier, RLS read-active, writes via service role. Integer agorot only.
+- `319_affiliate_links_product.sql` - C103 `affiliate_links.product_id` plus a unique index (affiliate_id, product_id): one link per affiliate per product. No money.

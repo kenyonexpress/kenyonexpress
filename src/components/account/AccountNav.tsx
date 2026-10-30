@@ -1,5 +1,6 @@
 'use client'
 
+import TierBadge from '@/components/club/TierBadge'
 import { formatIls } from '@/lib/account/format'
 import type { Agorot } from '@/lib/money'
 import Link from 'next/link'
@@ -30,10 +31,12 @@ export default function AccountNav({
   fullName,
   email,
   walletBalanceAgorot,
+  tier,
 }: {
   fullName: string | null
   email: string
   walletBalanceAgorot: Agorot
+  tier?: { key: string; nameHe: string } | null
 }) {
   const pathname = usePathname()
 
@@ -42,6 +45,7 @@ export default function AccountNav({
       <div className="account-nav__head">
         <p className="account-nav__name">{fullName || 'שלום'}</p>
         <p className="account-nav__email">{email}</p>
+        {tier && <TierBadge tierKey={tier.key} nameHe={tier.nameHe} />}
       </div>
       <ul className="account-nav__list">
         {ITEMS.map((item) => {
