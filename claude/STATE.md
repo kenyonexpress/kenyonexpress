@@ -237,3 +237,4 @@
 המשך מ: M04-c286 DONE (2026-10-30): pnpm type-check (tsc --noEmit) clean, no drift; no code changes; no forbidden files touched
 המשך מ: M08-c286 DONE (2026-10-30): lighthouse mobile prod build, / 84/77 (LCP 4.5/5.8s), product sample slug 87/87 (LCP 3.9s); below G23 95, log only: logs/lighthouse-m08-c286.log
 המשך מ: M09-c286 DONE (2026-10-30): knip re-run — only unused dep @capacitor/android (native platform pkg, kept); remaining unused exports are shadcn/ui primitives, scripts, e2e helpers, locked/hero files — left as-is; no code changes; no forbidden files touched
+המשך מ: M04-c287 DONE (2026-10-30): pnpm type-check (tsc --noEmit) clean, no drift; no code changes; no forbidden files touched
