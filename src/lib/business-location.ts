@@ -10,7 +10,7 @@ import { wazeSearchLink } from '@/lib/waze'
  */
 const BUSINESS_QUERY = 'קניון EXPRESS'
 
-export function businessQuery(env: NodeJS.ProcessEnv = process.env): string {
+function businessQuery(env: NodeJS.ProcessEnv = process.env): string {
   const configured = env.NEXT_PUBLIC_BUSINESS_ADDRESS?.trim()
   return configured && configured.length > 0 ? configured : BUSINESS_QUERY
 }
