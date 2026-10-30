@@ -1,4 +1,3 @@
-המשך מ: G099 DONE (2026-10-30): prod READY j3fz3922p after 2 failed redeploys (pnpmfile checksum, stray root middleware.ts); deploy-watch.sh now queues DEPLOY-FIX, ntfy only after 3 fails; docs/G099-DEPLOY.md
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
 המשך מ: G109 DONE (2026-10-30): legal pages verified (C18 content), 91 tests pass, docs/G109-LEGAL.md; no forbidden files touched
 המשך מ: G101 BLOCKED (home gate unmeasurable: structural-mismatch abort + pending images; last ledger 43/45/40% vs 11%; docs/G101-HOME.md; no code changed)
@@ -297,3 +296,4 @@
 המשך מ: M16-c272 DONE (2026-10-30): only indexable product template src/app/(store)/product/[slug]/page.tsx emits two ld+json scripts (buildProductJsonLd Product w/ Offer, buildBreadcrumbJsonLd BreadcrumbList home>category>product, absolute urls); /product/[slug]/gift is robots noindex so exempt; json-ld.test.ts 26/26 pass; no code changes; no forbidden files touched
 המשך מ: M04-c273 DONE (2026-10-30): pnpm type-check (tsc --noEmit) clean, no tracked drift (only untracked logs), nothing to commit besides this line; no forbidden files touched
 המשך מ: M06-c273 DONE (2026-10-30): pnpm build passes clean, no tracked drift (only untracked logs), nothing to commit besides this line; no forbidden files touched
+המשך מ: M07-c273 DONE (2026-10-30): TODO/FIXME scan found 6 TODOs (cardcom.ts x2, r2-migration.ts x4), all >7d old, all already filed in docs/BACKLOG.md (need Cardcom prod creds / deferred service-role key); none resolvable; no forbidden files touched
