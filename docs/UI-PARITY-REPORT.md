@@ -991,3 +991,27 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-30 10:02 | product | 380 | 36.58% | **FAIL** | `42995276-dirty` |  |
 | 2026-10-30 10:05 | product | 768 | 29.82% | **FAIL** | `42995276-dirty` |  |
 | 2026-10-30 10:07 | product | 1440 | 20.52% | **FAIL** | `42995276-dirty` |  |
+| 2026-10-30 10:09 | category | 380 | n/a | REFUSED | `bc67eb35-dirty` | live side is our-build |
+| 2026-10-30 10:09 | category | 768 | n/a | REFUSED | `bc67eb35-dirty` | live side is our-build |
+| 2026-10-30 10:10 | category | 1440 | n/a | REFUSED | `bc67eb35-dirty` | live side is our-build |
+| 2026-10-30 11:59 | home | 380 | 39.83% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:01 | home | 768 | 36.52% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:03 | home | 1440 | 27.52% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:05 | home | 380 | 39.84% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:07 | home | 768 | 36.52% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:09 | home | 1440 | 27.52% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:11 | home | 380 | 39.84% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:13 | home | 768 | 36.52% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:15 | home | 1440 | 27.52% | **FAIL** | `bc67eb35-dirty` |  |
+| 2026-10-30 12:32 | category | 380 | n/a | REFUSED | `e2f2ddef-dirty` | live side is our-build |
+| 2026-10-30 12:32 | category | 768 | n/a | REFUSED | `e2f2ddef-dirty` | live side is our-build |
+| 2026-10-30 12:32 | category | 1440 | n/a | REFUSED | `e2f2ddef-dirty` | live side is our-build |
+| 2026-10-30 13:12 | home | 380 | 39.84% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:14 | home | 768 | 36.53% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:16 | home | 1440 | 27.53% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:19 | home | 380 | 39.85% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:21 | home | 768 | 36.53% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:23 | home | 1440 | 27.53% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:29 | product | 380 | 36.17% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:31 | product | 768 | 29.82% | **FAIL** | `22f5890b-dirty` |  |
+| 2026-10-30 13:34 | product | 1440 | 20.52% | **FAIL** | `22f5890b-dirty` |  |
