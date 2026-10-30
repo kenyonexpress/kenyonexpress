@@ -279,3 +279,4 @@
 המשך מ: M07-c295 DONE (2026-10-31): TODO/FIXME scan over src/scripts/migrations = 6 hits, all already filed in docs/BACKLOG.md (3 items: cardcom.ts:249, :312, r2-migration.ts:103-106), none new; BACKLOG re-verified; no forbidden files touched
 המשך מ: M18-c295 DONE (2026-10-31): claude/STATE.md 279 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
 המשך מ: M06-c296 DONE (2026-10-31): pnpm build passes clean (exit 0, all routes generated); no tracked drift in working tree (only untracked logs/*, STATE.md.bak); no source fixes needed; no forbidden files touched
+המשך מ: M09-c296 DONE (2026-10-31): dep grep audit = 0 removable (zero-hit pkgs are implicit: @mdx-js/loader, @capacitor/*, @types/*, tooling devDeps); dead exports = public API surface kept per c292-c294; no code change; no forbidden files touched
