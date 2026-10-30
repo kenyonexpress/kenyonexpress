@@ -163,3 +163,4 @@
 המשך מ: M10-c285 BLOCKED (2026-10-30): migrations/pending has ~30+ files, applied status not verifiable; Supabase MCP unauthenticated in this non-interactive session (list_migrations/apply_migration unavailable); db push forbidden; no code changes; no forbidden files touched)
 המשך מ: M17-c285 DONE-DEFERRED (/ RTL clean at 380/768/1440; /product needs Supabase env, static rtl-lint clean)
 המשך מ: M06-c286 DONE (2026-10-30): pnpm build passes (needs env from kenyonexpress-web/kenyonexpress/.env.local loaded in-process, not copied; without it Missing NEXT_PUBLIC_SUPABASE_URL at /coupons/[id]); no code fix needed; drift committed: STATE.md, M-CYCLE-STATUS.md, rtl-violations.md; no forbidden files touched)
+המשך מ: M07-c286 DONE (2026-10-30): TODO/FIXME scan of src/migrations/scripts finds only the 3 backlogged items (cardcom.ts:254, :317, r2-migration.ts:103-106), all blocked on creds/deferred; BACKLOG.md re-verified; no forbidden files touched)
