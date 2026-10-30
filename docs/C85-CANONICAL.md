@@ -31,3 +31,9 @@ Unit tests (site-url, sitemap, robots, seo): 72 pass.
 ## Post-deploy check
 `curl -s https://www.kenyonexpress.co.il/ | grep -o 'rel="canonical"[^>]*'` and `curl -s https://www.kenyonexpress.co.il/sitemap.xml | grep -c '<loc>https://kenyonexpress'` (expect 0).
 Production still serves the old apex output until this commit is deployed. Setting `NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` in Vercel production env is optional (next.config.ts default covers it).
+
+## Re-run 2026-10-30 (C94a)
+Commit 9e2c8b038 is in origin/main, but production still serves apex: canonical `https://kenyonexpress.co.il`, og:url apex, sitemap `<loc>` apex, robots `Host`/`Sitemap` apex. Apex -> www 308 is correct; www returns 200.
+Cause not fixable here: layout.tsx (locked) defaults siteUrl to apex, and the Vercel production deploy/env (`NEXT_PUBLIC_APP_URL`) is stale or set to apex. Vercel MCP returns 403 on deployments and 404 on env, so I could not inspect or redeploy.
+
+RESULT: BLOCKED prod still serves apex canonical; Vercel access 403, layout.tsx locked
