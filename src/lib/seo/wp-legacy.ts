@@ -1,3 +1,4 @@
+import { WP_EXACT_REDIRECTS, WP_PREFIX_REDIRECTS } from '../../../docs/redirects.map'
 import { normalizePath } from './normalize-path'
 
 /**
@@ -13,28 +14,13 @@ import { normalizePath } from './normalize-path'
  * The lookup in the proxy runs first; a table row wins over anything here.
  */
 
-const EXACT: Readonly<Record<string, string>> = {
-  '/shop': '/products',
-  '/my-account': '/account',
-  '/contact-us': '/contact',
-  '/about-us': '/about',
-  '/blog-2': '/blog',
-  '/home': '/',
-  '/index.php': '/',
-}
-
-const PREFIXES: ReadonlyArray<readonly [from: string, to: string]> = [
-  ['/product-category/', '/category/'],
-  ['/product-tag/', '/search?q='],
-]
-
 /** The new path for an old WordPress path, or null if it is not a legacy shape. */
 export function wpLegacyTarget(pathname: string): string | null {
   const path = normalizePath(pathname)
-  const exact = EXACT[path]
+  const exact = WP_EXACT_REDIRECTS[path]
   if (exact) return exact
 
-  for (const [from, to] of PREFIXES) {
+  for (const [from, to] of WP_PREFIX_REDIRECTS) {
     if (!path.startsWith(from)) continue
     // Woo nests categories (/product-category/a/b/); the leaf is the slug here.
     const leaf = path.slice(from.length).split('/').filter(Boolean).pop()

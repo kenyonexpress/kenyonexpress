@@ -11,6 +11,10 @@ describe('wpLegacyTarget', () => {
     expect(wpLegacyTarget('/my-account')).toBe('/account')
     expect(wpLegacyTarget('/contact-us/')).toBe('/contact')
   })
+  it('maps old policy and cart slugs', () => {
+    expect(wpLegacyTarget('/terms-and-conditions/')).toBe('/terms')
+    expect(wpLegacyTarget('/cart-2')).toBe('/cart')
+  })
   it('leaves current routes alone', () => {
     expect(wpLegacyTarget('/product/some-slug')).toBeNull()
     expect(wpLegacyTarget('/category/home')).toBeNull()
