@@ -69,3 +69,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M16-c278 DONE (2026-10-30): src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList (via src/lib/seo/json-ld.ts, 26 tests pass); gift sub-page is noindex; no code changes, no forbidden files touched
 המשך מ: M07-c281 DONE (2026-10-30): TODO/FIXME scan of src/migrations/scripts: 6 comment lines in 3 groups (cardcom.ts:249, :312; r2-migration.ts:103-106), all older than 7 days, all already filed in docs/BACKLOG.md (Cardcom prod creds / Supabase service-role key blocked); nothing new to file or resolve; no forbidden files touched
 המשך מ: M06-c282 DONE (2026-10-30): pnpm build clean (exit 0); no tracked drift after build; no code changes, no forbidden files touched
+המשך מ: M13-c282 DONE (2026-10-30): dev server /api/health 200 {database:ok, search:not_configured}; /api/ready 200 {database, redis, cardcom ok; meilisearch, r2 not_configured}; no code changes
