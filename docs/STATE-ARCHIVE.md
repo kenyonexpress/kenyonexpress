@@ -29844,3 +29844,5 @@ line only, and the full block for each goal is in the root file.
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
 המשך מ: G109 DONE (2026-10-30): legal pages verified (C18 content), 91 tests pass, docs/G109-LEGAL.md; no forbidden files touched
 המשך מ: M05-c274 DONE (2026-10-30): pnpm test passes (622 files passed, 2 skipped; 7117 tests passed, 28 skipped), no test drift; committed regenerated docs/M-CYCLE-STATUS.md timestamps; archived 2 oldest STATE lines; no forbidden files touched
+המשך מ: G101 BLOCKED (home gate unmeasurable: structural-mismatch abort + pending images; last ledger 43/45/40% vs 11%; docs/G101-HOME.md; no code changed)
+המשך מ: M13-c274 DONE (2026-10-30): next dev :3111 with real .env.local: /api/health 200 {ok:true,database:ok,search:not_configured,latency 304ms}; /api/ready 200 {ok:true,database:ok,redis:ok,cardcom:ok,meilisearch+r2:not_configured}; no 401, no placeholder; verification only, no code changes; no forbidden files touched
