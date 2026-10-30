@@ -1,3 +1,4 @@
+המשך מ: M16-c287 DONE (2026-10-30): re-verified single PDP template product/[slug]/page.tsx renders Product + BreadcrumbList JSON-LD (two script tags, unconditional, full category trail, no AggregateRating); json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
 המשך מ: M16-c284 DONE (2026-10-30): single PDP template product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD for every product (full category trail, offers only when price/coupon honest, no AggregateRating without reviews); json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
 המשך מ: M14-c284 DONE-DEFERRED (2026-10-30): no SENTRY_AUTH_TOKEN in any .env file (no .env.local present); release-vs-HEAD (37e152cc2) check deferred until token is set; no forbidden files touched
 המשך מ: M04-c284 DONE (2026-10-30): pnpm type-check exit 0, no drift to fix; only pre-existing docs/M-CYCLE-STATUS.md modification and untracked logs left unstaged; no forbidden files touched
