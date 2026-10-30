@@ -17,8 +17,6 @@ export function turnstileEnabled(env: NodeJS.ProcessEnv = process.env): boolean 
   return flag !== '0' && flag !== 'false'
 }
 
-export const turnstileConfigured = turnstileEnabled
-
 export const TURNSTILE_FIELD = 'cf-turnstile-response'
 
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
