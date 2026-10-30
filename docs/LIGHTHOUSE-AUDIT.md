@@ -245,3 +245,16 @@ Lighthouse mobile, performance only, `/category/phones-computers` on localhost:3
 | provided | 2 | 100 | 0.3 s | 10 ms | 0.007 |
 
 Modelled (simulate) runs swing 13 points on an unchanged tree and sit below the G23 target of 95; unthrottled (provided) runs are 100. Per docs/PERFORMANCE-BUDGET.md the localhost simulate number is not a reliable regression signal. Re-measure the modelled score against a `next build && next start` or a deployed URL before acting. No code was changed.
+
+## M08-c276 sample — mobile performance, 2026-10-30
+
+Lighthouse mobile, performance only, on localhost:3000 (process is `next-server`, but HTML still carries turbopack markers, so treat as unverified production). `/product` alone returns 404; the product route is `/product/<slug>`, measured with `/product/עוזרת-אישית-שירותי-משרד`.
+
+| Page | Throttling | Perf | FCP | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|
+| / | simulate | 47 | 1.3 s | 9.8 s | 1,970 ms | 0.001 |
+| / | provided | 100 | - | 0.5 s | 0 ms | 0.001 |
+| /product/<slug> | simulate | 72 | 1.7 s | 5.6 s | 290 ms | 0.001 |
+| /product/<slug> | provided | 100 | - | 0.4 s | 0 ms | 0.001 |
+
+Single run per row. Modelled (simulate) scores are below the G23 target of 95 on both pages and the home TBT is high; unthrottled (provided) is 100. Per docs/PERFORMANCE-BUDGET.md the localhost simulate number is not a reliable regression signal; re-measure against a clean `next build && next start` or a deployed URL before acting. No code was changed.
