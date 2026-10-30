@@ -59,3 +59,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c270 DONE (pnpm type-check: tsc --noEmit clean, no drift, no code changes)
 המשך מ: M05-c270 DONE (pnpm test: 622 files passed, 2 skipped; 7117 tests passed, 28 skipped; no code changes; drift = STATE + M-CYCLE-STATUS timestamp committed)
 המשך מ: M16-c270 DONE (product page src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList via lib/seo/json-ld; json-ld.test.ts 26 passed; no code changes)
+המשך מ: M06-c272 DONE (pnpm build: clean; no code changes; drift = M-CYCLE-STATUS timestamp committed)
