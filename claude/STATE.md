@@ -160,3 +160,6 @@
 המשך מ: C84 BLOCKED (2026-10-30): DB schema missing migration 291, no DDL access; docs/C84-E2E.md
 המשך מ: C85 BLOCKED (2026-10-30): prod still serves apex canonical/sitemap/robots despite 9e2c8b038 in main; Vercel API 403, layout.tsx locked; docs/C85-CANONICAL.md
 המשך מ: C94a DONE (2026-10-30): C81 C84 C85 re-run, all BLOCKED with RESULT lines in docs
+המשך מ: M10-c285 BLOCKED (2026-10-30): migrations/pending has ~30+ files, applied status not verifiable; Supabase MCP unauthenticated in this non-interactive session (list_migrations/apply_migration unavailable); db push forbidden; no code changes; no forbidden files touched)
+המשך מ: M17-c285 DONE-DEFERRED (/ RTL clean at 380/768/1440; /product needs Supabase env, static rtl-lint clean)
+המשך מ: M06-c286 DONE (2026-10-30): pnpm build passes (needs env from kenyonexpress-web/kenyonexpress/.env.local loaded in-process, not copied; without it Missing NEXT_PUBLIC_SUPABASE_URL at /coupons/[id]); no code fix needed; drift committed: STATE.md, M-CYCLE-STATUS.md, rtl-violations.md; no forbidden files touched)

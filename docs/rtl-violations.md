@@ -6,10 +6,10 @@ should be replaced with logical properties that flip automatically.
 
 ## Summary
 
-- Generated: 2026-10-29
+- Generated: 2026-10-30
 - Files scanned: 2064
-- Files with violations: 62
-- Total violations: 125
+- Files with violations: 60
+- Total violations: 120
 
 ### By token
 
@@ -17,25 +17,24 @@ should be replaced with logical properties that flip automatically.
 | --- | --- |
 | `right-` | 22 |
 | `mr-` | 18 |
-| `text-right` | 16 |
 | `left:` | 15 |
-| `left-` | 14 |
+| `text-right` | 13 |
 | `text-left` | 13 |
+| `left-` | 13 |
 | `right:` | 8 |
 | `text-align:right` | 7 |
 | `border-l` | 6 |
 | `text-align:left` | 3 |
 | `margin-left` | 2 |
-| `rounded-r` | 1 |
 
 ## Violations
 
 | File | Line | Physical | Logical replacement |
 | --- | --- | --- | --- |
-| src/__tests__/ux48-a11y-wcag-aa.test.ts | 130 | `left:` | `inset-inline-start:` |
-| src/__tests__/ux48-a11y-wcag-aa.test.ts | 130 | `right:` | `inset-inline-end:` |
-| src/__tests__/ux48-a11y-wcag-aa.test.ts | 131 | `left:` | `inset-inline-start:` |
-| src/__tests__/ux48-a11y-wcag-aa.test.ts | 131 | `right:` | `inset-inline-end:` |
+| src/__tests__/ux48-a11y-wcag-aa.test.ts | 134 | `left:` | `inset-inline-start:` |
+| src/__tests__/ux48-a11y-wcag-aa.test.ts | 134 | `right:` | `inset-inline-end:` |
+| src/__tests__/ux48-a11y-wcag-aa.test.ts | 135 | `left:` | `inset-inline-start:` |
+| src/__tests__/ux48-a11y-wcag-aa.test.ts | 135 | `right:` | `inset-inline-end:` |
 | src/app/(admin)/admin/discounts/page.tsx | 78 | `text-right` | `text-end` |
 | src/app/(admin)/admin/growth/page.tsx | 183 | `text-right` | `text-end` |
 | src/app/(admin)/admin/observability/page.tsx | 183 | `text-left` | `text-start` |
@@ -80,10 +79,7 @@ should be replaced with logical properties that flip automatically.
 | src/app/error-pages.test.tsx | 7 | `right-` | `end-` |
 | src/app/error-pages.test.tsx | 37 | `right-` | `end-` |
 | src/app/globals.css | 500 | `left:` | `inset-inline-start:` |
-| src/app/not-found.tsx | 8 | `left-` | `start-` |
-| src/app/not-found.tsx | 51 | `text-right` | `text-end` |
-| src/app/not-found.tsx | 56 | `left-` | `start-` |
-| src/app/not-found.tsx | 56 | `rounded-r` | `rounded-e` |
+| src/app/not-found.tsx | 7 | `left-` | `start-` |
 | src/app/test-form-inputs/page.tsx | 288 | `mr-` | `me-` |
 | src/app/test-form-inputs/page.tsx | 292 | `mr-` | `me-` |
 | src/app/test-form-inputs/page.tsx | 296 | `mr-` | `me-` |
@@ -112,8 +108,6 @@ should be replaced with logical properties that flip automatically.
 | src/components/cart/CartLineItem.tsx | 96 | `right-` | `end-` |
 | src/components/category/PriceRangeSlider.tsx | 56 | `left:` | `inset-inline-start:` |
 | src/components/category/PriceRangeSlider.tsx | 57 | `right:` | `inset-inline-end:` |
-| src/components/FooterAccordion.test.tsx | 131 | `text-right` | `text-end` |
-| src/components/FooterAccordion.tsx | 22 | `text-right` | `text-end` |
 | src/components/home/BenefitBar.test.tsx | 33 | `right-` | `end-` |
 | src/components/home/BenefitBar.test.tsx | 51 | `right-` | `end-` |
 | src/components/home/BenefitBar.tsx | 49 | `right-` | `end-` |
