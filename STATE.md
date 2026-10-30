@@ -66,3 +66,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M06-c277 DONE (2026-10-30): pnpm build clean (exit 0); no tracked drift after build; no code changes
 המשך מ: M05-c278 DONE (2026-10-30): pnpm test: 622 files passed, 2 skipped; 7117 tests passed, 28 skipped; no code changes; drift = M-CYCLE-STATUS timestamp committed
 המשך מ: M09-c278 DONE (2026-10-30): re-audit of deps vs src/scripts/e2e/tests; only unreferenced deps are @types/*, @mdx-js/loader, biome, husky, lint-staged, typescript, vitest coverage, capacitor platforms (all implicit/tooling, required); no dead exports to remove beyond intentional API surface; no code changes, no forbidden files touched
+המשך מ: M16-c278 DONE (2026-10-30): src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList (via src/lib/seo/json-ld.ts, 26 tests pass); gift sub-page is noindex; no code changes, no forbidden files touched
