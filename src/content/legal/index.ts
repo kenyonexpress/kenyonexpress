@@ -18,7 +18,7 @@ import { privacyPolicy, termsAndConditions } from '@/content/legal/wp-migrated'
  * `/refund_returns` keeps WordPress's underscore. It is ugly and it is the
  * address printed on receipts and indexed by search engines.
  */
-export const LEGAL_PAGES = {
+const LEGAL_PAGES = {
   'privacy-policy': {
     title: privacyPolicy.title,
     updatedAt: '2026-08-07',

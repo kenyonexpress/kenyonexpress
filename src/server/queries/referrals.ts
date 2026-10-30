@@ -86,7 +86,7 @@ interface ReferralDbRow {
  * should not be able to mint one row per visit. The button on the page is what
  * writes, through `ensureMyReferralCode`.
  */
-export async function getMyReferralCode(): Promise<string | null> {
+async function getMyReferralCode(): Promise<string | null> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -123,7 +123,7 @@ export async function getMyReferralCode(): Promise<string | null> {
  * referrer who was themselves referred would otherwise pay for two round trips
  * to build one screen.
  */
-export async function getMyReferrals(): Promise<{
+async function getMyReferrals(): Promise<{
   asReferrer: ReferralRow[]
   asReferred: ReferralRow | null
 }> {
