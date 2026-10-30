@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-30 (M18-c273: STATE.md נבדק, 148 שורות, מתחת ל-300, אין צורך בארכוב; docs/STATE-ARCHIVE.md קיים. לא נערכו קבצי קוד.) **המשך מ: M18-c273 DONE**
 Updated: 2026-10-30 (M12-c272: robots.ts re-verified, robots.test.ts 8/8. Allow / , sensitive paths disallowed, no blanket disallow, no sitemap URL hit by a disallow rule (/coupons vs /coupon/ ok). לא נערכו קבצי קוד.) **המשך מ: M12-c272 DONE**
 Updated: 2026-10-30 (M12-c271: robots.ts re-verified, robots.test.ts 8/8. Live www robots.txt safe: no blanket disallow, /redeem/ /coupon/ /gift/ /account/ /supplier/ /admin/ /api/ /checkout blocked; stale vs source (lacks /login /signup /mfa /admin-mfa, has legacy /voucher/; Host/Sitemap on apex, set NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il at next deploy). לא נערכו קבצי קוד.) **המשך מ: M12-c271 DONE**
 Updated: 2026-10-30 (M12-c270: robots.txt production-safe. src/app/robots.ts: allow / ; disallow redeem, coupon, gift, account, supplier, scan, admin, checkout, cart, auth, api, reset/forgot-password, login, signup, mfa, admin-mfa, debug; sitemap+host מ-siteUrl() בלי slash כפול, ברירת מחדל https://kenyonexpress.co.il. robots.test.ts 8/8 עובר. אין חסימה גורפת. לא נערכו קבצי קוד.) **המשך מ: M12-c270 DONE**
