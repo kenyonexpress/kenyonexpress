@@ -1,3 +1,4 @@
+המשך מ: C96 BLOCKED (2026-10-30): home sweep — categories/featured/coupons/brands/newsletter not mounted, no infinite scroll, gate home 380=12.83% 768=13.80% fails; region menu is in locked Header.tsx; see docs/C96-home.md; no forbidden files touched
 המשך מ: M18-c281 DONE (2026-10-30): claude/STATE.md already 212 lines (<300) after the M18-c260 trim, so no entries needed archiving; docs/STATE-ARCHIVE.md untouched; no forbidden files touched
 המשך מ: M09-c282 DONE (2026-10-30): knip --dependencies re-run — only flagged dep is @capacitor/android (native platform pkg for android/ + capacitor.config.ts, kept); exports left as intentional public surface per M09-c248/c249; no code change; no forbidden files touched
 המשך מ: M16-c281 DONE (2026-10-30): verified /product/[slug] emits Product (+Offer, no AggregateRating) and BreadcrumbList JSON-LD via src/lib/seo/json-ld.ts; gift sub-route is noindex; json-ld.test.ts 26/26 pass; no code change; no forbidden files touched
