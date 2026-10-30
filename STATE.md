@@ -82,3 +82,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M15-c286 DONE (2026-10-30): prod build, / and /product/<slug> both 200 with 0 console errors/pageerrors/failed requests (dev-only React eval notice ignored); no code change
 המשך מ: M08-c292 DONE (2026-10-31): Lighthouse mobile logged, / 71/69 (LCP 9.2-9.6s, hero locked), product 97/90; log only, no code change
 המשך מ: M06-c293 DONE (2026-10-31): pnpm build clean (exit 0); no tracked drift after build; no code changes, no forbidden files touched
+המשך מ: M06-c294 DONE (2026-10-31): pnpm build clean; no tracked drift after build; no code changes, no forbidden files touched
