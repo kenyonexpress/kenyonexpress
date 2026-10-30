@@ -7,7 +7,7 @@ should be replaced with logical properties that flip automatically.
 ## Summary
 
 - Generated: 2026-10-30
-- Files scanned: 1568
+- Files scanned: 1578
 - Files with violations: 55
 - Total violations: 104
 
@@ -92,7 +92,7 @@ should be replaced with logical properties that flip automatically.
 | src/components/a11y/SkipLink.tsx | 32 | `right-` | `end-` |
 | src/components/admin/CategoryDialog.tsx | 78 | `right-` | `end-` |
 | src/components/admin/CouponDealForm.tsx | 362 | `right-` | `end-` |
-| src/components/admin/ProductForm.tsx | 1460 | `text-right` | `text-end` |
+| src/components/admin/ProductForm.tsx | 1478 | `text-right` | `text-end` |
 | src/components/admin/ReferralQueueRow.tsx | 61 | `mr-` | `me-` |
 | src/components/admin/reports/SalesChart.tsx | 68 | `right:` | `inset-inline-end:` |
 | src/components/admin/reports/SalesChart.tsx | 68 | `left:` | `inset-inline-start:` |
