@@ -23,7 +23,7 @@ import { type SupplierLeadPayload, alertTeam, createSupplierLead } from './lead-
  * reads the outcome.
  */
 
-export const VERIFICATION_AMOUNT_AGOROT = agorot(100)
+const VERIFICATION_AMOUNT_AGOROT = agorot(100)
 
 /**
  * C101: a charge on a live (non-sandbox) Cardcom terminal needs

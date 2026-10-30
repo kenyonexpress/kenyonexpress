@@ -1,18 +1,6 @@
 import { CART_LINE_MAX_QUANTITY, type CartViewItem } from '@/lib/cart/types'
 
 /**
- * `shekels` and `shekelsRounded` moved to `@/lib/money-format`.
- *
- * They were never cart-specific -- `CheckoutForm` already imported them from
- * here, through a path that says "cart" -- and there were five other private
- * copies of the same idea across the app, three of which took shekels rather
- * than agorot under the same name. One formatter, one unit, one place.
- *
- * What stays here is what is genuinely about a cart line.
- */
-export { shekels, shekelsRounded } from '@/lib/money-format'
-
-/**
  * What to tell the shopper about a line that cannot be ordered.
  *
  * Every one of these used to be the single sentence "המוצר אינו זמין — הסירו
@@ -20,7 +8,7 @@ export { shekels, shekelsRounded } from '@/lib/money-format'
  * that is merely short of stock does not need removing at all: lowering the
  * quantity fixes it, and the stepper now stops at the number named here.
  *
- * It lives beside `shekels` rather than in `CartLineItem.tsx`, which is the
+ * It lives here rather than in `CartLineItem.tsx`, which is the
  * component that renders it, because that file imports `useCart` and so reaches
  * `@/server/actions/cart` and its `server-only` marker: a test importing the
  * component to check one sentence fails to transform at all. This is a pure
