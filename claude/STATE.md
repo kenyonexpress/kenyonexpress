@@ -1,3 +1,4 @@
+המשך מ: M16-c294 DONE (2026-10-31): /product/[slug] is the only product route; emits JSON-LD Product + BreadcrumbList (full category trail) for every product, notFound() otherwise; json-ld.test.ts 26/26 pass; no aggregateRating; no code change, no forbidden files touched
 המשך מ: M18-c293 DONE (2026-10-31): claude/STATE.md already 269 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
 המשך מ: M05-c293 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M06-c292 DONE (2026-10-31): pnpm build clean; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
