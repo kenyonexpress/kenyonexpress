@@ -80,3 +80,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M05-c284 DONE (pnpm test 626 files passed, 7140 tests; drift fixed = migration manifest regenerated for 321, affiliate/club-tiers/wa-otp discarded reads now name error, affiliate.ts excused in catalogue-cache test; type-check + lint green)
 המשך מ: M16-c285 DONE (2026-10-30): product/[slug]/page.tsx is the only product page template; emits Product (buildProductJsonLd) + BreadcrumbList (buildBreadcrumbJsonLd, בית > category > product) as JSON-LD; json-ld.test.ts 26 pass; no code change
 המשך מ: M15-c286 DONE (2026-10-30): prod build, / and /product/<slug> both 200 with 0 console errors/pageerrors/failed requests (dev-only React eval notice ignored); no code change
+המשך מ: M08-c292 DONE (2026-10-31): Lighthouse mobile logged, / 71/69 (LCP 9.2-9.6s, hero locked), product 97/90; log only, no code change
