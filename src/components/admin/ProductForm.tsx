@@ -501,16 +501,16 @@ export default function ProductForm({
               >
                 תוקף השובר (ימים)
               </label>
-              <input
+              <select
                 id="coupon_expiry_days"
                 name="coupon_expiry_days"
-                type="number"
-                min="1"
-                step="1"
-                defaultValue={product?.coupon_expiry_days ?? ''}
-                dir="ltr"
-                className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-              />
+                defaultValue={product?.coupon_expiry_days ?? 90}
+                className="w-full  rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="30">30 ימים</option>
+                <option value="60">60 ימים</option>
+                <option value="90">90 ימים</option>
+              </select>
             </div>
           ) : null}
         </div>
@@ -679,16 +679,16 @@ export default function ProductForm({
                 >
                   תוקף השובר (ימים) *
                 </label>
-                <input
+                <select
                   id="coupon_expiry_days"
                   name="coupon_expiry_days"
-                  type="number"
-                  min="1"
-                  step="1"
-                  defaultValue={product?.coupon_expiry_days ?? ''}
-                  dir="ltr"
+                  defaultValue={product?.coupon_expiry_days ?? 90}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                />
+                >
+                  <option value="30">30 ימים</option>
+                  <option value="60">60 ימים</option>
+                  <option value="90">90 ימים</option>
+                </select>
                 <p className="mt-1 text-xs text-gray-500">מיום הרכישה</p>
               </div>
               <div>
@@ -1071,17 +1071,16 @@ export default function ProductForm({
             >
               תוקף הקופון (ימים){isCouponProduct ? ' *' : ''}
             </label>
-            <input
+            <select
               id="coupon_expiry_days"
               name="coupon_expiry_days"
-              type="number"
-              min="1"
-              step="1"
-              defaultValue={product?.coupon_expiry_days ?? ''}
-              required={isCouponProduct}
-              dir="ltr"
+              defaultValue={product?.coupon_expiry_days ?? 90}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
+            >
+              <option value="30">30 ימים</option>
+              <option value="60">60 ימים</option>
+              <option value="90">90 ימים</option>
+            </select>
             <p className="mt-1 text-xs text-gray-500">
               נספר מרגע הרכישה. אין ברירת מחדל. בפקיעה בלי מימוש הסכום ששולם נזקף לארנק הלקוח
             </p>
@@ -1229,6 +1228,25 @@ export default function ProductForm({
               <option value="biweekly">כל 14 ימים</option>
               <option value="monthly">כל 30 ימים</option>
             </select>
+          </div>
+          <div>
+            <label
+              htmlFor="supplier_transfer_days"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              ימים עד העברה לספק
+            </label>
+            <input
+              id="supplier_transfer_days"
+              name="supplier_transfer_days"
+              type="number"
+              min="0"
+              max="90"
+              step="1"
+              defaultValue={product?.supplier_transfer_days ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
           </div>
           <div>
             <label

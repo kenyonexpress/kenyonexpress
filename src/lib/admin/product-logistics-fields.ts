@@ -30,6 +30,11 @@ const fieldSchemas = {
     .int('חלון ביטול חייב להיות מספר שלם')
     .min(0, 'חלון ביטול בין 0 ל-365 ימים')
     .max(365, 'חלון ביטול בין 0 ל-365 ימים'),
+  supplier_transfer_days: z.coerce
+    .number({ message: 'ימי העברה לספק חייבים להיות מספר' })
+    .int('ימי העברה לספק חייבים להיות מספר שלם')
+    .min(0, 'ימי העברה לספק בין 0 ל-90')
+    .max(90, 'ימי העברה לספק בין 0 ל-90'),
   payout_cadence: z.enum(PAYOUT_CADENCES, { message: 'מחזור תשלום: weekly, biweekly או monthly' }),
   full_address: z.string().trim().min(1).max(200, 'כתובת עד 200 תווים'),
   shipping_price_agorot: z.coerce
@@ -44,6 +49,7 @@ const LOGISTICS_KEYS = Object.keys(fieldSchemas) as LogisticsKey[]
 
 type LogisticsFields = Partial<{
   cancellation_window_days: number | null
+  supplier_transfer_days: number | null
   payout_cadence: PayoutCadence | null
   full_address: string | null
   shipping_price_agorot: number | null

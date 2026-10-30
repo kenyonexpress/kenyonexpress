@@ -1179,3 +1179,4 @@ site. The two have to change together.
 - `312_payment_production_flag.sql` - G104 seeds the `payment_production` flag in `feature_flags` as `false`: checkout creates no live charge. Boolean, no money.
 - `313_partner_redeem.sql` - G107 `vouchers.partner_pin` (8 digits), `vouchers_redemption_events` audit table and the advisory-locked `redeem_voucher_locked`. No money.
 - `314_wa_otp_enabled_flag.sql` - G111 seeds the `wa_otp_enabled` flag in `feature_flags` as `false`: the WhatsApp sign-in code routes answer 404. Boolean, no money.
+- `315_products_supplier_transfer_days.sql` - C97 adds nullable `products.supplier_transfer_days` (integer 0-90). No money.

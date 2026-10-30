@@ -2134,6 +2134,7 @@ export type Database = {
           category_id: string | null
           city: string | null
           cancellation_window_days: number | null
+          supplier_transfer_days: number | null
           full_address: string | null
           payout_cadence: string | null
           shipping_price_agorot: number | null
@@ -2223,6 +2224,7 @@ export type Database = {
           category_id?: string | null
           city?: string | null
           cancellation_window_days?: number | null
+          supplier_transfer_days?: number | null
           full_address?: string | null
           payout_cadence?: string | null
           shipping_price_agorot?: number | null
@@ -2312,6 +2314,7 @@ export type Database = {
           category_id?: string | null
           city?: string | null
           cancellation_window_days?: number | null
+          supplier_transfer_days?: number | null
           full_address?: string | null
           payout_cadence?: string | null
           shipping_price_agorot?: number | null

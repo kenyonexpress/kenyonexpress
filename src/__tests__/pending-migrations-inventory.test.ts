@@ -264,6 +264,7 @@ describe('the pending migration inventory', () => {
       '312_payment_production_flag.sql',
       '313_partner_redeem.sql',
       '314_wa_otp_enabled_flag.sql',
+      '315_products_supplier_transfer_days.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_164.sql',
@@ -310,6 +311,7 @@ describe('the pending migration inventory', () => {
       'preflight_312.sql',
       'preflight_313.sql',
       'preflight_314.sql',
+      'preflight_315.sql',
     ])
   })
 

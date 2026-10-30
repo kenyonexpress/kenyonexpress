@@ -125,6 +125,11 @@ async function runUpsertProduct(
       ? { shipping_price_agorot: shippingAgorot }
       : {}),
   }
+  // Migration 315 is pending: until the column exists an empty field must not
+  // write supplier_transfer_days, or every product save would fail on it.
+  if (logisticsWrite.supplier_transfer_days == null) {
+    logisticsWrite.supplier_transfer_days = undefined
+  }
 
   const supabase = await createClient()
   const {
