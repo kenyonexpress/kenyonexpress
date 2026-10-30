@@ -1,3 +1,4 @@
+המשך מ: M05-c293 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M06-c292 DONE (2026-10-31): pnpm build clean; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M04-c292 DONE (2026-10-31): pnpm type-check clean (tsc --noEmit, 0 errors); drift = STATE log lines only, committed; no forbidden files touched
 המשך מ: M17-c291 BLOCKED locked-component (2026-10-31): RTL probe 380/768/1440 — /product/{bar-drink,pampers-premium-care-diaper-pants-medium} clean (dir=rtl, 0 LTR Hebrew nodes, 0 text-align:left, no h-scroll); / dir=rtl, no h-scroll, but 5 hero promo <p> keep explicit dir="ltr" in src/components/home/HeroSlider.tsx (locked, not edited) = LTR leak; email input dir=ltr is intended; no forbidden files touched
