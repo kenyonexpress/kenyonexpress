@@ -14,6 +14,8 @@ const ERRORS: Record<string, string> = {
   link: 'יצירת הקישור נכשלה. בדקו את הנתיב ונסו שוב.',
   not_approved: 'אפשר ליצור קישורים רק אחרי שהחשבון אושר.',
   campaign: 'הקמפיין הזה אינו פעיל.',
+  product: 'המוצר לא נמצא או שאינו פעיל.',
+  duplicate: 'כבר יש לכם קישור למוצר הזה.',
 }
 
 const STATUS_HE: Record<string, string> = {
@@ -191,6 +193,15 @@ async function AffiliateContent({ searchParams }: Props) {
                 <input
                   name="target_path"
                   defaultValue="/"
+                  dir="ltr"
+                  maxLength={200}
+                  className="rounded-md border border-border px-2 py-1"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                מוצר מסוים (slug, לא חובה)
+                <input
+                  name="product_slug"
                   dir="ltr"
                   maxLength={200}
                   className="rounded-md border border-border px-2 py-1"

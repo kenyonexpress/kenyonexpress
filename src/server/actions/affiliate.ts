@@ -58,6 +58,12 @@ const linkSchema = z.object({
     .max(200)
     .regex(/^\/([^/].*)?$/)
     .default('/'),
+  product_slug: z
+    .string()
+    .trim()
+    .max(200)
+    .regex(/^[^/?#\s]*$/)
+    .default(''),
 })
 
 /** Creates a tracking link for an approved affiliate on an active campaign. */
@@ -69,6 +75,7 @@ async function runCreateLink(formData: FormData): Promise<void> {
   const parsed = linkSchema.safeParse({
     campaign_id: formData.get('campaign_id'),
     target_path: formData.get('target_path') || '/',
+    product_slug: formData.get('product_slug') || '',
   })
   if (!parsed.success) redirect(`${PAGE}?error=link`)
 
@@ -84,12 +91,30 @@ async function runCreateLink(formData: FormData): Promise<void> {
   if (!affiliate || affiliate.status !== 'approved') redirect(`${PAGE}?error=not_approved`)
   if (!campaign || !(campaign as { active: boolean }).active) redirect(`${PAGE}?error=campaign`)
 
+  // A product link points at that product's page and is unique per affiliate
+  // per product (migration 319); it overrides any typed path.
+  let productId: string | null = null
+  let targetPath = parsed.data.target_path
+  if (parsed.data.product_slug) {
+    const { data: product } = await admin
+      .from('products')
+      .select('id, slug')
+      .eq('slug', parsed.data.product_slug)
+      .eq('status', 'active')
+      .maybeSingle()
+    if (!product) redirect(`${PAGE}?error=product`)
+    productId = product.id
+    targetPath = `/product/${encodeURIComponent(product.slug)}`
+  }
+
   const { error } = await admin.from('affiliate_links' as never).insert({
     affiliate_id: affiliate.id,
     campaign_id: parsed.data.campaign_id,
     code: newLinkCode((n) => randomBytes(n)),
-    target_path: parsed.data.target_path,
+    target_path: targetPath,
+    ...(productId ? { product_id: productId } : {}),
   } as never)
+  if (error?.code === '23505' && productId) redirect(`${PAGE}?error=duplicate`)
   if (error && error.code !== '23505') {
     log.error('affiliate.link_create_failed', { reason: error.message })
     redirect(`${PAGE}?error=link`)
