@@ -1,3 +1,5 @@
+import { opensOnWeekend } from '@/lib/opening-hours'
+
 /**
  * F63: Category filter chips (weekend/free shipping/price brackets).
  * Multi-select chips encoded as ?filters=weekend,free_shipping,price_100,price_500
@@ -43,6 +45,10 @@ export function anyFilter(filters: CategoryFilterChips): boolean {
 }
 
 export interface CategoryFilterable {
+  /** products.opening_hours jsonb (migration 320): weekend = fri or sat open */
+  opening_hours?: unknown
+  /** products.weekend_only (migration 284): deal valid on weekends only */
+  weekend_only?: boolean | null
   supplier?: { open_weekends?: boolean | null } | null
   shipping_price_agorot?: number | null
   /** kenyon_price is in shekels, not agorot */
@@ -53,7 +59,13 @@ export function matchesCategoryFilters(
   product: CategoryFilterable,
   filters: CategoryFilterChips,
 ): boolean {
-  if (filters.weekend && product.supplier?.open_weekends !== true) return false
+  if (
+    filters.weekend &&
+    !opensOnWeekend(product.opening_hours) &&
+    product.weekend_only !== true &&
+    product.supplier?.open_weekends !== true
+  )
+    return false
 
   if (filters.freeShipping) {
     const shipPriceAgorot = product.shipping_price_agorot ?? null

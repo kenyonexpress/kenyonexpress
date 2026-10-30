@@ -675,6 +675,24 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     hasPreflight: true,
   },
   {
+    number: '315',
+    file: '315_products_supplier_transfer_days.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '316',
+    file: '316_notification_consents_view.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
+    number: '317',
+    file: '317_user_passkeys_phone_verifications.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
+  {
     number: '318',
     file: '318_club_tier_benefits.sql',
     state: 'pending',
