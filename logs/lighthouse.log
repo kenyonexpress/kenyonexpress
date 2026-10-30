@@ -377,3 +377,10 @@ M03-c267 2026-10-29 lighthouse (next start :11001, existing build, /category/hot
 768 mobile 85/85 LCP 4.3/4.5 s TBT 20/50 ms CLS 0
 1440 desktop 100/100 LCP 0.3 s TBT 0 ms CLS 0
 note: HTTP 200, grid renders (2 product links), valid sample. vs c265 99/100, 100/100, 100/100: 380 +1/0, 768 -15/-15 (high mode of bimodal LCP), 1440 =. 768 below G23 95 target (LCP-bound). Sample-only, no code changes.
+
+M08-c271 2026-10-30 lighthouse mobile (next start :11101, existing build, dummy SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked, simulated throttling, 2 runs each)
+/ 380 mobile 86/85 LCP 4.3/4.5 s TBT 31/35 ms CLS 0.003
+/ 768 mobile 100/100 LCP 1.1 s TBT 28/26 ms CLS 0.003
+/product/barbecue 380 mobile 84/87 LCP 4.5/4.0 s TBT 30/26 ms CLS 0.001
+/product/barbecue 768 mobile 86/88 LCP 4.2/3.9 s TBT 28/37 ms CLS 0.039
+note: bare /product is 404 (no such route); /product/barbecue used as product sample, as in c262/c267. Supabase unreachable so catalogue fetch fails. 380 and product 768 below G23 95 (LCP-bound); / 768 at 100 (high mode of bimodal LCP). Sample-only, no code changes.

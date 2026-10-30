@@ -804,3 +804,27 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-29 23:24 | home | 380 | 35.60% | **FAIL** | `975f4e3e-dirty` |  |
 | 2026-10-29 23:26 | home | 768 | 36.14% | **FAIL** | `975f4e3e-dirty` |  |
 | 2026-10-29 23:28 | home | 1440 | 32.36% | **FAIL** | `975f4e3e-dirty` |  |
+| 2026-10-29 23:30 | product | 380 | n/a | REFUSED | `6c531ae7-dirty` | live side is our-build |
+| 2026-10-29 23:30 | product | 768 | n/a | REFUSED | `6c531ae7-dirty` | live side is our-build |
+| 2026-10-29 23:30 | product | 1440 | n/a | REFUSED | `6c531ae7-dirty` | live side is our-build |
+| 2026-10-29 23:35 | product | 380 | 43.72% | **FAIL** | `6c531ae7-dirty` |  |
+| 2026-10-29 23:37 | product | 768 | 33.59% | **FAIL** | `6c531ae7-dirty` |  |
+| 2026-10-29 23:40 | product | 1440 | 22.45% | **FAIL** | `6c531ae7-dirty` |  |
+| 2026-10-29 23:42 | product | 380 | 43.72% | **FAIL** | `6c531ae7-dirty` |  |
+| 2026-10-29 23:44 | product | 768 | 33.59% | **FAIL** | `6c531ae7-dirty` |  |
+| 2026-10-29 23:46 | product | 1440 | 22.45% | **FAIL** | `6c531ae7-dirty` |  |
+| 2026-10-29 23:48 | category | 380 | n/a | REFUSED | `6c531ae7-dirty` | live side is our-build |
+| 2026-10-29 23:48 | category | 768 | n/a | REFUSED | `6c531ae7-dirty` | live side is our-build |
+| 2026-10-29 23:48 | category | 1440 | n/a | REFUSED | `6c531ae7-dirty` | live side is our-build |
+| 2026-10-30 00:28 | home | 380 | 35.60% | **FAIL** | `55ee94cf-dirty` |  |
+| 2026-10-30 00:31 | home | 768 | 36.14% | **FAIL** | `55ee94cf-dirty` |  |
+| 2026-10-30 00:33 | home | 1440 | 32.35% | **FAIL** | `55ee94cf-dirty` |  |
+| 2026-10-30 00:35 | home | 380 | 35.60% | **FAIL** | `55ee94cf-dirty` |  |
+| 2026-10-30 00:37 | home | 768 | 36.14% | **FAIL** | `55ee94cf-dirty` |  |
+| 2026-10-30 00:39 | home | 1440 | 32.36% | **FAIL** | `55ee94cf-dirty` |  |
+| 2026-10-30 00:41 | product | 380 | n/a | REFUSED | `adce10cf-dirty` | live side is our-build |
+| 2026-10-30 00:41 | product | 768 | n/a | REFUSED | `adce10cf-dirty` | live side is our-build |
+| 2026-10-30 00:41 | product | 1440 | n/a | REFUSED | `adce10cf-dirty` | live side is our-build |
+| 2026-10-30 00:43 | category | 380 | n/a | REFUSED | `adce10cf-dirty` | live side is our-build |
+| 2026-10-30 00:43 | category | 768 | n/a | REFUSED | `adce10cf-dirty` | live side is our-build |
+| 2026-10-30 00:43 | category | 1440 | n/a | REFUSED | `adce10cf-dirty` | live side is our-build |
