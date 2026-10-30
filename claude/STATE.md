@@ -246,3 +246,4 @@
 המשך מ: M04-c289 DONE (2026-10-30): pnpm type-check (tsc --noEmit) clean, no drift; no code changes; no forbidden files touched
 המשך מ: M07-c289 DONE (2026-10-31): TODO/FIXME scan of src/scripts/migrations: 6 TODOs, 0 FIXME, all >7d old and already filed in docs/BACKLOG.md items 1-3 (cardcom.ts:249,312 need prod creds; r2-migration.ts:103-106 feature stub); line numbers re-verified; no code changes; no forbidden files touched
 המשך מ: M06-c290 DONE (2026-10-31): pnpm build exit 0, no warnings, no drift; no code changes; no forbidden files touched
+המשך מ: M07-c290 DONE (2026-10-31): TODO/FIXME scan of src/scripts/migrations: 6 TODOs, 0 FIXME, all >7d old and already filed in docs/BACKLOG.md items 1-3 (cardcom.ts:249,312 need prod creds; r2-migration.ts:103-106 feature stub); line numbers re-verified; no code changes; no forbidden files touched
