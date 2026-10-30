@@ -21,3 +21,7 @@ Re-scanned `src` and `scripts` for `TODO` / `FIXME`. The same three markers rema
 ## Scan M07-c284 (2026-10-30)
 
 Re-scanned the repo for `TODO` / `FIXME`. Same three markers as M07-c192 and M07-c208, all blamed to 2026-09-17 (older than 7 days) and at the same lines: `cardcom.ts:254`, `cardcom.ts:317`, `screenshot-all.mjs:42`. Nothing resolvable in code (#1 and #2 need Cardcom production credentials, #3 needs per-environment slugs), so all stay filed above. No new markers. No locked files touched.
+
+## Scan M07-c297 (2026-10-31)
+
+Re-scanned `src` and `scripts` for `TODO` / `FIXME`. Same three markers as M07-c192, M07-c208 and M07-c284, all blamed to 2026-09-17 (older than 7 days) and at the same lines: `cardcom.ts:254`, `cardcom.ts:317`, `screenshot-all.mjs:42`. Nothing resolvable in code (#1 and #2 need Cardcom production credentials, #3 needs per-environment slugs), so all stay filed above. No new markers. No locked files touched.
