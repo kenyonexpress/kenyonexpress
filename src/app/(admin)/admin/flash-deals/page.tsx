@@ -22,7 +22,7 @@ export const metadata = { title: 'דילים מתוזמנים' }
  * reason: "we were going to run this and pulled it" belongs next to the deal
  * that did run.
  *
- * Empty and harmless until `migrations/pending/201` is applied.
+ * Empty and harmless until the table from `migrations/applied/201` exists.
  */
 
 type Row = {

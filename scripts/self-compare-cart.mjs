@@ -27,6 +27,10 @@ async function captureAndCompare(page, url, name, width) {
     // First screenshot
     await browserPage.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
     await browserPage.waitForTimeout(1000)
+    // Record where the request really landed: an empty cart sends /checkout to
+    // /cart, and that must not be reported under checkout's name.
+    const finalPath = new URL(browserPage.url()).pathname
+    console.log(`  requested ${new URL(url).pathname}, finalPath ${finalPath}`)
     const shot1 = await browserPage.screenshot({
       fullPage: false,
       clip: { x: 0, y: 0, width, height: HEIGHT },
@@ -63,11 +67,11 @@ async function captureAndCompare(page, url, name, width) {
         `  ${page.displayName} ${width}px: ${diffPercent}% diff (${pixelsDiff} / ${totalPixels} pixels)`,
       )
 
-      return { width, diffPercent: Number.parseFloat(diffPercent), pixelsDiff }
+      return { width, diffPercent: Number.parseFloat(diffPercent), pixelsDiff, finalPath }
     } catch (_err) {
       // compare command failed or not available
       console.log(`  ${page.displayName} ${width}px: Could not compare (ImageMagick not available)`)
-      return { width, diffPercent: 0, note: 'comparison skipped' }
+      return { width, diffPercent: 0, note: 'comparison skipped', finalPath }
     }
   } finally {
     await browser.close()
@@ -106,7 +110,9 @@ async function main() {
     for (const result of results[page.name]) {
       const status =
         result.diffPercent < 1 ? '✓ PASS' : result.diffPercent < 11 ? '✓ PASS (<11%)' : '✗ FAIL'
-      reportLines.push(`- ${result.width}px: ${result.diffPercent}% ${status}`)
+      reportLines.push(
+        `- ${result.width}px: ${result.diffPercent}% ${status} (landed on ${result.finalPath})`,
+      )
     }
     reportLines.push('')
   }

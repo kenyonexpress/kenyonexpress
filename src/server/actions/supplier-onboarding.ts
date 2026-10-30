@@ -20,7 +20,7 @@ import { z } from 'zod'
  * `suppliers` row exists until an admin approves, so a half-finished
  * application cannot appear in the directory, the admin pickers, the publish
  * gate or the payout run - none of which had to be changed for that to be true.
- * `migrations/pending/204` records the measurement behind the decision: of 19
+ * `migrations/pending/245_supplier_onboarding.sql` records the measurement behind the decision: of 19
  * `from('suppliers')` call sites, about half do not filter on status.
  *
  * THE BANK ACCOUNT NEVER TOUCHES A COLUMN. It goes to `store_supplier_bank_secret`,

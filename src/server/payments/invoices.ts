@@ -1,4 +1,3 @@
-import { invoiceSeries, resolveInvoiceIssuer, formatInvoiceNumber } from '@/lib/invoices/issuer'
 import { orderCashbackSelect, readOrderCashbackAgorot } from '@/lib/commerce/order-money-columns'
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
@@ -12,6 +11,7 @@ import {
   resolveVatPercent,
   splitVatInclusive,
 } from '@/lib/invoices/document'
+import { formatInvoiceNumber, invoiceSeries, resolveInvoiceIssuer } from '@/lib/invoices/issuer'
 import { BUSINESS_REGISTRATION_NUMBER } from '@/lib/legal-entity'
 import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
@@ -680,10 +680,11 @@ async function storeRenderedPdf(
     const safeNumber = (allocation?.formatted ?? providerDocumentNumber).replace(/[^\w.-]/g, '_')
     const key = `invoices/${row.order_id}/${safeNumber}.pdf`
     const { uploadUrl, publicUrl } = await createR2PresignedPutUrl(key)
-    const put = await fetch(uploadUrl, {
+    const put = await fetchWithTimeout(uploadUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/pdf' },
       body: bytes as unknown as BodyInit,
+      timeoutMs: PDF_TRANSFER_TIMEOUT_MS,
     })
     if (!put.ok) {
       log.warn('invoices.own_pdf_upload_failed', { key, status: put.status })

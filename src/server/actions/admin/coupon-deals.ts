@@ -5,6 +5,7 @@ import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { triggerFlashDealMatchNotification } from '@/lib/push/trigger-notifications'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -147,7 +148,9 @@ async function runUpsertCouponDeal(
 
     for (const userId of userIds) {
       triggerFlashDealMatchNotification(userId, dealTitle, 'deals').catch((err) => {
-        console.error('Failed to send flash deal notification:', err)
+        log.error('coupon_deals.flash_push_failed', {
+          reason: err instanceof Error ? err.message : 'unknown',
+        })
       })
     }
   }

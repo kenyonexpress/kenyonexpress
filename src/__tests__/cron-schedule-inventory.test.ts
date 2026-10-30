@@ -45,7 +45,7 @@ const manifest = JSON.parse(read(MANIFEST_PATH)) as {
 const jobs = manifest.jobs
 
 describe('the scheduled job inventory', () => {
-  it('names the twenty-two jobs and nothing else', () => {
+  it('names the thirty-six jobs and nothing else', () => {
     // A new cron route is a deliberate diff here. An undeclared one would be a
     // handler that exists, is reachable, and is never called by anything.
     expect(jobs.map((job) => job.name)).toEqual([
@@ -67,6 +67,12 @@ describe('the scheduled job inventory', () => {
       'search-reindex',
       'retention',
       'weekly-digest',
+      'expire-coupons',
+      'backup',
+      'wishlist-alerts',
+      'wishlist-digest',
+      'daily-deals',
+      'email-retry',
       'affiliate-payouts',
       'observability-check',
       'fraud-monitor',
@@ -77,6 +83,8 @@ describe('the scheduled job inventory', () => {
       'rfm-segmentation',
       'search-report',
       'scheduled-gifts',
+      'cashback-settlement',
+      'push-voucher-expiry',
     ])
   })
 
@@ -156,6 +164,12 @@ describe('the scheduled job inventory', () => {
     const vercel = JSON.parse(read('vercel.json')) as {
       crons?: { path: string; schedule: string }[]
     }
+    // F01 took the key out again: 36 jobs on a plan that registers two at daily
+    // granularity is a deploy that fails or jobs that are silently ignored, and
+    // the scheduler of record is the GitHub workflow. So the key may be absent
+    // (the GitHub workflow schedules everything) but it may never be a partial,
+    // drifted copy: if present it is exactly the manifest.
+    if (vercel.crons === undefined) return
     expect(vercel.crons).toEqual(jobs.map((job) => ({ path: job.path, schedule: job.cron })))
   })
 

@@ -41,7 +41,7 @@ name: Scheduled jobs
 
 on:
   schedule:
-    # These seven are the distinct expressions in scripts/cron-jobs.json, which
+    # These eighteen are the distinct expressions in scripts/cron-jobs.json, which
     # maps each one to the jobs due on it. A run knows which schedule fired it
     # (`github.event.schedule`), so one workflow covers all ten jobs.
     - cron: '*/5 * * * *'
@@ -57,6 +57,11 @@ on:
     - cron: '*/30 * * * *'
     - cron: '20 1 * * *'
     - cron: '0 6 * * 1'
+    - cron: '20 2 * * *'
+    - cron: '45 4 * * *'
+    - cron: '0 5 * * 5'
+    - cron: '0 3 * * *'
+    - cron: '30 */6 * * *'
   workflow_dispatch:
     inputs:
       job:

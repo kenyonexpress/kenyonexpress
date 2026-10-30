@@ -205,6 +205,26 @@ function toResult(row: CheckedRow): ImportRowResult {
   }
 }
 
+type JournalEntry =
+  | { kind: 'insert'; id: string }
+  | { kind: 'update'; id: string; prior: Record<string, unknown> }
+
+/** Replays the journal backwards. Returns how many entries failed to revert. */
+async function rollback(supabase: Supabase, journal: JournalEntry[]): Promise<number> {
+  let failures = 0
+  for (const entry of [...journal].reverse()) {
+    const { error } =
+      entry.kind === 'insert'
+        ? await supabase.from('products').delete().eq('id', entry.id)
+        : await supabase
+            .from('products')
+            .update(entry.prior as TablesUpdate<'products'>)
+            .eq('id', entry.id)
+    if (error) failures++
+  }
+  return failures
+}
+
 async function runPreview(raw: RawImportRow[], mode: ImportMode): Promise<ImportPreviewResult> {
   try {
     await requireAdminSession()
@@ -233,26 +253,6 @@ async function runPreview(raw: RawImportRow[], mode: ImportMode): Promise<Import
       updates,
     },
   }
-}
-
-type JournalEntry =
-  | { kind: 'insert'; id: string }
-  | { kind: 'update'; id: string; prior: Record<string, unknown> }
-
-/** Replays the journal backwards. Returns how many entries failed to revert. */
-async function rollback(supabase: Supabase, journal: JournalEntry[]): Promise<number> {
-  let failures = 0
-  for (const entry of [...journal].reverse()) {
-    const { error } =
-      entry.kind === 'insert'
-        ? await supabase.from('products').delete().eq('id', entry.id)
-        : await supabase
-            .from('products')
-            .update(entry.prior as TablesUpdate<'products'>)
-            .eq('id', entry.id)
-    if (error) failures++
-  }
-  return failures
 }
 
 async function runImportBatch(raw: RawImportRow[], mode: ImportMode): Promise<ImportBatchResult> {

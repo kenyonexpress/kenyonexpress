@@ -1,5 +1,5 @@
 {
-  "$comment": "The single source of truth for the twenty-two scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
+  "$comment": "The single source of truth for the thirty-six scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
   "defaultBaseUrl": "https://kenyonexpress.vercel.app",
   "jobs": [
     { "name": "notifications", "path": "/api/cron/notifications", "cron": "*/5 * * * *" },
@@ -26,115 +26,21 @@
     { "name": "wishlist-digest", "path": "/api/cron/wishlist-digest", "cron": "0 5 * * 5" },
     { "name": "daily-deals", "path": "/api/cron/daily-deals", "cron": "0 3 * * *" },
     { "name": "email-retry", "path": "/api/cron/email-retry", "cron": "30 */6 * * *" },
-    {
-      "name": "notifications",
-      "path": "/api/cron/notifications",
-      "cron": "*/5 * * * *"
-    },
-    {
-      "name": "health",
-      "path": "/api/cron/health",
-      "cron": "*/5 * * * *"
-    },
-    {
-      "name": "invoices",
-      "path": "/api/cron/invoices",
-      "cron": "*/10 * * * *"
-    },
-    {
-      "name": "stock",
-      "path": "/api/cron/stock",
-      "cron": "*/10 * * * *"
-    },
-    {
-      "name": "stranded-payments",
-      "path": "/api/cron/stranded-payments",
-      "cron": "*/10 * * * *"
-    },
-    {
-      "name": "abandoned-cart",
-      "path": "/api/cron/abandoned-cart",
-      "cron": "0 * * * *"
-    },
-    {
-      "name": "subscriptions",
-      "path": "/api/cron/subscriptions",
-      "cron": "30 2 * * *"
-    },
-    {
-      "name": "reap-carts",
-      "path": "/api/cron/reap-carts",
-      "cron": "40 3 * * *"
-    },
-    {
-      "name": "reconcile",
-      "path": "/api/cron/reconcile",
-      "cron": "0 4 * * *"
-    },
-    {
-      "name": "expire-vouchers",
-      "path": "/api/cron/expire-vouchers",
-      "cron": "15 23 * * *"
-    },
-    {
-      "name": "retention",
-      "path": "/api/cron/retention",
-      "cron": "0 5 1 * *"
-    },
-    {
-      "name": "weekly-digest",
-      "path": "/api/cron/weekly-digest",
-      "cron": "0 4 * * 5"
-    },
-    {
-      "name": "affiliate-payouts",
-      "path": "/api/cron/affiliate-payouts",
-      "cron": "40 3 * * *"
-    },
+    { "name": "affiliate-payouts", "path": "/api/cron/affiliate-payouts", "cron": "40 3 * * *" },
     {
       "name": "observability-check",
       "path": "/api/cron/observability-check",
       "cron": "*/5 * * * *"
     },
-    {
-      "name": "fraud-monitor",
-      "path": "/api/cron/fraud-monitor",
-      "cron": "*/10 * * * *"
-    },
-    {
-      "name": "p95-monitor",
-      "path": "/api/cron/p95-monitor",
-      "cron": "*/15 * * * *"
-    },
-    {
-      "name": "deal-scraper",
-      "path": "/api/cron/deal-scraper",
-      "cron": "*/30 * * * *"
-    },
-    {
-      "name": "stock-notifications",
-      "path": "/api/cron/stock-notifications",
-      "cron": "0 * * * *"
-    },
-    {
-      "name": "sms-broadcasts",
-      "path": "/api/cron/sms-broadcasts",
-      "cron": "*/10 * * * *"
-    },
-    {
-      "name": "rfm-segmentation",
-      "path": "/api/cron/rfm-segmentation",
-      "cron": "20 1 * * *"
-    },
-    {
-      "name": "search-report",
-      "path": "/api/cron/search-report",
-      "cron": "0 6 * * 1"
-    },
-    {
-      "name": "scheduled-gifts",
-      "path": "/api/cron/scheduled-gifts",
-      "cron": "*/10 * * * *"
-    }
+    { "name": "fraud-monitor", "path": "/api/cron/fraud-monitor", "cron": "*/10 * * * *" },
+    { "name": "p95-monitor", "path": "/api/cron/p95-monitor", "cron": "*/15 * * * *" },
+    { "name": "deal-scraper", "path": "/api/cron/deal-scraper", "cron": "*/30 * * * *" },
+    { "name": "stock-notifications", "path": "/api/cron/stock-notifications", "cron": "0 * * * *" },
+    { "name": "sms-broadcasts", "path": "/api/cron/sms-broadcasts", "cron": "*/10 * * * *" },
+    { "name": "rfm-segmentation", "path": "/api/cron/rfm-segmentation", "cron": "20 1 * * *" },
+    { "name": "search-report", "path": "/api/cron/search-report", "cron": "0 6 * * 1" },
+    { "name": "scheduled-gifts", "path": "/api/cron/scheduled-gifts", "cron": "*/10 * * * *" },
+    { "name": "cashback-settlement", "path": "/api/cron/cashback-settlement", "cron": "0 4 * * *" },
+    { "name": "push-voucher-expiry", "path": "/api/cron/push-voucher-expiry", "cron": "0 * * * *" }
   ]
 }

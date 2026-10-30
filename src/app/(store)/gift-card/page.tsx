@@ -1,4 +1,5 @@
 import GiftCardRedeemForm from '@/components/storefront/GiftCardRedeemForm'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -7,7 +8,7 @@ import { Suspense } from 'react'
 export const metadata: Metadata = {
   title: 'מימוש גיפט קארד',
   description: 'בדיקת יתרה ומימוש גיפט קארד של קניון אקספרס: הקוד נטען לארנק ומשמש בכל רכישה.',
-  alternates: { canonical: '/gift-card' },
+  alternates: alternatesFor('/gift-card'),
 }
 
 /**

@@ -6,7 +6,6 @@ import type { CategoryNode } from '@/lib/category-tree'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
-import { createPublicClient } from '@/lib/supabase/anon'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -439,7 +438,7 @@ export async function getCategoryProducts(opts: {
     tag,
     collection,
   } = opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
   let query = supabase
@@ -580,7 +579,7 @@ export async function getShopProducts(opts: {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const { sort, page, priceMin, priceMax, productType, weekend, freeShipping } = opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
   let query = supabase
@@ -665,7 +664,7 @@ export async function getCategoryPriceBounds(categoryId: string): Promise<{
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   const { data, error } = await supabase
     .from('products')
@@ -698,7 +697,7 @@ export async function getCategorySuppliersFilter(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   // Use Supabase's native query to get supplier counts directly from PostgreSQL
   // This avoids fetching all products and computing counts in JavaScript
@@ -753,7 +752,7 @@ export async function getCategoryTagsFilter(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   // Get products in this category with their tags
   const products = orFail(

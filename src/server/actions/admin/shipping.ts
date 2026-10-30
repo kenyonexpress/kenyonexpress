@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import {
   triggerOrderDeliveredNotification,
   triggerOrderShippedNotification,
@@ -110,11 +111,15 @@ async function runMarkItem(
   const orderData = item.orders as unknown as { user_id: string }
   if (verdict.nextStatus === 'shipped') {
     triggerOrderShippedNotification(orderData.user_id, item.order_id).catch((err) => {
-      console.error('Failed to send order shipped notification:', err)
+      log.error('shipping.shipped_push_failed', {
+        reason: err instanceof Error ? err.message : 'unknown',
+      })
     })
   } else if (verdict.nextStatus === 'delivered') {
     triggerOrderDeliveredNotification(orderData.user_id, item.order_id).catch((err) => {
-      console.error('Failed to send order delivered notification:', err)
+      log.error('shipping.delivered_push_failed', {
+        reason: err instanceof Error ? err.message : 'unknown',
+      })
     })
   }
 

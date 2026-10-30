@@ -52,6 +52,9 @@ const REACHES_POSTGREST = /\.from\(|\.rpc\(/
 /** file -> how many discarded reads it holds today. */
 const INVENTORY: Record<string, number> = {
   'src/app/(account)/account/orders/[id]/invoice/route.ts': 1,
+  // Presentational reads (hasOrders flag, per-campaign click tallies, bell
+  // list): a failed read shows less, never wrong money or state.
+  'src/app/(account)/account/notifications/page.tsx': 1,
   'src/app/(admin)/admin/approvals/page.tsx': 1,
   'src/app/(admin)/admin/categories/new/page.tsx': 1,
   'src/app/(admin)/admin/categories/page.tsx': 1,
@@ -65,14 +68,21 @@ const INVENTORY: Record<string, number> = {
   'src/app/(admin)/admin/payouts/page.tsx': 1,
   'src/app/(admin)/admin/users/[id]/page.tsx': 1,
   'src/app/(admin)/admin/vendors/[id]/page.tsx': 1,
+  'src/app/admin/affiliate/page.tsx': 1,
+  // Affiliate click tracking: a failed campaign lookup drops one click, and
+  // the cookie is only set after a successful lookup.
+  'src/app/api/affiliate/track/route.ts': 1,
   'src/app/api/cron/abandoned-cart/route.ts': 2,
+  // Candidate read: a failed run notifies nobody and the next run sees the
+  // same rows (push_expiry_notified_at is still null).
+  'src/app/api/cron/push-voucher-expiry/route.ts': 1,
   // Alert candidates: a failed read alerts nobody this run and the next run
   // sees the same rows; nothing is lost, only late.
   'src/app/api/cron/wishlist-alerts/route.ts': 2,
   'src/app/api/cron/wishlist-digest/route.ts': 1,
   'src/app/api/supplier/vouchers/redeem/route.ts': 2,
   'src/app/auth/callback/route.ts': 1,
-  'src/components/auth/PasskeyBanner.tsx': 1,
+  'src/components/account/NotificationBell.tsx': 1,
   'src/components/home/FeaturedProducts.tsx': 1,
   'src/lib/admin/rbac.ts': 1,
   'src/lib/auth/passkeys.ts': 4,
@@ -80,10 +90,15 @@ const INVENTORY: Record<string, number> = {
   'src/proxy.ts': 1,
   'src/server/actions/admin/affiliates.ts': 1,
   'src/server/actions/admin/approvals.ts': 2,
+  // Previous-status lookup and push audience: a failed read means no
+  // activation push this save, the deal itself is still written.
+  'src/server/actions/admin/coupon-deals.ts': 2,
   'src/server/actions/admin/orders.ts': 1,
   'src/server/actions/admin/payments.ts': 2,
   'src/server/actions/admin/products.ts': 1,
   'src/server/actions/admin/users.ts': 1,
+  // Affiliate attribution is best-effort and wrapped in try/catch by design.
+  'src/server/affiliate/attribution-clicks.ts': 2,
   'src/server/actions/auth.ts': 2,
   'src/server/actions/cart.ts': 4,
   'src/server/actions/gifts.ts': 2,

@@ -128,7 +128,7 @@ describe('FooterAccordion', () => {
       expect(button).toHaveClass('w-full')
       expect(button).toHaveClass('py-4')
       expect(button).toHaveClass('px-4')
-      expect(button).toHaveClass('text-right')
+      expect(button).toHaveClass('text-start')
       expect(button).toHaveClass('text-white')
       expect(button).toHaveClass('text-button-small')
     }

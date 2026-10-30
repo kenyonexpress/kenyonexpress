@@ -86,6 +86,53 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'card-verification payment page creation, per user',
   },
+  'email-verify': { limit: 20, windowSeconds: 3600, reason: 'mail OTP code guessing, per IP' },
+  'email-verify-address': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'mail OTP code guessing, per address, so proxies cannot buy one account more tries',
+  },
+  'passkey-register': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'WebAuthn enrolment ceremonies; a real person adds one key, not eleven',
+  },
+  'mfa-enrol': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'TOTP factor creation, per user; one authenticator, not a pile of abandoned factors',
+  },
+  'mfa-verify': {
+    limit: 10,
+    windowSeconds: 900,
+    reason: 'six digits are brute forceable; per-user bound is what actually protects the account',
+  },
+  'mfa-verify-ip': {
+    limit: 30,
+    windowSeconds: 900,
+    reason: 'the same guesses spread across accounts from one address',
+  },
+  'passkey-login': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'challenge issuance, per IP; cheap but each one sets a cookie',
+  },
+  'passkey-login-finish': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'assertion verification plus admin calls; one per real login',
+  },
+  'push-subscribe': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason:
+      'service-role upserts to push_subscriptions; a browser re-posts one per page load at most',
+  },
+  'verify-card-callback': {
+    limit: 60,
+    windowSeconds: 3600,
+    reason: 'card-verification return page, per IP; unauthenticated, so bounded before the lookup',
+  },
   'offline-sync': { limit: 120, windowSeconds: 600, reason: 'offline queue replay, per IP' },
   'update-password': { limit: 10, windowSeconds: 3600, reason: 'session-bound password change' },
   'change-password': {
@@ -96,6 +143,20 @@ export const RATE_LIMIT_POLICIES = {
 
   // -- Commerce. Higher, because a real shopper trips these by shopping.
   cart_write: { limit: 120, windowSeconds: 3600, reason: 'cart mutation, user or IP' },
+  coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
+  gift_card_check: { limit: 20, windowSeconds: 3600, reason: 'gift card balance by code, per IP' },
+  gift_card_redeem: {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'gift card redemption attempts, per user',
+  },
+  'supplier-apply': { limit: 5, windowSeconds: 3600, reason: 'supplier applications, per user' },
+  'supplier-doc-upload': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'presigned R2 PUT minting for onboarding documents, per user',
+  },
+  'voucher-transfer': { limit: 10, windowSeconds: 3600, reason: 'voucher transfers, per user' },
   coupon: { limit: 10, windowSeconds: 3600, reason: 'coupon code guessing' },
   begin_checkout: {
     limit: 10,
@@ -129,7 +190,11 @@ export const RATE_LIMIT_POLICIES = {
   'affiliate-link': { limit: 30, windowSeconds: 3600, reason: 'affiliate link creation, per user' },
   // rc5 F15. Sign-in factors: per phone and per IP for sending, per phone for
   // guessing, per IP for passkey assertions.
-  'wa-otp-send': { limit: 5, windowSeconds: 3600, reason: 'WhatsApp code send, per phone' },
+  'wa-otp-send': {
+    limit: 3,
+    windowSeconds: 900,
+    reason: 'WhatsApp code send, per phone (C90: 3/15min)',
+  },
   'wa-otp-send-ip': { limit: 20, windowSeconds: 3600, reason: 'WhatsApp code send, per IP' },
   'wa-otp-verify': { limit: 10, windowSeconds: 3600, reason: 'WhatsApp code guesses, per phone' },
   'passkey-auth': { limit: 30, windowSeconds: 600, reason: 'passkey sign-in, per IP' },

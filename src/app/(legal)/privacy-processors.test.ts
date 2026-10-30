@@ -47,7 +47,18 @@ const env = readFileSync(join(ROOT, 'src/lib/env.ts'), 'utf8')
  * Prefixes in env.ts that name an outside company. The others are ours:
  * ALLOW (an allowlist), CRON (our own secret), NODE, VOUCHER (our own signing).
  */
-const NOT_A_VENDOR = new Set(['ALLOW', 'CRON', 'NODE', 'VOUCHER', 'NEXT'])
+const NOT_A_VENDOR = new Set([
+  'ALLOW',
+  'CRON',
+  'NODE',
+  'VOUCHER',
+  'NEXT',
+  // WISHLIST_UNSUB_SECRET signs our own unsubscribe links.
+  'WISHLIST',
+  // UPTIMEROBOT_WEBHOOK_SECRET authenticates an INBOUND webhook; the monitor
+  // only requests public URLs and receives no personal data.
+  'UPTIMEROBOT',
+])
 
 function vendorsInEnv(): string[] {
   const prefixes = [...env.matchAll(/^\s+(?:NEXT_PUBLIC_)?([A-Z][A-Z0-9_]+):/gm)]

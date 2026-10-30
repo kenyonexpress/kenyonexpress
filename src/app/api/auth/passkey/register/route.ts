@@ -31,7 +31,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
-  if (!(await checkRateLimit(`passkey-register:${user.id}`, 20, 3600))) {
+  if (!(await checkRateLimit(`passkey-register:${user.id}`, 10, 3600))) {
     return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
   }
 

@@ -168,7 +168,7 @@ export default function WhatsAppOtpForm({ phone, onVerified, onCancel }: WhatsAp
         type="button"
         onClick={handleVerify}
         disabled={loading || code.length !== 6}
-        className="w-full bg-brand text-white font-semibold rounded-lg py-2.5 text-sm hover:bg-brand/90 disabled:opacity-60 transition-colors"
+        className="w-full bg-brand text-brand-dark font-semibold rounded-lg py-2.5 text-sm hover:bg-brand/90 disabled:opacity-60 transition-colors"
       >
         {loading ? 'אימות...' : 'אימות'}
       </button>

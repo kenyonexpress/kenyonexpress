@@ -57,7 +57,7 @@ function BalanceResult({ state }: { state: GiftCardBalanceState }) {
         יתרה: <span className="font-bold">{formatIls(state.balanceAgorot ?? 0)}</span>
       </p>
       {state.state === 'active' && expiry && (
-        <p className="mt-1 text-heading/70">בתוקף עד {expiry}.</p>
+        <p className="mt-1 text-heading/75">בתוקף עד {expiry}.</p>
       )}
       {state.qrDataUrl && (
         <div className="mt-4 border-t border-border pt-4">
@@ -78,7 +78,7 @@ function BalanceResult({ state }: { state: GiftCardBalanceState }) {
           >
             הדפסה
           </button>
-          <p className="mt-2 text-xs text-heading/70">
+          <p className="mt-2 text-xs text-heading/75">
             מי שמחזיק בקוד יכול לממש אותו. שמרו על הדף המודפס כמו על כסף מזומן.
           </p>
         </div>

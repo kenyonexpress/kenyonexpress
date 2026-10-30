@@ -1089,3 +1089,33 @@ site. The two have to change together.
 - `305_add_gift_scheduled_at_column.sql` - F59 additive `orders.gift_scheduled_at timestamptz` column read by the scheduled-gifts cron. Timestamp, no money.
 - `306_suppliers_open_weekends.sql` - F63 additive nullable `suppliers.open_weekends boolean` read by the weekend filter chip. Boolean, no money.
 - `310_fraud_detection_tables.sql` - F66 `fraud_alerts` and `fraud_ip_signup_log` tables plus additive nullable `orders.device_fingerprint text`, admin-only RLS. No money. The copy that sat in `supabase/migrations/` was removed so the number means one thing.
+
+### Rows added 2026-10-30 for files that had none
+
+- `164_club_tiers.sql` - compute_tier(user_id) - a customer's club tier from trailing-12-month spend. Pending, not applied.
+- `190_whatsapp_otp.sql` - WhatsApp OTP verification via Twilio. Pending, not applied.
+- `193_affiliate_campaigns.sql` - Affiliate campaigns, click and conversion tracking tables. Number 193 is also spent by applied files. Pending, not applied.
+- `195_push_subscriptions.sql` - Web push subscription storage. Pending, not applied.
+- `196_push_notifications_tracking.sql` - Web push delivery and click tracking. Pending, not applied.
+- `236_orders_shipping_method.sql` - Where the shopper's shipping choice lands on the order. Pending, not applied.
+- `237_user_ban_and_store_settings.sql` - Two things the admin panel had no place to write. Pending, not applied.
+- `238_search_events_daily.sql` - A day axis for search analytics. Pending, not applied.
+- `239_push_deliveries_sms_log_opt_outs.sql` - The three tables the notification stack writes to and production did not have. Pending, not applied.
+- `242_job_dlq.sql` - The dead-letter table for the general job queue. Pending, not applied.
+- `243_club_tiers.sql` - Customer club thresholds as an operator-editable table (closeout L10). Pending, not applied.
+- `243_product_full_address.sql` - `products.full_address` column for the complete street address. Pending, not applied.
+- `244_abandoned_cart_second_reminder.sql` - the second abandoned-cart reminder. Pending, not applied.
+- `244_product_is_physical_shipping.sql` - `products.is_physical_shipping` boolean. Pending, not applied.
+- `245_supplier_onboarding.sql` - Applying to be a supplier, as a thing separate from being one. Pending, not applied.
+- `305_rename_gift_send_at_to_gift_scheduled_at.sql` - Rename gift_send_at to gift_scheduled_at for clarity. Pending, not applied.
+- `311_pg_cron_push_expiry_reminders.sql` - pg_cron job for voucher-expiry reminders (C14). Pending, not applied.
+- `312_otp_attempts_wa_otp_flag.sql` - otp_attempts audit table + wa_otp_enabled flag (C90, rc5 F15). Pending, not applied.
+- `313_card_verify_enabled_flag.sql` - card_verify_enabled flag (C91, F07). Pending, not applied.
+- `314_voucher_transfer.sql` - voucher transfer between customers (G105). Pending, not applied.
+- `171_category_name_shekel_order.sql` - The shekel sign in a category name renders on the wrong side. Applied; lives in `migrations/applied/`.
+- `226_fraud_controls.sql` - Two server-only tables behind the checkout fraud gate (fraud_flags, fraud_review_queue). Applied; lives in `migrations/applied/`.
+- `228_invoice_sequences.sql` - Platform-owned sequential document numbering per terminal and series. Applied; lives in `migrations/applied/`.
+- `231_bell_fanout.sql` - The writer 198 never had: outbox rows fan out into the bell. Applied; lives in `migrations/applied/`.
+- `232_reviews_admin_moderation_only.sql` - Reviews are collected, not published: owner-plus-admin access only. Applied; lives in `migrations/applied/`.
+- `233_wishlist_alerts.sql` - The two small tables that let the wishlist alerts of 200 actually run. Applied; lives in `migrations/applied/`.
+- `234_gift_cards.sql` - Gift cards as a stored-value instrument, additive only. Applied; lives in `migrations/applied/`.

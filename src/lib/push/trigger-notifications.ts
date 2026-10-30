@@ -1,5 +1,3 @@
-'use server'
-
 import { sendPushToUser } from './send'
 
 export async function triggerOrderShippedNotification(userId: string, orderId: string) {

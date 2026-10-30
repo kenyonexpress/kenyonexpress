@@ -5,7 +5,6 @@ import { WEB_VITAL_METRICS, type WebVitalMetric } from '@/lib/analytics/events'
 import { getTracker, track } from '@/lib/analytics/tracker'
 import { identifyUser, isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
-import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
 import { useReportWebVitals } from 'next/web-vitals'
 import { useEffect } from 'react'
@@ -96,15 +95,26 @@ export default function AnalyticsProvider() {
 
   // Login -> PostHog identify. INITIAL_SESSION covers a returning visitor whose
   // session is already in the cookie; SIGNED_IN covers a login in this tab.
+  // The Supabase browser client (62.8 KB gzipped) is imported lazily so it is
+  // not on every route's first load; see first-load-client-graph.test.ts.
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = createClient().auth.onAuthStateChange((event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
-        identifyUser(session.user.id)
-      }
+    let cancelled = false
+    let unsubscribe: (() => void) | null = null
+    void import('@/lib/supabase/client').then(({ createClient }) => {
+      if (cancelled) return
+      const {
+        data: { subscription },
+      } = createClient().auth.onAuthStateChange((event, session) => {
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+          identifyUser(session.user.id)
+        }
+      })
+      unsubscribe = () => subscription.unsubscribe()
     })
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+      unsubscribe?.()
+    }
   }, [])
 
   useReportWebVitals((metric) => {

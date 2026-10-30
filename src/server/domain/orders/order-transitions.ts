@@ -5,7 +5,7 @@ import { type OrderStatus, orderMachine } from '@/lib/checkout/state-machine'
  *
  * Three places already agree on WHICH moves `orders.status` may make:
  * `orderMachine` (what new code writes), `status-transitions.json` (what the
- * DB guard in migrations/pending/137 enforces, a superset that also admits the
+ * DB guard in migrations/applied/137 enforces, a superset that also admits the
  * legacy `platform_settled` rows), and the migration itself. This module adds
  * the two things none of them carry:
  *

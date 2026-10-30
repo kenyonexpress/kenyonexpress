@@ -20,6 +20,9 @@ import { describe, expect, it } from 'vitest'
  *   CONSENT_PREPAINT_SCRIPT   a constant with no interpolated data other
  *                    than the cookie name and the wording version, both
  *                    module constants.
+ *   SUBMIT_HIDES_SCRIPT   ConsentBanner's no-JS-framework submit hook: a
+ *                    template literal over two module constants (the
+ *                    decided attribute name and value), no request data.
  */
 
 const ROOT = process.cwd()
@@ -39,7 +42,7 @@ function sourcesUnder(dir: string): { path: string; source: string }[] {
 /** `dangerouslySetInnerHTML={{ __html: <expression> }}`, expression captured. */
 const OPT_OUT = /dangerouslySetInnerHTML=\{\{\s*__html:\s*([^}]+?)\s*\}\}/g
 
-const ALLOWED_PRODUCERS = [/^jsonLdScript\(/, /^CONSENT_PREPAINT_SCRIPT$/]
+const ALLOWED_PRODUCERS = [/^jsonLdScript\(/, /^CONSENT_PREPAINT_SCRIPT$/, /^SUBMIT_HIDES_SCRIPT$/]
 
 type OptOut = { path: string; line: number; expression: string }
 

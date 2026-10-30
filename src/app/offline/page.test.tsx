@@ -39,6 +39,6 @@ describe('/offline', () => {
   })
 
   it('is kept out of search results', () => {
-    expect(metadata.robots).toEqual({ index: false, follow: false })
+    expect(metadata.robots).toEqual({ index: false, follow: true })
   })
 })

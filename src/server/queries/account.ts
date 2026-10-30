@@ -96,6 +96,10 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   // wallet credits nobody has to buy anything to receive.
   referral_bonus: 'בונוס הזמנת חבר',
   voucher_expiry_credit: 'קרדיט על שובר שפג',
+  // Written by the cashback ledger's admin adjustment (migration 177) and by
+  // gift-card redemption (migration 234), both in the DATABASE.
+  cashback_adjustment: 'התאמת קאשבק',
+  gift_card_redeem: 'מימוש כרטיס מתנה',
   // Legacy, and all three measured against production on 2026-09-07 as having
   // NO live writer: `coupon_expired` was superseded by `voucher_expiry_credit`,
   // and `cashback_earn` / `manual_adjust` come from the 042-era wallet that no

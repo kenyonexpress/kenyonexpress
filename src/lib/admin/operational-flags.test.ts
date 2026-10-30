@@ -75,6 +75,22 @@ describe('every env flag that gates behaviour is on one of the two tables', () =
     'CRON_SCHEDULER_ENABLED',
     // The checkout gate is the payment provider's own, covered by CARDCOM_USE_MOCK's row.
     'CHECKOUT_ENABLED',
+    // Hard-override env mirrors of DB-backed `feature_flags` rows (fail closed,
+    // resolved by wa-otp-gate.ts and card-verify-gate.ts). The DB row is the
+    // flag; this table's strict on/off view would misreport their state.
+    'FLAG_WA_OTP_ENABLED',
+    'FLAG_CARD_VERIFY_ENABLED',
+    // The client mirror of the same wa_otp_enabled decision (default on in the
+    // form; the server gate above is the authority).
+    'NEXT_PUBLIC_WHATSAPP_OTP_ENABLED',
+    // DEFAULT-ON flags: only an explicit 0/false(/off) disables them, so an
+    // unset variable means ON. OPERATIONAL's isOn() reads unset as off and would
+    // show the opposite of the truth. Resolved by turnstile.ts / passkeys-flag.ts.
+    'NEXT_PUBLIC_TURNSTILE_ENABLED',
+    'NEXT_PUBLIC_PASSKEYS_ENABLED',
+    // Twilio SMS master switch (lib/sms/twilio.ts): exact string 'true' only,
+    // and inert without Twilio credentials in any case.
+    'SMS_ENABLED',
   ])
 
   it('finds gating flags at all, so a regex change cannot empty this test', () => {

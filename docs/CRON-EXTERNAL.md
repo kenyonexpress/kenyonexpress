@@ -171,6 +171,14 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 20 | 01:20 daily | `20 1 * * *` | `https://kenyonexpress.vercel.app/api/cron/rfm-segmentation` |
 | 21 | Monday 06:00 | `0 6 * * 1` | `https://kenyonexpress.vercel.app/api/cron/search-report` |
 | 22 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/scheduled-gifts` |
+| 23 | scheduled | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
+| 24 | scheduled | `20 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/backup` |
+| 25 | scheduled | `45 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
+| 26 | scheduled | `0 5 * * 5` | `https://kenyonexpress.vercel.app/api/cron/wishlist-digest` |
+| 27 | scheduled | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/daily-deals` |
+| 28 | scheduled | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/email-retry` |
+| 29 | scheduled | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/cashback-settlement` |
+| 30 | scheduled | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/push-voucher-expiry` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -252,11 +260,13 @@ timing changes with the scheduler.
   thrown", and posts what is missing under the same idempotency keys. An
   older order that earned a bonus is `deferred` (logged with its rank) and
   not replayed, because `fn_cashback_order_bonus` ranks by today's count.
+- **`push-voucher-expiry`** sends a push to holders of a voucher that expires
+  within 24 hours and stamps `push_expiry_notified_at` so it is sent once.
 
 
 ## Setting it up from this repository, in two settings
 
-`.github/workflows/cron.yml` fires on the seven distinct cron expressions and
+`.github/workflows/cron.yml` fires on the eighteen distinct cron expressions and
 hands `github.event.schedule` to `scripts/run-cron-jobs.sh`, which looks up the
 jobs due on that expression in `scripts/cron-jobs.json` and calls them. The
 schedule is written once, in the JSON; the workflow, this document and the route

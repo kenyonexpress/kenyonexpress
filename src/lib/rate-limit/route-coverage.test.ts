@@ -71,6 +71,16 @@ const SECRET_AUTHENTICATED: { path: string; guard: RegExp; reason: string }[] = 
     reason: 'QStash delivery, signed; or CRON_SECRET as bearer for ops',
   },
   {
+    path: 'src/app/api/admin/seed-search/route.ts',
+    guard: /bearerMatches\(/,
+    reason: 'CRON_SECRET as bearer, compared in constant time; operator-only seeding hook',
+  },
+  {
+    path: 'src/app/api/push/send/route.ts',
+    guard: /bearerMatches\(|cronSecretMatches\(/,
+    reason: 'CRON_SECRET as bearer or x-cron-secret, compared in constant time; pg_cron only',
+  },
+  {
     path: 'src/app/api/webhooks/products/route.ts',
     guard: /timingSafeEqual\(/,
     reason: 'shared webhook secret, compared in constant time',

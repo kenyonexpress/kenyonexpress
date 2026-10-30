@@ -6,10 +6,16 @@
 // ProductCard shape.
 
 import { log } from '@/lib/observability/log'
-import { type PendingSearchProductRow, pendingSearchRpc, type SearchProductsArgs, callSearchProductsRpc } from '@/lib/supabase/pending-search'
+import {
+  type PendingSearchProductRow,
+  type SearchProductsArgs,
+  callSearchProductsRpc,
+  pendingSearchRpc,
+} from '@/lib/supabase/pending-search'
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { expandQueryWord } from '@/lib/search/db-expansion'
+import { escapeMeiliFilterValue } from '@/lib/search/faceted'
 import { meiliSearch } from '@/lib/search/meili-request'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
@@ -46,6 +52,9 @@ async function searchMeili(
   categorySlug?: string,
 ): Promise<SearchOutcome | null> {
   const index = process.env.MEILISEARCH_INDEX ?? 'products'
+  const filter: string[] = []
+  if (productType) filter.push(`type = ${productType}`)
+  if (categorySlug) filter.push(`category_slug = ${escapeMeiliFilterValue(categorySlug)}`)
   const data = await meiliSearch<{ hits: MeiliHit[]; estimatedTotalHits?: number }>(
     `/indexes/${index}/search`,
     'POST',
@@ -54,7 +63,9 @@ async function searchMeili(
       limit,
       // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
       // the facet is applied in the engine and estimatedTotalHits stays truthful.
-      ...(productType ? { filter: `type = ${productType}` } : {}),
+      // The category slug goes through the same quoting the faceted route uses,
+      // so it can only ever be a value in the expression, never a second clause.
+      ...(filter.length ? { filter } : {}),
     },
   )
 
@@ -198,12 +209,13 @@ async function searchDb(
     : 'categories!products_category_id_fkey(name_he, slug)'
   let query = supabase
     .from('products')
-    .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, categories!products_category_id_fkey(name_he, slug)',
-      { count: 'exact' },
-    )
+    .select(`id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, ${embed}`, {
+      count: 'exact',
+    })
     .eq('status', 'active')
     .is('deleted_at', null)
+
+  if (categorySlug) query = query.eq('categories.slug', categorySlug)
 
   // Each word becomes ONE or= group listing every spelling it can match, and
   // PostgREST ANDs the groups. So "עיסוי זוגי" still requires both concepts,

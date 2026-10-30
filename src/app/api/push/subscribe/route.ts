@@ -1,8 +1,13 @@
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
+import { requestIp } from '@/lib/rate-limit/request-ip'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
-import { createClient } from '@supabase/supabase-js'
-
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest): Promise<Response> {
+  const decision = await rateLimit('push-subscribe', requestIp(request))
+  if (!decision.allowed) return tooManyRequests(decision)
   try {
     const subscription = await request.json()
 
@@ -16,10 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.slice(7)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    )
+    const supabase = createAdminClient()
 
     const { data, error: authError } = await supabase.auth.getUser(token)
     if (authError || !data.user) {
@@ -37,13 +39,17 @@ export async function POST(request: NextRequest) {
     )
 
     if (error) {
-      console.error('Failed to save subscription:', error)
+      log.error('push.subscribe_save_failed', { reason: error.message })
       return NextResponse.json({ error: 'Failed to save subscription' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Subscribe error:', error)
+    log.error('push.subscribe_failed', {
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const POST = withRequestLog('/api/push/subscribe', handlePOST)

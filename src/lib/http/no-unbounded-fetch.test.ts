@@ -49,8 +49,14 @@ const ALLOWED: Record<string, string> = {
     'AbortController with 5000ms timeout to Vercel cache API. Purge failure is non-blocking and silent.',
   'lib/admin/legal-docs-verifier.ts':
     'AbortSignal.timeout(5000). HEAD requests to verify legal document presence for compliance audit.',
-  'app/api/cron/health/route.ts':
-    'AbortSignal.timeout(5000) on the ntfy push. A cron that hangs on its own notification never reports the health it measured.',
+  'app/api/checkout/postal-code/route.ts':
+    'AbortController + LOOKUP_TIMEOUT_MS on the Israel Post relay; a hung upstream degrades to "no suggestion", never to a held-open request.',
+  'lib/analytics/feature-flags.ts':
+    'AbortSignal.timeout(2_000) on the PostHog decide call; flags fall back to their defaults.',
+  'lib/jobs/runner.ts':
+    'AbortSignal.timeout(8000) on the job dispatch call; a stalled job is redelivered by the queue.',
+  'lib/observability/telegram.ts':
+    'AbortSignal.timeout(4000). An alert that hangs must not hold the request that raised it open.',
 
   // --- Browser calls to our own origin ------------------------------------
   'lib/search.ts':
@@ -90,6 +96,19 @@ const ALLOWED: Record<string, string> = {
     'Browser, fire-and-forget subscribe to our own origin after the permission prompt; a hang costs the page nothing.',
   'lib/offline/sync.ts':
     'Browser replay of the offline queue to our own origin; a stalled item stays queued and is retried with backoff, which is its own ceiling.',
+
+  'app/(auth)/signup/WhatsAppOtpForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'app/(store)/checkout/CheckoutForm.tsx':
+    'Browser, postal-code suggestion to our own origin, carries its own AbortController so a newer keystroke cancels the older lookup.',
+  'components/category/CategoryAutocomplete.tsx':
+    'Browser typeahead to our own origin, carries its own AbortController so a superseded keystroke is cancelled.',
+  'components/category/InfiniteProductGrid.tsx':
+    'Browser, listing page append to our own origin on scroll; a hang costs only the next page, and the grid keeps what it has.',
+  'components/supplier/SupplierApplyWizard.tsx':
+    'Browser PUT to a presigned R2 URL for an onboarding document, with the wizard showing its own upload state; a client timer cannot tell a lost response from a failed upload.',
+  'lib/push/use-push-notifications.ts':
+    'Browser, to our own /api/push/subscribe, fired by a user action; a hang costs the page nothing.',
 
   // --- Server calls to external APIs -------------------------------------
   'lib/auth/whatsapp-otp.ts':

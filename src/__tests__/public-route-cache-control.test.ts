@@ -31,9 +31,23 @@ const EXCLUDED_SEGMENTS =
 /** `src/app/api/app/` is the till app's API, bearer-authenticated. */
 const EXCLUDED_PREFIXES = ['src/app/api/app/']
 
-type Policy = 'public' | 'private' | 'redirect'
+type Policy = 'public' | 'private' | 'redirect' | 'immutable'
 
 const LEDGER: Record<string, Policy> = {
+  'src/app/api/affiliate/track/route.ts': 'private',
+  'src/app/api/cache/purge/route.ts': 'private',
+  'src/app/api/campaigns/hooks/route.ts': 'private',
+  // Proxies path-keyed image bytes from R2; a year, immutable.
+  'src/app/api/images/r2/route.ts': 'immutable',
+  // An hour in the browser, by the app's own contract: MobileProductCache.
+  'src/app/api/mobile/products/[slug]/route.ts': 'immutable',
+  'src/app/api/partners/v1/categories/route.ts': 'private',
+  'src/app/api/partners/v1/products/route.ts': 'private',
+  'src/app/api/push/send/route.ts': 'private',
+  'src/app/api/sms/broadcasts/[id]/route.ts': 'private',
+  'src/app/api/sms/broadcasts/route.ts': 'private',
+  'src/app/api/supplier-apply/card-verify/route.ts': 'private',
+  'src/app/api/test/push-verify/route.ts': 'private',
   'src/app/api/alerts/uptimerobot/route.ts': 'private',
   'src/app/api/cart/route.ts': 'private',
   'src/app/api/catalogue/listing/route.ts': 'public',
@@ -81,6 +95,11 @@ describe('public GET route handlers', () => {
       if (policy === 'redirect') {
         expect(source).toContain('NextResponse.redirect(')
         expect(source).not.toMatch(/public,\s*(max-age|s-maxage)/)
+        return
+      }
+      if (policy === 'immutable') {
+        expect(source).toMatch(/ImmutableAsset|MobileProductCache/)
+        expect(source).not.toMatch(/['"]public,/)
         return
       }
       if (policy === 'public') {

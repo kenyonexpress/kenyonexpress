@@ -1,3 +1,4 @@
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -206,5 +207,8 @@ async function handlePATCH(
   }
 }
 
-export const GET = withRequestLog('/api/sms/broadcasts/[id]', handleGET)
+export const GET = withCacheControl(
+  CacheControl.private,
+  withRequestLog('/api/sms/broadcasts/[id]', handleGET),
+)
 export const PATCH = withRequestLog('/api/sms/broadcasts/[id]', handlePATCH)

@@ -33,13 +33,21 @@
 
 | מדיניות | limit | window | הסיבה |
 | --- | --- | --- | --- |
-| `login` | 10 | 1 h | password guessing, per IP |
+| `auth-burst` | 10 | 1 min | C15: 10/min per IP across auth routes |
+| `login` | 5 | 15 min | password guessing, per IP (F64: 5/15min) |
 | `login-account` | 20 | 1 h | password guessing on one account from rotating IPs |
-| `signup` | 5 | 1 h | account flooding, per IP |
+| `signup` | 3 | 1 h | account flooding, per IP (F64: 3/hour) |
 | `magic` | 5 | 1 h | magic-link mail sent to a real inbox |
 | `phone-otp` | 5 | 1 h | OTP SMS costs money, per IP |
 | `phone-otp-number` | 5 | 1 h | OTP SMS to one number: the measured lockout vector |
 | `phone-verify` | 20 | 1 h | OTP code guessing |
+| `reset` | 3 | 1 h | reset mail, per IP (F64: 3/hour) |
+| `reset-address` | 3 | 1 h | reset mail to one address from rotating IPs (F64: 3/hour) |
+| `checkout-otp-send` | 5 | 1 h | checkout phone-verification SMS, per user |
+| `checkout-otp-send-ip` | 20 | 1 h | checkout phone-verification SMS, per IP |
+| `checkout-otp-verify` | 10 | 1 h | checkout phone-verification code guesses, per user |
+| `verify-card-stub` | 20 | 1 h | card-verification stub, per user; charges nothing, so looser than verify-card |
+| `verify-card` | 5 | 1 h | card-verification payment page creation, per user |
 | `email-verify` | 20 | 1 h | mail OTP code guessing, per IP |
 | `email-verify-address` | 20 | 1 h | mail OTP code guessing, per address, so proxies cannot buy one account more tries |
 | `passkey-register` | 10 | 1 h | WebAuthn enrolment ceremonies; a real person adds one key, not eleven |
@@ -49,28 +57,36 @@
 | `passkey-login` | 30 | 1 h | challenge issuance, per IP; cheap but each one sets a cookie |
 | `passkey-login-finish` | 20 | 1 h | assertion verification plus admin calls; one per real login |
 | `push-subscribe` | 30 | 1 h | service-role upserts to push_subscriptions; a browser re-posts one per page load at most |
-| `reset` | 5 | 1 h | reset mail, per IP |
-| `reset-address` | 5 | 1 h | reset mail to one address from rotating IPs |
+| `verify-card-callback` | 60 | 1 h | card-verification return page, per IP; unauthenticated, so bounded before the lookup |
+| `offline-sync` | 120 | 10 min | offline queue replay, per IP |
 | `update-password` | 10 | 1 h | session-bound password change |
 | `change-password` | 10 | 1 h | current-password re-proof from inside the account, keyed on the user id |
 | `cart_write` | 120 | 1 h | cart mutation, user or IP |
-| `coupon` | 10 | 1 h | coupon code guessing |
 | `coupon_qr_apply` | 30 | 1 h | printed QR landing, per IP |
 | `gift_card_check` | 20 | 1 h | gift card balance by code, per IP |
 | `gift_card_redeem` | 10 | 1 h | gift card redemption attempts, per user |
-| `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
-| `postal-lookup` | 30 | 10 min | postal-code lookups relayed to Israel Post, per IP |
-| `checkout-velocity-ip` | 30 | 24 h | new orders from one address in a day; carding rotates cards, not addresses |
-| `checkout-velocity-email` | 15 | 24 h | new orders on one email in a day; a stolen-card run batches on one login |
-| `checkout-velocity-phone` | 15 | 24 h | new orders naming one delivery phone in a day, across accounts |
-| `referral-code` | 10 | 1 h | referral code mint, per user |
-| `review-submit` | 5 | 1 h | review spam, per user |
 | `supplier-apply` | 5 | 1 h | supplier applications, per user |
 | `supplier-doc-upload` | 30 | 1 h | presigned R2 PUT minting for onboarding documents, per user |
+| `voucher-transfer` | 10 | 1 h | voucher transfers, per user |
+| `coupon` | 10 | 1 h | coupon code guessing |
+| `begin_checkout` | 10 | 1 h | Cardcom checkout creation (F64: 10/hour) |
+| `referral-code` | 10 | 1 h | referral code mint, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest list merge on sign-in, per user |
+| `refund-request` | 5 | 1 h | cancellation notice, per user |
+| `refund-request-ip` | 30 | 1 h | cancellation endpoint, per IP |
+| `affiliate-join` | 5 | 1 h | affiliate application, per user |
+| `affiliate-link` | 30 | 1 h | affiliate link creation, per user |
+| `wa-otp-send` | 3 | 15 min | WhatsApp code send, per phone (C90: 3/15min) |
+| `wa-otp-send-ip` | 20 | 1 h | WhatsApp code send, per IP |
+| `wa-otp-verify` | 10 | 1 h | WhatsApp code guesses, per phone |
+| `passkey-auth` | 30 | 10 min | passkey sign-in, per IP |
+| `whatsapp-otp` | 5 | 1 h | WhatsApp OTP send, per IP |
+| `whatsapp-otp-number` | 5 | 1 h | WhatsApp OTP send to one number, per phone |
+| `whatsapp-verify` | 20 | 1 h | WhatsApp OTP verify, per IP |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |
 | `voucher-redeem` | 120 | 1 h | till scans, per supplier user |
+| `voucher-redeem-code` | 10 | 1 h | redeem attempts against one short code, whoever scans it |
 | `voucher-redeem-batch` | 40 | 1 h | batch scans, per supplier |
 | `voucher-lookup` | 300 | 1 h | till lookups, per supplier |
 | `staff-pin` | 15 | 1 h | PIN guessing on the till |
@@ -78,9 +94,10 @@
 | `search-suggest` | 300 | 5 min | typeahead fires per keystroke |
 | `search-facets` | 60 | 5 min | faceted search, filters + counts |
 | `catalogue-listing` | 240 | 5 min | listing pages appended by the infinite grid, one per scroll |
+| `search-click` | 600 | 5 min | search result clicks, per IP |
 | `analytics` | 120 | 1 min | beacon endpoint, per IP |
-| `contact` | 5 | 1 h | contact form mail |
-| `supplier-lead` | 5 | 1 h | supplier lead mail |
+| `contact` | 5 | 1 h | contact form mail (F64: 5/hour) |
+| `supplier-lead` | 2 | 24 h | supplier lead mail (F64: 2/24h) |
 | `newsletter` | 5 | 1 h | newsletter subscription mail |
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |
 | `admin-voucher-redeem` | 30 | 1 h | admin manual voucher burn, per staff user |
@@ -88,6 +105,22 @@
 | `data-export` | 5 | 1 h | the export reads a dozen tables per call; a loop here is a cheap DB load |
 | `app-session` | 30 | 10 min | app session exchange, per IP |
 | `push-register` | 60 | 1 h | push token registration |
+| `campaign-trigger` | 5 | 1 h | campaign hook trigger, per user |
+| `sms-broadcast-create` | 10 | 1 h | SMS broadcast creation, per admin |
+| `sms-broadcast-update` | 20 | 1 h | SMS broadcast updates, per admin |
+| `sms-unsubscribe` | 5 | 1 h | SMS unsubscribe requests, per user |
+| `webhook-cardcom` | 600 | 1 min | Cardcom webhook flood, per IP |
+| `webhook-twilio` | 300 | 1 min | Twilio webhook flood, per IP |
+| `webhook-products` | 300 | 1 min | search sync webhook flood, per IP |
+| `search-index-job` | 600 | 1 min | QStash index job flood, per IP |
+| `search-index-dlq` | 300 | 1 min | QStash dead-letter flood, per IP |
+| `cache-purge` | 30 | 1 min | CDN purge hook, per IP |
+| `admin-product-import` | 10 | 1 h | CSV import, per admin |
+| `phone-verify-complete` | 20 | 1 h | phone milestone completion, per user |
+| `postal-lookup` | 30 | 10 min | postal-code lookups relayed to Israel Post, per IP |
+| `checkout-velocity-ip` | 30 | 24 h | new orders from one address in a day; carding rotates cards, not addresses |
+| `checkout-velocity-email` | 15 | 24 h | new orders on one email in a day; a stolen-card run batches on one login |
+| `checkout-velocity-phone` | 15 | 24 h | new orders naming one delivery phone in a day, across accounts |
 
 **המזהה (`identifier`) הוא חלק מהמפתח ולא מהטבלה.** ‏IP במסלולים
 האנונימיים, מזהה משתמש במסלולים המזוהים, ובשלוש שורות ערך שהקורא מספק

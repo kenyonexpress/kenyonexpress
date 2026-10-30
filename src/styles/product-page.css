@@ -599,7 +599,7 @@
    because the summary already names it; display:none keeps it out of the
    accessibility tree so the section is not announced twice. */
 .pdp-acc {
-  border-block-end: 1px solid var(--pdp-rule, #dee2e6);
+  border-block-end: 1px solid var(--pdp-rule);
 }
 .pdp-acc__summary {
   cursor: pointer;

@@ -1,4 +1,5 @@
 import SupplierApplyWizard from '@/components/supplier/SupplierApplyWizard'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { CONTRACT_TEXT, CONTRACT_VERSION } from '@/lib/suppliers/contract'
@@ -10,7 +11,7 @@ export const metadata = {
   // Its own address, for the reason in coupons/[id]: the root layout's canonical
   // is `/`, and a page that inherits it claims to be the home page. This is a
   // landing page a supplier is sent to, so it should be indexed as itself.
-  alternates: { canonical: '/suppliers/apply' },
+  alternates: alternatesFor('/suppliers/apply'),
 }
 
 /**

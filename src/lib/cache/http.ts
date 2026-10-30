@@ -89,3 +89,40 @@ export function isSharedCacheable(value: string): boolean {
   if (d.private || d['no-store']) return false
   return d.public === true || typeof d['s-maxage'] === 'string'
 }
+
+/**
+ * Content-addressed or path-keyed binary assets (the R2 image proxy): a year in
+ * every cache, never revalidated. Kept OUT of `CacheControl` on purpose -- that
+ * object is the set of policies for data that can change, and it promises no
+ * browser TTL; an immutable asset is the one case that wants the opposite.
+ */
+export const ImmutableAsset = 'public, max-age=31536000, immutable'
+
+/**
+ * The mobile app's product-detail JSON: an hour in the browser, as the app was
+ * built to expect. Outside `CacheControl` for the same reason as
+ * `ImmutableAsset`: that object promises no browser TTL on public data.
+ */
+export const MobileProductCache = 'public, max-age=3600'
+
+/**
+ * Stamps `policy` on every response a route handler returns, unless the handler
+ * already set a Cache-Control of its own. For routes whose responses are all
+ * one policy (secret-gated or admin-only GETs are all `CacheControl.private`),
+ * this is one line at the export instead of a header on each of a dozen
+ * `NextResponse.json` calls that the next edit would forget.
+ */
+export function withCacheControl<Args extends unknown[], R extends Response>(
+  policy: string,
+  handler: (...args: Args) => Promise<R> | R,
+): (...args: Args) => Promise<R> {
+  return async (...args: Args) => {
+    const response = await handler(...args)
+    try {
+      if (!response.headers.has('Cache-Control')) response.headers.set('Cache-Control', policy)
+    } catch {
+      // Immutable headers (a proxied fetch Response): the handler owns them.
+    }
+    return response
+  }
+}

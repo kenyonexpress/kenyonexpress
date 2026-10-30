@@ -1,3 +1,4 @@
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { sendWebPush } from '@/lib/push/web-push'
@@ -86,4 +87,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   })
 }
 
-export const GET = withRequestLog('/api/test/push-verify', handleGET)
+export const GET = withCacheControl(
+  CacheControl.private,
+  withRequestLog('/api/test/push-verify', handleGET),
+)

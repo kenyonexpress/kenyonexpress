@@ -33,16 +33,19 @@ export const NO_DATABASE_SPECS = [
   'dark-mode-ux30.spec.ts',
   'dialog-ux29.spec.ts',
   'home.spec.ts',
+  'home-rtl.spec.ts',
   'keyboard-navigation.spec.ts',
   'layout-stability.spec.ts',
   'mobile-gestures.spec.ts',
   'mobile-shell.spec.ts',
   'price-bidi.spec.ts',
+  'pwa.spec.ts',
   'product.spec.ts',
   'render-mode.spec.ts',
   'rtl-mobile.spec.ts',
   'rtl-three-widths.spec.ts',
   'smoke-all-routes.spec.ts',
+  'topbar.spec.ts',
   'touch-targets.spec.ts',
 ] as const
 
@@ -61,8 +64,11 @@ export const NEEDS_DATABASE_SPECS = {
   'cancel-refund.spec.ts': 'buys a seeded coupon as the fixture customer, then cancels it',
   'coupon-scan.spec.ts': 'redeems a seeded voucher as a supplier',
   'full-purchase-redeem.spec.ts': 'buys, then redeems what it bought',
+  'guest-checkout-widths.spec.ts':
+    'buys the seeded e2e-test-coupon as a guest and skips when it is not purchasable',
   'guest-upgrade.spec.ts': 'signs in as the fixture customer and reads a seeded order',
   'physical-purchase.spec.ts': 'places an order against the mock terminal',
   'production-smoke.spec.ts': 'runs against a deployed origin, not localhost',
   'purchase-flow.spec.ts': 'places an order against the mock terminal',
+  'search.spec.ts': 'derives each query from a product read out of the live catalogue',
 } as const

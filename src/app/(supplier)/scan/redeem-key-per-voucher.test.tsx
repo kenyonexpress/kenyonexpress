@@ -80,7 +80,7 @@ describe('the redemption idempotency key', () => {
     // cashier presses again. This is the real path, not a contrived one.
     fetchMock.mockImplementationOnce(() => Promise.reject(new Error('offline')))
     fireEvent.click(screen.getByRole('button', { name: 'אשר ומַמֵש' }))
-    await waitFor(() => expect(screen.getByText(/שגיאת רשת/)).toBeTruthy())
+    await waitFor(() => expect(screen.getByText(/אין חיבור/)).toBeTruthy())
 
     jsonOnce({ outcome: 'success', message: 'השובר מומש בהצלחה', replayed: true })
     fireEvent.click(screen.getByRole('button', { name: 'אשר ומַמֵש' }))

@@ -1,3 +1,4 @@
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -165,4 +166,7 @@ async function handleGET(request: Request): Promise<Response> {
 }
 
 export const POST = withRequestLog('/api/sms/broadcasts', handlePOST)
-export const GET = withRequestLog('/api/sms/broadcasts', handleGET)
+export const GET = withCacheControl(
+  CacheControl.private,
+  withRequestLog('/api/sms/broadcasts', handleGET),
+)

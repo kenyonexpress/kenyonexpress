@@ -83,12 +83,6 @@ const TRUSTED_INTERPOLATIONS: {
     guard: /q: sanitizeOrTerm\(input\.q\)/,
   },
   {
-    path: 'src/lib/search-server.ts',
-    name: 'word',
-    reason: 'a word of q, which the only caller sanitises first (const q = sanitize(query))',
-    guard: /const q = sanitize\(query\)/,
-  },
-  {
     path: 'src/server/queries/referrals.ts',
     name: 'user.id',
     reason: 'the JWT subject from supabase.auth.getUser(), a UUID the server verified',

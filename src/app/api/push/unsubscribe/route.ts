@@ -19,7 +19,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
-  if (!(await checkRateLimit(`push-subscribe:${user.id}`, 20, 3600))) {
+  if (!(await checkRateLimit(`push-subscribe:${user.id}`, 30, 3600))) {
     return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))

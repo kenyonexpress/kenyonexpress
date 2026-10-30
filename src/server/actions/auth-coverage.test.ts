@@ -50,6 +50,10 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:sendPasswordReset', 'reset must work when locked out'],
   ['auth.ts:updatePassword', 'runs against the recovery session Supabase issued'],
   ['auth.ts:generatePasskeyAuthOptions', 'WebAuthn sign-in entry point'],
+  [
+    'passkeys.ts:beginPasskeyLogin',
+    'WebAuthn usernameless sign-in entry point, rate limited per IP',
+  ],
   ['auth.ts:verifyPasskeyAuth', 'WebAuthn verification, browser-bounded ceremony'],
   [
     'auth.ts:sendWhatsAppOtp',

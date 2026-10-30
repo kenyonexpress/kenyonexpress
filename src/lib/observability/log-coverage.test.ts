@@ -43,6 +43,10 @@ const ALLOWED_CONSOLE = new Set([
   // that client components import. Neither runs in a request.
   'lib/offline/useOfflineMode.ts',
   'lib/typography.ts',
+  // Client-side: a 'use client' admin page talking to the browser Supabase client,
+  // and a 'use client' push hook. Neither runs in a server request.
+  'app/admin/affiliate/page.tsx',
+  'lib/push/use-push-notifications.ts',
 ])
 
 describe('raw console in src/', () => {

@@ -49,6 +49,9 @@ const SCRIPT_READABLE = new Set([
   // Read by the pre-paint snippet that hides the consent banner before the
   // parser reaches it, and by the analytics client to decide whether to load.
   'CONSENT_COOKIE',
+  // The granular analytics/marketing choice: ThirdPartyTags and ConsentSettings
+  // read it from document.cookie to decide which tags to load.
+  'CONSENT_GRANULAR_COOKIE',
 ])
 
 /** The text from a `.set(` up to its matching close paren. */

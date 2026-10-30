@@ -1,13 +1,16 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { sendPushToUsers } from '@/lib/push/send'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest): Promise<Response> {
   const cronSecret = process.env.CRON_SECRET
   const authHeader = request.headers.get('authorization')
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || !bearerMatches(authHeader, cronSecret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -70,7 +73,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ notified })
   } catch (error) {
-    console.error('Error sending voucher expiry notifications:', error)
+    log.error('push.voucher_expiry_failed', {
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const GET = withRequestLog('/api/cron/push-voucher-expiry', handleGET)

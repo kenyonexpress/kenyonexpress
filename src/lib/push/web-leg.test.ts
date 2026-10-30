@@ -92,6 +92,9 @@ describe('endpointHost', () => {
 
 describe('the web push leg', () => {
   it('does nothing at all without VAPID keys', async () => {
+    // Explicit, so a developer or CI env that supplies VAPID keys cannot flip this.
+    vi.stubEnv('NEXT_PUBLIC_VAPID_PUBLIC_KEY', '')
+    vi.stubEnv('VAPID_PRIVATE_KEY', '')
     const state: State = { subscriptions: [subscription('s1')], deleted: [], logged: [] }
     const result = await sendWebPushLeg(fakeAdmin(state), ROW, CONTENT)
 

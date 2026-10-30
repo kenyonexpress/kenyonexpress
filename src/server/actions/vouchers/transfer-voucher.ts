@@ -1,5 +1,6 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -16,7 +17,7 @@ export type TransferVoucherOutcome = { ok: true } | { ok: false; error: string }
  * whether or not the address is registered, so this cannot be used to probe
  * which emails have accounts.
  */
-export async function transferVoucher(input: {
+async function runTransferVoucher(input: {
   voucherId: string
   email: string
 }): Promise<TransferVoucherOutcome> {
@@ -59,4 +60,11 @@ export async function transferVoucher(input: {
 
   revalidatePath('/account/coupons')
   return { ok: true }
+}
+
+export async function transferVoucher(input: {
+  voucherId: string
+  email: string
+}): Promise<TransferVoucherOutcome> {
+  return withActionContext('vouchers.transfer', () => runTransferVoucher(input))
 }

@@ -1,7 +1,10 @@
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest) {
   try {
     const campaignSlug = request.nextUrl.searchParams.get('campaign')
     if (!campaignSlug) {
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (clickError) {
-      console.error('affiliate click insert failed:', clickError)
+      log.error('affiliate.click_insert_failed', { reason: clickError.message })
       // Don't fail the request, just log it
     }
 
@@ -40,11 +43,20 @@ export async function GET(request: NextRequest) {
       maxAge: cookieMaxAge,
       path: '/',
       sameSite: 'lax',
+      httpOnly: true,
     })
 
     return response
   } catch (error) {
-    console.error('affiliate track error:', error)
+    log.error('affiliate.track_failed', {
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
     return NextResponse.json({ error: 'internal error' }, { status: 500 })
   }
 }
+
+// Sets a cookie and writes a click row: per-caller, never shared-cacheable.
+export const GET = withCacheControl(
+  CacheControl.private,
+  withRequestLog('/api/affiliate/track', handleGET),
+)

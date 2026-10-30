@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 
 /**
@@ -100,7 +101,7 @@ export async function sendWhatsAppMessage(
       Body: body,
     })
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(env.accountSid)}/Messages.json`,
       {
         method: 'POST',

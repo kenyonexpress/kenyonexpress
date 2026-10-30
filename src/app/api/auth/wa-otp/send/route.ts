@@ -6,12 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { sendWhatsappOtp } from '@/lib/whatsapp/meta-cloud'
 import { WA_OTP_TTL_MS, hashOtp, newOtpCode } from '@/server/auth/wa-otp'
-import {
-  WA_OTP_SEND_LIMIT,
-  WA_OTP_SEND_WINDOW_SECONDS,
-  recordOtpAttempt,
-  waOtpEnabled,
-} from '@/server/auth/wa-otp-gate'
+import { recordOtpAttempt, waOtpEnabled } from '@/server/auth/wa-otp-gate'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -36,11 +31,8 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const ip = await getClientIp()
   if (
-    !(await checkRateLimit(
-      `wa-otp-send:${phone}`,
-      WA_OTP_SEND_LIMIT,
-      WA_OTP_SEND_WINDOW_SECONDS,
-    )) ||
+    // 3 per 15 min per phone (C90); literals so the rate-limit inventory can read them.
+    !(await checkRateLimit(`wa-otp-send:${phone}`, 3, 900)) ||
     !(await checkRateLimit(`wa-otp-send-ip:${ip}`, 20, 3600))
   ) {
     await recordOtpAttempt({

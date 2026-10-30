@@ -15,7 +15,7 @@ page.tsx files using 'use cache' in code         0
 ```
 
 Caching is a property of the **data functions a route calls**, not of the route.
-Ten modules carry `'use cache'`, and a page is cached to the extent that
+Eleven modules carry `'use cache'`, and a page is cached to the extent that
 everything it awaits is:
 
 | module | what it caches |
@@ -28,7 +28,7 @@ everything it awaits is:
 | `lib/coupon-deals.ts` | the coupon catalogue |
 | `lib/supplier-storefront.ts` | a supplier's public page |
 | `lib/feeds/catalogue.ts` | the Merchant and RSS feeds |
-| `server/queries/reviews.ts` | approved reviews and the rating summary |
+| `components/storefront/CouponQrExpiry.tsx` | a coupon QR expiry label (`cacheLife('max')`) |
 | `app/sitemap.ts` | the sitemap |
 | `components/CopyrightYear.tsx` | the footer year |
 
@@ -38,7 +38,7 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 > **COUNT THIS ON CODE, NOT ON TEXT.** The first pass at this table said
 > sixteen modules. Six of those were COMMENTS: `stock-live.ts`,
 > `StockScarcity.tsx`, `homepage/cms.ts` and the product page all discuss
-> `'use cache'` in prose while using none. The real number is ten.
+> `'use cache'` in prose while using none. The real number is eleven.
 > `src/lib/cache-policy.test.ts` recomputes these figures with comments
 > stripped and fails if this document drifts from them.
 
@@ -49,6 +49,7 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 ```
 cacheLife('hours')        22
 cacheLife('days')          1     CopyrightYear.tsx
+cacheLife('max')           1     CouponQrExpiry.tsx
 cacheTag(CATALOGUE_TAG)   22
 ```
 
@@ -65,7 +66,7 @@ always safe - it costs a cache miss, never a wrong answer. It is worth revisitin
 when the catalogue is large enough that a full cold rebuild is expensive, and
 not before.
 
-**Who invalidates.** Eight modules, and **not all of them are admin**:
+**Who invalidates.** Ten modules, and **not all of them are admin**:
 
 ```
 server/actions/admin/products.ts        6 calls
@@ -74,9 +75,11 @@ server/actions/admin/suppliers.ts       4
 server/actions/admin/approvals.ts       2
 server/actions/admin/coupon-deals.ts    2
 server/actions/admin/reviews.ts         1
+server/actions/admin/product-gift-card.ts 1
+server/actions/admin/product-import.ts  1
 server/actions/admin/product-location.ts 1
 server/actions/supplier/profile.ts      1
-                                       21
+                                       23
 ```
 
 **Corrected 2026-09-08.** This list said "four modules, all admin" and totalled

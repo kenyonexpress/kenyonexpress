@@ -201,7 +201,7 @@ export function buildOrderPaidEmail(
   const text = [
     greeting,
     'התשלום התקבל וההזמנה שלך נקלטה.',
-    `מספר הזמנה: ${ref}`,
+    `מספר הזמנה: ${ltrText(ref)}`,
     `סך הכל שולם באתר: ${total}`,
     items > 0 ? `פריטים: ${items}` : '',
     '',

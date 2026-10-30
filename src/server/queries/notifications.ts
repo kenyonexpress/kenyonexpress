@@ -7,8 +7,8 @@ import { createClient } from '@/lib/supabase/server'
 /**
  * Reading the bell and the settings behind it, and surviving 198's absence.
  *
- * `migrations/pending/198_in_app_notifications.sql` is written and not applied,
- * which is the standing rule. Until it lands both tables are missing, every
+ * `migrations/applied/198_in_app_notifications.sql` is filed as applied,
+ * but an environment without it still has to render. Until it lands both tables are missing, every
  * read below returns the empty answer, and the bell renders with no badge --
  * which is exactly what a customer with no notifications should see. Nothing
  * throws and no page 500s over a migration nobody has approved.

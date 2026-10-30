@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 import { parseCompareArgs } from './compare-args.mjs'
 import { loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
+import { defaultBaselineFor, recaptureHint } from './parity-baseline.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout|account|supplier]
@@ -44,6 +45,16 @@ const ARGS = parseCompareArgs(process.argv.slice(2))
 // been measured. Height stays 2600: the diff is banded down the page and the
 // bands must line up run to run for the numbers to be comparable.
 const VIEW = { width: ARGS.width, height: 2600 }
+
+// A BARE RUN HAS A REFERENCE (KEN-8): the page's frozen Electro capture from
+// scripts/parity-baseline.mjs. An explicit `--live=<url>` still navigates, and
+// `--baseline=` / `--live-png=` still win. cart and checkout have no default
+// capture and keep refusing until one is made. `{width}` expands to this run's.
+const LIVE_PNG =
+  defaultBaselineFor(page, {
+    live: argOf('live', null),
+    livePng: ARGS.baseline?.path ?? argOf('live-png', null),
+  })?.replaceAll('{width}', String(VIEW.width)) ?? null
 
 // `--widths=380,768,1440` is one run per width, in order, each a child with the
 // same arguments and a singular `--width=`. The parent exits with the first
@@ -223,6 +234,9 @@ if (ARGS.underTest)
   console.log(
     `--live-url=${ARGS.underTest} is the page under test (ours); the reference is unchanged`,
   )
+
+// A frozen capture is the reference: nothing navigates to a live host for it.
+if (LIVE_PNG) liveUrl ??= `file://${resolve(LIVE_PNG)}`
 
 if (page === 'home') {
   liveUrl ??= REFERENCE('ke_live_home.html', LIVE_HOME)
@@ -1167,12 +1181,21 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  if (ARGS.baseline) {
-    // A frozen reference, by request. No archive shot, no load shortfall to
-    // report, and the ledger row says so (COMPARE_NOTES below).
-    copyFileSync(ARGS.baseline.path, runShot('live'))
+  if (LIVE_PNG) {
+    // A frozen reference, by request or by default. No archive shot, no load
+    // shortfall to report, and the ledger row says so (COMPARE_NOTES below).
+    if (!existsSync(LIVE_PNG)) {
+      console.error(`REFUSING to measure: --live-png=${LIVE_PNG} does not exist.`)
+      const hint = recaptureHint(LIVE_PNG)
+      if (hint)
+        console.error(`refs/ is not tracked, so a fresh checkout has no capture. Make one: ${hint}`)
+      appendParityFailure({ page, width: VIEW.width, reason: 'frozen capture not found' })
+      await b.close()
+      process.exit(5)
+    }
+    copyFileSync(LIVE_PNG, runShot('live'))
     console.log(
-      `${runShot('live')} copied from ${ARGS.baseline.path} (frozen baseline, not a fresh shot of the archive)`,
+      `${runShot('live')} copied from ${LIVE_PNG} (frozen baseline, not a fresh shot of the archive)`,
     )
   } else {
     await shoot(liveUrl, runShot('live'), 'live')

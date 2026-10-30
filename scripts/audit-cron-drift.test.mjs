@@ -61,9 +61,10 @@ describe('the drift as measured on 2026-09-08', () => {
     expect(names).toContain('weekly-digest')
   })
 
-  it('this branch has no whatsapp job or route', () => {
-    expect(names).not.toContain('whatsapp')
+  it('this branch has a whatsapp job and route', () => {
+    // The route landed after 2026-09-08; the job and the route must exist together.
+    expect(names).toContain('whatsapp')
     const tracked = execFileSync('git', ['ls-files', 'src/app/api/cron'], { encoding: 'utf8' })
-    expect(tracked).not.toContain('whatsapp')
+    expect(tracked).toContain('whatsapp')
   })
 })

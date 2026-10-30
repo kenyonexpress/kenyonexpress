@@ -1,10 +1,22 @@
-import { createClient } from '@supabase/supabase-js'
+import { log } from '@/lib/observability/log'
+import { createAdminClient } from '@/lib/supabase/admin'
 import webpush from 'web-push'
 
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY!
-
-webpush.setVapidDetails('mailto:support@kenyonexpress.co.il', vapidPublicKey, vapidPrivateKey)
+/**
+ * Configured on first send, not at import. web-push throws on a malformed VAPID
+ * key, and doing that at module load made every importer (a cron route, a test,
+ * a build that collects page data) fail for want of a key that only a send needs.
+ */
+let vapidConfigured = false
+function configureVapid(): void {
+  if (vapidConfigured) return
+  webpush.setVapidDetails(
+    'mailto:support@kenyonexpress.co.il',
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
+    process.env.VAPID_PRIVATE_KEY as string,
+  )
+  vapidConfigured = true
+}
 
 interface PushNotification {
   title: string
@@ -18,10 +30,7 @@ export async function sendPushToUser(
   userId: string,
   notification: PushNotification,
 ): Promise<{ sent: number; failed: number }> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const supabase = createAdminClient()
 
   const { data: subscriptions, error } = await supabase
     .from('push_subscriptions')
@@ -29,12 +38,14 @@ export async function sendPushToUser(
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Failed to fetch subscriptions:', error)
+    log.error('push.fetch_subscriptions_failed', { reason: error.message })
     return { sent: 0, failed: 0 }
   }
 
   let sent = 0
   let failed = 0
+
+  if ((subscriptions ?? []).length > 0) configureVapid()
 
   for (const sub of subscriptions || []) {
     try {
@@ -59,7 +70,7 @@ export async function sendPushToUser(
 
       sent++
     } catch (err) {
-      console.error('Failed to send notification:', err)
+      log.error('push.send_failed', { reason: err instanceof Error ? err.message : 'unknown' })
       failed++
 
       if (err instanceof Error && err.message.includes('410')) {

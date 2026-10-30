@@ -160,6 +160,7 @@ beforeEach(() => {
         quantity: 1,
         unit_price_agorot: 6000,
         platform_percent: 10,
+        platform_percent_snapshot: 10,
         upfront_percent: null,
         commission_percent_snapshot: null,
         paid_on_site_agorot: 6000,

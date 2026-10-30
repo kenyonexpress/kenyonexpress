@@ -1,5 +1,6 @@
 'use client'
 
+import CategoryAutocomplete from '@/components/category/CategoryAutocomplete'
 import PriceRangeSlider from '@/components/category/PriceRangeSlider'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -13,6 +14,8 @@ type Props = {
   suppliers?: { supplier_id: string; supplier_name_he: string; product_count: number }[]
   tags?: { tag: string; product_count: number }[]
   categoryId?: string
+  categorySlug?: string
+  categoryName?: string
 }
 
 export default function CategoryFilterSidebar({
@@ -22,6 +25,8 @@ export default function CategoryFilterSidebar({
   categoryMaxPrice = 100000,
   suppliers,
   tags,
+  categorySlug,
+  categoryName,
 }: Props) {
   const router = useRouter()
   const pathname = usePathname()
@@ -61,6 +66,9 @@ export default function CategoryFilterSidebar({
 
   return (
     <aside id="category-filters" className="category-sidebar" aria-label="סינון מוצרים">
+      {categorySlug && categoryName && (
+        <CategoryAutocomplete categorySlug={categorySlug} categoryName={categoryName} />
+      )}
       <div className="category-sidebar__filters">
         {/* Price filter */}
         <div className="category-sidebar__filter-section">
