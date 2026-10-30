@@ -1099,3 +1099,4 @@ site. The two have to change together.
 - `317_user_passkeys_phone_verifications.sql` - C100 `user_passkeys` view and `user_phone_verifications` table. No money.
 - `318_club_tier_benefits.sql` - C102 `club_tier_benefits` (cashback_percent smallint, early_access_hours integer, gift_value_agorot bigint), one row per club tier, RLS read-active, writes via service role. Integer agorot only.
 - `319_affiliate_links_product.sql` - C103 `affiliate_links.product_id` plus a unique index (affiliate_id, product_id): one link per affiliate per product. No money.
+- `320_products_opening_hours.sql` - C104 `products.opening_hours` jsonb (sun..sat, each `{open, from, to}`) for the open-on-weekend chip (fri or sat open). No money.
