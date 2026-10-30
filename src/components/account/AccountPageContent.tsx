@@ -34,6 +34,7 @@ interface Order {
   createdAt: string
   itemCount: number
   hasVouchers?: boolean
+  hasInvoice?: boolean
 }
 
 interface AccountProfile {
@@ -197,6 +198,15 @@ export default function AccountPageContent({
                       <Link className="account-btn" href={`/account/orders/${order.id}`}>
                         פרטים
                       </Link>
+                      {order.hasInvoice && (
+                        <a
+                          className="account-btn"
+                          href={`/account/orders/${order.id}/invoice`}
+                          download
+                        >
+                          חשבונית
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))

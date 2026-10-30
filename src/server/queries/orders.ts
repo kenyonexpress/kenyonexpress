@@ -27,6 +27,8 @@ export interface OrderSummary {
   totalAgorot: Agorot
   itemCount: number
   hasVouchers: boolean
+  /** An issued sale document exists; the list links to the per-request download route. */
+  hasInvoice?: boolean
 }
 
 interface OrderVoucher {
@@ -162,6 +164,11 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
   }
   const orders = rows as unknown as OrderListRow[] | null
 
+  const invoiced = await getInvoicedOrderIds(
+    admin,
+    (orders ?? []).map((o) => o.id),
+  )
+
   return (orders ?? []).map((order) => {
     const items = order.order_items ?? []
     return {
@@ -173,8 +180,29 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
       totalAgorot: agorot(readOrderMoney(generation, order).totalAgorot),
       itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
       hasVouchers: items.some((i) => i.product_type === 'coupon'),
+      hasInvoice: invoiced.has(order.id),
     }
   })
+}
+
+/**
+ * Which of these orders have an issued sale document. One read for the whole
+ * list. Swallows errors for the reason `getOrderInvoiceSummary` does: a database
+ * without the invoices table must show a list without links, not a 500.
+ */
+async function getInvoicedOrderIds(
+  admin: ReturnType<typeof createAdminClient>,
+  orderIds: string[],
+): Promise<Set<string>> {
+  if (orderIds.length === 0) return new Set()
+  const { data, error } = await admin
+    .from('invoices')
+    .select('order_id')
+    .in('order_id', orderIds)
+    .in('document_type', ['tax_invoice_receipt', 'coupon_receipt'])
+    .eq('status', 'issued')
+  if (error || !data) return new Set()
+  return new Set((data as unknown as { order_id: string }[]).map((r) => r.order_id))
 }
 
 /** Full order detail incl. voucher codes (with QR) and supplier per line. */

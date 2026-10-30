@@ -78,6 +78,11 @@ export default function OrderCard({ order }: OrderCardProps) {
           <Link className="account-btn" href={`/account/orders/${order.id}`}>
             פרטים
           </Link>
+          {order.hasInvoice && (
+            <a className="account-btn" href={`/account/orders/${order.id}/invoice`} download>
+              חשבונית
+            </a>
+          )}
           {/* Same eligibility as the order page: only a paid order has a charge
               to cancel. The cancel page shows the window and the fee. */}
           {order.status === 'paid' && (
