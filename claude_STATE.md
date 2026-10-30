@@ -56,3 +56,5 @@ All code executed. Awaiting manual tasks.
 המשך מ: M13-c278 DONE-DEFERRED (repo .env.local Supabase service key returns 401 Invalid API key; /api/health + /api/ready 503 database=down, redis=down; no code change)
 המשך מ: M02-c283 BLOCKED (product re-measure vs refs/electro-product-fresh.html with COMPARE_ALLOW_GRID_MISMATCH=1: 380=36.58% 768=29.82% 1440=20.52%, all >11%, identical to c276; live host is our own build so compare.mjs refuses it as reference; no code change)
 המשך מ: M03-c284 BLOCKED (compare.mjs --page=category at 380/768/1440 REFUSED: kenyonexpress.co.il serves our own Vercel build, no Electro category reference exists, no number produced; no code change)
+המשך מ: M03-c286 BLOCKED (compare.mjs --page=category at 380/768/1440 REFUSED: kenyonexpress.co.il serves our own Vercel build, no Electro category reference in refs/, no number produced; rows appended to docs/UI-PARITY-REPORT.md; no code change)
+המשך מ: M12-c290 DONE (robots.ts verified: allow /, disallows redeem/coupon/gift/account/supplier/admin/checkout/cart/auth/api/login etc., sitemap+host absolute prod URL, built output matches, robots.test.ts 8/8 pass; no code change)
