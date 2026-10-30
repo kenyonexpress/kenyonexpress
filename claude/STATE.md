@@ -1,4 +1,3 @@
-המשך מ: M07-c269 DONE (2026-10-30): TODO/FIXME scan of tracked src found 6 TODOs (cardcom.ts:249,312; r2-migration.ts:103-106), all older than 7 days and already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / R2 stub needs service-role key); nothing resolvable now; no forbidden files touched
 המשך מ: G099 DONE (2026-10-30): prod READY j3fz3922p after 2 failed redeploys (pnpmfile checksum, stray root middleware.ts); deploy-watch.sh now queues DEPLOY-FIX, ntfy only after 3 fails; docs/G099-DEPLOY.md
 המשך מ: G116 BLOCKED launch-gate HOLD (2026-10-30): tests 11 fail; G101-G105,G107,G110,G114,G115 not DONE; no tag/flag; docs/MANUAL.md updated
 המשך מ: G109 DONE (2026-10-30): legal pages verified (C18 content), 91 tests pass, docs/G109-LEGAL.md; no forbidden files touched
@@ -297,3 +296,4 @@
 המשך מ: M11-c272 DONE (2026-10-30): live https://www.kenyonexpress.co.il/sitemap.xml 200 application/xml, 76 urls (46 product), newest lastmod 2026-10-27, no redeem/admin/account urls, Last-Modified 10-29 22:23Z, s-maxage=3600; apex /sitemap.xml 308->www; robots.txt lists sitemap on apex host (redirects, harmless; follows NEXT_PUBLIC site url env); no code changes; no forbidden files touched
 המשך מ: M16-c272 DONE (2026-10-30): only indexable product template src/app/(store)/product/[slug]/page.tsx emits two ld+json scripts (buildProductJsonLd Product w/ Offer, buildBreadcrumbJsonLd BreadcrumbList home>category>product, absolute urls); /product/[slug]/gift is robots noindex so exempt; json-ld.test.ts 26/26 pass; no code changes; no forbidden files touched
 המשך מ: M04-c273 DONE (2026-10-30): pnpm type-check (tsc --noEmit) clean, no tracked drift (only untracked logs), nothing to commit besides this line; no forbidden files touched
+המשך מ: M06-c273 DONE (2026-10-30): pnpm build passes clean, no tracked drift (only untracked logs), nothing to commit besides this line; no forbidden files touched
