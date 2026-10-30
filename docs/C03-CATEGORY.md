@@ -1,6 +1,6 @@
 # C03 - Category page, Electro v7 filter chips
 
-RESULT: BLOCKED gate-unmeasurable (no working DB: 166_chips not applied, Supabase key invalid)
+RESULT: BLOCKED gate-unmeasurable (no working DB: 244_chips not applied, Supabase key invalid)
 
 Date: 2026-10-30. No code, no locked files, no migrations touched.
 
@@ -11,7 +11,7 @@ The queue path `apps/web/app/(shop)/category/[slug]/page.tsx` does not exist. Th
 
 ## Why it is blocked
 1. **The chips have no data layer live.** `open-weekend` and `free-shipping` need
-   `products.weekend_open` / `products.free_shipping` from `migrations/pending/166_chips.sql` (C13). It is
+   `products.weekend_open` / `products.free_shipping` from `migrations/pending/244_chips.sql` (C13). It is
    not applied: Supabase MCP is unauthenticated in this session and `db push` is forbidden. A category query
    filtering on those columns would error on production until the migration lands.
 2. **The gates cannot be measured.** The REST endpoint answers 401 with the current `.env.local` keys
@@ -26,4 +26,4 @@ The queue path `apps/web/app/(shop)/category/[slug]/page.tsx` does not exist. Th
 - Parse both params in `page.tsx`, pass them into `getCategoryProductsCached` and its cache key.
 
 ## Unblock
-Apply `166_chips.sql` by file name via Supabase MCP, and replace the Supabase keys in `.env.local`.
+Apply `244_chips.sql` by file name via Supabase MCP, and replace the Supabase keys in `.env.local`.

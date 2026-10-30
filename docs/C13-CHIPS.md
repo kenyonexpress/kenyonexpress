@@ -10,7 +10,7 @@ Chips: `open-weekend`, `free-shipping`, `under-100`.
 | free-shipping | `products.free_shipping boolean NOT NULL DEFAULT false` | new column; flag only, threshold stays in `store_settings.free_shipping_threshold_agorot` |
 | under-100 | `products.kenyon_price <= 100` | no column; same predicate as the price facet. Existing `under-99` collection rule in `src/lib/category-page.ts` is untouched |
 
-Migration: `migrations/pending/166_chips.sql` (adds both columns, comments,
+Migration: `migrations/pending/244_chips.sql` (adds both columns, comments,
 partial indexes on the flagged rows, rollback, verification queries).
 Defaults are false, so applying changes nothing on any live page until a
 product is flagged.

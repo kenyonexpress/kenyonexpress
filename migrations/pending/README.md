@@ -1,5 +1,15 @@
 # `migrations/pending/`
 
+## 2026-10-31: 244 + 188 PENDING, 243 CANCELLED (inventory drift)
+
+- `244_chips.sql` (C13 filter chips: `products.weekend_open`, `products.free_shipping`)
+  was first filed under number 166, a number production already spent on
+  `166_voucher_transition_guard.sql`. Renumbered to 244. Not yet applied.
+- `188_affiliate.sql` (G110 / F12 affiliate campaigns, links, clicks,
+  conversions, wallet-credit payout). Not yet applied.
+- `243_club_tiers.sql` is CANCELLED, superseded by `164_club_tiers.sql`; it
+  lives in `migrations/cancelled/`.
+
 ## 2026-10-29: 164 PENDING (club tiers, supersedes 243)
 
 `164_club_tiers.sql` adds `club_tiers` (bronze 0, silver 200000, gold 500000,

@@ -4,7 +4,7 @@
 |---|---|---|
 | F11 club tiers compute + badge | Code done (C11). Migration 164 NOT applied | `migrations/pending/164_club_tiers.sql`, `src/lib/club/tiers.ts`, `docs/C11-TIERS.md` |
 | F12 affiliate campaigns + links + payout | **New this item**: data layer + commission math. Migration 188 NOT applied | `migrations/pending/188_affiliate.sql`, `src/lib/affiliate/commission.ts` (+ test) |
-| F13 filter chips data layer | Done (C13). Migration 166 NOT applied | `migrations/pending/166_chips.sql`, `docs/C13-CHIPS.md` |
+| F13 filter chips data layer | Done (C13). Migration 244 NOT applied | `migrations/pending/244_chips.sql`, `docs/C13-CHIPS.md` |
 | F14 web push subscribe + T-7/T-1 | Already complete, no change | subscribe/unsubscribe `src/server/actions/push.ts` (table 179, applied); T-7/T-1 producer `enqueue_expiring_voucher_notices({7,1})` (`supabase/migrations/114_push_tokens.sql`) called from `/api/cron/expire-vouchers` (daily 23:15), drained by `/api/cron/notifications`; template `lib/push/templates.ts` |
 
 ## F12 design (188)

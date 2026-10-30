@@ -342,7 +342,11 @@ describe('the pending migration inventory', () => {
     // zero rows) and filed here as the record like 217/223/224/226-233.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
+      // 164 is PENDING (2026-10-29): club tiers, supersedes the cancelled 243.
+      '164_club_tiers.sql',
       '184_orders_monthly_partitioning.sql',
+      // 188 is PENDING (2026-10-30): G110 affiliate campaigns and payout.
+      '188_affiliate.sql',
       '211_whatsapp_selfservice.sql',
       '217_coupon_qr_redemption.sql',
       '223_restock_on_refund.sql',
@@ -388,9 +392,9 @@ describe('the pending migration inventory', () => {
       // search_index_dlq; the closing block refuses any client-role grant or
       // policy. Not yet dry-run on production.
       '242_job_dlq.sql',
-      // 243 is PENDING (2026-10-27): `club_tiers` and the 12-month spend/tier
-      // functions behind /account/club. Not yet applied to production.
-      '243_club_tiers.sql',
+      // 244 is PENDING (2026-10-31): the category filter chips' columns,
+      // renumbered from 166 which production had already spent.
+      '244_chips.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
@@ -399,7 +403,12 @@ describe('the pending migration inventory', () => {
   it('keeps the cancelled revoke where nobody will apply it', () => {
     // A cancelled migration is not deleted: the number stays burned and the
     // file is the only written record of WHY the revoke must not happen.
-    expect(sqlFilesIn(CANCELLED_DIR)).toEqual(['165_revoke_anon_helpers.sql', 'preflight_165.sql'])
+    expect(sqlFilesIn(CANCELLED_DIR)).toEqual([
+      '165_revoke_anon_helpers.sql',
+      // 243 was never applied; 164_club_tiers.sql superseded it.
+      '243_club_tiers.sql',
+      'preflight_165.sql',
+    ])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------

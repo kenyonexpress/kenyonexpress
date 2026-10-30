@@ -1,4 +1,4 @@
--- 166_chips: data layer for the category-page filter chips (C13).
+-- 244_chips: data layer for the category-page filter chips (C13).
 --
 -- Chips: open-weekend, free-shipping, under-100.
 --   * open-weekend  -> products.weekend_open   (new, this migration)
@@ -12,10 +12,10 @@
 -- free_shipping is a flag, the threshold lives in store_settings
 -- (free_shipping_threshold_agorot, migration 237).
 --
--- NOTE ON NUMBERING. migrations/applied already holds a 166
--- (166_voucher_transition_guard.sql). The file name was fixed by queue item
--- C13 and 165 is permanently cancelled, so the name is kept; apply by file
--- name, not by number.
+-- NOTE ON NUMBERING. This file was filed as 166_chips.sql, but migrations/applied
+-- already holds a 166 (166_voucher_transition_guard.sql), so an unapplied file
+-- may not wear that number (pending-migrations-inventory test). Renumbered to
+-- the next free slot, 244, on 2026-10-31.
 --
 -- ROLLBACK
 --   DROP INDEX IF EXISTS public.products_weekend_open_idx;
