@@ -2,7 +2,7 @@ import 'server-only'
 
 import { agorot } from '@/lib/commerce/money'
 import { log } from '@/lib/observability/log'
-import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import { getCardcomAccounts, getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type SupplierLeadPayload, alertTeam, createSupplierLead } from './lead-create'
 
@@ -24,6 +24,20 @@ import { type SupplierLeadPayload, alertTeam, createSupplierLead } from './lead-
  */
 
 export const VERIFICATION_AMOUNT_AGOROT = agorot(100)
+
+/**
+ * C101: a charge on a live (non-sandbox) Cardcom terminal needs
+ * PAYMENTS_PROD_ENABLED=true. Mock and sandbox terminals never touch real money
+ * and are always allowed.
+ */
+export function liveChargeAllowed(
+  providerName: string,
+  sandbox: boolean,
+  source: Record<string, string | undefined> = process.env,
+): boolean {
+  if (providerName !== 'cardcom' || sandbox) return true
+  return source.PAYMENTS_PROD_ENABLED === 'true'
+}
 
 export type StartOutcome =
   | { kind: 'redirect'; url: string }
@@ -61,6 +75,9 @@ export async function startSupplierCardVerification(input: {
   try {
     provider = getPaymentProvider()
     appUrl = loadCardcomEnv().appUrl.replace(/\/+$/, '')
+    if (!liveChargeAllowed(provider.name, getCardcomAccounts().platform.sandbox)) {
+      throw new Error('PAYMENTS_PROD_ENABLED is not true: live card charge blocked')
+    }
   } catch (err) {
     // No terminal configured. The applicant did nothing wrong, so the team
     // gets the application by mail; no lead row is created without a card.
