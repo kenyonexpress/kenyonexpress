@@ -1,5 +1,7 @@
 'use client'
 
+import WhatsappOtpForm from '@/components/auth/WhatsappOtpForm'
+import { PASSKEY_MAX_FAILURES } from '@/lib/auth/passkey-fallback'
 import { passkeysEnabled } from '@/lib/auth/passkeys-flag'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser'
@@ -16,6 +18,7 @@ export default function PasskeySignIn({ next }: { next?: string }) {
   const [supported, setSupported] = useState(false)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [failures, setFailures] = useState(0)
 
   useEffect(() => {
     setSupported(passkeysEnabled() && browserSupportsWebAuthn())
@@ -47,9 +50,23 @@ export default function PasskeySignIn({ next }: { next?: string }) {
       // A cancelled browser dialog is not an error worth shouting about.
       if (!/NotAllowedError|AbortError/.test(String((err as { name?: string })?.name))) {
         setError(ERRORS[code] ?? 'הכניסה במפתח גישה נכשלה. אפשר לנסות שוב או להיכנס בדרך אחרת.')
+        setFailures((n) => n + 1)
       }
       setPending(false)
     }
+  }
+
+  // C100: after three failed passkey attempts, a one-time code to WhatsApp
+  // (the server falls back to SMS, then email) replaces the passkey button.
+  if (failures >= PASSKEY_MAX_FAILURES) {
+    return (
+      <div className="mt-3 space-y-3">
+        <p role="alert" className="text-sm text-gray-700">
+          מפתח הגישה לא עבד אחרי 3 ניסיונות. נשלח לכם קוד כניסה בוואטסאפ.
+        </p>
+        <WhatsappOtpForm next={next} />
+      </div>
+    )
   }
 
   return (
