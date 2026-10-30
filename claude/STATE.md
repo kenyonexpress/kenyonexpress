@@ -278,3 +278,4 @@
 המשך מ: M06-c295 DONE (2026-10-31): pnpm build exit 0, all routes generated; only noise is Sentry sourcemap upload 401 (placeholder SENTRY_AUTH_TOKEN, deferred per M14); tracked tree clean after build (untracked logs only), no source drift; no code changes; no forbidden files touched
 המשך מ: M07-c295 DONE (2026-10-31): TODO/FIXME scan over src/scripts/migrations = 6 hits, all already filed in docs/BACKLOG.md (3 items: cardcom.ts:249, :312, r2-migration.ts:103-106), none new; BACKLOG re-verified; no forbidden files touched
 המשך מ: M18-c295 DONE (2026-10-31): claude/STATE.md 279 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
+המשך מ: M06-c296 DONE (2026-10-31): pnpm build passes clean (exit 0, all routes generated); no tracked drift in working tree (only untracked logs/*, STATE.md.bak); no source fixes needed; no forbidden files touched
