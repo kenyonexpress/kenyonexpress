@@ -463,3 +463,10 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-28 20:18 | home | 380 | 43.32% | **FAIL** | `fb24966e7-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-28 20:20 | home | 768 | 44.73% | **FAIL** | `fb24966e7-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-28 20:21 | home | 1440 | 39.85% | **FAIL** | `fb24966e7-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-10-30 21:23 | product | 380 | n/a | **UNMEASURED** | `6353c162b-dirty` | frozen capture not found |
+| 2026-10-30 21:24 | product | 380 | 5.21% | PASS | `6353c162b-dirty` | ref everything loaded; overall 33.61% (reference blank 20.99%, ours blank 7.42%) |
+| 2026-10-30 21:25 | product | 768 | 4.23% | PASS | `6353c162b-dirty` | ref everything loaded; overall 27.66% (reference blank 16.44%, ours blank 6.99%) |
+| 2026-10-30 21:27 | product | 1440 | 2.14% | PASS | `6353c162b-dirty` | ref everything loaded; overall 17.28% (reference blank 9.29%, ours blank 5.85%) |
+| 2026-10-30 21:29 | product | 380 | 5.21% | PASS | `6353c162b-dirty` | ref everything loaded; overall 33.61% (reference blank 20.99%, ours blank 7.42%) |
+| 2026-10-30 21:30 | product | 768 | 4.23% | PASS | `6353c162b-dirty` | ref everything loaded; overall 27.66% (reference blank 16.44%, ours blank 6.99%) |
+| 2026-10-30 21:32 | product | 1440 | 2.14% | PASS | `6353c162b-dirty` | ref everything loaded; overall 17.28% (reference blank 9.29%, ours blank 5.85%) |

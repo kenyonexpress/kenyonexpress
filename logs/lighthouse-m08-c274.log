@@ -1,0 +1,1 @@
+M08-c274 2026-10-30T02:33:03Z: dev server won't start (ambiguous /c/[slug] vs /c/[code]); Supabase creds missing; no fresh Lighthouse. Last recorded: docs/LIGHTHOUSE-STATUS.md (lhci home 98, products 99) and M08-c270 dev (/ 84-85, product 85-87)
