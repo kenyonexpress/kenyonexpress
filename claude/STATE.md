@@ -193,3 +193,5 @@
 המשך מ: M15-c277 DONE (2026-10-30): prod build (next start) console check via Playwright on / and /product/<slug> (תספורת-לגבר...) = HTTP 200, 0 console errors, 0 pageerrors, 0 failed requests; under next dev only the known React dev-mode eval()/CSP message + image aspect-ratio warnings appear (dev-only, not in prod); no code change; no forbidden files touched
 המשך מ: M18-c277 DONE (2026-10-30): claude/STATE.md trimmed      253 -> 194 lines (oldest 60 appended to docs/STATE-ARCHIVE.md); no code changes; no forbidden files touched
 המשך מ: M04-c278 DONE (2026-10-30): pnpm type-check (tsc --noEmit) = 0 errors, no drift; no code change; no forbidden files touched
+המשך מ: M06-c278 DONE (2026-10-30): pnpm build = exit 0, all routes compiled, no drift in tracked files (only untracked logs); no code change; no forbidden files touched
+המשך מ: M07-c278 DONE (2026-10-30): TODO/FIXME scan found the same 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / R2 migration deferred); none resolvable now; BACKLOG re-verified; no forbidden files touched
