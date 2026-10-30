@@ -1100,3 +1100,4 @@ site. The two have to change together.
 - `318_club_tier_benefits.sql` - C102 `club_tier_benefits` (cashback_percent smallint, early_access_hours integer, gift_value_agorot bigint), one row per club tier, RLS read-active, writes via service role. Integer agorot only.
 - `319_affiliate_links_product.sql` - C103 `affiliate_links.product_id` plus a unique index (affiliate_id, product_id): one link per affiliate per product. No money.
 - `320_products_opening_hours.sql` - C104 `products.opening_hours` jsonb (sun..sat, each `{open, from, to}`) for the open-on-weekend chip (fri or sat open). No money.
+- `321_card_verify_enabled_flag.sql` - C91 seeds the `card_verify_enabled` flag in `feature_flags` as `false`: supplier applications skip the 1 ILS card step. Boolean, no money.

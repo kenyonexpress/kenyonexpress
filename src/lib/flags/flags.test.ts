@@ -16,6 +16,7 @@ describe('phase 2 flags', () => {
         'physical-products',
         'tzimmer-calendar',
         'wa_otp_enabled',
+        'card_verify_enabled',
       ].sort(),
     )
   })

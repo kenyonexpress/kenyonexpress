@@ -73,3 +73,7 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c283 DONE (2026-10-30): pnpm type-check clean (tsc --noEmit exit 0); only tracked drift was claude_STATE.md (M02-c283 log line), committed; no code changes, no forbidden files touched
 המשך מ: M06-c283 DONE (2026-10-30): pnpm build clean (exit 0); no tracked drift after build; no code changes, no forbidden files touched
 המשך מ: C101 BLOCKED (2026-10-30): PAYMENTS_PROD_ENABLED gate added to supplier card verification (existing F07 flow reused); sandbox smoke not run, Cardcom sandbox creds are placeholders; see docs/C101-supplier-verify.md
+המשך מ: C90 DONE (2026-10-30): WA OTP verified (routes, auth_wa_otps, 3/15min limit, SMS+email fallback, wa_otp_enabled off); tests pass; docs/C90-WA-OTP.md
+המשך מ: C91 DONE (2026-10-30): card_verify_enabled flag added default off (migration 321 pending, apply deferred on DB auth), supplier-lead skips card step when off; tests+tsc clean; docs/C91-CARD-VERIFY.md
+המשך מ: C92 DONE (2026-10-30): re-run, existing audit docs/C92-FEATURE-AUDIT.md has RESULT line; F11-F14 verified
+המשך מ: C94b DONE (2026-10-30): C90 C91 C92 each have docs RESULT + STATE line

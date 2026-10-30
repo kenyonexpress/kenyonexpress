@@ -704,4 +704,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '320',
+    file: '320_products_opening_hours.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const
