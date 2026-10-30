@@ -24,6 +24,7 @@ const FLAG_DB_KEYS: Record<string, string> = {
   'monthly-billing': 'monthly_billing',
   payment_production: 'payment_production',
   wa_otp_enabled: 'wa_otp_enabled',
+  card_verify_enabled: 'card_verify_enabled',
 }
 
 /**
@@ -86,6 +87,7 @@ function readEnvFlag(flagName: string, env: NodeJS.ProcessEnv): boolean {
     'monthly-billing': 'FLAG_MONTHLY_BILLING',
     payment_production: 'FLAG_PAYMENT_PRODUCTION',
     wa_otp_enabled: 'FLAG_WA_OTP_ENABLED',
+    card_verify_enabled: 'FLAG_CARD_VERIFY_ENABLED',
   }
   const envName = envMap[flagName]
   if (!envName) return false
@@ -104,5 +106,6 @@ function buildFallbackMap(env: NodeJS.ProcessEnv): Record<string, boolean> {
     'monthly-billing': readEnvFlag('monthly-billing', env),
     payment_production: readEnvFlag('payment_production', env),
     wa_otp_enabled: readEnvFlag('wa_otp_enabled', env),
+    card_verify_enabled: readEnvFlag('card_verify_enabled', env),
   }
 }

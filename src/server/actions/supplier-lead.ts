@@ -1,11 +1,13 @@
 'use server'
 
 import { isSmsCapableIsraeli, toE164Israeli } from '@/lib/auth/phone-otp'
+import { getSupabaseFlags } from '@/lib/flags/supabase-flags'
 import { supplierAgreementHash } from '@/lib/legal/supplier-agreement'
 import { withActionContext } from '@/lib/observability/action-context'
 import { TURNSTILE_FIELD, verifyTurnstile } from '@/lib/security/turnstile'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { startSupplierCardVerification } from '@/server/supplier/card-verification'
+import { createSupplierLead } from '@/server/supplier/lead-create'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
@@ -101,20 +103,33 @@ async function runSubmitSupplierLead(
   const phone = toE164Israeli(parsed.data.phone) ?? parsed.data.phone
   const h = await headers()
 
+  // C91: with card_verify_enabled off (default) the card step is skipped and
+  // the application becomes a lead directly.
+  const cardVerify = (await getSupabaseFlags()).card_verify_enabled
+
+  const payload = {
+    business_name: parsed.data.business_name,
+    contact_name: parsed.data.contact_name,
+    email: parsed.data.email,
+    phone,
+    city: parsed.data.city,
+    category: parsed.data.category,
+    website: parsed.data.website,
+    message: parsed.data.message,
+    agreement_hash: parsed.data.agreement_hash,
+  }
+
+  if (!cardVerify) {
+    const lead = await createSupplierLead(payload, ip, { userAgent: h.get('user-agent') })
+    return lead.ok
+      ? { ok: true, message: 'תודה, קיבלנו את הפרטים ונחזור אליכם בהקדם.' }
+      : { ok: false, error: 'לא הצלחנו לשמור את הפרטים. נסו שוב או פנו אלינו בוואטסאפ.' }
+  }
+
   // rc5 F07: no lead without a verified card. The application waits on the
   // verification row and becomes a lead only when Cardcom confirms the card.
   const outcome = await startSupplierCardVerification({
-    payload: {
-      business_name: parsed.data.business_name,
-      contact_name: parsed.data.contact_name,
-      email: parsed.data.email,
-      phone,
-      city: parsed.data.city,
-      category: parsed.data.category,
-      website: parsed.data.website,
-      message: parsed.data.message,
-      agreement_hash: parsed.data.agreement_hash,
-    },
+    payload,
     ip,
     userAgent: h.get('user-agent'),
   })

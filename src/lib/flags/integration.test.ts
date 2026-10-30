@@ -59,6 +59,7 @@ describe('flags integration', () => {
         payment_production: false,
         'maintenance-banner': true,
         wa_otp_enabled: false,
+        card_verify_enabled: false,
       })
     })
   })
@@ -72,8 +73,8 @@ describe('flags integration', () => {
       expect(FLAGS['maintenance-banner']).toBe('FLAG_MAINTENANCE_BANNER')
     })
 
-    it('has exactly 7 flags', () => {
-      expect(Object.keys(FLAGS)).toHaveLength(7)
+    it('has exactly 8 flags', () => {
+      expect(Object.keys(FLAGS)).toHaveLength(8)
     })
   })
 })

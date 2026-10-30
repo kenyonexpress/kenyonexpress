@@ -270,6 +270,7 @@ describe('the pending migration inventory', () => {
       '318_club_tier_benefits.sql',
       '319_affiliate_links_product.sql',
       '320_products_opening_hours.sql',
+      '321_card_verify_enabled_flag.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_164.sql',
@@ -322,6 +323,7 @@ describe('the pending migration inventory', () => {
       'preflight_318.sql',
       'preflight_319.sql',
       'preflight_320.sql',
+      'preflight_321.sql',
     ])
   })
 

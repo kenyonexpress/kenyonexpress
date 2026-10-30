@@ -34,6 +34,7 @@ describe('getSupabaseFlags', () => {
       'monthly-billing': false,
       payment_production: false,
       wa_otp_enabled: false,
+      card_verify_enabled: false,
     })
     expect(mockFetch).toHaveBeenCalledOnce()
   })
@@ -113,6 +114,7 @@ describe('getSupabaseFlags', () => {
       'monthly-billing': false,
       payment_production: false,
       wa_otp_enabled: false,
+      card_verify_enabled: false,
     })
     expect(mockFetch).not.toHaveBeenCalled()
   })
@@ -141,6 +143,7 @@ describe('getSupabaseFlags', () => {
       'monthly-billing': false,
       payment_production: false,
       wa_otp_enabled: false,
+      card_verify_enabled: false,
     })
   })
 
@@ -265,6 +268,7 @@ describe('getSupabaseFlags', () => {
       'monthly-billing': false,
       payment_production: false,
       wa_otp_enabled: false,
+      card_verify_enabled: false,
     })
   })
 })

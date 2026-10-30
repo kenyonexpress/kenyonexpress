@@ -16,6 +16,8 @@ export const FLAGS = {
   payment_production: 'FLAG_PAYMENT_PRODUCTION',
   // WhatsApp sign-in codes over the Meta Cloud API. OFF until the AUTHENTICATION template is approved.
   wa_otp_enabled: 'FLAG_WA_OTP_ENABLED',
+  // 1 ILS supplier card verification (F07). OFF: applications skip the card step.
+  card_verify_enabled: 'FLAG_CARD_VERIFY_ENABLED',
 } as const
 
 export type FlagName = keyof typeof FLAGS
