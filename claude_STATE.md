@@ -57,3 +57,4 @@ MAINTENANCE_LOOP_10: Appended cycles 1-10 to ~/ke-goals/queue.txt
 המשך מ: M13-c275 DONE-DEFERRED (SUPABASE_SERVICE_ROLE_KEY in repo .env.local returns 401 from Supabase REST; /api/health + /api/ready cannot return 200 with real deps; no code change)
 המשך מ: M02-c276 BLOCKED (product re-measure vs refs/electro-product-fresh.html with COMPARE_ALLOW_GRID_MISMATCH=1: 380=36.58% 768=29.82% 1440=20.52%, all >11%; live host is our own build so compare.mjs refuses it as reference; no code change)
 המשך מ: M13-c278 DONE-DEFERRED (repo .env.local Supabase service key returns 401 Invalid API key; /api/health + /api/ready 503 database=down, redis=down; no code change)
+המשך מ: M02-c283 BLOCKED (product re-measure vs refs/electro-product-fresh.html with COMPARE_ALLOW_GRID_MISMATCH=1: 380=36.58% 768=29.82% 1440=20.52%, all >11%, identical to c276; live host is our own build so compare.mjs refuses it as reference; no code change)
