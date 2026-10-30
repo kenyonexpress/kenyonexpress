@@ -7,7 +7,9 @@ import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
- * Where a printed coupon QR lands: /c/<8-digit code>.
+ * Where a printed coupon QR lands: /c/<8-digit code>, rewritten to this route
+ * in next.config.ts. It cannot live at app/c/[code]: the category page owns
+ * /c/[slug], and two dynamic siblings make the build fail as ambiguous.
  *
  * The whole job is to move the code from the flyer into the cart coupon
  * cookie and put the shopper on the homepage. The cookie holds the CODE and
@@ -59,4 +61,4 @@ async function handleGET(request: NextRequest, ctx: { params: Promise<{ code: st
   return home
 }
 
-export const GET = withRequestLog('/c/[code]', handleGET)
+export const GET = withRequestLog('/api/coupon-qr/[code]', handleGET)

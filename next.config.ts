@@ -232,6 +232,14 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  async rewrites() {
+    // Printed coupon QRs point at /c/<8-digit code>. The category page owns
+    // /c/[slug], so the digits-only shape is rewritten to the coupon route.
+    // A category slug is never 8 digits, so the two cannot collide.
+    return {
+      beforeFiles: [{ source: '/c/:code(\\d{8})', destination: '/api/coupon-qr/:code' }],
+    }
+  },
   async redirects() {
     return [
       // NO `/scan` -> `/supplier/scan` rule here. The scanner LIVES at /scan
