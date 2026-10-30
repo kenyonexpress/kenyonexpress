@@ -192,3 +192,4 @@
 המשך מ: M09-c277 DONE (2026-10-30): depcheck re-run = 0 unused runtime deps; 7 flagged devDeps (capacitor, tailwind/@tailwindcss/postcss, lighthouse, lint-staged) verified in use; no dead-export tooling installed and remainder is public lib API; no code change; no forbidden files touched
 המשך מ: M15-c277 DONE (2026-10-30): prod build (next start) console check via Playwright on / and /product/<slug> (תספורת-לגבר...) = HTTP 200, 0 console errors, 0 pageerrors, 0 failed requests; under next dev only the known React dev-mode eval()/CSP message + image aspect-ratio warnings appear (dev-only, not in prod); no code change; no forbidden files touched
 המשך מ: M18-c277 DONE (2026-10-30): claude/STATE.md trimmed      253 -> 194 lines (oldest 60 appended to docs/STATE-ARCHIVE.md); no code changes; no forbidden files touched
+המשך מ: M04-c278 DONE (2026-10-30): pnpm type-check (tsc --noEmit) = 0 errors, no drift; no code change; no forbidden files touched
