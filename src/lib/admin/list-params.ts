@@ -3,8 +3,8 @@ import { z } from 'zod'
 // Shared URL-state schema for admin list pages (D10): pagination, sort and
 // free-text search live in searchParams, parsed with Zod, never trusted raw.
 
-const DEFAULT_PER_PAGE = 20
-const MAX_PER_PAGE = 100
+export const DEFAULT_PER_PAGE = 20
+export const MAX_PER_PAGE = 100
 
 export const baseListParamsSchema = z.object({
   page: z.coerce.number().int().min(1).catch(1),

@@ -21,14 +21,14 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-type LedgerAccountKind =
+export type LedgerAccountKind =
   | 'cardcom_clearing'
   | 'platform_revenue'
   | 'vat_output'
   | 'supplier_payable'
   | 'customer_wallet'
 
-type LedgerEvent =
+export type LedgerEvent =
   | 'order_paid'
   | 'coupon_issued'
   | 'coupon_redeemed'
@@ -56,14 +56,14 @@ export interface JournalLine {
   memo?: string
 }
 
-interface JournalRefs {
+export interface JournalRefs {
   orderId?: string
   orderItemId?: string
   paymentId?: string
   couponCodeId?: string
 }
 
-interface JournalInput {
+export interface JournalInput {
   eventType: LedgerEvent
   /** Idempotency key of the business event, e.g. `order:<id>:paid`. */
   eventKey: string

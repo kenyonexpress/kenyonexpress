@@ -2,8 +2,8 @@ import type { LucideIcon, LucideProps } from 'lucide-react'
 import type React from 'react'
 import { forwardRef } from 'react'
 
-type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-type IconVariant =
+export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+export type IconVariant =
   | 'default'
   | 'primary'
   | 'secondary'

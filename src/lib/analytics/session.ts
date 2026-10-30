@@ -11,7 +11,7 @@ export const SESSION_IDLE_MS = 30 * 60 * 1000 // rolling 30-minute session
 
 // Web Vitals are sampled per session, not per event, so a sampled session
 // reports every metric it produces and p75 stays comparable across routes.
-const WEB_VITALS_SAMPLE_RATE = 0.25
+export const WEB_VITALS_SAMPLE_RATE = 0.25
 
 export type AnalyticsSession = {
   id: string

@@ -7,9 +7,9 @@ import { type Agorot, agorot, applyBp, bp } from '@/lib/money'
  * Pure arithmetic. It moves no money and reads no table; the refund itself
  * belongs to the payment path. All amounts are integer agorot via money.ts.
  */
-const CANCELLATION_WINDOW_DAYS = 14
-const CANCELLATION_FEE_BP = bp(500)
-const CANCELLATION_FEE_CAP_AGOROT = agorot(10_000)
+export const CANCELLATION_WINDOW_DAYS = 14
+export const CANCELLATION_FEE_BP = bp(500)
+export const CANCELLATION_FEE_CAP_AGOROT = agorot(10_000)
 
 const DAY_MS = 86_400_000
 

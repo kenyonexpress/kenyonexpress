@@ -31,6 +31,12 @@ export function isAdminRole(role: UserRole | null | undefined): boolean {
   return role === 'admin' || role === 'super_admin'
 }
 
+// support sits OUTSIDE the has_role() hierarchy (V2 section 6.1): it gets
+// operational read access, never catalog writes.
+export function isSupportRole(role: UserRole | null | undefined): boolean {
+  return role === 'support' || isAdminRole(role)
+}
+
 // Staff = catalog writers. Existing write guards depend on this meaning,
 // so support and read_only are deliberately NOT included here.
 export function isStaffRole(role: UserRole | null | undefined): boolean {

@@ -195,7 +195,7 @@ export const DEFAULT_CONTENT_SECURITY_POLICY = contentSecurityPolicyFor('/')
  */
 export const CAMERA_PATHS = ['/scan', '/supplier/scan'] as const
 
-function isCameraPath(pathname: string): boolean {
+export function isCameraPath(pathname: string): boolean {
   return CAMERA_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 }
 

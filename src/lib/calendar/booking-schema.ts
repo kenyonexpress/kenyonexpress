@@ -8,11 +8,11 @@
 
 import { z } from 'zod'
 
-const bookingStatusSchema = z.enum(['pending', 'confirmed', 'cancelled', 'completed'])
+export const bookingStatusSchema = z.enum(['pending', 'confirmed', 'cancelled', 'completed'])
 
 export type BookingStatus = z.infer<typeof bookingStatusSchema>
 
-const createBookingSchema = z.object({
+export const createBookingSchema = z.object({
   productId: z.string().uuid(),
   userId: z.string().uuid(),
   checkIn: z.date(),
@@ -23,7 +23,7 @@ const createBookingSchema = z.object({
 
 export type CreateBooking = z.infer<typeof createBookingSchema>
 
-const bookingSchema = z.object({
+export const bookingSchema = z.object({
   id: z.string().uuid(),
   productId: z.string().uuid(),
   userId: z.string().uuid(),
@@ -39,7 +39,7 @@ const bookingSchema = z.object({
 
 export type Booking = z.infer<typeof bookingSchema>
 
-const availabilitySchema = z.object({
+export const availabilitySchema = z.object({
   productId: z.string().uuid(),
   date: z.date(),
   isAvailable: z.boolean(),

@@ -22,7 +22,7 @@ export type ScanInput =
   | { kind: 'code'; token: null; code: string }
   | { kind: 'invalid'; token: null; code: null }
 
-const VOUCHER_TOKEN_PREFIX = 'KEV1.'
+export const VOUCHER_TOKEN_PREFIX = 'KEV1.'
 
 /** Same normalisation as domain/vouchers/code.ts, duplicated to stay client-safe. */
 export function normalizeScannedCode(input: string): string {

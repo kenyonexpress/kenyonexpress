@@ -10,7 +10,7 @@ import { buildSynonyms } from '@/lib/search/hebrew-synonyms'
  */
 
 export const PRODUCTS_INDEX = process.env.MEILISEARCH_INDEX ?? 'products'
-const _PRIMARY_KEY = 'id'
+export const PRIMARY_KEY = 'id'
 
 /**
  * Typo tolerance, tuned for Hebrew.
@@ -122,7 +122,35 @@ export const RANKING_RULES = [
  * way English does, but these conjunctions and fillers show up in product
  * titles often enough to dilute relevance.
  */
-const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
+export const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
+
+/**
+ * Tokenizer locale hints (Meilisearch >= 1.10, `localizedAttributes`).
+ *
+ * Charabia detects scripts per token, but detection is a guess on short
+ * fields: a two-word product name gives it almost nothing to vote on.
+ * Declaring the Hebrew-content attributes as `heb` pins segmentation and
+ * normalisation to the Hebrew tokenizer instead of the guess.
+ *
+ * `name_en`, `brand`, `sku` and `slug` are deliberately absent: their content
+ * is Latin or mixed, and a wrong pin is worse than detection.
+ *
+ * On a Meilisearch older than 1.10 the settings PATCH would reject the key,
+ * so the setup script applies it separately and degrades to a warning.
+ */
+export const HEBREW_LOCALES = ['heb'] as const
+export const HEBREW_ATTRIBUTE_PATTERNS = [
+  'name_he',
+  'short_description_he',
+  'description_he',
+  'category_name_he',
+  'city',
+  'tags',
+  'supplier_name',
+] as const
+export const LOCALIZED_ATTRIBUTES = [
+  { attributePatterns: [...HEBREW_ATTRIBUTE_PATTERNS], locales: [...HEBREW_LOCALES] },
+]
 
 export const INDEX_SETTINGS = {
   searchableAttributes: [...SEARCHABLE_ATTRIBUTES],

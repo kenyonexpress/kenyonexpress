@@ -32,7 +32,7 @@
 export const GUEST_SESSION_COOKIE = 'ke_session_id'
 
 /** Thirty days. Long enough that a shopper's cart survives a weekend. */
-const GUEST_SESSION_MAX_AGE = 60 * 60 * 24 * 30
+export const GUEST_SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
 export interface GuestSessionCookieOptions {
   httpOnly: true

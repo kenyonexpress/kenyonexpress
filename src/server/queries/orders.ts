@@ -31,7 +31,7 @@ export interface OrderSummary {
   hasInvoice?: boolean
 }
 
-interface OrderVoucher {
+export interface OrderVoucher {
   code: string
   status: string
   expiresAt: string | null
@@ -42,7 +42,7 @@ interface OrderVoucher {
   usedAt: string | null
 }
 
-interface OrderLineSupplier {
+export interface OrderLineSupplier {
   id: string
   name: string
   address: string | null
@@ -50,7 +50,7 @@ interface OrderLineSupplier {
   phone: string | null
 }
 
-interface OrderLine {
+export interface OrderLine {
   id: string
   productId: string | null
   productName: string
@@ -96,7 +96,7 @@ export interface OrderDetail {
   invoice: OrderInvoice | null
 }
 
-interface OrderInvoice {
+export interface OrderInvoice {
   documentNumber: string | null
   issuedAt: string | null
 }

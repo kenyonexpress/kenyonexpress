@@ -14,7 +14,7 @@ import { randomInt } from 'node:crypto'
  * from a voucher before hitting the server.
  */
 
-const COUPON_CODE_LENGTH = 8
+export const COUPON_CODE_LENGTH = 8
 export const COUPON_QR_PREFIX = 'KEC1.'
 
 const COUPON_CODE_PATTERN = /^\d{8}$/

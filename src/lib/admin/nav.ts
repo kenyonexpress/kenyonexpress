@@ -4,7 +4,7 @@ import { type UserRole, isAdminRole, isStaffRole } from './roles'
 // content_uploader (staff who is not an admin) may reach. Everything else is
 // admin-only. content_uploader manages catalogue copy: products, categories,
 // and coupon deals. Money, suppliers, orders and users stay admin-only.
-const ADMIN_SECTIONS = [
+export const ADMIN_SECTIONS = [
   { href: '/admin/dashboard', staffAllowed: false },
   { href: '/admin/analytics', staffAllowed: false },
   { href: '/admin/products', staffAllowed: true },

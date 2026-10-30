@@ -13,7 +13,7 @@ export interface CatalogCacheManager {
   clearCache(): Promise<void>
 }
 
-interface CacheStats {
+export interface CacheStats {
   productCount: number
   categoryCount: number
   lastUpdated?: number

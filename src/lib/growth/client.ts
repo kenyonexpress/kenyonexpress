@@ -16,7 +16,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * types and use the generated ones.
  */
 
-type DiscountCampaignRow = DiscountCampaign & {
+export type DiscountCampaignRow = DiscountCampaign & {
   description: string | null
   created_by: string | null
   created_at: string
@@ -24,7 +24,7 @@ type DiscountCampaignRow = DiscountCampaign & {
   deleted_at: string | null
 }
 
-type DiscountCampaignPerformance = {
+export type DiscountCampaignPerformance = {
   id: string
   code: string
   name: string

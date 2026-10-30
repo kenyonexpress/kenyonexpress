@@ -3,7 +3,7 @@ export interface CacheTag {
   id?: string | number
 }
 
-interface CachePurgeRequest {
+export interface CachePurgeRequest {
   tags: CacheTag[]
   paths?: string[]
   timestamp: number

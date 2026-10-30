@@ -16,7 +16,7 @@ import type { UserRole } from '@/lib/admin/roles'
  * queue entirely.
  */
 
-const UPLOADER_STRIPPED_FIELDS = ['platform_percent', 'supplier_split_percent'] as const
+export const UPLOADER_STRIPPED_FIELDS = ['platform_percent', 'supplier_split_percent'] as const
 
 export function applyUploaderPolicy<T extends Record<string, unknown>>(
   role: UserRole,

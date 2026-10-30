@@ -31,7 +31,7 @@ import type { VoucherState } from '@/server/domain/vouchers/state-machine'
  * default to it and the recorded `ground` can match what actually happened.
  */
 
-type RefundInstrument = 'original_method' | 'wallet'
+export type RefundInstrument = 'original_method' | 'wallet'
 
 export const STATUTORY_WINDOW_DAYS = 14
 

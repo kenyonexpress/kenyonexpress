@@ -12,7 +12,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
 
-type GalleryAsset = {
+export type GalleryAsset = {
   alt: string | null
   blurDataURL: string | null
 }

@@ -22,6 +22,7 @@ export type AdminSection =
   | 'suppliers'
   | 'discounts'
   | 'fraud-alerts'
+  | 'settings'
 
 export type SectionAccess = 'none' | 'read' | 'write'
 
@@ -39,6 +40,9 @@ const CONTENT_UPLOADER_ACCESS: Record<AdminSection, SectionAccess> = {
   // not part of the catalog role, however much a discount code looks like content.
   discounts: 'none',
   'fraud-alerts': 'none',
+  // Store-wide knobs (checkout switch, contact details, order minimums) are
+  // operations, not catalogue copy.
+  settings: 'none',
 }
 
 const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
@@ -56,6 +60,9 @@ const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
   discounts: 'read',
   // Fraud alerts are operational security, support can view them
   'fraud-alerts': 'read',
+  // Support answers "what is the minimum order" and "is checkout down"; it
+  // does not flip either. Reads only.
+  settings: 'read',
 }
 
 export function sectionAccess(

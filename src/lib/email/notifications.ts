@@ -1,7 +1,7 @@
-import { resolveCarrier } from '@/lib/shipping/carriers'
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { legalEntityLine } from '@/lib/legal-entity'
+import { resolveCarrier } from '@/lib/shipping/carriers'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE } from '@/styles/tokens'
 
@@ -666,7 +666,7 @@ export function buildCashbackCreditedEmail(
  * The provider's raw error is included here and NOT shown to customers
  * anywhere. That asymmetry is the point of an operator channel.
  */
-function buildInvoiceDeadEmail(
+export function buildInvoiceDeadEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -714,7 +714,7 @@ function buildInvoiceDeadEmail(
  * only "3 in stock" while all three are inside payment sessions will conclude
  * the alert is wrong.
  */
-function buildLowStockEmail(
+export function buildLowStockEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
@@ -767,7 +767,7 @@ function buildLowStockEmail(
  * line: `missing_locally` means a customer was charged and has no order, which
  * no support ticket will ever report because there is no order number to cite.
  */
-function buildReconciliationGapEmail(
+export function buildReconciliationGapEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {

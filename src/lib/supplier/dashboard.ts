@@ -69,7 +69,7 @@ function startOfIsraelDay(now = new Date()): Date {
   return new Date(`${day}T00:00:00+03:00`)
 }
 
-function isRedeemedToday(redeemedAt: string | null | undefined, now = new Date()): boolean {
+export function isRedeemedToday(redeemedAt: string | null | undefined, now = new Date()): boolean {
   if (!redeemedAt) return false
   const at = new Date(redeemedAt)
   return at.getTime() >= startOfIsraelDay(now).getTime()
