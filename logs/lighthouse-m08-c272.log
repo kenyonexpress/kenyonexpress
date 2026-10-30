@@ -1,0 +1,5 @@
+M08-c272 Lighthouse mobile (performance), fresh next start :7901 (closeout/v1-final), 2026-10-30, 2 runs each, 380x800 mobile dsf2 (same method as c264..c268)
+/ : 84 / 79 | LCP 4.5-5.1 s | TBT 20-30 ms | CLS 0.025
+/product/עוזרת-אישית-שירותי-משרד : 82 / 79 | LCP 4.7-5.0 s | TBT 20 ms | CLS 0.02
+Note: /product alone is 404 (no index route); sample product slug used.
+Both below G23 target 95 (LCP-bound, locked hero). Sample-only, no code changes. G23 not claimed met.
