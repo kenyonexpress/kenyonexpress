@@ -1,0 +1,5 @@
+/ run1 71 LCP 9.6 s TBT 210 ms CLS 0.001
+/ run2 69 LCP 9.2 s TBT 260 ms CLS 0.001
+/product/%D7%A2%D7%95%D7%96%D7%A8%D7%AA-%D7%90%D7%99%D7%A9%D7%99%D7%AA-%D7%A9%D7%99%D7%A8%D7%95%D7%AA%D7%99-%D7%9E%D7%A9%D7%A8%D7%93 run1 97 LCP 1.4 s TBT 180 ms CLS 0.001
+/product/%D7%A2%D7%95%D7%96%D7%A8%D7%AA-%D7%90%D7%99%D7%A9%D7%99%D7%AA-%D7%A9%D7%99%D7%A8%D7%95%D7%AA%D7%99-%D7%9E%D7%A9%D7%A8%D7%93 run2 90 LCP 3.1 s TBT 180 ms CLS 0.001
+Note: prod build (next start :3000); /product alone is 404, sample slug used. Log only, no code changes. 2026-10-31
