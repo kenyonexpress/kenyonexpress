@@ -60,3 +60,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M05-c270 DONE (pnpm test: 622 files passed, 2 skipped; 7117 tests passed, 28 skipped; no code changes; drift = STATE + M-CYCLE-STATUS timestamp committed)
 המשך מ: M16-c270 DONE (product page src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList via lib/seo/json-ld; json-ld.test.ts 26 passed; no code changes)
 המשך מ: M06-c272 DONE (pnpm build: clean; no code changes; drift = M-CYCLE-STATUS timestamp committed)
+המשך מ: M07-c272 DONE (2026-10-30): TODO/FIXME scan of src/migrations/scripts found 6 comment lines in 3 groups (cardcom.ts:249, :312; r2-migration.ts:103-106), all older than 7 days and all already filed in docs/BACKLOG.md (cred/feature blocked); nothing new, no forbidden files touched
