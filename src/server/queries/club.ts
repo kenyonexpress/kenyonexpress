@@ -15,6 +15,13 @@ export interface ClubTierRow {
   sort_order: number
 }
 
+export interface ClubTierBenefitRow {
+  tier_id: number
+  cashback_percent: number
+  early_access_hours: number
+  gift_value_agorot: number
+}
+
 export interface MyTier {
   tierKey: string
   tierNameHe: string

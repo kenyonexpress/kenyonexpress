@@ -8,6 +8,7 @@ import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
+import { getMyTier } from '@/server/queries/club'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -42,13 +43,18 @@ async function AccountSideNav() {
     redirect(`/login?next=${encodeURIComponent('/account')}`)
   }
 
-  const [profile, wallet] = await Promise.all([getAccountProfile(), getWalletSummary()])
+  const [profile, wallet, tier] = await Promise.all([
+    getAccountProfile(),
+    getWalletSummary(),
+    getMyTier(),
+  ])
 
   return (
     <AccountNav
       fullName={profile?.fullName ?? null}
       email={profile?.email ?? user.email ?? ''}
       walletBalanceAgorot={wallet.balanceAgorot}
+      tier={tier ? { key: tier.tierKey, nameHe: tier.tierNameHe } : null}
     />
   )
 }

@@ -265,6 +265,9 @@ describe('the pending migration inventory', () => {
       '313_partner_redeem.sql',
       '314_wa_otp_enabled_flag.sql',
       '315_products_supplier_transfer_days.sql',
+      '316_notification_consents_view.sql',
+      '317_user_passkeys_phone_verifications.sql',
+      '318_club_tier_benefits.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_164.sql',
@@ -312,6 +315,9 @@ describe('the pending migration inventory', () => {
       'preflight_313.sql',
       'preflight_314.sql',
       'preflight_315.sql',
+      'preflight_316.sql',
+      'preflight_317.sql',
+      'preflight_318.sql',
     ])
   })
 
