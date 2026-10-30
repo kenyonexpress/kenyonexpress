@@ -24,7 +24,7 @@
  */
 
 /** Expo's documented ceiling for one request. Larger arrays are chunked. */
-const EXPO_PUSH_CHUNK = 100
+export const EXPO_PUSH_CHUNK = 100
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
 

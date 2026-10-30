@@ -34,7 +34,7 @@ const labelVariants = cva(
   },
 )
 
-interface LabelProps
+export interface LabelProps
   extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
     VariantProps<typeof labelVariants> {}
 

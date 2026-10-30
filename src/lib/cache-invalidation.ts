@@ -1,6 +1,6 @@
 import { purgeCacheForResource } from './cache'
 
-interface CacheInvalidationEvent {
+export interface CacheInvalidationEvent {
   resource: 'product' | 'category' | 'order' | 'coupon' | 'supplier'
   id: string | number
   reason: string
@@ -8,7 +8,7 @@ interface CacheInvalidationEvent {
 
 const invalidationQueue: CacheInvalidationEvent[] = []
 
-function invalidateOnChange(event: CacheInvalidationEvent): void {
+export function invalidateOnChange(event: CacheInvalidationEvent): void {
   invalidationQueue.push(event)
   processQueue()
 }

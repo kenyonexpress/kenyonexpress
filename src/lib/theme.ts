@@ -1,7 +1,7 @@
 export type Theme = 'light' | 'dark'
 
 export const THEME_STORAGE_KEY = 'ke_theme'
-const SYSTEM_THEME = '(prefers-color-scheme: dark)' as const
+export const SYSTEM_THEME = '(prefers-color-scheme: dark)' as const
 
 export function getSystemTheme(): Theme {
   if (typeof window === 'undefined') return 'light'

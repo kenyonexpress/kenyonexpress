@@ -33,8 +33,8 @@ export function validateImageFile(file: File): string | null {
 export const MIN_IMAGE_WIDTH = 800
 
 /** Height/width must sit inside [0.5, 2]: banners and slivers break the card grid. */
-const MIN_ASPECT = 0.5
-const MAX_ASPECT = 2
+export const MIN_ASPECT = 0.5
+export const MAX_ASPECT = 2
 
 /**
  * Dimension gate, called by the server pipeline AFTER sharp has decoded the

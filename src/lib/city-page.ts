@@ -8,7 +8,7 @@ import { cacheLife, cacheTag } from 'next/cache'
  * invalidates both. No coordinates, no distance: a city page is a filter by a
  * written value, nothing more.
  */
-const CITY_PAGE_LIMIT = 60
+export const CITY_PAGE_LIMIT = 60
 
 export async function getCityProducts(cityName: string) {
   'use cache'

@@ -28,9 +28,9 @@ export type ApiVersion = (typeof API_VERSIONS)[number]
 export const CURRENT_API_VERSION: ApiVersion = API_VERSIONS[API_VERSIONS.length - 1] as ApiVersion
 
 /** Header a client sets to pin a version without changing its URLs. */
-const API_VERSION_HEADER = 'x-api-version'
+export const API_VERSION_HEADER = 'x-api-version'
 
-type VersionSource = 'path' | 'header' | 'default'
+export type VersionSource = 'path' | 'header' | 'default'
 
 export interface ResolvedApiVersion {
   /** The version to serve, or the caller's unknown request when unsupported. */

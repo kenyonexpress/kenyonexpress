@@ -55,7 +55,7 @@ export interface RefundLineInput {
  * the refund moved the line to `refunded` and the supplier kept the credit, so
  * a refunded physical order cost the platform the supplier's share twice.
  */
-interface SupplierDebit {
+export interface SupplierDebit {
   orderItemId: string
   supplierId: string
   amountAgorot: Agorot
@@ -116,7 +116,7 @@ export class RefundError extends Error {
   }
 }
 
-interface RefundLineTransition {
+export interface RefundLineTransition {
   orderItemId: string
   from: SettlementState
   to: SettlementState

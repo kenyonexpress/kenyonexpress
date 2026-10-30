@@ -57,7 +57,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * would hide an editor's change for an hour.
  */
 
-type HomepageSectionKind =
+export type HomepageSectionKind =
   | 'hero'
   | 'categories'
   | 'benefits'
@@ -66,7 +66,7 @@ type HomepageSectionKind =
   | 'city_deals'
   | 'banner_row'
 
-interface HomepageSection {
+export interface HomepageSection {
   id: string
   kind: HomepageSectionKind
   titleHe: string | null
@@ -75,7 +75,7 @@ interface HomepageSection {
   config: Record<string, unknown>
 }
 
-interface SideBanner {
+export interface SideBanner {
   id: string
   titleHe: string | null
   subtitleHe: string | null

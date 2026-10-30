@@ -14,11 +14,11 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
  * throws rather than retrying.
  */
 
-const REDEMPTION_CODE_LENGTH = 8
+export const REDEMPTION_CODE_LENGTH = 8
 const CODE_MAX = 100_000_000 // 10^8
 
 /** Matches 8 ASCII digits exactly */
-const REDEMPTION_CODE_PATTERN = /^[0-9]{8}$/
+export const REDEMPTION_CODE_PATTERN = /^[0-9]{8}$/
 
 export function isValidRedemptionCode(code: string): boolean {
   return REDEMPTION_CODE_PATTERN.test(code)

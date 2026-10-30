@@ -14,7 +14,7 @@ import { z } from 'zod'
  * ever accepted for it.
  */
 
-const PAYOUT_CADENCES = ['weekly', 'biweekly', 'monthly'] as const
+export const PAYOUT_CADENCES = ['weekly', 'biweekly', 'monthly'] as const
 export type PayoutCadence = (typeof PAYOUT_CADENCES)[number]
 
 /** `payout_cadence_days` in a CSV is accepted only as one of these three. */
@@ -39,10 +39,10 @@ const fieldSchemas = {
     .max(10_000_000, 'מחיר משלוח גבוה מדי'),
 } as const
 
-type LogisticsKey = keyof typeof fieldSchemas
-const LOGISTICS_KEYS = Object.keys(fieldSchemas) as LogisticsKey[]
+export type LogisticsKey = keyof typeof fieldSchemas
+export const LOGISTICS_KEYS = Object.keys(fieldSchemas) as LogisticsKey[]
 
-type LogisticsFields = Partial<{
+export type LogisticsFields = Partial<{
   cancellation_window_days: number | null
   payout_cadence: PayoutCadence | null
   full_address: string | null

@@ -34,7 +34,7 @@ import { type DependencyStatus, type HealthReport, runHealthChecks } from '@/lib
 
 export const READY_CHECK_NAMES = ['database', 'redis', 'meilisearch', 'r2', 'cardcom'] as const
 
-type ReadyCheckName = (typeof READY_CHECK_NAMES)[number]
+export type ReadyCheckName = (typeof READY_CHECK_NAMES)[number]
 
 export type ReadyReport = {
   ok: boolean

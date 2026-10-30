@@ -54,7 +54,7 @@ export interface WxrProduct {
   attachmentIds: string[]
 }
 
-interface WxrAttachment {
+export interface WxrAttachment {
   postId: string
   url: string
   /** The product post id this image belongs to, when the export says. */

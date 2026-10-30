@@ -2,7 +2,7 @@ import { loadPreferenceRows } from '@/lib/notifications/preference-store'
 import { type PreferenceRow, mayNotify } from '@/lib/notifications/preferences'
 import { type ExpoPushMessage, isExpoPushToken, sendExpoPush } from '@/lib/push/expo'
 import { type PushContent, buildPushContent } from '@/lib/push/templates'
-import { sendWebPushLeg } from '@/lib/push/web-leg'
+import { type WebPushLegResult, sendWebPushLeg } from '@/lib/push/web-leg'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -43,7 +43,7 @@ export type PushLegResult =
   | { outcome: 'sent'; recipients: number }
   | { outcome: 'retry'; reason: string }
 
-type PushTargetRow = { expo_token: string; platform: string; locale: string }
+export type PushTargetRow = { expo_token: string; platform: string; locale: string }
 
 /**
  * Android needs a channel to have been created by the app before a push can
@@ -67,7 +67,7 @@ export function toPushMessages(tokens: readonly string[], content: PushContent):
  * Disables the tokens Expo reported as gone. Never deletes: the row, with its
  * reason, is the answer to "why did this customer stop getting notifications".
  */
-async function disableDeadTokens(
+export async function disableDeadTokens(
   admin: SupabaseClient,
   tokens: readonly string[],
   reason = 'DeviceNotRegistered',
@@ -80,7 +80,7 @@ async function disableDeadTokens(
   return error ? 0 : tokens.length
 }
 
-async function loadPushTargets(
+export async function loadPushTargets(
   admin: SupabaseClient,
   userId: string | null,
   email: string | null,
@@ -148,7 +148,28 @@ async function expoLeg(
  *                           registers a device tomorrow must not find the
  *                           retries already spent on the days they had none.
  */
-async function pushToBrowsers(
+export function combinePushLegs(expo: PushLegResult, web: WebPushLegResult): PushLegResult {
+  const expoSent = expo.outcome === 'sent' ? expo.recipients : 0
+  const delivered = expoSent + web.sent
+  if (delivered > 0) return { outcome: 'sent', recipients: delivered }
+
+  if (expo.outcome === 'retry') return { outcome: 'retry', reason: `expo: ${expo.reason}` }
+  if (web.retry > 0) return { outcome: 'retry', reason: `web push: ${web.retry} transient` }
+
+  // Nothing delivered, nothing worth retrying. A rejection is permanent and
+  // ours, so it settles rather than burning attempts, but it is named
+  // separately from "no device" because one is a bug and the other is a fact
+  // about the customer.
+  if (web.rejected > 0) return { outcome: 'skipped', reason: `web push rejected ${web.rejected}` }
+  if (web.gone > 0) return { outcome: 'skipped', reason: 'every browser unsubscribed' }
+
+  const reasons = [expo.outcome === 'skipped' ? expo.reason : null, web.reason]
+    .filter((r): r is string => r !== null)
+    .join('; ')
+  return { outcome: 'skipped', reason: reasons || 'nothing to send to' }
+}
+
+export async function pushOutboxRow(
   admin: SupabaseClient,
   row: {
     id?: string

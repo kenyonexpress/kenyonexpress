@@ -1,5 +1,6 @@
 import AllInAppToggle from '@/components/account/AllInAppToggle'
 import BrowserPushToggle from '@/components/account/BrowserPushToggle'
+import PushNotificationsToggle from '@/components/account/PushNotificationsToggle'
 import { ALL_IN_APP_CONSENT_KEY } from '@/lib/consent-keys'
 import { createClient } from '@/lib/supabase/server'
 

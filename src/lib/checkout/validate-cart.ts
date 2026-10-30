@@ -1,6 +1,6 @@
 import type { CartView } from '@/lib/cart/types'
 
-type CartValidationIssue = {
+export type CartValidationIssue = {
   code: 'EMPTY' | 'UNAVAILABLE' | 'MIXED_INVALID'
   message: string
   product_id?: string

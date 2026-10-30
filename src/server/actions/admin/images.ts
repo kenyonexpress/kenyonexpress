@@ -14,7 +14,7 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } from '@/lib/storage/r2'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-type UploadedAsset = {
+export type UploadedAsset = {
   /** Main public URL (largest webp rendition). Stored in products.images etc. */
   url: string
   altHe: string

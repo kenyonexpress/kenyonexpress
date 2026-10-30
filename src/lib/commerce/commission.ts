@@ -9,7 +9,7 @@ import {
 
 export type CommissionProductType = 'coupon' | 'physical'
 
-interface CommissionLineInput {
+export interface CommissionLineInput {
   id: string
   productType: CommissionProductType
   unitPrice: Agorot
@@ -42,7 +42,7 @@ export interface CommissionInput {
   walletApplied?: Agorot
 }
 
-interface CommissionLineResult {
+export interface CommissionLineResult {
   id: string
   productType: CommissionProductType
   quantity: number

@@ -31,7 +31,7 @@ import { z } from 'zod'
  */
 
 const QUEUES = ['notifications', 'invoices', 'search_index'] as const
-type DeadLetterQueue = (typeof QUEUES)[number]
+export type DeadLetterQueue = (typeof QUEUES)[number]
 
 const retrySchema = z.object({
   queue: z.enum(QUEUES),

@@ -239,6 +239,26 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'phone milestone completion, per user',
   },
+  'postal-lookup': {
+    limit: 30,
+    windowSeconds: 600,
+    reason: 'postal-code lookups relayed to Israel Post, per IP',
+  },
+  'checkout-velocity-ip': {
+    limit: 30,
+    windowSeconds: 86400,
+    reason: 'new orders from one address in a day; carding rotates cards, not addresses',
+  },
+  'checkout-velocity-email': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders on one email in a day; a stolen-card run batches on one login',
+  },
+  'checkout-velocity-phone': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders naming one delivery phone in a day, across accounts',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES

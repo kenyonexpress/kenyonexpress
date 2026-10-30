@@ -64,7 +64,7 @@ export function terminalWalletRefundStates(): readonly RefundState[] {
   )
 }
 
-type WalletRefundRefusal =
+export type WalletRefundRefusal =
   | 'guest_order_has_no_wallet'
   | 'amount_not_positive'
   | 'fee_on_wallet_refund'

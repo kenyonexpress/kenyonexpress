@@ -18,9 +18,14 @@
  * hands them to someone who has been paid BACK.
  */
 
-type ItemStatus = 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+export type ItemStatus = 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
 
-const PAID_OR_LATER = ['paid', 'partially_fulfilled', 'fulfilled', 'platform_settled'] as const
+export const PAID_OR_LATER = [
+  'paid',
+  'partially_fulfilled',
+  'fulfilled',
+  'platform_settled',
+] as const
 
 export type ShippingVerb = 'ship' | 'deliver'
 

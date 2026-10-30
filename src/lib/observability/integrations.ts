@@ -6,25 +6,25 @@ import { log } from './log'
  * Fetches actual observability data from external APIs
  */
 
-interface SentryStats {
+export interface SentryStats {
   totalEvents: number
   errorRate: number
   criticalErrors: number
 }
 
-interface PostHogStats {
+export interface PostHogStats {
   activeUsers: number
   conversionRate: number
   eventVolume: number
 }
 
-interface AxiomStats {
+export interface AxiomStats {
   logVolume: number
   avgLogLatency: number
   errorLogs: number
 }
 
-interface VercelStats {
+export interface VercelStats {
   deployments: number
   avgResponseTime: number
   bandwidth: number
@@ -41,7 +41,7 @@ export interface UnifiedObservability {
  * Fetch Sentry error statistics via Sentry API
  * Requires: SENTRY_AUTH_TOKEN environment variable
  */
-async function fetchSentryStats(): Promise<SentryStats | null> {
+export async function fetchSentryStats(): Promise<SentryStats | null> {
   try {
     const sentryToken = process.env.SENTRY_AUTH_TOKEN
     const sentryOrg = process.env.NEXT_PUBLIC_SENTRY_ORG || 'kenyonexpress'
@@ -103,7 +103,7 @@ async function fetchSentryStats(): Promise<SentryStats | null> {
  * Fetch PostHog analytics via PostHog API
  * Requires: POSTHOG_API_TOKEN environment variable
  */
-async function fetchPostHogStats(): Promise<PostHogStats | null> {
+export async function fetchPostHogStats(): Promise<PostHogStats | null> {
   try {
     const phToken = process.env.POSTHOG_API_TOKEN
     const phHost = process.env.POSTHOG_HOST || 'https://us.posthog.com'
@@ -164,7 +164,7 @@ async function fetchPostHogStats(): Promise<PostHogStats | null> {
  * Fetch Axiom structured logs via Axiom API
  * Requires: AXIOM_TOKEN and AXIOM_DATASET environment variables
  */
-async function fetchAxiomStats(): Promise<AxiomStats | null> {
+export async function fetchAxiomStats(): Promise<AxiomStats | null> {
   try {
     const axiomToken = process.env.AXIOM_TOKEN
     const axiomDataset = process.env.AXIOM_DATASET
@@ -219,7 +219,7 @@ async function fetchAxiomStats(): Promise<AxiomStats | null> {
  * Fetch Vercel deployment analytics via Vercel API
  * Requires: VERCEL_TOKEN, VERCEL_PROJECT_ID environment variables
  */
-async function fetchVercelStats(): Promise<VercelStats | null> {
+export async function fetchVercelStats(): Promise<VercelStats | null> {
   try {
     const vercelToken = process.env.VERCEL_TOKEN
     const vercelProjectId = process.env.VERCEL_PROJECT_ID

@@ -5,6 +5,7 @@ import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
+import WhatsAppOtpForm from './WhatsAppOtpForm'
 
 function getError(state: AuthState): string | null {
   return state && 'error' in state ? state.error : null
@@ -18,11 +19,11 @@ export default function SignupForm({ next }: Props) {
   const [state, setState] = useState<AuthState>(null)
   const [pending, setPending] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const submitSignup = async (form: HTMLFormElement, phone: string | null) => {
     setPending(true)
     try {
-      const formData = new FormData(e.currentTarget)
+      const formData = new FormData(form)
+      if (phone) formData.set('phone', phone)
       const res = await fetch('/api/auth/signup', { method: 'POST', body: formData })
       const data = await res.json()
 
@@ -73,7 +74,7 @@ export default function SignupForm({ next }: Props) {
     }
 
     // Submit the form
-    action(new FormData(form))
+    void submitSignup(form, verifiedPhone)
   }
 
   if (verifyingPhone && formPhone) {

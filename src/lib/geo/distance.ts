@@ -118,7 +118,7 @@ export function supplierLocation(supplier: SupplierLocationInput | null): Suppli
  * fails, emptying every category grid. So nothing selects them yet; this
  * interface is what starts working, per field, the moment they exist.
  */
-interface ProductLocationOverride {
+export interface ProductLocationOverride {
   city?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -176,7 +176,7 @@ export type WithDistance<T> = T & {
  * Zero would sort it to the top as the closest thing available, which is the
  * exact opposite of what "we don't know where this is" should do.
  */
-function withDistances<T extends Locatable>(
+export function withDistances<T extends Locatable>(
   items: readonly T[],
   origin: Coordinates | null,
 ): WithDistance<T>[] {

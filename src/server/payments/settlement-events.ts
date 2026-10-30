@@ -31,7 +31,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * broken checkout.
  */
 
-type SettlementEventKind =
+export type SettlementEventKind =
   | 'charge_settled'
   | 'voucher_redeemed'
   | 'voucher_expired'

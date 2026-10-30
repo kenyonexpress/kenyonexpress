@@ -561,7 +561,7 @@ const agorotAmountSchema = z
   .positive()
   .transform((n) => agorot(n))
 
-const tokenizedChargeInputSchema = z.object({
+export const tokenizedChargeInputSchema = z.object({
   /** Correlation id stored as payments.id / ReturnValue. */
   paymentId: z.string().min(1),
   orderId: z.string().min(1),
@@ -571,7 +571,7 @@ const tokenizedChargeInputSchema = z.object({
   description: z.string().min(1),
 })
 
-type TokenizedChargeInput = z.input<typeof tokenizedChargeInputSchema>
+export type TokenizedChargeInput = z.input<typeof tokenizedChargeInputSchema>
 
 /**
  * Charge a previously tokenized card (one-click checkout).
@@ -605,7 +605,7 @@ const refundChargeInputSchema = z
     path: ['partialAmountAgorot'],
   })
 
-type RefundChargeInput = z.input<typeof refundChargeInputSchema>
+export type RefundChargeInput = z.input<typeof refundChargeInputSchema>
 
 /**
  * Refund (or same-day cancel) a settled charge by its transaction id.
@@ -630,7 +630,7 @@ const webhookSignatureInputSchema = z.object({
   previousSecret: z.string().min(1).nullish(),
 })
 
-type WebhookSignatureInput = z.input<typeof webhookSignatureInputSchema>
+export type WebhookSignatureInput = z.input<typeof webhookSignatureInputSchema>
 
 /**
  * Is a webhook call carrying a secret we recognise?

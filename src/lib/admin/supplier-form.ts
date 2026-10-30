@@ -24,7 +24,7 @@ export const REQUIRED_TO_PUBLISH = ['name', 'contact_phone', 'address', 'logo_ur
 
 export type RequiredSupplierField = (typeof REQUIRED_TO_PUBLISH)[number]
 
-const SUPPLIER_FIELD_LABELS: Record<RequiredSupplierField, string> = {
+export const SUPPLIER_FIELD_LABELS: Record<RequiredSupplierField, string> = {
   name: 'שם העסק',
   contact_phone: 'טלפון',
   address: 'כתובת',
