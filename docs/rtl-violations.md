@@ -6,8 +6,8 @@ should be replaced with logical properties that flip automatically.
 
 ## Summary
 
-- Generated: 2026-10-28
-- Files scanned: 1555
+- Generated: 2026-10-30
+- Files scanned: 1568
 - Files with violations: 55
 - Total violations: 104
 
@@ -92,7 +92,7 @@ should be replaced with logical properties that flip automatically.
 | src/components/a11y/SkipLink.tsx | 32 | `right-` | `end-` |
 | src/components/admin/CategoryDialog.tsx | 78 | `right-` | `end-` |
 | src/components/admin/CouponDealForm.tsx | 362 | `right-` | `end-` |
-| src/components/admin/ProductForm.tsx | 1448 | `text-right` | `text-end` |
+| src/components/admin/ProductForm.tsx | 1460 | `text-right` | `text-end` |
 | src/components/admin/ReferralQueueRow.tsx | 61 | `mr-` | `me-` |
 | src/components/admin/reports/SalesChart.tsx | 68 | `right:` | `inset-inline-end:` |
 | src/components/admin/reports/SalesChart.tsx | 68 | `left:` | `inset-inline-start:` |
@@ -116,7 +116,7 @@ should be replaced with logical properties that flip automatically.
 | src/components/ScrollRestoration.test.tsx | 103 | `left:` | `inset-inline-start:` |
 | src/components/ScrollRestoration.test.tsx | 147 | `left:` | `inset-inline-start:` |
 | src/components/ScrollRestoration.tsx | 75 | `left:` | `inset-inline-start:` |
-| src/components/shared/share-buttons.test.tsx | 54 | `right-` | `end-` |
+| src/components/shared/share-buttons.test.tsx | 55 | `right-` | `end-` |
 | src/lib/cart/format.test.ts | 54 | `left-` | `start-` |
 | src/lib/cart/format.test.ts | 62 | `left-` | `start-` |
 | src/lib/electro-hero-tokens.ts | 108 | `right-` | `end-` |
