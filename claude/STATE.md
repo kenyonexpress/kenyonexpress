@@ -1,3 +1,4 @@
+המשך מ: M14-c284 DONE-DEFERRED (2026-10-30): no SENTRY_AUTH_TOKEN in any .env file (no .env.local present); release-vs-HEAD (37e152cc2) check deferred until token is set; no forbidden files touched
 המשך מ: M04-c284 DONE (2026-10-30): pnpm type-check exit 0, no drift to fix; only pre-existing docs/M-CYCLE-STATUS.md modification and untracked logs left unstaged; no forbidden files touched
 המשך מ: M07-c283 DONE (2026-10-30): TODO/FIXME scan of src/migrations/scripts, 6 markers (cardcom.ts:254,317; r2-migration.ts:103-106), all older than 7 days and already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / Supabase service-role key), none resolvable now; BACKLOG status line updated; no forbidden files touched
 המשך מ: M18-c282 DONE (2026-10-30): claude/STATE.md trimmed 299 -> 151 lines (150 newest entries kept); 149 older entries appended to docs/STATE-ARCHIVE.md; no code changes; no forbidden files touched
