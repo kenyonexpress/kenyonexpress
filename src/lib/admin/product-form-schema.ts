@@ -107,7 +107,7 @@ export const productSchema = z
       z.coerce
         .number({ message: 'תוקף קופון בימים נדרש' })
         .int('תוקף חייב להיות מספר שלם של ימים')
-        .min(1, 'תוקף חייב להיות לפחות יום אחד')
+        .refine((n) => [30, 60, 90].includes(n), 'תוקף שובר: 30, 60 או 90 ימים')
         .nullable()
         .optional(),
     ),

@@ -1,4 +1,5 @@
 import AccountPageContent from '@/components/account/AccountPageContent'
+import BusinessLocation from '@/components/account/BusinessLocation'
 import { isStaffRole } from '@/lib/admin/roles'
 import { createClient } from '@/lib/supabase/server'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
@@ -42,15 +43,18 @@ export default async function AccountOverviewPage() {
   }
 
   return (
-    <AccountPageContent
-      wallet={wallet}
-      orders={orders}
-      coupons={coupons}
-      tier={tier}
-      wishlistEntries={wishlistEntries}
-      profile={profile}
-      addresses={addresses}
-      isStaff={isStaff}
-    />
+    <>
+      <AccountPageContent
+        wallet={wallet}
+        orders={orders}
+        coupons={coupons}
+        tier={tier}
+        wishlistEntries={wishlistEntries}
+        profile={profile}
+        addresses={addresses}
+        isStaff={isStaff}
+      />
+      <BusinessLocation />
+    </>
   )
 }
