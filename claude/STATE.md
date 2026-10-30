@@ -1,3 +1,4 @@
+המשך מ: M05-c271 DONE (2026-10-30): pnpm test green (622 files passed, 2 skipped; 7117 tests passed, 28 skipped), no drift found, no source or forbidden files touched
 המשך מ: M15-c269 DONE (2026-10-30): / and /product/<slug> clean (0 console errors, pageerrors, failed requests) at 380/768/1440; initial errors were stale .next/server/route-cache + old next-server (chunk 404/500), fixed by clearing route-cache and restarting next start; no source or forbidden files touched
 המשך מ: M14-c269 DONE-DEFERRED (2026-10-30): SENTRY_AUTH_TOKEN absent from .env.local (empty in .env.production/.env.vercel), cannot query Sentry release; HEAD 7a99acefc; re-verify after token is set
 המשך מ: M07-c269 DONE (2026-10-30): TODO/FIXME scan of tracked src found 6 TODOs (cardcom.ts:249,312; r2-migration.ts:103-106), all older than 7 days and already filed in docs/BACKLOG.md items 1-3 (Cardcom prod creds / R2 stub needs service-role key); nothing resolvable now; no forbidden files touched
