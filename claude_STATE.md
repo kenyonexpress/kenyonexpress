@@ -61,3 +61,4 @@ MAINTENANCE_LOOP_10: Appended cycles 1-10 to ~/ke-goals/queue.txt
 המשך מ: M03-c284 BLOCKED (compare.mjs --page=category at 380/768/1440 REFUSED: kenyonexpress.co.il serves our own Vercel build, no Electro category reference exists, no number produced; no code change)
 המשך מ: M03-c286 BLOCKED (compare.mjs --page=category at 380/768/1440 REFUSED: kenyonexpress.co.il serves our own Vercel build, no Electro category reference in refs/, no number produced; rows appended to docs/UI-PARITY-REPORT.md; no code change)
 המשך מ: M12-c290 DONE (robots.ts verified: allow /, disallows redeem/coupon/gift/account/supplier/admin/checkout/cart/auth/api/login etc., sitemap+host absolute prod URL, built output matches, robots.test.ts 8/8 pass; no code change)
+המשך מ: M16-c291 DONE (src/app/(store)/product/[slug]/page.tsx is the only PDP template; emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld.ts, json-ld.test.ts 17/17 pass; no code change)
