@@ -1,5 +1,5 @@
 # KenyonExpress — Project State
-
+Updated: 2026-10-30 (M18-c278: STATE.md נבדק, 161 שורות לפני העדכון, מתחת ל-300, אין צורך בארכוב; docs/STATE-ARCHIVE.md קיים. לא נערכו קבצי קוד.) **המשך מ: M18-c278 DONE**
 Updated: 2026-10-30 (M12-c276: robots.ts re-verified, robots.test.ts 8/8. Allow / , sensitive paths disallowed, no blanket disallow. Live robots.txt still stale vs source (lacks /login /signup /mfa /admin-mfa, has legacy /voucher/); Host/Sitemap on apex. לא נערכו קבצי קוד.) **המשך מ: M12-c276 DONE**
 Updated: 2026-10-30 (M18-c273: STATE.md נבדק, 148 שורות, מתחת ל-300, אין צורך בארכוב; docs/STATE-ARCHIVE.md קיים. לא נערכו קבצי קוד.) **המשך מ: M18-c273 DONE**
 Updated: 2026-10-30 (M12-c272: robots.ts re-verified, robots.test.ts 8/8. Allow / , sensitive paths disallowed, no blanket disallow, no sitemap URL hit by a disallow rule (/coupons vs /coupon/ ok). לא נערכו קבצי קוד.) **המשך מ: M12-c272 DONE**
