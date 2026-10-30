@@ -166,3 +166,4 @@
 המשך מ: M07-c286 DONE (2026-10-30): TODO/FIXME scan of src/migrations/scripts finds only the 3 backlogged items (cardcom.ts:254, :317, r2-migration.ts:103-106), all blocked on creds/deferred; BACKLOG.md re-verified; no forbidden files touched)
 המשך מ: M16-c286 DONE (2026-10-30): /product/[slug] emits Product + BreadcrumbList JSON-LD (page.tsx:189-241, builders in lib/seo/json-ld.ts, 26 unit tests pass); breadcrumb trail matches visible nav; no rating/reviews; no forbidden files touched)
 המשך מ: M06-c287 DONE (2026-10-30): pnpm build passes with env loaded in-process from kenyonexpress-web/kenyonexpress/.env.local (not copied); no code drift, no forbidden files touched)
+המשך מ: M07-c287 DONE (2026-10-30): TODO/FIXME rescan of src/migrations/scripts finds only the 3 backlogged items (cardcom.ts:254, :317, r2-migration.ts:103-106), all blocked on creds/deferred; BACKLOG.md re-verified; no forbidden files touched)
