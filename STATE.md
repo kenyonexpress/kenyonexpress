@@ -71,3 +71,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M06-c282 DONE (2026-10-30): pnpm build clean (exit 0); no tracked drift after build; no code changes, no forbidden files touched
 המשך מ: M13-c282 DONE (2026-10-30): dev server /api/health 200 {database:ok, search:not_configured}; /api/ready 200 {database, redis, cardcom ok; meilisearch, r2 not_configured}; no code changes
 המשך מ: M04-c283 DONE (2026-10-30): pnpm type-check clean (tsc --noEmit exit 0); only tracked drift was claude_STATE.md (M02-c283 log line), committed; no code changes, no forbidden files touched
+המשך מ: M06-c283 DONE (2026-10-30): pnpm build clean (exit 0); no tracked drift after build; no code changes, no forbidden files touched
