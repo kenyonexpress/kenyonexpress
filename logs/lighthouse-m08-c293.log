@@ -1,0 +1,1 @@
+M08-c293 2026-10-30T19:44:11Z: Lighthouse mobile (simulate throttling, localhost:3000): / perf 72 (FCP 1.1s LCP 9.6s TBT 210ms CLS 0.001); /product/barbecue perf 75 (FCP 1.1s LCP 5.8s TBT 210ms CLS 0.001; bare /product is 404). Below G23 target 95; LCP is the main gap.
