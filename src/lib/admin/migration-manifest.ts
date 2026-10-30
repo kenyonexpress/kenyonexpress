@@ -710,4 +710,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '321',
+    file: '321_card_verify_enabled_flag.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const

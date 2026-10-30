@@ -96,13 +96,13 @@ async function runCreateLink(formData: FormData): Promise<void> {
   let productId: string | null = null
   let targetPath = parsed.data.target_path
   if (parsed.data.product_slug) {
-    const { data: product } = await admin
+    const { data: product, error: productError } = await admin
       .from('products')
       .select('id, slug')
       .eq('slug', parsed.data.product_slug)
       .eq('status', 'active')
       .maybeSingle()
-    if (!product) redirect(`${PAGE}?error=product`)
+    if (productError || !product) redirect(`${PAGE}?error=product`)
     productId = product.id
     targetPath = `/product/${encodeURIComponent(product.slug)}`
   }

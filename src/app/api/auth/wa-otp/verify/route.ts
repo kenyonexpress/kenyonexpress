@@ -99,12 +99,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   // C100: evidence log of the proven phone. Best effort; the table and the
   // channel column arrive with migration 317.
-  const { data: chan } = await admin
+  const { data: chan, error: chanError } = await admin
     .from('auth_wa_otps' as never)
     .select('channel')
     .eq('id', row.id)
     .maybeSingle()
-  const channel = (chan as { channel?: string } | null)?.channel ?? 'whatsapp'
+  // A failed read falls back to the default channel: the log row is best effort.
+  const channel = chanError
+    ? 'whatsapp'
+    : ((chan as { channel?: string } | null)?.channel ?? 'whatsapp')
   await admin
     .from('user_phone_verifications' as never)
     .insert({ user_id: row.user_id, phone_e164: phone, channel, purpose: 'sign_in' } as never)

@@ -38,6 +38,8 @@ const WRITE_CALLS = /\.(update|insert|upsert|delete)\(/
  * needs a reason about what it WRITES, not about it being inconvenient.
  */
 const NO_INVALIDATION_NEEDED: Record<string, string> = {
+  'affiliate.ts':
+    'reads products only to resolve a slug to an id for a link; every write it makes is to affiliates and affiliate_links',
   'cart.ts':
     'reads products and variants for live pricing and stock; every write it makes is to carts',
   'payments/checkout.ts':

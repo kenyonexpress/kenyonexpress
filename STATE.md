@@ -77,3 +77,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: C91 DONE (2026-10-30): card_verify_enabled flag added default off (migration 321 pending, apply deferred on DB auth), supplier-lead skips card step when off; tests+tsc clean; docs/C91-CARD-VERIFY.md
 המשך מ: C92 DONE (2026-10-30): re-run, existing audit docs/C92-FEATURE-AUDIT.md has RESULT line; F11-F14 verified
 המשך מ: C94b DONE (2026-10-30): C90 C91 C92 each have docs RESULT + STATE line
+המשך מ: M05-c284 DONE (pnpm test 626 files passed, 7140 tests; drift fixed = migration manifest regenerated for 321, affiliate/club-tiers/wa-otp discarded reads now name error, affiliate.ts excused in catalogue-cache test; type-check + lint green)

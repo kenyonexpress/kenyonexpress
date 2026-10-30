@@ -28,7 +28,7 @@ export default async function ClubTiersPage({ searchParams }: Props) {
     .select('id, key, name_he, min_spend_agorot, benefits_json, active, sort_order')
     .order('sort_order', { ascending: true })
   const tiers = (data ?? []) as ClubTierRow[]
-  const { data: benefitData } = await createAdminClient()
+  const { data: benefitData, error: benefitError } = await createAdminClient()
     .from('club_tier_benefits' as never)
     .select('tier_id, cashback_percent, early_access_hours, gift_value_agorot')
   const benefitsByTier = new Map(
@@ -44,7 +44,7 @@ export default async function ClubTiersPage({ searchParams }: Props) {
           כשהמערכת באמת נותנת אותה.
         </p>
       </div>
-      {error && (
+      {(error || benefitError) && (
         <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
           טעינת הדרגות נכשלה.
         </p>
