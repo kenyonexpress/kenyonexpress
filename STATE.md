@@ -84,3 +84,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M06-c293 DONE (2026-10-31): pnpm build clean (exit 0); no tracked drift after build; no code changes, no forbidden files touched
 המשך מ: M06-c294 DONE (2026-10-31): pnpm build clean; no tracked drift after build; no code changes, no forbidden files touched
 המשך מ: M05-c295 DONE (2026-10-31): pnpm test green (626 files, 7140 tests); committed M-CYCLE-STATUS timestamp drift; no forbidden files touched
+המשך מ: M07-c296 DONE (2026-10-31): TODO/FIXME scan of src/migrations/scripts: 6 comment lines in 3 groups (cardcom.ts:249, :312; r2-migration.ts:103-106), all older than 7 days, all already filed in docs/BACKLOG.md (Cardcom prod creds / Supabase service-role key blocked); nothing new to file or resolve; no forbidden files touched
