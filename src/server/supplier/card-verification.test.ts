@@ -52,7 +52,7 @@ vi.mock('@/lib/payments', () => ({
 const createSupplierLead = vi.fn(async () => ({ ok: true as const, leadId: 'lead-1' }))
 vi.mock('./lead-create', () => ({ createSupplierLead, alertTeam: vi.fn() }))
 
-const { completeSupplierCardVerification } = await import('./card-verification')
+const { completeSupplierCardVerification, liveChargeAllowed } = await import('./card-verification')
 
 const payload = {
   business_name: 'עסק',
@@ -130,5 +130,17 @@ describe('completeSupplierCardVerification', () => {
     claimedRow = null
     await expect(completeSupplierCardVerification('v-1')).resolves.toBe('pending')
     expect(createSupplierLead).not.toHaveBeenCalled()
+  })
+})
+
+describe('liveChargeAllowed (C101)', () => {
+  it('always allows mock and sandbox terminals', () => {
+    expect(liveChargeAllowed('mock', false, {})).toBe(true)
+    expect(liveChargeAllowed('cardcom', true, {})).toBe(true)
+  })
+  it('blocks a live terminal unless PAYMENTS_PROD_ENABLED is exactly true', () => {
+    expect(liveChargeAllowed('cardcom', false, {})).toBe(false)
+    expect(liveChargeAllowed('cardcom', false, { PAYMENTS_PROD_ENABLED: '1' })).toBe(false)
+    expect(liveChargeAllowed('cardcom', false, { PAYMENTS_PROD_ENABLED: 'true' })).toBe(true)
   })
 })

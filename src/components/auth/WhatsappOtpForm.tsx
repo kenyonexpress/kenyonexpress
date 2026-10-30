@@ -15,15 +15,13 @@ const ERRORS: Record<string, string> = {
 
 /**
  * Sign in with a code sent to WhatsApp (rc5 F15). When WhatsApp cannot
- * deliver, the server sends the code to the account's email, and the second
- * step asks for that email so the right check runs.
+ * deliver, the server sends the same code by SMS, then to the account's
+ * email; the code is always checked against the phone.
  */
 export default function WhatsappOtpForm({ next }: { next?: string }) {
   const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [step, setStep] = useState<'phone' | 'code'>('phone')
-  const [channel, setChannel] = useState<'whatsapp' | 'email'>('whatsapp')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -38,7 +36,6 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
       ok: boolean
       error?: string
       message?: string
-      channel?: 'whatsapp' | 'email'
     }
   }
 
@@ -49,7 +46,6 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
     const r = await post('/api/auth/wa-otp/send', { phone })
     setPending(false)
     if (!r.ok) return setError(ERRORS[r.error ?? ''] ?? 'השליחה נכשלה.')
-    setChannel(r.channel ?? 'whatsapp')
     setMessage(r.message ?? null)
     setStep('code')
   }
@@ -58,8 +54,7 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
     e.preventDefault()
     setPending(true)
     setError(null)
-    const body = channel === 'email' ? { email, code } : { phone, code }
-    const r = await post('/api/auth/wa-otp/verify', body)
+    const r = await post('/api/auth/wa-otp/verify', { phone, code })
     if (!r.ok) {
       setPending(false)
       return setError(ERRORS[r.error ?? ''] ?? 'הכניסה נכשלה.')
@@ -102,20 +97,6 @@ export default function WhatsappOtpForm({ next }: { next?: string }) {
   ) : (
     <form onSubmit={verify} className="space-y-3">
       {message && <p className="text-sm text-gray-700">{message}</p>}
-      {channel === 'email' && (
-        <label className="block text-sm">
-          המייל של החשבון
-          <input
-            type="email"
-            autoComplete="email"
-            dir="ltr"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
-          />
-        </label>
-      )}
       <label className="block text-sm">
         קוד בן 6 ספרות
         <input

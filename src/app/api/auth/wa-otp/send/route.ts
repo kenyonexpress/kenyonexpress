@@ -3,6 +3,7 @@ import { sendEmail } from '@/lib/email/resend'
 import { getSupabaseFlags } from '@/lib/flags/supabase-flags'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { sendSmsOtp } from '@/lib/sms/send-otp-sms'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { sendWhatsappOtp } from '@/lib/whatsapp/meta-cloud'
@@ -17,9 +18,9 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 /**
  * Sends a sign-in code to an existing account's phone over WhatsApp
- * (rc5 F15). Only when Meta rejects the approved template does the same code
- * go to the account's email through Resend; any other failure sends nothing
- * and the caller can retry.
+ * (rc5 F15, C100). When WhatsApp cannot deliver, the same code goes by SMS,
+ * then to the account's email through Resend; a transient failure sends
+ * nothing and the caller can retry.
  *
  * The answer is the same whether or not the number belongs to an account, so
  * the endpoint cannot be used to discover who is registered.
@@ -96,25 +97,32 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   }
   if (!sent.skipped) log.warn('wa_otp.send_failed', { reason: sent.reason })
 
-  // Fallback only when Meta refused the template. The same code is emailed and
-  // is verified with the phone like a WhatsApp one.
-  if ('templateRejected' in sent && sent.templateRejected && profile.email) {
+  // WhatsApp did not deliver. Only an unconfigured or template-rejecting Meta
+  // falls through (a transient error sends nothing and the caller retries):
+  // first SMS to the same number, then the account's email. The same code is
+  // verified with the phone whichever channel carried it.
+  const fallback = ('templateRejected' in sent && sent.templateRejected) || sent.skipped
+  if (!fallback) return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
+
+  const sms = await sendSmsOtp(phone, code)
+  if (sms.ok) {
+    await setChannel(admin, phone, code, 'sms')
+    return NextResponse.json({ ...GENERIC, channel: 'sms' })
+  }
+  if (!sms.skipped) log.warn('wa_otp.sms_fallback_failed', { reason: sms.reason })
+
+  if (profile.email) {
     const mail = await sendEmail({
       to: profile.email,
       subject: 'קוד הכניסה שלך לקניון EXPRESS',
       html: `<div dir="rtl"><p>קוד הכניסה שלך:</p><p style="font-size:24px;letter-spacing:4px"><b>${code}</b></p><p>הקוד תקף ל-10 דקות.</p></div>`,
       text: `קוד הכניסה שלך: ${code} (תקף ל-10 דקות)`,
     })
-    if (!mail.ok) log.warn('wa_otp.email_fallback_failed', { reason: mail.reason })
-    await recordOtpAttempt({
-      phone,
-      userId: profile.id,
-      kind: 'send',
-      channel: 'email',
-      outcome: 'fallback_email',
-      ip,
-    })
-    return NextResponse.json({ ...GENERIC, channel: 'email' })
+    if (mail.ok) {
+      await setChannel(admin, phone, code, 'email')
+      return NextResponse.json({ ...GENERIC, channel: 'email' })
+    }
+    log.warn('wa_otp.email_fallback_failed', { reason: mail.reason })
   }
   await recordOtpAttempt({
     phone,
@@ -125,6 +133,20 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     ip,
   })
   return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
+}
+
+/** Best effort: the column arrives with migration 317, so a miss is ignored. */
+async function setChannel(
+  admin: ReturnType<typeof createAdminClient>,
+  phone: string,
+  code: string,
+  channel: 'sms' | 'email',
+) {
+  await admin
+    .from('auth_wa_otps' as never)
+    .update({ channel } as never)
+    .eq('phone_e164', phone)
+    .eq('code_hash', hashOtp(phone, code))
 }
 
 export const POST = withRequestLog('/api/auth/wa-otp/send', handlePOST)
