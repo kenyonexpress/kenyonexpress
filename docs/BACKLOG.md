@@ -17,3 +17,7 @@ Not a TODO: `src/lib/whatsapp.test.ts:91` uses the literal string `'TODO'` as a 
 ## Scan M07-c208 (2026-10-26)
 
 Re-scanned `src` and `scripts` for `TODO` / `FIXME`. The same three markers remain, all blamed to 2026-09-17 (older than 7 days) and unchanged since the M07-c192 scan. Nothing could be resolved in code: #1 and #2 need Cardcom production credentials, and #3 needs per-environment slugs. All three stay filed in the table above. No new markers found. No locked files touched.
+
+## Scan M07-c284 (2026-10-30)
+
+Re-scanned the repo for `TODO` / `FIXME`. Same three markers as M07-c192 and M07-c208, all blamed to 2026-09-17 (older than 7 days) and at the same lines: `cardcom.ts:254`, `cardcom.ts:317`, `screenshot-all.mjs:42`. Nothing resolvable in code (#1 and #2 need Cardcom production credentials, #3 needs per-environment slugs), so all stay filed above. No new markers. No locked files touched.
