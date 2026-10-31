@@ -1,3 +1,4 @@
+המשך מ: M07-c303 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M06-c303 DONE (2026-10-31): pnpm build clean (exit 0); drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M18-c301 DONE (2026-10-31): claude/STATE.md trimmed 299 -> 201 lines (<300), oldest 99 lines appended to docs/STATE-ARCHIVE.md; no forbidden files touched
 המשך מ: M05-c293 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
