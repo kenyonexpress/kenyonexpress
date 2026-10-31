@@ -176,7 +176,7 @@ export const beginCheckoutInputSchema = checkoutPaymentSchema
     }
   })
 
-export const beginCheckoutOutputSchema = z.discriminatedUnion('kind', [
+const beginCheckoutOutputSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('redirect'),
     order_id: uuid,

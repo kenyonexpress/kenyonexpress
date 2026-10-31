@@ -81,7 +81,7 @@ const propsSchema = z
     message: 'props exceeds 4KB',
   })
 
-export const clientEventSchema = z.object({
+const clientEventSchema = z.object({
   event_id: z.string().uuid(),
   event_name: z.enum(CLIENT_EVENT_NAMES),
   occurred_at: z.string().datetime({ offset: true }),

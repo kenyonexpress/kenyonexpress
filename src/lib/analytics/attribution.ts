@@ -24,7 +24,7 @@ const touchSchema = z
   })
   .strict()
 
-export const attributionSchema = z
+const attributionSchema = z
   .object({
     first: touchSchema.optional(),
     last: touchSchema.optional(),

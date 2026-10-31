@@ -32,7 +32,7 @@ const createSubscriptionSchema = z.object({
 
 export type CreateSubscription = z.infer<typeof createSubscriptionSchema>
 
-export const subscriptionSchema = z.object({
+const subscriptionSchema = z.object({
   id: z.string().uuid(),
   productId: z.string().uuid(),
   userId: z.string().uuid(),
