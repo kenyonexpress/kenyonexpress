@@ -271,3 +271,4 @@
 המשך מ: M17-c314 BLOCKED locked-component (2026-10-31): RTL probe on / and /product/צימר-מאסטר at 380/768/1440 (dev :3000) — html dir=rtl lang=he, zero horizontal overflow, /product fully clean; / has 13 Hebrew <p> hero-copy nodes computed direction:ltr from explicit dir="ltr" in src/components/home/HeroSlider.tsx (lines ~555-628, locked) — fix needs a locked-file edit; no code changes; no forbidden files touched
 המשך מ: M06-c315 DONE (2026-10-31): pnpm build green; drift = docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md regenerated, committed; no forbidden files touched
 המשך מ: M05-c316 DONE (2026-10-31): pnpm test 626 files passed/2 skipped, 7140 tests passed/28 skipped; no drift, no code changes; no forbidden files touched
+המשך מ: M06-c317 DONE (2026-10-31): pnpm build green; drift = docs/M-CYCLE-STATUS.md regenerated, committed; no forbidden files touched
