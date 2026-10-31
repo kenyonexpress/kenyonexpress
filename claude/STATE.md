@@ -282,3 +282,4 @@
 המשך מ: M10-c318 BLOCKED (2026-10-31): migrations/pending/ still holds       70 unapplied .sql files (000, 164, 301, 305-306, 310-321); cannot verify or apply, Supabase MCP (project ixvwfbuvfxxsjiywhbbb) unauthenticated in non-interactive session; no code changes; no forbidden files touched
 המשך מ: M04-c319 DONE (2026-11-01): pnpm type-check clean; committed FooterAccordion drift (text-right -> text-start, logical property) + test, 18 tests passed; no forbidden files touched
 המשך מ: M06-c319 DONE (2026-11-01): pnpm build green; drift = docs/UI-PARITY-REPORT.md regenerated, committed; no forbidden files touched
+המשך מ: M07-c319 DONE (2026-11-01): TODO/FIXME scan of src/scripts/migrations — same 6 markers / 3 backlog items (cardcom x2 need prod creds, r2-migration stub needs service-role key), all >7 days old and already filed in docs/BACKLOG.md; no code changes; no forbidden files touched
