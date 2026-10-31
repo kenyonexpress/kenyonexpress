@@ -1,0 +1,5 @@
+M08-c318 Lighthouse mobile (performance), server on :3000 (next-server v16.3.3, pid 23562; prod/dev mode not verified), 2026-10-31, 1 run each, default mobile emulation
+/                      : 71 | LCP 9.4 s | TBT 240 ms | CLS 0.001
+/product/bar-drink     : 79 | LCP 4.0 s | TBT 210 ms | CLS 0.001   (/product itself is 404; no index route, sampled a real slug)
+/category/baby-kids    : 96 | LCP 0.8 s | TBT 170 ms | CLS 0
+G23 not met: home and product below 95. Measurement only, no code changes.
