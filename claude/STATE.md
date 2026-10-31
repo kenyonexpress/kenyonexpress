@@ -1,3 +1,4 @@
+המשך מ: M04-c327 DONE (2026-11-01): pnpm type-check exit 0, 1 drift fixed (CONSENT_GRANTED_EVENT re-exported from ThirdPartyTags); no forbidden files touched
 המשך מ: M06-c326 DONE (2026-11-01): pnpm build exit 0, pnpm test 627 files/7165 tests pass; no drift to fix, no source changes; no forbidden files touched
 המשך מ: M05-c326 DONE (2026-11-01): pnpm test 7164 pass, 1 drift fixed (MEILISEARCH_ENABLED exempted in operational-flags.test.ts); no forbidden files touched
 המשך מ: C118 DONE (2026-11-01): scripts/state/state-log.mjs + state-log-lib.mjs + test restored from b6423f65f, vitest include re-added, 23/23 tests pass, see docs/C118-statelog.md; no forbidden files touched
