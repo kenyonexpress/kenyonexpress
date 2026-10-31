@@ -256,3 +256,4 @@
 המשך מ: M09-c312 DONE (2026-10-31): depcheck re-run identical to c311 — no unused runtime deps; flagged devDeps (capacitor, tailwind/postcss, lighthouse, lint-staged) are config/tooling-consumed so kept; dead-export candidates in money/ledger/payments/server actions left alone; no code changes; no forbidden files touched
 
 המשך מ: M06-c313 DONE (pnpm build passes; no tracked drift to commit)
+המשך מ: M07-c313 DONE (2026-10-31): TODO/FIXME re-scan of src/scripts/migrations/e2e/tests/packages/apps/supabase = 6 markers, identical to docs/BACKLOG.md (3 items, all blocked on Cardcom prod creds / deferred service-role key / feature work); nothing new, nothing resolvable; BACKLOG verification line updated; no forbidden files touched
