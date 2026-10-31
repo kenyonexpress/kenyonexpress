@@ -518,3 +518,10 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-31 12:53 | product | 380 | 46.25% | **FAIL** | `597b44c15-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
 | 2026-10-31 12:54 | product | 768 | 41.72% | **FAIL** | `597b44c15-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
 | 2026-10-31 12:56 | product | 1440 | 24.57% | **FAIL** | `597b44c15-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
+| 2026-10-31 16:31 | home | 380 | 43.32% | **FAIL** | `50e1a4bac-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-10-31 16:52 | category | 380 | 19.35% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 16:54 | category | 768 | 16.85% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 16:56 | category | 1440 | 5.68% | PASS | `50e1a4bac-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 16:58 | category | 380 | 19.31% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 17:00 | category | 768 | 16.82% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 17:02 | category | 1440 | 5.68% | PASS | `50e1a4bac-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
