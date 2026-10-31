@@ -1,3 +1,4 @@
+המשך מ: M06-c316 DONE (2026-10-31): pnpm build passes; only drift was docs/M-CYCLE-STATUS.md timestamp refresh, committed; no forbidden files touched
 המשך מ: M18-c315 DONE (2026-10-31): claude/STATE.md already 267 lines (<300), nothing to archive; docs/STATE-ARCHIVE.md untouched; no code change, no forbidden files touched
 המשך מ: M05-c315 DONE (2026-10-31): pnpm test 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; no drift, no code change, no forbidden files touched
 המשך מ: M09-c314 DONE (2026-10-31): knip re-audit matches M09-c313, no unused prod deps; devDep @capacitor/android required by android/ platform so kept; 63 "unused" exports are ui primitives, db schema, payments/money/ledger/server-action public API so left untouched; no code change, no forbidden files touched
