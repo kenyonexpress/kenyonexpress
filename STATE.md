@@ -1,3 +1,4 @@
+Updated: 2026-10-31 (M06-c305: pnpm build exit 0, אין drift בקוד; נעשה commit ל-docs/UI-PARITY-REPORT.md ו-docs/C107-migrations.md בלבד. לא נערכו קבצי קוד.) **המשך מ: M06-c305 DONE**
 Updated: 2026-10-31 (M12-c304: robots.ts מאומת production-safe: /redeem /coupon /gift /account /supplier /admin /scan /checkout /cart /auth /api /login /signup /mfa /debug חסומים, חנות מותרת, sitemap+host על NEXT_PUBLIC_APP_URL ללא סלאש כפול, 8/8 טסטים עוברים, sitemap לא מכיל נתיבים חסומים; לא נערכו קבצי קוד.) **המשך מ: M12-c304 DONE**
 Updated: 2026-10-31 (M18-c299: STATE.md 209 שורות, מתחת ל-300; docs/STATE-ARCHIVE.md קיים, אין צורך בקיצוץ. לא נערכו קבצי קוד.) **המשך מ: M18-c299 DONE**
 Updated: 2026-10-31 (M08-c299: Lighthouse mobile, 2 runs each. / 380 86/84, / 768 77/78, /product/barbecue 380 90/81, 768 86/83; bare /product 404. כולם מתחת ל-95 G23 (LCP-bound, Supabase לא נגיש). נרשם ב-logs/lighthouse.log; לא נערכו קבצי קוד.) **המשך מ: M08-c299 DONE**

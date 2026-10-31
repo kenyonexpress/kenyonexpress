@@ -1291,3 +1291,27 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-31 04:44 | product | 380 | 36.17% | **FAIL** | `17d054ef-dirty` |  |
 | 2026-10-31 04:47 | product | 768 | 29.82% | **FAIL** | `17d054ef-dirty` |  |
 | 2026-10-31 04:50 | product | 1440 | 20.52% | **FAIL** | `17d054ef-dirty` |  |
+| 2026-10-31 04:52 | category | 380 | n/a | REFUSED | `2c76ae85-dirty` | live side is our-build |
+| 2026-10-31 04:52 | category | 768 | n/a | REFUSED | `2c76ae85-dirty` | live side is our-build |
+| 2026-10-31 04:52 | category | 1440 | n/a | REFUSED | `2c76ae85-dirty` | live side is our-build |
+| 2026-10-31 05:15 | home | 380 | n/a | REFUSED | `e6fb8379-dirty` | live side is our-build |
+| 2026-10-31 05:16 | home | 768 | n/a | REFUSED | `e6fb8379-dirty` | live side is our-build |
+| 2026-10-31 05:16 | home | 1440 | n/a | REFUSED | `e6fb8379-dirty` | live side is our-build |
+| 2026-10-31 05:19 | home | 380 | 39.84% | **FAIL** | `e6fb8379-dirty` |  |
+| 2026-10-31 05:21 | home | 768 | 36.52% | **FAIL** | `e6fb8379-dirty` |  |
+| 2026-10-31 05:23 | home | 1440 | 27.52% | **FAIL** | `e6fb8379-dirty` |  |
+| 2026-10-31 05:26 | home | 380 | 39.84% | **FAIL** | `e6fb8379-dirty` |  |
+| 2026-10-31 05:28 | home | 768 | 36.52% | **FAIL** | `e6fb8379-dirty` |  |
+| 2026-10-31 05:30 | home | 1440 | 27.52% | **FAIL** | `e6fb8379-dirty` |  |
+| 2026-10-31 05:33 | product | 380 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
+| 2026-10-31 05:33 | product | 768 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
+| 2026-10-31 05:33 | product | 1440 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
+| 2026-10-31 05:38 | product | 380 | 36.58% | **FAIL** | `67756d39-dirty` |  |
+| 2026-10-31 05:41 | product | 768 | 29.82% | **FAIL** | `67756d39-dirty` |  |
+| 2026-10-31 05:44 | product | 1440 | 20.52% | **FAIL** | `67756d39-dirty` |  |
+| 2026-10-31 05:47 | product | 380 | 36.58% | **FAIL** | `67756d39-dirty` |  |
+| 2026-10-31 05:49 | product | 768 | 29.82% | **FAIL** | `67756d39-dirty` |  |
+| 2026-10-31 05:51 | product | 1440 | 20.52% | **FAIL** | `67756d39-dirty` |  |
+| 2026-10-31 05:54 | category | 380 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
+| 2026-10-31 05:54 | category | 768 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
+| 2026-10-31 05:54 | category | 1440 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
