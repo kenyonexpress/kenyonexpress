@@ -75,6 +75,9 @@ describe('every env flag that gates behaviour is on one of the two tables', () =
     'CRON_SCHEDULER_ENABLED',
     // The checkout gate is the payment provider's own, covered by CARDCOM_USE_MOCK's row.
     'CHECKOUT_ENABLED',
+    // Default-on and only the literal "false" turns it off, the inverse of `isOn`, so a row
+    // here would read "off" when unset. Search degrades to Postgres; the `search` kill switch covers it.
+    'MEILISEARCH_ENABLED',
   ])
 
   it('finds gating flags at all, so a regex change cannot empty this test', () => {
