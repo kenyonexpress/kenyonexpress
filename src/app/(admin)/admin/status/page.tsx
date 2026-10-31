@@ -20,6 +20,7 @@ const TONE: Record<DependencyStatus, { label: string; className: string }> = {
   ok: { label: 'תקין', className: 'bg-green-50 text-green-700 border-green-200' },
   down: { label: 'למטה', className: 'bg-red-50 text-red-700 border-red-200' },
   not_configured: { label: 'לא מוגדר', className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  degraded: { label: 'מוגבל', className: 'bg-amber-50 text-amber-700 border-amber-200' },
 }
 
 const TITLES: Record<string, string> = {

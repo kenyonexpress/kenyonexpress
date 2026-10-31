@@ -21,6 +21,7 @@ interface MeiliErrorDetail {
 }
 
 function meiliEnv(): { host: string; key: string } | null {
+  if (process.env.MEILISEARCH_ENABLED === 'false') return null
   const host = process.env.MEILISEARCH_HOST
   const key = process.env.MEILISEARCH_API_KEY
   if (!host || !key) return null

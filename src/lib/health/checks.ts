@@ -32,7 +32,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * are set at all, which is exactly the GO/NO-GO item that is open today.
  */
 
-export type DependencyStatus = 'ok' | 'down' | 'not_configured'
+export type DependencyStatus = 'ok' | 'down' | 'not_configured' | 'degraded'
 
 interface DependencyReport {
   /** Stable machine name; the admin screen and the alert both key on it. */
@@ -169,11 +169,15 @@ async function probeUpstash(env: NodeJS.ProcessEnv): Promise<'ok' | 'down' | 'no
   }
 }
 
-/** Meilisearch, if it is configured at all. Search falls back to Postgres when not. */
+/**
+ * Meilisearch is OPTIONAL (C115: the Cloud project is paused by owner decision).
+ * Search falls back to Postgres ILIKE, so this check can never be `down`:
+ * disabled, unset or unreachable are all survivable. Unreachable is `degraded`.
+ */
 async function checkSearch(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
   const host = env.MEILISEARCH_HOST
   const key = env.MEILISEARCH_API_KEY
-  if (!host || !key) {
+  if (env.MEILISEARCH_ENABLED === 'false' || !host || !key) {
     return {
       name: 'search',
       status: 'not_configured',
@@ -187,14 +191,14 @@ async function checkSearch(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
       signal: AbortSignal.timeout(4000),
       cache: 'no-store',
     })
-    return response.ok ? 'ok' : 'down'
+    return response.ok ? 'ok' : 'degraded'
   })
-  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
+  const status: DependencyStatus = value === 'ok' ? 'ok' : 'degraded'
   return {
     name: 'search',
     status,
     latencyMs: ms,
-    detail: status === 'ok' ? 'Meilisearch' : 'Meilisearch מוגדר אך אינו עונה',
+    detail: status === 'ok' ? 'Meilisearch' : 'Meilisearch אינו עונה; החיפוש עובר דרך Postgres',
   }
 }
 

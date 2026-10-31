@@ -19,6 +19,7 @@ export type SearchOutcome = {
 const sanitize = sanitizeOrTerm
 
 function meiliConfigured(): boolean {
+  if (process.env.MEILISEARCH_ENABLED === 'false') return false
   return Boolean(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY)
 }
 

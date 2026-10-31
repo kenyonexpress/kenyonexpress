@@ -38,6 +38,20 @@ describe('toReadyReport', () => {
     expect(JSON.stringify(ready)).not.toContain('email')
   })
 
+  it('reports an unreachable Meilisearch as degraded and stays ready', () => {
+    const ready = toReadyReport(
+      report([
+        ['database', 'ok'],
+        ['rate_limiter', 'ok'],
+        ['search', 'down'],
+        ['storage', 'ok'],
+        ['cardcom', 'ok'],
+      ]),
+    )
+    expect(ready.checks.meilisearch).toBe('degraded')
+    expect(ready.ok).toBe(true)
+  })
+
   it('is ready when nothing mapped is down, even if something unmapped is', () => {
     const ready = toReadyReport(
       report([
