@@ -470,3 +470,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-30 21:29 | product | 380 | 5.21% | PASS | `6353c162b-dirty` | ref everything loaded; overall 33.61% (reference blank 20.99%, ours blank 7.42%) |
 | 2026-10-30 21:30 | product | 768 | 4.23% | PASS | `6353c162b-dirty` | ref everything loaded; overall 27.66% (reference blank 16.44%, ours blank 6.99%) |
 | 2026-10-30 21:32 | product | 1440 | 2.14% | PASS | `6353c162b-dirty` | ref everything loaded; overall 17.28% (reference blank 9.29%, ours blank 5.85%) |
+| 2026-10-31 10:38 | category | 380 | n/a | **UNMEASURED** | `242816162` | frozen capture not found |
+| 2026-10-31 10:38 | category | 768 | n/a | **UNMEASURED** | `242816162-dirty` | frozen capture not found |
+| 2026-10-31 10:38 | category | 1440 | n/a | **UNMEASURED** | `242816162-dirty` | frozen capture not found |
