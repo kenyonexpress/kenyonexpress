@@ -294,3 +294,4 @@
 המשך מ: M05-c299 DONE (2026-10-31): pnpm test green (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); committed M-CYCLE-STATUS timestamp drift + claude_STATE.md log line; no forbidden files touched
 המשך מ: M06-c299 DONE (2026-10-31): pnpm build green; working tree has no tracked drift (only untracked logs/ and STATE.md.bak, left uncommitted); no forbidden files touched
 המשך מ: M04-c300 DONE (2026-10-31): pnpm type-check (tsc --noEmit) green, 0 errors; no type drift to fix; no code changes; no forbidden files touched
+המשך מ: M07-c300 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
