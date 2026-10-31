@@ -506,3 +506,9 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-30 23:26 | category | 380 | 19.31% | **FAIL** | `8adc01e0b-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
 | 2026-10-30 23:28 | category | 768 | 16.85% | **FAIL** | `8adc01e0b-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
 | 2026-10-30 23:30 | category | 1440 | 5.68% | PASS | `8adc01e0b-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 10:41 | category | 380 | 19.31% | **FAIL** | `52e803f89-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 10:43 | category | 768 | 16.85% | **FAIL** | `52e803f89-dirty` | ref 48 failed to load (31 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 10:45 | category | 1440 | 5.68% | PASS | `52e803f89-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 10:47 | category | 380 | 19.31% | **FAIL** | `52e803f89-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 10:49 | category | 768 | 16.85% | **FAIL** | `52e803f89-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
+| 2026-10-31 10:50 | category | 1440 | 5.68% | PASS | `52e803f89-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
