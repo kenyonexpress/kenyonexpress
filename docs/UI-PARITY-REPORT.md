@@ -1315,3 +1315,125 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-31 05:54 | category | 380 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
 | 2026-10-31 05:54 | category | 768 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
 | 2026-10-31 05:54 | category | 1440 | n/a | REFUSED | `67756d39-dirty` | live side is our-build |
+| 2026-10-31 06:17 | home | 380 | 39.83% | **FAIL** | `ce6723c2-dirty` |  |
+| 2026-10-31 06:19 | home | 768 | 36.52% | **FAIL** | `ce6723c2-dirty` |  |
+| 2026-10-31 06:21 | home | 1440 | 27.52% | **FAIL** | `ce6723c2-dirty` |  |
+| 2026-10-31 06:23 | home | 380 | 39.85% | **FAIL** | `ce6723c2-dirty` |  |
+| 2026-10-31 06:25 | home | 768 | 36.53% | **FAIL** | `ce6723c2-dirty` |  |
+| 2026-10-31 06:27 | home | 1440 | 27.53% | **FAIL** | `ce6723c2-dirty` |  |
+| 2026-10-31 06:30 | product | 380 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 06:30 | product | 768 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 06:30 | product | 1440 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 06:34 | product | 380 | 36.58% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 06:36 | product | 768 | 29.82% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 06:38 | product | 1440 | 20.52% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 06:40 | product | 380 | 36.58% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 06:42 | product | 768 | 29.82% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 06:44 | product | 1440 | 20.52% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 06:47 | category | 380 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 06:47 | category | 768 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 06:47 | category | 1440 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:04 | home | 380 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:04 | home | 768 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:04 | home | 1440 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:07 | product | 380 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:07 | product | 768 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:07 | product | 1440 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:09 | product | 380 | 36.58% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 07:12 | product | 768 | 29.82% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 07:14 | product | 1440 | 20.52% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 07:17 | product | 380 | 36.58% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 07:20 | product | 768 | 29.82% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 07:23 | product | 1440 | 20.52% | **FAIL** | `19f0920b-dirty` |  |
+| 2026-10-31 07:25 | category | 380 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:25 | category | 768 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:25 | category | 1440 | n/a | REFUSED | `19f0920b-dirty` | live side is our-build |
+| 2026-10-31 07:44 | home | 380 | 39.84% | **FAIL** | `346d2180-dirty` |  |
+| 2026-10-31 07:46 | home | 768 | 36.52% | **FAIL** | `346d2180-dirty` |  |
+| 2026-10-31 07:48 | home | 1440 | 27.52% | **FAIL** | `346d2180-dirty` |  |
+| 2026-10-31 07:50 | home | 380 | 39.84% | **FAIL** | `346d2180-dirty` |  |
+| 2026-10-31 07:52 | home | 768 | 36.52% | **FAIL** | `346d2180-dirty` |  |
+| 2026-10-31 07:54 | home | 1440 | 27.52% | **FAIL** | `346d2180-dirty` |  |
+| 2026-10-31 07:57 | product | 380 | n/a | REFUSED | `8f492ac7-dirty` | live side is our-build |
+| 2026-10-31 07:57 | product | 768 | n/a | REFUSED | `8f492ac7-dirty` | live side is our-build |
+| 2026-10-31 07:57 | product | 1440 | n/a | REFUSED | `8f492ac7-dirty` | live side is our-build |
+| 2026-10-31 07:58 | category | 380 | n/a | REFUSED | `8f492ac7-dirty` | live side is our-build |
+| 2026-10-31 07:58 | category | 768 | n/a | REFUSED | `8f492ac7-dirty` | live side is our-build |
+| 2026-10-31 07:58 | category | 1440 | n/a | REFUSED | `8f492ac7-dirty` | live side is our-build |
+| 2026-10-31 08:18 | home | 380 | 39.85% | **FAIL** | `e74c4da6-dirty` |  |
+| 2026-10-31 08:20 | home | 768 | 36.59% | **FAIL** | `e74c4da6-dirty` |  |
+| 2026-10-31 08:22 | home | 1440 | 27.52% | **FAIL** | `e74c4da6-dirty` |  |
+| 2026-10-31 08:24 | home | 380 | 39.84% | **FAIL** | `e74c4da6-dirty` |  |
+| 2026-10-31 08:26 | home | 768 | 36.52% | **FAIL** | `e74c4da6-dirty` |  |
+| 2026-10-31 08:28 | home | 1440 | 27.52% | **FAIL** | `e74c4da6-dirty` |  |
+| 2026-10-31 08:31 | product | 380 | n/a | REFUSED | `b6f15470-dirty` | live side is our-build |
+| 2026-10-31 08:31 | product | 768 | n/a | REFUSED | `b6f15470-dirty` | live side is our-build |
+| 2026-10-31 08:31 | product | 1440 | n/a | REFUSED | `b6f15470-dirty` | live side is our-build |
+| 2026-10-31 08:33 | product | 380 | 36.58% | **FAIL** | `b6f15470-dirty` |  |
+| 2026-10-31 08:35 | product | 768 | 29.82% | **FAIL** | `b6f15470-dirty` |  |
+| 2026-10-31 08:38 | product | 1440 | 20.52% | **FAIL** | `b6f15470-dirty` |  |
+| 2026-10-31 08:41 | product | 380 | 36.58% | **FAIL** | `b6f15470-dirty` |  |
+| 2026-10-31 08:44 | product | 768 | 29.82% | **FAIL** | `b6f15470-dirty` |  |
+| 2026-10-31 08:47 | product | 1440 | 20.52% | **FAIL** | `b6f15470-dirty` |  |
+| 2026-10-31 08:49 | category | 380 | n/a | REFUSED | `b6f15470-dirty` | live side is our-build |
+| 2026-10-31 08:49 | category | 768 | n/a | REFUSED | `b6f15470-dirty` | live side is our-build |
+| 2026-10-31 08:49 | category | 1440 | n/a | REFUSED | `b6f15470-dirty` | live side is our-build |
+| 2026-10-31 09:14 | home | 380 | 39.85% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:16 | home | 768 | 36.53% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:18 | home | 1440 | 27.53% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:21 | home | 380 | 39.85% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:23 | home | 768 | 36.53% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:25 | home | 1440 | 27.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:27 | home | 380 | 39.85% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:29 | home | 768 | 36.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:31 | home | 1440 | 27.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:33 | product | 380 | n/a | REFUSED | `523fd3b5-dirty` | live side is our-build |
+| 2026-10-31 09:33 | product | 768 | n/a | REFUSED | `523fd3b5-dirty` | live side is our-build |
+| 2026-10-31 09:34 | product | 1440 | n/a | REFUSED | `523fd3b5-dirty` | live side is our-build |
+| 2026-10-31 09:39 | product | 380 | 36.58% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:41 | product | 768 | 29.82% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:43 | product | 1440 | 20.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:46 | product | 380 | 36.58% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:49 | product | 768 | 29.82% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:51 | product | 1440 | 20.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 09:54 | category | 380 | n/a | REFUSED | `523fd3b5-dirty` | live side is our-build |
+| 2026-10-31 09:54 | category | 768 | n/a | REFUSED | `523fd3b5-dirty` | live side is our-build |
+| 2026-10-31 09:54 | category | 1440 | n/a | REFUSED | `523fd3b5-dirty` | live side is our-build |
+| 2026-10-31 10:15 | home | 380 | 39.83% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 10:17 | home | 768 | 36.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 10:19 | home | 1440 | 27.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 10:21 | home | 380 | 39.83% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 10:23 | home | 768 | 36.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 10:25 | home | 1440 | 27.52% | **FAIL** | `523fd3b5-dirty` |  |
+| 2026-10-31 10:28 | product | 380 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 10:28 | product | 768 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 10:28 | product | 1440 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 10:31 | product | 380 | 36.58% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 10:34 | product | 768 | 29.82% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 10:36 | product | 1440 | 20.52% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 11:14 | home | 380 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 11:14 | home | 768 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 11:21 | category | 380 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 11:21 | category | 768 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 11:21 | category | 1440 | n/a | REFUSED | `0ac19610-dirty` | live side is our-build |
+| 2026-10-31 11:49 | home | 380 | 39.83% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 11:51 | home | 768 | 36.52% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 11:53 | home | 1440 | 27.52% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 11:56 | home | 380 | 39.84% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 11:58 | home | 768 | 36.52% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 12:00 | home | 1440 | 27.52% | **FAIL** | `0ac19610-dirty` |  |
+| 2026-10-31 12:03 | product | 380 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:03 | product | 768 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:03 | product | 1440 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:05 | category | 380 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:05 | category | 768 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:05 | category | 1440 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:33 | home | 380 | 39.83% | **FAIL** | `31188769-dirty` |  |
+| 2026-10-31 12:35 | home | 768 | 36.52% | **FAIL** | `31188769-dirty` |  |
+| 2026-10-31 12:37 | home | 1440 | 27.52% | **FAIL** | `31188769-dirty` |  |
+| 2026-10-31 12:39 | home | 380 | 39.85% | **FAIL** | `31188769-dirty` |  |
+| 2026-10-31 12:41 | home | 768 | 36.53% | **FAIL** | `31188769-dirty` |  |
+| 2026-10-31 12:43 | home | 1440 | 27.53% | **FAIL** | `31188769-dirty` |  |
+| 2026-10-31 12:58 | category | 380 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:59 | category | 768 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
+| 2026-10-31 12:59 | category | 1440 | n/a | REFUSED | `31188769-dirty` | live side is our-build |
