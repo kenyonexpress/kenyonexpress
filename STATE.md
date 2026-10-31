@@ -92,3 +92,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c309 DONE (pnpm type-check passes, exit 0; no drift, no code changes)
 המשך מ: M17-c310 DONE (2026-10-31): rendered RTL check (playwright, dev :3000) at 380/768/1440 on / and /product/barbecue: html lang=he dir=rtl, no horizontal scroll; /product 0 LTR Hebrew elements; / 11 LTR Hebrew elements all inside locked hero/slider (Electro v7 parity, not edited); compare.mjs not run; no code changes; no forbidden files touched
 המשך מ: M04-c311 DONE (2026-10-31): pnpm type-check passes (exit 0); committed docs drift (M-CYCLE-STATUS, UI-PARITY-REPORT); no forbidden files touched
+
+המשך מ: M05-c311 DONE (pnpm test: 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; drift = M-CYCLE-STATUS timestamp only)
