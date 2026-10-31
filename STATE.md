@@ -1,7 +1,15 @@
-RESUME FROM: M02-c327
+RESUME FROM: M04-c327
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T06:58:28+07:00
+- item: M03-c327
+- BLOCKED: no valid category reference — live host is our own build and refs/ has no Electro v7 category capture
+
+### 2026-11-01T06:57:24+07:00
+- item: M02-c327
+- BLOCKED: gate fails — /product diff 36.58% / 29.82% / 20.52% at 380 / 768 / 1440 (target <11%)
 
 ### 2026-11-01T06:39:44+07:00
 - item: M01-c327
