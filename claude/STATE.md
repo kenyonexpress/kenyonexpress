@@ -1,5 +1,4 @@
-המשך מ: M16-c299 DONE (2026-10-31): /product/[slug] emits JSON-LD Product + BreadcrumbList (full category trail); /product/[slug]/gift is noindex so excluded; json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
-המשך מ: M07-c299 DONE (2026-10-31): TODO/FIXME scan found only the 3 already-filed docs/BACKLOG.md items (cardcom.ts:254, :317, r2-migration.ts:103-106), all blocked on Cardcom creds / feature work; no forbidden files touched
+המשך מ: M16-c300 DONE (2026-10-31): all product pages render via the single src/app/(store)/product/[slug]/page.tsx template, which emits Product + BreadcrumbList JSON-LD (buildProductJsonLd / buildBreadcrumbJsonLd, no AggregateRating); json-ld.test.ts 26/26 pass; no forbidden files touched
 המשך מ: M07-c298 DONE (2026-10-31): TODO/FIXME scan found only the 3 already-filed docs/BACKLOG.md items (cardcom.ts:249, :312, r2-migration.ts:103-106), none resolvable without Cardcom creds / service-role key; nothing new; no forbidden files touched
 המשך מ: M05-c296 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M18-c294 DONE (2026-10-31): claude/STATE.md 275 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
