@@ -57,6 +57,8 @@ export function toReadyReport(report: HealthReport): ReadyReport {
   for (const name of READY_CHECK_NAMES) {
     checks[name] = byName.get(SOURCE[name]) ?? 'down'
   }
+  // Optional dependency: Postgres ILIKE covers search, so never report it down.
+  if (checks.meilisearch === 'down') checks.meilisearch = 'degraded'
   return {
     ok: Object.values(checks).every((status) => status !== 'down'),
     checks,
