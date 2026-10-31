@@ -37,6 +37,7 @@ export default defineConfig({
       'src/**/*.test.ts',
       'src/**/*.test.tsx',
       'scripts/wp-import/**/*.test.mjs',
+      'scripts/state/**/*.test.mjs',
       // Top-level script tests. `scripts/blurhash.test.mjs` was written, passed
       // nothing, and reported "No test files found" -- a test outside the
       // include glob is a test that silently does not run.
