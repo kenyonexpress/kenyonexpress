@@ -1,4 +1,3 @@
-המשך מ: M16-c300 DONE (2026-10-31): all product pages render via the single src/app/(store)/product/[slug]/page.tsx template, which emits Product + BreadcrumbList JSON-LD (buildProductJsonLd / buildBreadcrumbJsonLd, no AggregateRating); json-ld.test.ts 26/26 pass; no forbidden files touched
 המשך מ: M07-c298 DONE (2026-10-31): TODO/FIXME scan found only the 3 already-filed docs/BACKLOG.md items (cardcom.ts:249, :312, r2-migration.ts:103-106), none resolvable without Cardcom creds / service-role key; nothing new; no forbidden files touched
 המשך מ: M05-c296 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M18-c294 DONE (2026-10-31): claude/STATE.md 275 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
@@ -297,3 +296,4 @@
 המשך מ: M04-c300 DONE (2026-10-31): pnpm type-check (tsc --noEmit) green, 0 errors; no type drift to fix; no code changes; no forbidden files touched
 המשך מ: M07-c300 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M09-c300 DONE (2026-10-31): knip+depcheck run; no dep removable (@capacitor/android needed by android/ native project, tailwind/postcss used via config); dead-export list is public API/server actions/types/locked HeroSlider, unsafe w/o knip config, nothing removed; no forbidden files touched
+המשך מ: M04-c301 DONE (2026-10-31): pnpm type-check (tsc --noEmit) green, 0 errors; only drift was claude_STATE.md log line, committed; oldest STATE line moved to docs/STATE-ARCHIVE.md; no forbidden files touched
