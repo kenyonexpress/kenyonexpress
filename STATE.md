@@ -98,3 +98,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M16-c311 DONE (product/[slug] page emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld.ts; json-ld.test.ts 26 passed; no code changes)
 
 המשך מ: M10-c312 DONE-DEFERRED (72 files in migrations/pending; applied-state unverifiable: DB auth fails, Supabase MCP unauthorized; retry after C51 key recovery)
+
+המשך מ: M09-c315 DONE (knip: 1 unused dep @capacitor/android is a false positive, android/app/build.gradle:38 needs it via cap sync; flagged exports are shadcn/generated types/payments/ledger/server actions, kept; no code changes)
