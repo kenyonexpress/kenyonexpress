@@ -1,6 +1,11 @@
+RESUME FROM: M02-c326
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T05:42:32+07:00
+- item: M01-c326
+- BLOCKED: gate-fail
 
 ### 2026-11-01T05:26:42+07:00
 - item: C118
