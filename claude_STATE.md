@@ -66,3 +66,5 @@ All code executed. Awaiting manual tasks.
 המשך מ: M13-c304 DONE-DEFERRED (Supabase service key in repo .env.local still returns 401 Invalid API key; /api/health + /api/ready cannot be verified against real deps until key replaced post-C51; no code change)
 המשך מ: M11-c306 DONE (sitemap.xml live: apex 308→www then 200 application/xml, 76 URLs, lastmod 2026-10-27 = newest catalogue update, cached age ~32h within expire window; robots points at it; 8 sampled locs reachable via apex 308→www; note loc host is apex; no code change)
 המשך מ: M12-c306 DONE (robots.ts verified: disallows voucher/auth/admin/api paths, allow /, sitemap+host on prod origin, 8/8 vitest pass; no code change)
+המשך מ: M12-c308 DONE (robots.ts tests 8/8 pass; live /robots.txt allows /, disallows voucher/coupon/gift/account/admin/api/checkout, no blanket Disallow, sitemap+host correct; live list slightly older than source (lacks /login,/signup,/mfa), safe; no code change)
+המשך מ: M06-c309 DONE (pnpm build passes clean; drift = M-cycle status + STATE log lines only, committed; no code change)
