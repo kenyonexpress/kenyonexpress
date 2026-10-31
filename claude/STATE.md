@@ -1,3 +1,4 @@
+המשך מ: M06-c312 DONE (2026-10-31): pnpm build succeeds, no build errors; only drift was docs/M-CYCLE-STATUS.md timestamp, committed; no forbidden files touched
 המשך מ: M05-c312 DONE (2026-10-31): pnpm test passes (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift, nothing to fix (an earlier run hit ENOSPC on a 98%-full disk, rerun clean); no forbidden files touched
 המשך מ: M07-c310 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME (all >7 days old), all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M05-c309 DONE (2026-10-31): pnpm test passes (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift, nothing to fix; no forbidden files touched
