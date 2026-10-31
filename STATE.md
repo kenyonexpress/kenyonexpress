@@ -88,3 +88,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M16-c298 DONE (2026-10-31): product route src/app/(store)/product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD (one script each, builders in lib/seo/json-ld.ts, no AggregateRating); json-ld tests 26/26 pass; /product/[slug]/gift is noindex so exempt; no code changes, no forbidden files touched
 המשך מ: M05-c302 DONE (2026-10-31): pnpm test green (626 files, 7140 tests); committed M-CYCLE-STATUS timestamp drift; no forbidden files touched
 המשך מ: M05-c307 DONE (2026-10-31): pnpm test green (626 files, 7140 tests); committed M-CYCLE-STATUS timestamp drift; no forbidden files touched
+
+המשך מ: M04-c309 DONE (pnpm type-check passes, exit 0; no drift, no code changes)
