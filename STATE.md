@@ -1,7 +1,11 @@
-RESUME FROM: M15-c326
+RESUME FROM: M16-c326
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T06:21:23+07:00
+- item: M15-c326
+- BLOCKED: console errors on / and /product — Supabase invalid key (DONE-DEFERRED part), product Suspense/prerender error, CSP blocking Vercel scripts
 
 ### 2026-11-01T06:19:44+07:00
 - item: M14-c326
