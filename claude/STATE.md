@@ -230,3 +230,4 @@
 המשך מ: M04-c307 DONE (2026-10-31): pnpm type-check clean (tsc --noEmit, 0 errors); committed M-CYCLE-STATUS timestamp drift + STATE lines; no forbidden files touched
 המשך מ: M09-c307 DONE (2026-10-31): depcheck re-run matches M09-c306 — only implicit/tooling deps flagged (capacitor native, tailwind/postcss, lint-staged, lighthouse), none safely removable; dead-export candidates sit in money/ledger/payments/server actions so left alone; no code changes; no forbidden files touched
 המשך מ: M04-c308 DONE (2026-10-31): pnpm type-check clean (tsc --noEmit, 0 errors) on closeout/v1-final; no tracked drift to commit; no forbidden files touched
+המשך מ: M09-c308 DONE (2026-10-31): depcheck re-run matches c306/c307 — flagged deps (capacitor, tailwind/postcss, lighthouse, lint-staged) are implicit/tooling, none safely removable; dead-export candidates sit in money/ledger/payments/server actions so left alone; no code changes; no forbidden files touched
