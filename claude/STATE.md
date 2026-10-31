@@ -1,3 +1,4 @@
+המשך מ: M07-c298 DONE (2026-10-31): TODO/FIXME scan found only the 3 already-filed docs/BACKLOG.md items (cardcom.ts:249, :312, r2-migration.ts:103-106), none resolvable without Cardcom creds / service-role key; nothing new; no forbidden files touched
 המשך מ: M05-c296 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M18-c294 DONE (2026-10-31): claude/STATE.md 275 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
 המשך מ: M18-c293 DONE (2026-10-31): claude/STATE.md already 269 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
@@ -287,3 +288,4 @@
 המשך מ: M09-c297 DONE (2026-10-31): knip audit (SUPABASE_DB_URL stub): 0 unused runtime deps; only @capacitor/android flagged (devDep, native platform pkg for android/ via cap sync, kept); 99 unused exports/types all shadcn ui primitives, barrel/public API, or money/ledger/payments/security surface (cardcom, ledger, idempotency, money.ts) - not removed, risk > gain without reliable test coverage; no code changes; no forbidden files touched
 המשך מ: M05-c298 DONE (2026-10-31): pnpm test green (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); committed M-CYCLE-STATUS timestamp drift; no forbidden files touched
 המשך מ: M06-c298 DONE (2026-10-31): pnpm build passes clean (all routes generated); no tracked drift (only untracked logs/* + STATE.md.bak, left out per M06-c297 precedent); no source fixes needed; no forbidden files touched
+המשך מ: M09-c298 DONE (2026-10-31): knip --dependencies re-run — only flagged dep is @capacitor/android (native android/ platform pkg, kept); dead exports unchanged from M09-c297 (intentional public surface: shadcn ui, payments/ledger/money); no code change; no forbidden files touched
