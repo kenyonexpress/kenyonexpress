@@ -1,3 +1,4 @@
+המשך מ: C118 DONE (2026-11-01): scripts/state/state-log.mjs + state-log-lib.mjs + test restored from b6423f65f, vitest include re-added, 23/23 tests pass, see docs/C118-statelog.md; no forbidden files touched
 המשך מ: C117 BLOCKED locked-component (2026-11-01): home mobile LCP/font/JS levers are all in src/app/layout.tsx; baseline median 68 (54/68/71), see docs/C117-lh.md; no code change; no forbidden files touched
 המשך מ: M18-c324 DONE (2026-11-01): STATE.md trimmed 295->200 lines, 95 oldest lines appended to docs/STATE-ARCHIVE.md; no forbidden files touched
 המשך מ: M13-c324 DONE (2026-11-01): /api/health and /api/ready both 200 on fresh dev server with real deps (database ok, redis ok, cardcom ok; meilisearch/r2 not_configured); the long-running :3000 server returned 503 database:down from stale env, service-role key verified valid against Supabase REST (200), restart it; no code change; no forbidden files touched
