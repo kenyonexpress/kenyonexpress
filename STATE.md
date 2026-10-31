@@ -102,3 +102,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M09-c315 DONE (knip: 1 unused dep @capacitor/android is a false positive, android/app/build.gradle:38 needs it via cap sync; flagged exports are shadcn/generated types/payments/ledger/server actions, kept; no code changes)
 
 המשך מ: M04-c316 DONE (pnpm type-check clean, tsc --noEmit exit 0; no tracked drift, only untracked logs; no code changes)
+
+המשך מ: M04-c318 DONE (pnpm type-check clean, tsc --noEmit exit 0; no tracked drift, only untracked logs; no code changes)
