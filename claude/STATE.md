@@ -238,3 +238,4 @@
 המשך מ: M14-c309 DONE-DEFERRED (SENTRY_AUTH_TOKEN is placeholder)
 המשך מ: M04-c310 DONE (2026-10-31): pnpm type-check passes clean (tsc --noEmit, 0 errors); no drift, nothing to fix; no forbidden files touched
 המשך מ: M05-c310 DONE (2026-10-31): pnpm test passes clean (vitest: 626 files passed/2 skipped, 7140 tests passed/28 skipped, 0 failures); no drift, nothing to fix; no forbidden files touched
+המשך מ: M06-c310 DONE (2026-10-31): pnpm build passes clean (exit 0); no drift, nothing to fix; no forbidden files touched
