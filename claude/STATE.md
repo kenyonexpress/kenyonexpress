@@ -1,5 +1,3 @@
-המשך מ: M05-c296 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
-המשך מ: M18-c294 DONE (2026-10-31): claude/STATE.md 275 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
 המשך מ: M18-c293 DONE (2026-10-31): claude/STATE.md already 269 lines (<300), docs/STATE-ARCHIVE.md already holds the archive; no trim needed; no forbidden files touched
 המשך מ: M05-c293 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M06-c292 DONE (2026-10-31): pnpm build clean; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
@@ -297,3 +295,5 @@
 המשך מ: M09-c300 DONE (2026-10-31): knip+depcheck run; no dep removable (@capacitor/android needed by android/ native project, tailwind/postcss used via config); dead-export list is public API/server actions/types/locked HeroSlider, unsafe w/o knip config, nothing removed; no forbidden files touched
 המשך מ: M04-c301 DONE (2026-10-31): pnpm type-check (tsc --noEmit) green, 0 errors; only drift was claude_STATE.md log line, committed; oldest STATE line moved to docs/STATE-ARCHIVE.md; no forbidden files touched
 המשך מ: M05-c301 DONE (2026-10-31): pnpm test 626 files passed / 7140 tests passed, 0 failures; drift = docs/M-CYCLE-STATUS.md timestamp only, committed; oldest STATE line moved to docs/STATE-ARCHIVE.md; no forbidden files touched
+המשך מ: M06-c301 DONE (2026-10-31): pnpm build clean (all routes generated); no tracked drift after build; oldest STATE line moved to docs/STATE-ARCHIVE.md; no forbidden files touched
+המשך מ: M07-c301 DONE (2026-10-31): TODO/FIXME scan of src/scripts/migrations: 6 TODO, 0 FIXME (cardcom.ts:249,312; r2-migration.ts:103-106), all >7d old and already filed in docs/BACKLOG.md #1-#3 (Cardcom prod creds / Supabase service key); nothing new, nothing resolvable; no forbidden files touched
