@@ -1,3 +1,4 @@
+המשך מ: M07-c311 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME (all >7 days old), all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M07-c310 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME (all >7 days old), all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M05-c309 DONE (2026-10-31): pnpm test passes (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift, nothing to fix; no forbidden files touched
 המשך מ: M05-c308 DONE (2026-10-31): pnpm test passes (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift, nothing to fix; no forbidden files touched
@@ -241,4 +242,3 @@
 המשך מ: M05-c310 DONE (2026-10-31): pnpm test passes clean (vitest: 626 files passed/2 skipped, 7140 tests passed/28 skipped, 0 failures); no drift, nothing to fix; no forbidden files touched
 המשך מ: M06-c310 DONE (2026-10-31): pnpm build passes clean (exit 0); no drift, nothing to fix; no forbidden files touched
 המשך מ: M09-c310 DONE (2026-10-31): depcheck re-run matches c304-c308 — flagged devDeps (capacitor, tailwind/postcss, lighthouse, lint-staged) are config/tooling-consumed, none safely removable; dead-export candidates sit in money/ledger/payments/server actions so left alone; no code changes; no forbidden files touched
-המשך מ: M06-c311 DONE (2026-10-31): pnpm build passes clean (exit 0); no tracked drift after build, nothing to fix; no forbidden files touched
