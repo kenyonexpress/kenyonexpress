@@ -32,7 +32,7 @@ function asString(value: unknown): string | null {
   return null
 }
 
-export function asNumber(value: unknown): number | null {
+function asNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value === 'string' && value.trim() !== '') {
     const n = Number(value)
@@ -64,7 +64,7 @@ export function asNumber(value: unknown): number | null {
  * platform's own request ceiling, which is what leaves room for the one retry
  * on the read-only paths.
  */
-export function cardcomTimeoutMs(): number {
+function cardcomTimeoutMs(): number {
   const parsed = Number(process.env.CARDCOM_TIMEOUT_MS)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : 15_000
 }

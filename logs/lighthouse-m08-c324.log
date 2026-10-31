@@ -1,0 +1,4 @@
+M08-c324 Lighthouse mobile (performance), fresh prod `next start` on :3517, 2026-11-01, 3 runs each, default mobile emulation
+/                      : 74/79/80 | LCP 6.0/5.1/4.9 s | TBT 134/24/29 ms | CLS 0.004/0.059/0.024
+/product/bar-drink     : 85/87/83 | LCP 4.2/3.8/4.6 s | TBT 42/31/20 ms | CLS 0/0/0   (/product itself has no index route; real slug sampled)
+G23 not met: home and product below 95, LCP-bound. Measurement only, no code changes.
