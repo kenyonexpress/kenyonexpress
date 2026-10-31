@@ -240,3 +240,4 @@
 המשך מ: M04-c310 DONE (2026-10-31): pnpm type-check passes clean (tsc --noEmit, 0 errors); no drift, nothing to fix; no forbidden files touched
 המשך מ: M05-c310 DONE (2026-10-31): pnpm test passes clean (vitest: 626 files passed/2 skipped, 7140 tests passed/28 skipped, 0 failures); no drift, nothing to fix; no forbidden files touched
 המשך מ: M06-c310 DONE (2026-10-31): pnpm build passes clean (exit 0); no drift, nothing to fix; no forbidden files touched
+המשך מ: M09-c310 DONE (2026-10-31): depcheck re-run matches c304-c308 — flagged devDeps (capacitor, tailwind/postcss, lighthouse, lint-staged) are config/tooling-consumed, none safely removable; dead-export candidates sit in money/ledger/payments/server actions so left alone; no code changes; no forbidden files touched
