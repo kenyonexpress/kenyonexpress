@@ -1,3 +1,4 @@
+המשך מ: M06-c307 DONE (2026-10-31): pnpm build passes (exit 0, all routes generated); no tracked drift after build, nothing to fix; no forbidden files touched
 המשך מ: M06-c304 DONE (2026-10-31): pnpm build passes (exit 0, all routes generated, env sourced from .env.local, not copied); no tracked drift in working tree (only untracked logs/*, STATE.md.bak); nothing to fix; no forbidden files touched
 המשך מ: M07-c303 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M06-c303 DONE (2026-10-31): pnpm build clean (exit 0); drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
