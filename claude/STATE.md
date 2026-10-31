@@ -283,3 +283,4 @@
 המשך מ: M07-c322 DONE (2026-11-01): TODO/FIXME scan of src/scripts/migrations = 6 hits, all already filed in docs/BACKLOG.md (3 items, same lines; blockers: Cardcom prod creds, Supabase service-role key deferred); nothing resolvable; no forbidden files touched
 המשך מ: M10-c322 DONE-DEFERRED (2026-11-01): migrations/pending (17 files) not verifiable, Supabase MCP unauthenticated and no DB password; blocker filed in docs/M10-c322-MIGRATIONS-VERIFY-BLOCKER.md; no forbidden files touched
 המשך מ: M05-c323 DONE (2026-11-01): pnpm test green (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift to fix; no source changes; no forbidden files touched
+המשך מ: M10-c323 DONE-DEFERRED (2026-11-01): migrations/pending (17 files) not verifiable, Supabase MCP unauthenticated and no DB password; blocker filed in docs/M10-c323-MIGRATIONS-VERIFY-BLOCKER.md; no forbidden files touched
