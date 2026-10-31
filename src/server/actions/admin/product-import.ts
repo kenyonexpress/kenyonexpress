@@ -14,8 +14,11 @@ import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
+import { excludeDeleted } from '@/lib/soft-delete'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { updateTag } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+import type { TablesUpdate } from '@/types/database'
+import { revalidatePath, updateTag } from 'next/cache'
 import { upsertProductNoRedirect } from './products'
 
 /**
