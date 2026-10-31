@@ -29,8 +29,8 @@ export const PURCHASED_KEY = 'ke:purchased'
  * first two views are a stranger looking around; by the third they have come
  * back or gone deeper, which is the earliest the app is worth asking about.
  */
-export const VIEWS_KEY = 'ke:views'
-export const INSTALL_AT_VIEW = 3
+const VIEWS_KEY = 'ke:views'
+const INSTALL_AT_VIEW = 3
 const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
 /**
