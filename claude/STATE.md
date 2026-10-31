@@ -272,3 +272,4 @@
 המשך מ: M06-c315 DONE (2026-10-31): pnpm build green; drift = docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md regenerated, committed; no forbidden files touched
 המשך מ: M05-c316 DONE (2026-10-31): pnpm test 626 files passed/2 skipped, 7140 tests passed/28 skipped; no drift, no code changes; no forbidden files touched
 המשך מ: M06-c317 DONE (2026-10-31): pnpm build green; drift = docs/M-CYCLE-STATUS.md regenerated, committed; no forbidden files touched
+המשך מ: M09-c317 DONE (2026-10-31): depcheck re-run identical to c311/c312 — no unused runtime deps; flagged devDeps (capacitor, tailwind/postcss, lighthouse, lint-staged) are config/tooling-consumed so kept; dead-export candidates in money/ledger/payments/server actions left alone; no code changes; no forbidden files touched
