@@ -287,3 +287,4 @@
 המשך מ: M09-c319 DONE (2026-11-01): knip dep/export scan — only flagged dep @capacitor/android is required by native android/ project (cap sync), kept; 62 flagged exports are public API surface (shadcn ui, money/ledger/payments/server actions, scripts) or in locked HeroSlider, left untouched; no code changes; no forbidden files touched
 המשך מ: M10-c319 BLOCKED (2026-11-01): migrations/pending/ still holds 70 unapplied .sql files; cannot verify or apply, Supabase MCP (project ixvwfbuvfxxsjiywhbbb) unauthenticated in non-interactive session; no code changes; no forbidden files touched
 המשך מ: M04-c320 DONE (2026-11-01): pnpm type-check clean (tsc --noEmit, 0 errors); drift = claude_STATE.md state line, committed; no forbidden files touched
+המשך מ: M05-c320 DONE (2026-11-01): pnpm test clean (vitest run: 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; 0 failed); no test drift to fix; no code changes; no forbidden files touched
