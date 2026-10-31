@@ -1,3 +1,4 @@
+המשך מ: M05-c319 DONE (2026-11-01): pnpm test 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; only drift was docs/M-CYCLE-STATUS.md timestamp refresh, committed; no forbidden files touched
 המשך מ: M18-c317 DONE (2026-10-31): claude/STATE.md 276 lines (<300), nothing to archive; docs/STATE-ARCHIVE.md untouched; no code change, no forbidden files touched
 המשך מ: M13-c317 DONE (2026-10-31): local next dev from this repo with real .env.local (service role key valid, REST 200): /api/health 200 {database ok, search not_configured}, /api/ready 200 {database ok, redis ok, cardcom ok, meilisearch+r2 not_configured}; no code change, no forbidden files touched
 המשך מ: M04-c317 DONE (2026-10-31): pnpm type-check passes clean (tsc --noEmit, 0 errors); no tracked drift to fix; no forbidden files touched
