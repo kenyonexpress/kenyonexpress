@@ -1455,3 +1455,18 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-31 14:08 | home | 380 | 39.83% | **FAIL** | `288db820-dirty` |  |
 | 2026-10-31 14:10 | home | 768 | 36.52% | **FAIL** | `288db820-dirty` |  |
 | 2026-10-31 14:12 | home | 1440 | 27.52% | **FAIL** | `288db820-dirty` |  |
+| 2026-10-31 14:15 | product | 380 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:15 | product | 768 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:15 | product | 1440 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:16 | product | 380 | 36.58% | **FAIL** | `dc7f27d5-dirty` |  |
+| 2026-10-31 14:18 | product | 768 | 29.82% | **FAIL** | `dc7f27d5-dirty` |  |
+| 2026-10-31 14:21 | product | 1440 | 20.52% | **FAIL** | `dc7f27d5-dirty` |  |
+| 2026-10-31 14:23 | category | 380 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:23 | category | 768 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:23 | category | 1440 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:43 | home | 380 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:43 | home | 768 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:43 | home | 1440 | n/a | REFUSED | `dc7f27d5-dirty` | live side is our-build |
+| 2026-10-31 14:44 | home | 380 | 39.84% | **FAIL** | `dc7f27d5-dirty` |  |
+| 2026-10-31 14:46 | home | 768 | 36.52% | **FAIL** | `dc7f27d5-dirty` |  |
+| 2026-10-31 14:48 | home | 1440 | 27.52% | **FAIL** | `dc7f27d5-dirty` |  |
