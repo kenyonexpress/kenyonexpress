@@ -235,3 +235,5 @@
 המשך מ: M07-c309 DONE (2026-10-31): TODO/FIXME scan — same 3 markers (cardcom.ts:249, :312, r2-migration.ts:103-106), all >7 days old and already in docs/BACKLOG.md (Cardcom prod creds / R2 feature work); nothing new to resolve; BACKLOG re-verified; no forbidden files touched
 המשך מ: M10-c309 BLOCKED (2026-10-31): migrations/pending/ still holds 22 unapplied files (000, 164, 301, 305-307, 310-321); cannot verify or apply, Supabase MCP (project ixvwfbuvfxxsjiywhbbb) unauthenticated in non-interactive session; no code changes; no forbidden files touched
 המשך מ: M13-c309 DONE (2026-10-31): fresh dev server with .env.local (service role key valid, REST 200) — /api/health 200 {database:ok}, /api/ready 200 {database:ok, redis:ok, cardcom:ok, meilisearch/r2 not_configured}; stale server on :3000 showed 503/database down (old env), not a code issue; no code changes; no forbidden files touched
+המשך מ: M14-c309 DONE-DEFERRED (SENTRY_AUTH_TOKEN is placeholder)
+המשך מ: M04-c310 DONE (2026-10-31): pnpm type-check passes clean (tsc --noEmit, 0 errors); no drift, nothing to fix; no forbidden files touched
