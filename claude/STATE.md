@@ -1,3 +1,4 @@
+המשך מ: M04-c317 DONE (2026-10-31): pnpm type-check passes clean (tsc --noEmit, 0 errors); no tracked drift to fix; no forbidden files touched
 המשך מ: M18-c316 DONE (2026-10-31): claude/STATE.md 271 lines (<300), nothing to archive; docs/STATE-ARCHIVE.md untouched; no code change, no forbidden files touched
 המשך מ: M09-c316 DONE (2026-10-31): depcheck re-audit, no unused prod deps; flagged devDeps (@capacitor/*, tailwindcss, @tailwindcss/postcss, lighthouse, lint-staged) are tooling or platform-required so kept; knip aborted on missing SUPABASE_DB_URL for drizzle.config and its prior export findings (ui primitives, db schema, money/ledger API, locked HeroSlider) stand, so no dead exports removed; no code change, no forbidden files touched
 המשך מ: M06-c316 DONE (2026-10-31): pnpm build passes; only drift was docs/M-CYCLE-STATUS.md timestamp refresh, committed; no forbidden files touched
@@ -270,3 +271,4 @@
 המשך מ: M17-c314 BLOCKED locked-component (2026-10-31): RTL probe on / and /product/צימר-מאסטר at 380/768/1440 (dev :3000) — html dir=rtl lang=he, zero horizontal overflow, /product fully clean; / has 13 Hebrew <p> hero-copy nodes computed direction:ltr from explicit dir="ltr" in src/components/home/HeroSlider.tsx (lines ~555-628, locked) — fix needs a locked-file edit; no code changes; no forbidden files touched
 המשך מ: M06-c315 DONE (2026-10-31): pnpm build green; drift = docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md regenerated, committed; no forbidden files touched
 המשך מ: M05-c316 DONE (2026-10-31): pnpm test 626 files passed/2 skipped, 7140 tests passed/28 skipped; no drift, no code changes; no forbidden files touched
+המשך מ: M06-c317 DONE (2026-10-31): pnpm build green; drift = docs/M-CYCLE-STATUS.md regenerated, committed; no forbidden files touched
