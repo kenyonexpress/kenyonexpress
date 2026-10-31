@@ -1,3 +1,4 @@
+המשך מ: M05-c319 DONE (2026-11-01): pnpm test 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; only drift was docs/M-CYCLE-STATUS.md timestamp refresh, committed; no forbidden files touched
 המשך מ: M18-c317 DONE (2026-10-31): claude/STATE.md 276 lines (<300), nothing to archive; docs/STATE-ARCHIVE.md untouched; no code change, no forbidden files touched
 המשך מ: M13-c317 DONE (2026-10-31): local next dev from this repo with real .env.local (service role key valid, REST 200): /api/health 200 {database ok, search not_configured}, /api/ready 200 {database ok, redis ok, cardcom ok, meilisearch+r2 not_configured}; no code change, no forbidden files touched
 המשך מ: M04-c317 DONE (2026-10-31): pnpm type-check passes clean (tsc --noEmit, 0 errors); no tracked drift to fix; no forbidden files touched
@@ -280,3 +281,5 @@
 המשך מ: M09-c318 DONE (2026-10-31): knip + grep re-run — no unused deps (@mdx-js/loader is @next/mdx peer, @capacitor/android used by native android/); only truly dead export was detectVpnProxyUsage (un-exported, still used internally); other unreferenced exports are documented seams/money/ledger, left alone; tsc clean, fraud tests 42 passed; no forbidden files touched
 המשך מ: M10-c318 BLOCKED (2026-10-31): migrations/pending/ still holds       70 unapplied .sql files (000, 164, 301, 305-306, 310-321); cannot verify or apply, Supabase MCP (project ixvwfbuvfxxsjiywhbbb) unauthenticated in non-interactive session; no code changes; no forbidden files touched
 המשך מ: M04-c319 DONE (2026-11-01): pnpm type-check clean; committed FooterAccordion drift (text-right -> text-start, logical property) + test, 18 tests passed; no forbidden files touched
+המשך מ: M06-c319 DONE (2026-11-01): pnpm build green; drift = docs/UI-PARITY-REPORT.md regenerated, committed; no forbidden files touched
+המשך מ: M07-c319 DONE (2026-11-01): TODO/FIXME scan of src/scripts/migrations — same 6 markers / 3 backlog items (cardcom x2 need prod creds, r2-migration stub needs service-role key), all >7 days old and already filed in docs/BACKLOG.md; no code changes; no forbidden files touched
