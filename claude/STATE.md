@@ -1,3 +1,4 @@
+המשך מ: M06-c304 DONE (2026-10-31): pnpm build passes (exit 0, all routes generated, env sourced from .env.local, not copied); no tracked drift in working tree (only untracked logs/*, STATE.md.bak); nothing to fix; no forbidden files touched
 המשך מ: M07-c303 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME, all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M06-c303 DONE (2026-10-31): pnpm build clean (exit 0); drift = docs/M-CYCLE-STATUS.md timestamp only, committed; no forbidden files touched
 המשך מ: M18-c301 DONE (2026-10-31): claude/STATE.md trimmed 299 -> 201 lines (<300), oldest 99 lines appended to docs/STATE-ARCHIVE.md; no forbidden files touched
@@ -209,3 +210,4 @@
 המשך מ: M09-c303 DONE (2026-10-31): depcheck re-run: 0 unused runtime deps; 7 flagged devDeps are config/script-consumed, kept; unused exports are public API/test-consumed (money/payments/ledger/schemas), none removed; no code changes; no forbidden files touched
 המשך מ: M16-c303 DONE (2026-10-31): JSON-LD verified: only one product template (src/app/(store)/product/[slug]/page.tsx) emits Product + BreadcrumbList via buildProductJsonLd/buildBreadcrumbJsonLd (no AggregateRating, price from resolved page values); json-ld.test.ts 26/26 pass; no code changes; no forbidden files touched
 המשך מ: M04-c304 DONE (2026-10-31): pnpm type-check clean (tsc --noEmit, 0 errors); drift = uncommitted claude_STATE.md line committed; no forbidden files touched
+המשך מ: M07-c304 DONE (2026-10-31): TODO/FIXME scan of src/scripts/migrations/e2e/tests found the same 3 open items (cardcom.ts:249, cardcom.ts:312, r2-migration.ts:103-106), all already filed in docs/BACKLOG.md and blocked on Cardcom prod creds / Supabase service-role key; no new items; BACKLOG status line updated; no forbidden files touched
