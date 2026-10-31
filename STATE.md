@@ -96,3 +96,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M05-c311 DONE (pnpm test: 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; drift = M-CYCLE-STATUS timestamp only)
 
 המשך מ: M16-c311 DONE (product/[slug] page emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld.ts; json-ld.test.ts 26 passed; no code changes)
+
+המשך מ: M10-c312 DONE-DEFERRED (72 files in migrations/pending; applied-state unverifiable: DB auth fails, Supabase MCP unauthorized; retry after C51 key recovery)
