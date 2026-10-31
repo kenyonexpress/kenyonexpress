@@ -1,3 +1,4 @@
+המשך מ: M09-c323 DONE (2026-11-01): knip --dependencies re-run — only flagged dep is @capacitor/android (native android/ platform pkg, kept); dead exports unchanged from M09-c248/c249 (intentional public surface); no code change; no forbidden files touched
 המשך מ: M09-c322 DONE (2026-11-01): knip --dependencies re-run — only flagged dep is @capacitor/android (native android/ platform pkg, kept); dead exports unchanged from M09-c248/c249 (intentional public surface); no code change; no forbidden files touched
 המשך מ: M05-c322 DONE (2026-11-01): pnpm test 626 files passed/2 skipped, 7140 tests passed/28 skipped; no drift, no code change, no forbidden files touched
 המשך מ: M16-c321 DONE (2026-11-01): only product template src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList (one script each, all non-404 paths); gift sub-page is noindex; json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
@@ -282,3 +283,4 @@
 המשך מ: M07-c322 DONE (2026-11-01): TODO/FIXME scan of src/scripts/migrations = 6 hits, all already filed in docs/BACKLOG.md (3 items, same lines; blockers: Cardcom prod creds, Supabase service-role key deferred); nothing resolvable; no forbidden files touched
 המשך מ: M10-c322 DONE-DEFERRED (2026-11-01): migrations/pending (17 files) not verifiable, Supabase MCP unauthenticated and no DB password; blocker filed in docs/M10-c322-MIGRATIONS-VERIFY-BLOCKER.md; no forbidden files touched
 המשך מ: M05-c323 DONE (2026-11-01): pnpm test green (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift to fix; no source changes; no forbidden files touched
+המשך מ: M10-c323 DONE-DEFERRED (2026-11-01): migrations/pending (17 files) not verifiable, Supabase MCP unauthenticated and no DB password; blocker filed in docs/M10-c323-MIGRATIONS-VERIFY-BLOCKER.md; no forbidden files touched
