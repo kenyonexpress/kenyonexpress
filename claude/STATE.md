@@ -1,3 +1,4 @@
+המשך מ: M16-c320 DONE (2026-11-01): re-verified product/[slug]/page.tsx emits JSON-LD Product + BreadcrumbList (one script each, all non-404 paths); gift sub-page is noindex; json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
 המשך מ: M16-c319 DONE (2026-11-01): only product template src/app/(store)/product/[slug]/page.tsx emits JSON-LD Product (buildProductJsonLd) + BreadcrumbList (buildBreadcrumbJsonLd), one script each; json-ld.test.ts 26/26 pass; no aggregateRating (no reviews UI); no code change, no forbidden files touched
 המשך מ: M05-c319 DONE (2026-11-01): pnpm test 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; only drift was docs/M-CYCLE-STATUS.md timestamp refresh, committed; no forbidden files touched
 המשך מ: M18-c317 DONE (2026-10-31): claude/STATE.md 276 lines (<300), nothing to archive; docs/STATE-ARCHIVE.md untouched; no code change, no forbidden files touched
