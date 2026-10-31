@@ -1,3 +1,4 @@
+המשך מ: M07-c310 DONE (2026-10-31): TODO/FIXME scan of src found 6 TODO, 0 FIXME (all >7 days old), all already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / Supabase key); no new items, nothing resolvable; no forbidden files touched
 המשך מ: M05-c309 DONE (2026-10-31): pnpm test passes (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift, nothing to fix; no forbidden files touched
 המשך מ: M05-c308 DONE (2026-10-31): pnpm test passes (626 files passed, 2 skipped; 7140 tests passed, 28 skipped); no drift, nothing to fix; no forbidden files touched
 המשך מ: M10-c307 BLOCKED supabase-mcp-unauthorized (2026-10-31): migrations/pending has 17 unapplied files (000, 164, 301, 305-307, 310-321); prod REST re-probe: suppliers.verification_status, orders.gift_scheduled_at, suppliers.open_weekends, products.supplier_transfer_days, products.opening_hours, club_tiers.cashback_percent all 400, fraud_alerts + fraud_ip_signup_log 404 = NOT applied; claude.ai Supabase MCP needs OAuth, unavailable non-interactively; db push forbidden; no files moved; no forbidden files touched
@@ -237,3 +238,5 @@
 המשך מ: M13-c309 DONE (2026-10-31): fresh dev server with .env.local (service role key valid, REST 200) — /api/health 200 {database:ok}, /api/ready 200 {database:ok, redis:ok, cardcom:ok, meilisearch/r2 not_configured}; stale server on :3000 showed 503/database down (old env), not a code issue; no code changes; no forbidden files touched
 המשך מ: M14-c309 DONE-DEFERRED (SENTRY_AUTH_TOKEN is placeholder)
 המשך מ: M04-c310 DONE (2026-10-31): pnpm type-check passes clean (tsc --noEmit, 0 errors); no drift, nothing to fix; no forbidden files touched
+המשך מ: M05-c310 DONE (2026-10-31): pnpm test passes clean (vitest: 626 files passed/2 skipped, 7140 tests passed/28 skipped, 0 failures); no drift, nothing to fix; no forbidden files touched
+המשך מ: M06-c310 DONE (2026-10-31): pnpm build passes clean (exit 0); no drift, nothing to fix; no forbidden files touched
