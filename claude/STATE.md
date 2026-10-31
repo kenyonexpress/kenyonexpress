@@ -1,3 +1,4 @@
+המשך מ: M09-c316 DONE (2026-10-31): depcheck re-audit, no unused prod deps; flagged devDeps (@capacitor/*, tailwindcss, @tailwindcss/postcss, lighthouse, lint-staged) are tooling or platform-required so kept; knip aborted on missing SUPABASE_DB_URL for drizzle.config and its prior export findings (ui primitives, db schema, money/ledger API, locked HeroSlider) stand, so no dead exports removed; no code change, no forbidden files touched
 המשך מ: M06-c316 DONE (2026-10-31): pnpm build passes; only drift was docs/M-CYCLE-STATUS.md timestamp refresh, committed; no forbidden files touched
 המשך מ: M18-c315 DONE (2026-10-31): claude/STATE.md already 267 lines (<300), nothing to archive; docs/STATE-ARCHIVE.md untouched; no code change, no forbidden files touched
 המשך מ: M05-c315 DONE (2026-10-31): pnpm test 626 files passed, 2 skipped; 7140 tests passed, 28 skipped; no drift, no code change, no forbidden files touched
