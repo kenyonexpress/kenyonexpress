@@ -1,3 +1,4 @@
+המשך מ: M15-c323 DONE (2026-11-01): fresh next build + next start, headless chromium on / and /product/אוזניות-איירפודס-3 at 380/768/1440 — zero console errors, pageerrors, failed requests; earlier errors on :3380/:3918 were stale next-server procs serving old chunk hashes (restart them), no code change
 המשך מ: M09-c323 DONE (2026-11-01): knip --dependencies re-run — only flagged dep is @capacitor/android (native android/ platform pkg, kept); dead exports unchanged from M09-c248/c249 (intentional public surface); no code change; no forbidden files touched
 המשך מ: M09-c322 DONE (2026-11-01): knip --dependencies re-run — only flagged dep is @capacitor/android (native android/ platform pkg, kept); dead exports unchanged from M09-c248/c249 (intentional public surface); no code change; no forbidden files touched
 המשך מ: M05-c322 DONE (2026-11-01): pnpm test 626 files passed/2 skipped, 7140 tests passed/28 skipped; no drift, no code change, no forbidden files touched
