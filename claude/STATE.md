@@ -1,3 +1,4 @@
+המשך מ: M06-c326 DONE (2026-11-01): pnpm build exit 0, pnpm test 627 files/7165 tests pass; no drift to fix, no source changes; no forbidden files touched
 המשך מ: M05-c326 DONE (2026-11-01): pnpm test 7164 pass, 1 drift fixed (MEILISEARCH_ENABLED exempted in operational-flags.test.ts); no forbidden files touched
 המשך מ: C118 DONE (2026-11-01): scripts/state/state-log.mjs + state-log-lib.mjs + test restored from b6423f65f, vitest include re-added, 23/23 tests pass, see docs/C118-statelog.md; no forbidden files touched
 המשך מ: C117 BLOCKED locked-component (2026-11-01): home mobile LCP/font/JS levers are all in src/app/layout.tsx; baseline median 68 (54/68/71), see docs/C117-lh.md; no code change; no forbidden files touched
