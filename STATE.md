@@ -1,7 +1,15 @@
-RESUME FROM: M17-c326
+RESUME FROM: M18-c326
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T06:24:55+07:00
+- item: M18-c326
+- RESULT: DONE
+
+### 2026-11-01T06:24:07+07:00
+- item: M17-c326
+- BLOCKED: locked-component**. The home page has an LTR leak, and the only fix is in a locked file.
 
 ### 2026-11-01T06:22:24+07:00
 - item: M16-c326
