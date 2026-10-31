@@ -68,3 +68,4 @@ All code executed. Awaiting manual tasks.
 המשך מ: M12-c306 DONE (robots.ts verified: disallows voucher/auth/admin/api paths, allow /, sitemap+host on prod origin, 8/8 vitest pass; no code change)
 המשך מ: M12-c308 DONE (robots.ts tests 8/8 pass; live /robots.txt allows /, disallows voucher/coupon/gift/account/admin/api/checkout, no blanket Disallow, sitemap+host correct; live list slightly older than source (lacks /login,/signup,/mfa), safe; no code change)
 המשך מ: M06-c309 DONE (pnpm build passes clean; drift = M-cycle status + STATE log lines only, committed; no code change)
+המשך מ: M16-c317 DONE (product/[slug]/page.tsx emits Product + BreadcrumbList JSON-LD via json-ld.ts for every product; notFound for missing; json-ld tests 17/17 pass; no code change)
