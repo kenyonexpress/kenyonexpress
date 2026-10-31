@@ -108,3 +108,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M08-c318 DONE (Lighthouse mobile: / 71, /product/bar-drink 79, /category/baby-kids 96; G23 not met; no code changes)
 
 המשך מ: M04-c322 DONE (pnpm type-check clean, tsc --noEmit exit 0; no tracked drift beyond pre-existing docs/UI-PARITY-REPORT.md, untracked logs; no code changes)
+
+המשך מ: M06-c323 DONE (pnpm build clean, exit 0; committed tracked docs drift docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md; no code changes)
