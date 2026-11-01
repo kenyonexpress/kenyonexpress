@@ -1,7 +1,27 @@
-RESUME FROM: M07-c340
+RESUME FROM: M12-c340
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:07:50+07:00
+- item: M11-c340
+- RESULT: DONE
+
+### 2026-11-01T19:06:51+07:00
+- item: M10-c340
+- BLOCKED: Supabase MCP unauthorized and CLI has no access token; 313, 316–319 and the 301/306/315/320 column changes confirmed unapplied
+
+### 2026-11-01T19:05:27+07:00
+- item: M09-c340
+- RESULT: DONE
+
+### 2026-11-01T19:04:22+07:00
+- item: M08-c340
+- RESULT: DONE
+
+### 2026-11-01T19:02:43+07:00
+- item: M07-c340
+- RESULT: DONE
 
 ### 2026-11-01T19:01:33+07:00
 - item: M06-c340
@@ -82,26 +102,6 @@ RESUME FROM: M07-c340
 ### 2026-11-01T18:07:31+07:00
 - item: M07-c339
 - RESULT: DONE
-
-### 2026-11-01T18:06:27+07:00
-- item: M06-c339
-- RESULT: DONE
-
-### 2026-11-01T18:04:55+07:00
-- item: M05-c339
-- RESULT: DONE
-
-### 2026-11-01T18:02:58+07:00
-- item: M04-c339
-- RESULT: DONE
-
-### 2026-11-01T18:01:58+07:00
-- item: M03-c339
-- BLOCKED: category reference missing: kenyonexpress.co.il now serves our own Vercel build**
-
-### 2026-11-01T18:00:41+07:00
-- item: M02-c339
-- BLOCKED: no valid reference (live host is our own build) and product-card count mismatch 12 vs 4; forced 380/768/1440 = 36.58/29.82/20.51%, all over the 11% gate
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
@@ -227,3 +227,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M09-c332 DONE (2026-11-01): audit only, no code changes. 0 removable deps (@mdx-js/loader required by @next/mdx, @types/mdx for mdx-components.tsx; all other prod deps referenced in src/scripts). Dead exports unchanged since c331 (intentional API surface); no forbidden files touched
 
 המשך מ: M04-c336 DONE (2026-11-01): pnpm type-check green (tsc --noEmit exit 0), no tracked drift, no code changes; no forbidden files touched
+
+המשך מ: M10-c340 BLOCKED (2026-11-01): migrations/pending NOT applied. REST probe (service key valid) shows missing: 313 vouchers_redemption_events/partner_pin, 316 notification_consents, 317 user_passkeys/user_phone_verifications, 318 club_tier_benefits, 319 affiliate_links.product_id, 315/320 products cols, 301/306 suppliers cols. Present: 164, 310. Supabase MCP unauthorized + CLI has no access token in this session, so apply_migration cannot run

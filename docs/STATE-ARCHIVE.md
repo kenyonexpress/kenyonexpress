@@ -31631,3 +31631,33 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T17:43:47+07:00
 - item: M01-c339
 - BLOCKED: gate-fail
+
+## Archived 2026-11-01T19:02:43+07:00 after M07-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:00:41+07:00
+- item: M02-c339
+- BLOCKED: no valid reference (live host is our own build) and product-card count mismatch 12 vs 4; forced 380/768/1440 = 36.58/29.82/20.51%, all over the 11% gate
+
+## Archived 2026-11-01T19:04:22+07:00 after M08-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:01:58+07:00
+- item: M03-c339
+- BLOCKED: category reference missing: kenyonexpress.co.il now serves our own Vercel build**
+
+## Archived 2026-11-01T19:05:27+07:00 after M09-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:02:58+07:00
+- item: M04-c339
+- RESULT: DONE
+
+## Archived 2026-11-01T19:06:51+07:00 after M10-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:04:55+07:00
+- item: M05-c339
+- RESULT: DONE
+
+## Archived 2026-11-01T19:07:50+07:00 after M11-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:06:27+07:00
+- item: M06-c339
+- RESULT: DONE
