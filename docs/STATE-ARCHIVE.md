@@ -31295,3 +31295,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:19:10+07:00
 - item: M18-c335
 - RESULT: DONE
+
+## Archived 2026-11-01T16:13:46+07:00 after M07-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:36:50+07:00
+- item: M01-c336
+- BLOCKED: gate-fail home 27.52–39.85% (>11%) at 380/768/1440; forbidden hero/header files
