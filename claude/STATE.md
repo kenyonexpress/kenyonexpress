@@ -267,3 +267,4 @@
 המשך מ: C123 BLOCKED (2026-11-01): locked-component: Heebo subset/preload and dynamic root providers live in layout.tsx; prod build of HEAD fails type-check (7 files, see docs/C123-lh.md) so no valid after-run; / baseline 68 from C117; no code changes; no forbidden files touched
 המשך מ: C126 BLOCKED (2026-11-01): tsc clean, build passes, vitest 17 fail (migration inventory + env keys), e2e core 16/20 pass, live DB behind migrations (orders.order_number, fraud_flags.kind) blocks checkout/refund specs; see docs/C126-e2e.md; no forbidden files touched
 המשך מ: C129 BLOCKED (2026-11-02): c343 M04 tsc exit 0 DONE; M05 vitest 17 failed/9546 passed BLOCKED; M11/M12 200 DONE; M13 503 meili-only DONE-DEFERRED; C128 tag/LAUNCH.flag still missing; docs/C129-maint.md
+המשך מ: M07-c343 DONE (2026-11-02): TODO/FIXME scan, 3 items all >7d old, still blocked (Cardcom creds / service-role key), re-filed in docs/BACKLOG.md; proof docs/M07-c343.md; no code changes

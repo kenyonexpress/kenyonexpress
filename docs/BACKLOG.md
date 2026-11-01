@@ -1,6 +1,6 @@
 # Backlog
 
-**Status:** 3 open items (filed by M07-c183 / M07-c187 TODO/FIXME scans, re-verified by M07-c270, M07-c283, M07-c286, M07-c287, M07-c288, M07-c292, M07-c293, M07-c302, M07-c307, M07-c308, M07-c314, M07-c315, M07-c316, M07-c317, M07-c323, M07-c324 and M07-c335, M07-c338, M07-c340 and M07-c342, 2026-11-01)
+**Status:** 3 open items (filed by M07-c183 / M07-c187 TODO/FIXME scans, re-verified by M07-c270, M07-c283, M07-c286, M07-c287, M07-c288, M07-c292, M07-c293, M07-c302, M07-c307, M07-c308, M07-c314, M07-c315, M07-c316, M07-c317, M07-c323, M07-c324 and M07-c335, M07-c338, M07-c340, M07-c342 and M07-c343, 2026-11-02)
 
 Resolved since last scan: stock-notifications cron cache invalidation (`revalidateTag(CATALOGUE_TAG, 'max')`, commit 46217252e).
 
