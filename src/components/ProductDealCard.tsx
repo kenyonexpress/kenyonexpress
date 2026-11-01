@@ -1,6 +1,5 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import ProductLocation from '@/components/product-card/ProductLocation'
-import LocationPin from '@/components/product/LocationPin'
+import CardLabel from '@/components/product-card/CardLabel'
 import { KE_LIVE_DEAL_TABLET_SQUARE } from '@/lib/ke-live-deals-data'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
@@ -18,6 +17,10 @@ type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** products.type: decides the label above the title (see CardLabel). */
+  type?: string | null
+  is_coupon_enabled?: boolean | null
+  is_physical_shipping?: boolean | null
   /** products.city; NULL renders as nationwide. */
   city?: string | null
   /** products.latitude for Waze navigation */
@@ -107,26 +110,17 @@ export default function ProductDealCard({ product }: { product: Product }) {
   const outOfStock = product.stock_quantity === 0
   const canAdd = product.kenyon_price != null && !outOfStock
 
-  const locationPin = (
-    <LocationPin
-      location={{
-        city: product.city,
-        latitude: product.latitude,
-        longitude: product.longitude,
-      }}
-    />
-  )
-
   return (
     <article className="p_con">
-      {locationPin ||
-        (product.category ? (
-          <Link href={categoryHref(product.category.slug)} className="p_con__category">
-            {product.category.name_he}
-          </Link>
-        ) : (
-          <ProductLocation city={product.city} className="p_con__category" />
-        ))}
+      <CardLabel
+        type={product.type}
+        isCouponEnabled={product.is_coupon_enabled}
+        isPhysicalShipping={product.is_physical_shipping}
+        city={product.city}
+        category={product.category}
+        categoryHref={categoryHref}
+        className="p_con__category"
+      />
 
       {/*
         `prefetch={false}` on every product link in this card, and it is a fix

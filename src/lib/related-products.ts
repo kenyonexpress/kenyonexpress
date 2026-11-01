@@ -38,7 +38,7 @@ const POOL_SIZE = 24
 const STRIP_SIZE = 5
 
 const SELECT =
-  'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, tags, categories!products_category_id_fkey(name_he, slug)'
+  'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, type, is_coupon_enabled, city, tags, categories!products_category_id_fkey(name_he, slug)'
 
 type Row = {
   id: string

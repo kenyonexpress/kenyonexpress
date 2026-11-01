@@ -324,6 +324,8 @@ export default async function ProductPage({ params }: Props) {
             }
             sku={product.sku}
             categoryName={category?.name_he ?? null}
+            categorySlug={category?.slug ?? null}
+            productType={productType}
             city={productLocation({ ...product, supplier }).city?.name ?? null}
             attributes={attributes}
             variants={variants ?? []}

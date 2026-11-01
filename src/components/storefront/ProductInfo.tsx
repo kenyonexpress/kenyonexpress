@@ -2,7 +2,7 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import { EcAddToCart } from '@/components/icons/electro-icons'
-import ProductLocation from '@/components/product-card/ProductLocation'
+import CardLabel from '@/components/product-card/CardLabel'
 import WishlistButton from '@/components/product/WishlistButton'
 import CopyLinkButton from '@/components/shared/CopyLinkButton'
 import NativeShareButton from '@/components/shared/NativeShareButton'
@@ -18,7 +18,6 @@ import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useState } from 'react'
 
@@ -63,6 +62,9 @@ interface Props {
   sku: string | null
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
+  /** products.type: physical products show the category, the rest the city. */
+  productType?: string | null
+  categorySlug?: string | null
   /**
    * Free text: the product's own city once 002-products-geo is applied, the
    * supplier's until then. Unrecognised values render nothing at all.
@@ -122,6 +124,8 @@ export default function ProductInfo({
   purchaseCountSlot = null,
   sku,
   categoryName,
+  productType = null,
+  categorySlug = null,
   city,
   attributes,
   variants,
@@ -247,13 +251,13 @@ export default function ProductInfo({
           catalogue; free text it does not know prints as written; no city at
           all reads as nationwide. */}
       <p className="pdp-summary__eyebrow">
-        {knownCity ? (
-          <Link href={`/products?city=${knownCity.slug}`} className="hover:underline">
-            <ProductLocation city={knownCity.name} />
-          </Link>
-        ) : (
-          <ProductLocation city={city} />
-        )}
+        <CardLabel
+          type={productType}
+          city={knownCity?.name ?? city}
+          category={
+            categoryName && categorySlug ? { name_he: categoryName, slug: categorySlug } : null
+          }
+        />
       </p>
 
       <h1 className="pdp-summary__title">{name}</h1>

@@ -1,0 +1,107 @@
+/* C130 home sections. Tokens: yellow var(--color-brand-primary), hover var(--color-brand-primary-hover), price red
+   #E4002B, link blue #0062bd, container 1320, Heebo (inherited). Logical
+   properties only. */
+.home-section {
+  max-inline-size: 1320px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  padding-block: 24px;
+}
+.home-section__title {
+  margin-block: 0 16px;
+  padding-block-end: 12px;
+  border-block-end: 1px solid var(--color-border);
+  font-size: 20px;
+  font-weight: 700;
+}
+.home-deal-of-day__card {
+  max-inline-size: 280px;
+  margin-inline: auto;
+}
+.home-categories {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.home-categories__item {
+  flex: 0 0 auto;
+}
+.home-categories__link {
+  display: block;
+  padding-block: 10px;
+  padding-inline: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.home-categories__link:hover {
+  background: var(--color-brand-primary-hover);
+  border-color: var(--color-brand-primary);
+}
+.home-hot-coupons {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .home-hot-coupons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1200px) {
+  .home-hot-coupons {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.home-newsletter {
+  background: var(--color-brand-primary);
+  padding-block: 20px;
+}
+.home-newsletter__inner {
+  max-inline-size: 1320px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+.home-deals-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 768px) {
+  .home-deals-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1200px) {
+  .home-deals-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.home-deals-end {
+  padding-block: 24px;
+  text-align: center;
+  color: #777;
+}
+.home-deals-end__retry {
+  padding-block: 8px;
+  padding-inline: 20px;
+  background: var(--color-brand-primary);
+  border-radius: 4px;
+  font-weight: 700;
+}
+.home-deals-end__retry:hover {
+  background: var(--color-brand-primary-hover);
+}
+/* The footer's own newsletter bar is replaced by the home band above. */
+body:has([data-home]) .site-footer-newsletter {
+  display: none;
+}
+
+.home-hero-scrim {
+  background: linear-gradient(to top, color-mix(in srgb, black 65%, transparent), transparent 70%);
+}

@@ -2,8 +2,7 @@
 
 import PriceDisplay from '@/components/PriceDisplay'
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import ProductLocation from '@/components/product-card/ProductLocation'
-import LocationPin from '@/components/product/LocationPin'
+import CardLabel from '@/components/product-card/CardLabel'
 import SupplierVerificationBadge from '@/components/supplier/SupplierVerificationBadge'
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { cityByName } from '@/lib/geo/cities'
@@ -26,6 +25,9 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** products.type: decides the label above the title (see CardLabel). */
+  type?: string | null
+  is_coupon_enabled?: boolean | null
   /** Ships nationwide (a physical product); renders as nationwide regardless of city. */
   is_physical_shipping?: boolean | null
   /** products.city; NULL renders as nationwide. */
@@ -149,19 +151,16 @@ function DealsProductCard({ product }: { product: Product }) {
   const outOfStock = product.stock_quantity === 0
   const canAdd = product.kenyon_price != null && !outOfStock
 
-  const locationPin = (
-    <LocationPin
-      location={{
-        city: product.city,
-        latitude: product.latitude,
-        longitude: product.longitude,
-      }}
-    />
-  )
-
   return (
     <article className="p_con">
-      {locationPin || <ProductLocation city={product.city} className="p_con__category" />}
+      <CardLabel
+        type={product.type}
+        isCouponEnabled={product.is_coupon_enabled}
+        isPhysicalShipping={product.is_physical_shipping}
+        city={product.city}
+        category={product.category}
+        className="p_con__category"
+      />
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline">
@@ -329,7 +328,14 @@ function DefaultProductCard({ product }: { product: Product }) {
   return (
     <div className="product-card overflow-hidden border border-gray-100 bg-white [border-radius:var(--radius-card)]">
       <div className="space-y-2 p-3">
-        <ProductLocation city={product.city} className="flex text-xs" />
+        <CardLabel
+          type={product.type}
+          isCouponEnabled={product.is_coupon_enabled}
+          isPhysicalShipping={product.is_physical_shipping}
+          city={product.city}
+          category={product.category}
+          className="flex text-xs"
+        />
 
         <Link
           href={`/product/${product.slug}`}

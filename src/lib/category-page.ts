@@ -451,7 +451,7 @@ export async function getCategoryProducts(opts: {
       // exists. Add the two columns to this string when 136 is applied;
       // `supplierLocation` already prefers them the moment they are present.
       // F63: shipping_price_agorot for the free-shipping chip. suppliers.open_weekends (migration 306) is NOT selected until 306 is applied: a missing column is 42703 and empties the whole page.
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, latitude, longitude, shipping_price_agorot, categories!products_category_id_fkey(name_he, slug), suppliers(name, city)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, is_coupon_enabled, city, latitude, longitude, shipping_price_agorot, categories!products_category_id_fkey(name_he, slug), suppliers(name, city)',
       { count: 'exact' },
     )
     .eq('status', 'active')
@@ -585,7 +585,7 @@ export async function getShopProducts(opts: {
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, city, categories!products_category_id_fkey(name_he, slug), suppliers(name, city)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, is_coupon_enabled, city, categories!products_category_id_fkey(name_he, slug), suppliers(name, city)',
       { count: 'exact' },
     )
     .eq('status', 'active')

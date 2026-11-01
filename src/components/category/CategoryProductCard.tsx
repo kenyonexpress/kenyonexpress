@@ -2,7 +2,7 @@
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import CardOfferDeadline from '@/components/category/CardOfferDeadline'
-import ProductLocation from '@/components/product-card/ProductLocation'
+import CardLabel, { isPlaceProduct } from '@/components/product-card/CardLabel'
 import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
@@ -44,6 +44,9 @@ export type GalleryAsset = {
 }
 
 export type CategoryProduct = {
+  /** products.type: decides the label above the title (see CardLabel). */
+  type?: string | null
+  is_coupon_enabled?: boolean | null
   id: string
   slug: string
   name_he: string
@@ -64,6 +67,14 @@ export type CategoryProduct = {
   distanceKm?: number | null
   /** Gallery assets (blur placeholders + alts) keyed by image URL. Optional. */
   assets?: Record<string, GalleryAsset>
+}
+
+/** The embed is one object for a many-to-one join and an array elsewhere. */
+function firstCategory(
+  c: CategoryProduct['categories'] | { name_he: string; slug: string },
+): { name_he: string; slug: string } | null {
+  if (!c) return null
+  return Array.isArray(c) ? (c[0] ?? null) : c
 }
 
 function formatPrice(value: number): string {
@@ -128,8 +139,15 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
             table recognises it, else nationwide. The distance appears only
             after the customer asked for "near me". */}
         <span className="category-card__categories">
-          <ProductLocation city={locationCity} />
-          {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
+          <CardLabel
+            type={product.type}
+            isCouponEnabled={product.is_coupon_enabled}
+            city={locationCity}
+            category={firstCategory(product.categories)}
+          />
+          {distanceLabel && isPlaceProduct(product.type, null, product.is_coupon_enabled) && (
+            <span className="category-card__distance"> · {distanceLabel}</span>
+          )}
         </span>
 
         {priceBlock && <span className="category-card__price">{priceBlock}</span>}
@@ -170,14 +188,16 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
             ) : null}
           </span>
         </Link>
-        <LocationPin
-          className="category-card__pin"
-          location={{
-            city: product.city,
-            latitude: product.latitude,
-            longitude: product.longitude,
-          }}
-        />
+        {isPlaceProduct(product.type, null, product.is_coupon_enabled) && (
+          <LocationPin
+            className="category-card__pin"
+            location={{
+              city: product.city,
+              latitude: product.latitude,
+              longitude: product.longitude,
+            }}
+          />
+        )}
       </div>
 
       {/* Measured live .product-loop-footer > .price-add-to-cart: the price is

@@ -133,7 +133,7 @@ export default function SiteFooter() {
         Note the footer sits BELOW the 2600px compare window, so none of this
         moves the home-page gate. It is a 1:1 gap, not a scoring one.
       */}
-      <div className="hidden bg-brand-secondary text-heading lg:block">
+      <div className="site-footer-newsletter hidden bg-brand-secondary text-heading lg:block">
         <div className="mx-auto flex min-h-newsletter-bar max-w-store-footer flex-col items-center justify-between gap-4 px-gutter lg:flex-row">
           {/* right side: paper-plane + title + subtitle */}
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-center lg:justify-start lg:text-start">

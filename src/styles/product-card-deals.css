@@ -97,6 +97,8 @@
 }
 
 .p_con__category {
+  display: block;
+  text-align: center;
   font-size: 12px;
   font-weight: var(--weight-regular);
   line-height: 24px; /* live: category row is 24px tall */
@@ -352,7 +354,10 @@ h2.p_con__title--deal {
    title. Same 24px row and type as the category line it replaced, so the card
    keeps its height and the parity gate sees the same box. */
 .product-location {
-  display: inline-flex;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
   align-items: center;
   gap: 6px;
   font-size: 12px;

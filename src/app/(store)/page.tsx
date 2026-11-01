@@ -1,14 +1,20 @@
-import RecentlyViewedRail from '@/components/storefront/RecentlyViewedRail'
-import DealChips from '@/components/catalog/DealChips'
-import BenefitBar from '@/components/home/BenefitBar'
-import CitiesRow from '@/components/home/CitiesRow'
 import CmsHero from '@/components/home/CmsHero'
-import DealsOfTheDay from '@/components/home/DealsOfTheDay'
+import FeaturedProducts from '@/components/home/FeaturedProducts'
 import HeroMobile from '@/components/home/HeroMobile'
 import HeroSection from '@/components/home/HeroSection'
+import HomeInfiniteDeals from '@/components/home/HomeInfiniteDeals'
+import {
+  BrandsSection,
+  CategoriesRowSection,
+  DealOfTheDaySection,
+  HotCouponsSection,
+  NewsletterSection,
+} from '@/components/home/HomeSections'
+import { getDealsPage } from '@/lib/home-data'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
+import '@/styles/home-sections.css'
 // home-handheld.css is imported by the root layout (see the note there): as a
 // page-level import it was a 125-byte stylesheet costing a full round trip.
 
@@ -30,7 +36,8 @@ export const metadata = {
  * gate measured. See lib/homepage/cms.ts for why an editor can change the
  * CONTENT of a slide and never its measured geometry.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const firstDeals = await getDealsPage(0)
   // Organization and WebSite belong on the home page and nowhere else. Emitting
   // them from the root layout would repeat the same two nodes on the checkout,
   // the account area and every product, which says nothing new and dilutes the
@@ -82,40 +89,29 @@ export default function HomePage() {
         <HeroMobile />
       </div>
       {/*
-        CITY ROW RESTORED PER C24 GOAL REQUIREMENT.
-
-        C24 explicitly requested "City row + /c/city-slug + /c/category-slug",
-        so CitiesRow is now mounted. Hidden on mobile (380px) to improve mobile
-        gate parity; visible on md+ breakpoints per C24 requirement.
+        C130 HOME LOCK. Order below the hero: deal of the day, categories row,
+        featured, hot coupons, brands, newsletter, then the endless deals list
+        and, once it is exhausted, the footer (rendered by the store layout).
+        Nationwide only (decision 15.10.2026): no city cards row, no location
+        filter, no location prompt.
       */}
-      <div className="hidden sm:block">
-        <CitiesRow />
-      </div>
-      {/*
-        THE STANDALONE CATEGORY STRIP IS GONE, and the hero owns the only copy.
-
-        This rendered a second full-width strip below `lg`, on the reasoning
-        that the in-hero copy was desktop-only. Measured against
-        refs/ke_live_computed.json, live renders the strip INSIDE the hero
-        column at 768 (y426 h170) and does not render it AT ALL at 380
-        (`product-categories-list` is absent from that viewport). So this copy
-        was a duplicate at 768 and an invention at 380, and it was part of the
-        967px by which our product grid started too low on a phone.
-
-        The hero's own copy is now `hidden md:block`, which is live's rule.
-      */}
-      <BenefitBar />
-      {/* rc5 F13: chips above the grid; the home grid is a fixed selection, so they open /products filtered. */}
-      <div className="container mx-auto">
-        <Suspense fallback={null}>
-          <DealChips basePath="/products" />
-        </Suspense>
-      </div>
-      <DealsOfTheDay />
-      {/* Below the grid on purpose. It renders nothing on the server and
-          nothing for a browser with no history, which is every run of the
-          comparison gate, and when it does appear only the footer moves. */}
-      <RecentlyViewedRail placement="home" />
+      <Suspense fallback={null}>
+        <DealOfTheDaySection />
+      </Suspense>
+      <Suspense fallback={null}>
+        <CategoriesRowSection />
+      </Suspense>
+      <Suspense fallback={null}>
+        <FeaturedProducts />
+      </Suspense>
+      <Suspense fallback={null}>
+        <HotCouponsSection />
+      </Suspense>
+      <Suspense fallback={null}>
+        <BrandsSection />
+      </Suspense>
+      <NewsletterSection />
+      <HomeInfiniteDeals initial={firstDeals} />
     </>
   )
 }

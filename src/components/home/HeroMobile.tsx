@@ -1,37 +1,47 @@
+import { HERO_SINGLEFILE_SLIDES } from '@/lib/hero-singlefile-data'
+import Image from 'next/image'
+import Link from 'next/link'
+
 /**
- * Ultra-simplified mobile-only hero (380px) for maximum Electro parity.
- * Minimal structure, no slider complexity, static content only.
- * Live renders a 213px hero section at 380px (measured 2026-10-20 from HeroSection comments).
- * Rendered on white background (not tinted) per Electro mobile hero spec.
+ * Mobile hero carousel (below md). CSS scroll-snap, no script: each slide is
+ * a real catalogue photograph (C130, no grey placeholders) with its Hebrew
+ * title over a dark scrim. The desktop hero is the locked HeroSection.
  */
 export default function HeroMobile() {
+  const slides = HERO_SINGLEFILE_SLIDES.filter((s) => s.image_url)
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '400px',
-        background: 'var(--color-surface)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '60px 20px',
-      }}
+    <section
+      aria-label="מבצעים"
+      dir="rtl"
+      className="flex w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]"
+      style={{ height: 240 }}
     >
-      <div style={{ textAlign: 'center' }}>
-        <h1
-          style={{
-            fontSize: '24px',
-            fontWeight: 700,
-            color: 'var(--color-heading)',
-            margin: '0 0 8px 0',
-          }}
+      {slides.map((s, i) => (
+        <Link
+          key={s.id}
+          href={s.link_url ?? '/products'}
+          className="relative block h-full min-w-full snap-start"
         >
-          קניון EXPRESS
-        </h1>
-        <p style={{ fontSize: '16px', color: 'var(--color-heading)', margin: 0 }}>
-          מסדרים לך בילוי
-        </p>
-      </div>
-    </div>
+          <Image
+            src={s.image_url as string}
+            alt=""
+            fill
+            sizes="100vw"
+            priority={i === 0}
+            style={{ objectFit: 'cover' }}
+          />
+          <span className="home-hero-scrim absolute inset-0 flex flex-col justify-end gap-1 p-4 text-white">
+            {i === 0 ? (
+              <h1 className="m-0 text-2xl font-bold">קניון EXPRESS</h1>
+            ) : (
+              <span className="text-2xl font-bold">
+                {[s.title, s.title_secondary].filter(Boolean).join(' ')}
+              </span>
+            )}
+            <span className="text-base">{s.tagline ?? 'מסדרים לך בילוי'}</span>
+          </span>
+        </Link>
+      ))}
+    </section>
   )
 }

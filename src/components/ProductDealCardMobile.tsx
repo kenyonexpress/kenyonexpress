@@ -1,5 +1,4 @@
-import ProductLocation from '@/components/product-card/ProductLocation'
-import LocationPin from '@/components/product/LocationPin'
+import CardLabel from '@/components/product-card/CardLabel'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 
@@ -11,6 +10,9 @@ type Product = {
   images: unknown
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  type?: string | null
+  is_coupon_enabled?: boolean | null
+  is_physical_shipping?: boolean | null
   /** products.city; NULL renders as nationwide. */
   city?: string | null
   /** products.latitude for Waze navigation */
@@ -32,16 +34,6 @@ export default function ProductDealCardMobile({ product }: { product: Product })
   const price = Number(product.kenyon_price ?? 0)
   const old = product.full_price != null ? Number(product.full_price) : null
 
-  const locationPin = (
-    <LocationPin
-      location={{
-        city: product.city,
-        latitude: product.latitude,
-        longitude: product.longitude,
-      }}
-    />
-  )
-
   return (
     <div
       style={{
@@ -60,7 +52,13 @@ export default function ProductDealCardMobile({ product }: { product: Product })
         />
       )}
       <div style={{ fontSize: '13px', marginBottom: '8px', color: 'var(--color-muted)' }}>
-        {locationPin || <ProductLocation city={product.city} />}
+        <CardLabel
+          type={product.type}
+          isCouponEnabled={product.is_coupon_enabled}
+          isPhysicalShipping={product.is_physical_shipping}
+          city={product.city}
+          category={product.category}
+        />
       </div>
       <h2 style={{ fontSize: '16px', fontWeight: 500, margin: '0 0 8px 0', lineHeight: 1.4 }}>
         {product.name_he}

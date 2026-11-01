@@ -210,9 +210,12 @@ async function searchDb(
     : 'categories!products_category_id_fkey(name_he, slug)'
   let query = supabase
     .from('products')
-    .select(`id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, ${embed}`, {
-      count: 'exact',
-    })
+    .select(
+      `id, slug, name_he, kenyon_price, full_price, images, stock_quantity, type, is_coupon_enabled, city, ${embed}`,
+      {
+        count: 'exact',
+      },
+    )
     .eq('status', 'active')
     .is('deleted_at', null)
 

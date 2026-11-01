@@ -618,61 +618,62 @@
    - Hero tablet inset-end: 40px padding
    - USP bar offset: 30px padding-top
 */
-@layer utilities {
-  /* Hero row heights */
-  .h-hero-mobile {
-    height: var(--spacing-hero-mobile);
-  }
-  .h-hero-tablet {
-    height: var(--spacing-hero-tablet);
-  }
-  .h-hero-desktop {
-    height: var(--spacing-hero-desktop);
-  }
+/* C130: @utility, not plain classes in @layer utilities - the latter get no
+   md:/lg: variants, so md:h-hero-tablet and friends never existed and the hero
+   stayed 300px tall at every width with its strip spilling over the content. */
+/* Hero row heights */
+@utility h-hero-mobile {
+  height: var(--spacing-hero-mobile);
+}
+@utility h-hero-tablet {
+  height: var(--spacing-hero-tablet);
+}
+@utility h-hero-desktop {
+  height: var(--spacing-hero-desktop);
+}
 
-  /* Hero slider heights (nested inside hero row) */
-  .h-hero-slider-tablet {
-    height: var(--spacing-hero-slider-tablet);
-  }
-  .min-h-hero-slider-tablet {
-    min-height: var(--spacing-hero-slider-tablet);
-  }
-  .h-hero-slider-desktop {
-    height: var(--spacing-hero-slider-desktop);
-  }
-  .min-h-hero-slider-desktop {
-    min-height: var(--spacing-hero-slider-desktop);
-  }
+/* Hero slider heights (nested inside hero row) */
+@utility h-hero-slider-tablet {
+  height: var(--spacing-hero-slider-tablet);
+}
+@utility min-h-hero-slider-tablet {
+  min-height: var(--spacing-hero-slider-tablet);
+}
+@utility h-hero-slider-desktop {
+  height: var(--spacing-hero-slider-desktop);
+}
+@utility min-h-hero-slider-desktop {
+  min-height: var(--spacing-hero-slider-desktop);
+}
 
-  /* Feature/benefit bar heights */
-  .h-feature-bar-mobile {
-    height: var(--spacing-feature-bar-mobile);
-  }
-  .h-feature-bar {
-    height: var(--spacing-feature-bar);
-  }
+/* Feature/benefit bar heights */
+@utility h-feature-bar-mobile {
+  height: var(--spacing-feature-bar-mobile);
+}
+@utility h-feature-bar {
+  height: var(--spacing-feature-bar);
+}
 
-  /* USP bar item height */
-  .min-h-usp-list {
-    min-height: var(--spacing-usp-list, 79.4px);
-  }
-  .w-usp-cell-tablet {
-    width: var(--spacing-usp-cell-tablet, 180px);
-  }
+/* USP bar item height */
+@utility min-h-usp-list {
+  min-height: var(--spacing-usp-list, 79.4px);
+}
+@utility w-usp-cell-tablet {
+  width: var(--spacing-usp-cell-tablet, 180px);
+}
 
-  /* Padding utilities */
-  .pe-hero-inset-tablet {
-    padding-inline-end: var(--spacing-hero-inset-tablet);
-  }
-  .pt-usp-offset {
-    padding-top: var(--spacing-usp-offset);
-  }
+/* Padding utilities */
+@utility pe-hero-inset-tablet {
+  padding-inline-end: var(--spacing-hero-inset-tablet);
+}
+@utility pt-usp-offset {
+  padding-top: var(--spacing-usp-offset);
+}
 
-  /* Max-width utilities */
-  .max-w-hero-row {
-    max-width: var(--container-hero-row);
-  }
-  .max-w-usp-tablet {
-    max-width: var(--spacing-usp-max-tablet, 690px);
-  }
+/* Max-width utilities */
+@utility max-w-hero-row {
+  max-width: var(--container-hero-row);
+}
+@utility max-w-usp-tablet {
+  max-width: var(--spacing-usp-max-tablet, 690px);
 }
