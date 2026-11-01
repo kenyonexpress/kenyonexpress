@@ -1,7 +1,11 @@
-RESUME FROM: M16-c340
+RESUME FROM: M17-c340
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:17:18+07:00
+- item: M16-c340
+- RESULT: DONE
 
 ### 2026-11-01T19:16:12+07:00
 - item: M15-c340
@@ -98,10 +102,6 @@ RESUME FROM: M16-c340
 ### 2026-11-01T18:14:14+07:00
 - item: M12-c339
 - RESULT: DONE
-
-### 2026-11-01T18:13:14+07:00
-- item: M11-c339
-- BLOCKED: sitemap stale (2.5 days old) and all locs on apex host that 308-redirects to www. Needs a prod `NEXT_PUBLIC_APP_URL` fix and redeploy.
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
