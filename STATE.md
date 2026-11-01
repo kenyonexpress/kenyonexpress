@@ -1,7 +1,11 @@
-RESUME FROM: M18-c333
+RESUME FROM: M02-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T12:52:54+07:00
+- item: M01-c334
+- BLOCKED: compare.mjs refuses — live reference is our own build, no diff % obtainable
 
 ### 2026-11-01T12:49:55+07:00
 - item: M18-c333
@@ -97,10 +101,6 @@ RESUME FROM: M18-c333
 
 ### 2026-11-01T11:47:23+07:00
 - item: M13-c332
-- RESULT: DONE
-
-### 2026-11-01T11:45:49+07:00
-- item: M12-c332
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
