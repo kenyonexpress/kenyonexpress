@@ -1,7 +1,19 @@
-RESUME FROM: M08-c332
+RESUME FROM: M11-c332
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:42:05+07:00
+- item: M10-c332
+- RESULT: DONE
+
+### 2026-11-01T11:41:11+07:00
+- item: M09-c332
+- RESULT: DONE
+
+### 2026-11-01T11:40:05+07:00
+- item: M08-c332
+- RESULT: DONE
 
 ### 2026-11-01T11:37:39+07:00
 - item: M07-c332
@@ -90,18 +102,6 @@ RESUME FROM: M08-c332
 ### 2026-11-01T10:52:59+07:00
 - item: M04-c331
 - RESULT: DONE
-
-### 2026-11-01T10:51:05+07:00
-- item: M03-c331
-- BLOCKED: reference-gone
-
-### 2026-11-01T10:49:57+07:00
-- item: M02-c331
-- BLOCKED: ** product gate fails (36.17% / 29.82% / 20.52% against the Electro reference, with a catalogue mismatch). The standard live reference is now our own build.
-
-### 2026-11-01T10:39:15+07:00
-- item: M01-c331
-- BLOCKED: gate-fail
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
@@ -221,3 +221,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M05-c332 DONE (2026-11-01): pnpm test green (627 files passed, 2 skipped; 7165 tests passed, 28 skipped); committed tracked docs drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
 
 המשך מ: M06-c332 DONE (2026-11-01): pnpm build green (exit 0), no tracked drift; committed untracked docs/C113-db-cli.md; no code changes; no forbidden files touched
+
+המשך מ: M09-c332 DONE (2026-11-01): audit only, no code changes. 0 removable deps (@mdx-js/loader required by @next/mdx, @types/mdx for mdx-components.tsx; all other prod deps referenced in src/scripts). Dead exports unchanged since c331 (intentional API surface); no forbidden files touched

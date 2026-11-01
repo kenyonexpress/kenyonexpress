@@ -30749,3 +30749,21 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T10:24:05+07:00
 - item: M18-c330
 - RESULT: DONE
+
+## Archived 2026-11-01T11:40:05+07:00 after M08-c332 (3 lines from STATE.md)
+
+### 2026-11-01T10:39:15+07:00
+- item: M01-c331
+- BLOCKED: gate-fail
+
+## Archived 2026-11-01T11:41:11+07:00 after M09-c332 (3 lines from STATE.md)
+
+### 2026-11-01T10:49:57+07:00
+- item: M02-c331
+- BLOCKED: ** product gate fails (36.17% / 29.82% / 20.52% against the Electro reference, with a catalogue mismatch). The standard live reference is now our own build.
+
+## Archived 2026-11-01T11:42:05+07:00 after M10-c332 (3 lines from STATE.md)
+
+### 2026-11-01T10:51:05+07:00
+- item: M03-c331
+- BLOCKED: reference-gone
