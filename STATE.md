@@ -3,6 +3,10 @@ RESUME FROM: M04-c340
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T18:57:38+07:00
+- item: M04-c340
+- RESULT: DONE
+
 ### 2026-11-01T18:56:55+07:00
 - item: M03-c340
 - BLOCKED: no valid category reference — `kenyonexpress.co.il` now serves our own Vercel build.
@@ -98,10 +102,6 @@ RESUME FROM: M04-c340
 ### 2026-11-01T17:26:44+07:00
 - item: M17-c338
 - BLOCKED: locked-component M17-c338
-
-### 2026-11-01T17:25:35+07:00
-- item: M16-c338
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
