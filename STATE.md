@@ -1,7 +1,11 @@
-RESUME FROM: M03-c345
+RESUME FROM: M04-c345
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T01:05:15+07:00
+- item: M03-c345
+- BLOCKED: no category reference (live URL is our own build); commit 2508eaa9 unpushed, main diverged from origin
 
 ### 2026-11-02T01:03:38+07:00
 - item: M02-c345
@@ -98,10 +102,6 @@ RESUME FROM: M03-c345
 ### 2026-11-01T22:08:47+07:00
 - item: C121
 - BLOCKED: live `/` hydration #418 not reproducible on HEAD (suspects in locked components); prod build of HEAD fails type-check from merge 788c1af1a
-
-### 2026-11-01T21:59:01+07:00
-- item: C120
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
