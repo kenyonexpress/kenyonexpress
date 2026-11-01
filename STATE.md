@@ -1,7 +1,11 @@
-RESUME FROM: M02-c343
+RESUME FROM: M03-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:32:56+07:00
+- item: M02-c343
+- BLOCKED: no product reference exists, since kenyonexpress.co.il serves our own build, so the compare.mjs gate cannot produce a number
 
 ### 2026-11-01T21:31:33+07:00
 - item: M01-c343
@@ -98,10 +102,6 @@ RESUME FROM: M02-c343
 ### 2026-11-01T20:16:28+07:00
 - item: M15-c341
 - BLOCKED: console errors present on / and /product (Supabase Invalid API key is credential-deferred; CSP-blocked Vercel scripts, product-page Suspense error and image-ratio warnings are not)
-
-### 2026-11-01T20:14:56+07:00
-- item: M14-c341
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
