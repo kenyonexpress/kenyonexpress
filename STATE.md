@@ -1,7 +1,11 @@
-RESUME FROM: M02-c334
+RESUME FROM: M03-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T13:08:36+07:00
+- item: M02-c334
+- BLOCKED: gate not met: official reference refused (live host is our own build), fallback Electro reference measures 36.58 / 29.82 / 20.52% against the 11% gate
 
 ### 2026-11-01T12:52:54+07:00
 - item: M01-c334
@@ -97,10 +101,6 @@ RESUME FROM: M02-c334
 
 ### 2026-11-01T11:48:10+07:00
 - item: M14-c332
-- RESULT: DONE
-
-### 2026-11-01T11:47:23+07:00
-- item: M13-c332
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
