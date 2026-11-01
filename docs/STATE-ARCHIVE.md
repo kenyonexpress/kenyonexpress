@@ -31193,3 +31193,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T13:54:40+07:00
 - item: M02-c335
 - BLOCKED: ** because the gate fails at all three widths.
+
+## Archived 2026-11-01T14:49:51+07:00 after M09-c336 (3 lines from STATE.md)
+
+### 2026-11-01T13:55:42+07:00
+- item: M03-c335
+- BLOCKED: category re-measure — compare.mjs refuses at 380/768/1440 because the live reference host now serves our own build, so no valid reference exists
