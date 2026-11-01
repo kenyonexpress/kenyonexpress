@@ -30,7 +30,7 @@ describe('SwipeableGallery', () => {
     expect(container.querySelector('[data-swipeable-gallery]')).toBeInTheDocument()
   })
 
-  it('renders first image with priority', () => {
+  it('renders first image (lazy: the LCP photo belongs to ProductGallery)', () => {
     const { container } = render(<SwipeableGallery images={images} alt="Product" />)
 
     const img = container.querySelector('img') as HTMLImageElement | null

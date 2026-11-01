@@ -69,7 +69,11 @@ export default function SwipeableGallery({ images, alt }: SwipeableGalleryProps)
                 width={400}
                 height={400}
                 className="w-full h-auto object-cover"
-                priority={index === 0}
+                // Not `priority`: on the product page this strip renders under
+                // ProductGallery, whose main photo is the LCP. A second
+                // preload of the same photo at another width (C139) only
+                // competed with it for the phone's bandwidth.
+                loading="lazy"
               />
             </div>
           ))}

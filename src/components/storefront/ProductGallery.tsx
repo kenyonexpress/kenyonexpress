@@ -107,12 +107,18 @@ export default function ProductGallery({
             Gated on `active === 0` so it applies to the image that is actually
             painted first. Once a shopper picks a thumbnail the LCP has already
             happened, and marking every swapped-in image high-priority would
-            just contend with whatever else is loading. */}
+            just contend with whatever else is loading.
+
+            `fetchPriority` is spelled out because Next 16 stopped deriving it
+            from `priority`: the preload link and the <img> both shipped without
+            it, and C139 measured the same "fetchpriority=high ... false" line
+            again on production with the photo still the mobile LCP. */}
         <Image
           src={activeUrl}
           alt={activeAsset?.alt ?? name}
           fill
           priority={active === 0}
+          fetchPriority={active === 0 ? 'high' : 'auto'}
           sizes="(max-width: 768px) 100vw, 40vw"
           className={`object-contain ${isZoomed ? 'scale-125' : 'scale-100'} transition-transform duration-300`}
           {...(activeAsset?.blurDataURL

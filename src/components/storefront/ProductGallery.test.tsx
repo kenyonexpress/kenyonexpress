@@ -127,4 +127,12 @@ describe('ProductGallery', () => {
     expect(image).toHaveClass('transition-transform')
     expect(image).toHaveClass('duration-300')
   })
+  it('marks the first main image fetchpriority=high (mobile LCP, C139)', () => {
+    const { container } = render(
+      <ProductGallery images={mockImages} name="Test Product" assets={mockAssets} />,
+    )
+    const main = container.querySelector('.pdp-gallery__frame img')
+    expect(main?.getAttribute('fetchpriority')).toBe('high')
+    expect(main?.getAttribute('loading')).not.toBe('lazy')
+  })
 })
