@@ -1,7 +1,11 @@
-RESUME FROM: M11-c342
+RESUME FROM: M12-c342
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:08:17+07:00
+- item: M11-c342
+- BLOCKED: sitemap-stale
 
 ### 2026-11-01T21:07:26+07:00
 - item: M10-c342
@@ -96,10 +100,6 @@ RESUME FROM: M11-c342
 - RESULT: DONE
 
 ### 2026-11-01T20:02:58+07:00
-- item: M06-c341
-- RESULT: DONE
-
-### 2026-11-01T20:02:33+07:00
 - item: M06-c341
 - RESULT: DONE
 
