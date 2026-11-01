@@ -156,6 +156,9 @@ export async function getHomeBrands(): Promise<HomeBrand[]> {
 export async function getDealsPage(
   offset: number,
 ): Promise<{ items: Product[]; nextOffset: number | null }> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
   const from = Math.max(0, Math.floor(offset))
   const { data, error } = await activeProducts(CARD_COLUMNS)
     .order('created_at', { ascending: false })
