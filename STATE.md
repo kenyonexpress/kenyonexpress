@@ -3,6 +3,10 @@ RESUME FROM: M18-c342
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T21:16:29+07:00
+- item: M18-c342
+- RESULT: DONE
+
 ### 2026-11-01T21:15:31+07:00
 - item: M17-c342
 - BLOCKED: locked-component M17-c342
@@ -98,10 +102,6 @@ RESUME FROM: M18-c342
 ### 2026-11-01T20:14:13+07:00
 - item: M13-c341
 - BLOCKED: prod /api/health and /api/ready return 503 because Meilisearch is down (unknown_error); the other dependencies are healthy
-
-### 2026-11-01T20:13:07+07:00
-- item: M12-c341
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
