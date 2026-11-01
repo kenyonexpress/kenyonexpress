@@ -1,7 +1,31 @@
-RESUME FROM: M08-c334
+RESUME FROM: M14-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T13:22:00+07:00
+- item: M13-c334
+- RESULT: DONE
+
+### 2026-11-01T13:21:13+07:00
+- item: M12-c334
+- RESULT: DONE
+
+### 2026-11-01T13:20:20+07:00
+- item: M11-c334
+- BLOCKED: sitemap stale (CDN age 2.3 days, lastmod 27 Oct) and `<loc>` uses the apex host, which redirects to www. Needs the production `NEXT_PUBLIC_APP_URL` fixed and a redeploy or cache purge.
+
+### 2026-11-01T13:19:17+07:00
+- item: M10-c334
+- BLOCKED: Supabase MCP unauthenticated; cannot verify or apply migrations
+
+### 2026-11-01T13:18:30+07:00
+- item: M09-c334
+- RESULT: DONE
+
+### 2026-11-01T13:17:26+07:00
+- item: M08-c334
+- RESULT: DONE
 
 ### 2026-11-01T13:15:03+07:00
 - item: M07-c334
@@ -78,30 +102,6 @@ RESUME FROM: M08-c334
 ### 2026-11-01T12:36:59+07:00
 - item: M07-c333
 - RESULT: DONE
-
-### 2026-11-01T12:36:00+07:00
-- item: M06-c333
-- RESULT: DONE
-
-### 2026-11-01T12:34:29+07:00
-- item: M05-c333
-- RESULT: DONE
-
-### 2026-11-01T12:32:18+07:00
-- item: M04-c333
-- RESULT: DONE
-
-### 2026-11-01T12:31:29+07:00
-- item: M03-c333
-- BLOCKED: no valid category reference (live host is our own build; no Electro v7 category capture in refs/)
-
-### 2026-11-01T12:30:08+07:00
-- item: M02-c333
-- BLOCKED: no valid /product reference — live host is our own build; Electro-fresh reference needs matching related-products grid (4 vs 12 cards); override diffs 36.58/29.82/20.52% at 380/768/1440 all >11%
-
-### 2026-11-01T12:08:16+07:00
-- item: M01-c333
-- BLOCKED: gate-fail
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
