@@ -1,7 +1,11 @@
-RESUME FROM: M16-c341
+RESUME FROM: M17-c341
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T20:17:27+07:00
+- item: M16-c341
+- RESULT: DONE
 
 ### 2026-11-01T20:16:28+07:00
 - item: M15-c341
@@ -98,10 +102,6 @@ RESUME FROM: M16-c341
 ### 2026-11-01T19:07:50+07:00
 - item: M11-c340
 - RESULT: DONE
-
-### 2026-11-01T19:06:51+07:00
-- item: M10-c340
-- BLOCKED: Supabase MCP unauthorized and CLI has no access token; 313, 316–319 and the 301/306/315/320 column changes confirmed unapplied
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
