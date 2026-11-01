@@ -31031,3 +31031,15 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T12:42:51+07:00
 - item: M11-c333
 - BLOCKED: sitemap-stale — live deploy predates HEAD (Last-Modified 29 Oct, newest lastmod 27 Oct); `<loc>` host is the apex, which redirects to `www`
+
+## Archived 2026-11-01T13:42:27+07:00 after M01-c335 (3 lines from STATE.md)
+
+### 2026-11-01T12:43:39+07:00
+- item: M12-c333
+- RESULT: DONE
+
+## Archived 2026-11-01T13:54:40+07:00 after M02-c335 (3 lines from STATE.md)
+
+### 2026-11-01T12:44:32+07:00
+- item: M13-c333
+- RESULT: DONE
