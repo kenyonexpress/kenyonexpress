@@ -1,7 +1,15 @@
-RESUME FROM: M04-c331
+RESUME FROM: M06-c331
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T10:56:36+07:00
+- item: M05-c331
+- RESULT: DONE
+
+### 2026-11-01T10:52:59+07:00
+- item: M04-c331
+- RESULT: DONE
 
 ### 2026-11-01T10:51:05+07:00
 - item: M03-c331
@@ -94,14 +102,6 @@ RESUME FROM: M04-c331
 ### 2026-11-01T09:19:24+07:00
 - item: M17-c329
 - BLOCKED: compare gate not met (home 29–41% vs 11%; local page rendering a data-fetch fallback); RTL check itself clean. If the failed fetch is a 401 or placeholder-key error, this item should be DONE-DEFERRED under the Supabase-recovery rule.
-
-### 2026-11-01T09:07:33+07:00
-- item: M16-c329
-- RESULT: DONE
-
-### 2026-11-01T09:06:37+07:00
-- item: M15-c329
-- BLOCKED: console errors remain on /product (avif image 400s, Suspense prerender error); Supabase "Invalid API key" errors on both pages are DONE-DEFERRED
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

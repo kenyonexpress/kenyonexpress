@@ -30617,3 +30617,15 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T09:05:24+07:00
 - item: M14-c329
 - RESULT: DONE
+
+## Archived 2026-11-01T10:52:59+07:00 after M04-c331 (3 lines from STATE.md)
+
+### 2026-11-01T09:06:37+07:00
+- item: M15-c329
+- BLOCKED: console errors remain on /product (avif image 400s, Suspense prerender error); Supabase "Invalid API key" errors on both pages are DONE-DEFERRED
+
+## Archived 2026-11-01T10:56:36+07:00 after M05-c331 (3 lines from STATE.md)
+
+### 2026-11-01T09:07:33+07:00
+- item: M16-c329
+- RESULT: DONE
