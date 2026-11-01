@@ -396,3 +396,13 @@ M08-c299 2026-10-31 lighthouse mobile (next start :11101, existing build, dummy 
 /product/barbecue 380 mobile 90/81 LCP 3.7/4.7 s TBT 30/40 ms CLS 0.001/0
 /product/barbecue 768 mobile 86/83 LCP 4.2/4.7 s TBT 20/30 ms CLS 0.038/0
 note: bare /product is 404; /product/barbecue used as product sample. Supabase unreachable so catalogue fetch fails. Sample-only, no code changes. All four below G23 95 (LCP-bound); / 768 dropped vs c294 (100/100) - low mode of bimodal LCP.
+M08-c315 2026-10-31 lighthouse mobile (next start :11101, existing build, dummy SUPABASE keys via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked, simulated throttling, 2 runs each)
+/ 380 mobile 83/84 LCP 4.7/4.6 s TBT 32/25 ms CLS 0.003
+/ 768 mobile 100/100 LCP 1.1 s TBT 26/31 ms CLS 0/0.003
+/product/barbecue 380 mobile 88/92 LCP 3.9/3.4 s TBT 21/24 ms CLS 0.001
+/product/barbecue 768 mobile 85/87 LCP 4.3/4.0 s TBT 27/28 ms CLS 0.039
+note: bare /product is 404; /product/barbecue used as product sample. Supabase unreachable so catalogue fetch fails. Sample-only, no code changes. Below G23 95 at / 380 and product 380/768 (LCP-bound); / 768 at 100.
+M08-c338 2026-11-01 lighthouse mobile (next start :11101, existing build, dummy SUPABASE keys >=20/40 chars via process env, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked, 2 runs each)
+/ mobile 89/88 LCP 3.5/3.7 s TBT 30/40 ms CLS 0.002/0.002
+/product/barbecue mobile 97/97 LCP 2.1/2.1 s TBT 30/30 ms CLS 0/0
+note: bare /product is 404; /product/barbecue used as product sample. Supabase unreachable (catalogue fetch fails). Sample-only, no code changes. Product at/above G23 95; / below 95 (LCP-bound).
