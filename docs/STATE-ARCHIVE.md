@@ -31793,3 +31793,27 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T19:04:22+07:00
 - item: M08-c340
 - RESULT: DONE
+
+## Archived 2026-11-01T20:16:28+07:00 after M15-c341 (3 lines from STATE.md)
+
+### 2026-11-01T19:05:27+07:00
+- item: M09-c340
+- RESULT: DONE
+
+## Archived 2026-11-01T20:17:27+07:00 after M16-c341 (3 lines from STATE.md)
+
+### 2026-11-01T19:06:51+07:00
+- item: M10-c340
+- BLOCKED: Supabase MCP unauthorized and CLI has no access token; 313, 316–319 and the 301/306/315/320 column changes confirmed unapplied
+
+## Archived 2026-11-01T20:19:01+07:00 after M17-c341 (3 lines from STATE.md)
+
+### 2026-11-01T19:07:50+07:00
+- item: M11-c340
+- RESULT: DONE
+
+## Archived 2026-11-01T20:20:10+07:00 after M18-c341 (3 lines from STATE.md)
+
+### 2026-11-01T19:08:56+07:00
+- item: M12-c340
+- RESULT: DONE
