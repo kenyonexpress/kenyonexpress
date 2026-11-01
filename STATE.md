@@ -1,7 +1,23 @@
-RESUME FROM: M13-c329
+RESUME FROM: M17-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T09:07:33+07:00
+- item: M16-c329
+- RESULT: DONE
+
+### 2026-11-01T09:06:37+07:00
+- item: M15-c329
+- BLOCKED: console errors remain on /product (avif image 400s, Suspense prerender error); Supabase "Invalid API key" errors on both pages are DONE-DEFERRED
+
+### 2026-11-01T09:05:24+07:00
+- item: M14-c329
+- RESULT: DONE
+
+### 2026-11-01T09:04:42+07:00
+- item: M13-c329
+- BLOCKED: Meilisearch down in prod, so /api/health and /api/ready return 503
 
 ### 2026-11-01T09:03:49+07:00
 - item: M12-c329
@@ -86,22 +102,6 @@ RESUME FROM: M13-c329
 ### 2026-11-01T08:09:42+07:00
 - item: M10-c328
 - BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot list or apply migrations
-
-### 2026-11-01T08:08:59+07:00
-- item: M09-c328
-- RESULT: DONE
-
-### 2026-11-01T08:05:19+07:00
-- item: M08-c328
-- RESULT: DONE
-
-### 2026-11-01T08:02:49+07:00
-- item: M07-c328
-- RESULT: DONE
-
-### 2026-11-01T08:01:49+07:00
-- item: M06-c328
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
