@@ -31463,3 +31463,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T16:17:21+07:00
 - item: M09-c337
 - RESULT: DONE
+
+## Archived 2026-11-01T17:26:44+07:00 after M17-c338 (3 lines from STATE.md)
+
+### 2026-11-01T16:18:08+07:00
+- item: M10-c337
+- BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot list or apply migrations
