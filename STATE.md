@@ -1,7 +1,11 @@
-RESUME FROM: M15-c340
+RESUME FROM: M16-c340
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:16:12+07:00
+- item: M15-c340
+- BLOCKED: console-errors
 
 ### 2026-11-01T19:14:45+07:00
 - item: M14-c340
@@ -98,10 +102,6 @@ RESUME FROM: M15-c340
 ### 2026-11-01T18:13:14+07:00
 - item: M11-c339
 - BLOCKED: sitemap stale (2.5 days old) and all locs on apex host that 308-redirects to www. Needs a prod `NEXT_PUBLIC_APP_URL` fix and redeploy.
-
-### 2026-11-01T18:12:02+07:00
-- item: M10-c339
-- BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot verify or apply migrations
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
