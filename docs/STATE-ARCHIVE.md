@@ -30414,3 +30414,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T02:28:24+07:00
 - item: M02-c346
 - BLOCKED: gate-fail
+
+## Archived 2026-11-02T06:40:29+07:00 after C138 (3 lines from STATE.md)
+
+### 2026-11-02T02:30:06+07:00
+- item: M03-c346
+- BLOCKED: category-reference-missing

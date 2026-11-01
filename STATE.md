@@ -1,7 +1,11 @@
-RESUME FROM: C138
+RESUME FROM: C139
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T06:40:29+07:00
+- item: C138
+- BLOCKED: locked-component (home 380 topbar+header+hero bands alone = 12.34pt > 11% gate)
 
 ### 2026-11-02T06:22:53+07:00
 - item: C137
@@ -98,10 +102,6 @@ RESUME FROM: C138
 ### 2026-11-02T02:31:15+07:00
 - item: M04-c346
 - RESULT: DONE
-
-### 2026-11-02T02:30:06+07:00
-- item: M03-c346
-- BLOCKED: category-reference-missing
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
