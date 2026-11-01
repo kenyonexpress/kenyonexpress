@@ -75,3 +75,9 @@ backups/
 .lighthouseci/reports/
 .lighthouseci/lhr-*
 .lighthouseci/assertion-results.json
+
+# Repo hygiene (C120): run logs, state backups, raw lighthouse dumps
+logs/
+STATE.md.bak
+*.raw
+claude_STATE.md
