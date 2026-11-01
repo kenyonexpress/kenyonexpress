@@ -41,7 +41,7 @@ import { useEffect, useState } from 'react'
  * measured.
  */
 
-const CONSENT_GRANTED_EVENT = 'ke:consent-granted'
+export const CONSENT_GRANTED_EVENT = 'ke:consent-granted'
 
 function readCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))

@@ -1,13 +1,14 @@
-import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import { MobileNavBar } from '@/components/mobile'
+import SentryUserSync from '@/components/observability/SentryUserSync'
 import CrispChat from '@/components/shared/CrispChat'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 import MobileContentWrapper from '@/components/store/MobileContentWrapper'
+import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import { SPLASH_IMAGES } from '@/lib/pwa/splash'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -47,6 +48,8 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   return (
     <CartProvider>
       <CartBootstrap />
+      {/* Mounted here because src/app/layout.tsx is locked. Renders nothing. */}
+      <SentryUserSync />
       {/* Inside CartProvider: the wishlist reads the session flag the cart
           bootstrap sets. It renders nothing and reads only after mount. */}
       <WishlistProvider>
@@ -55,27 +58,27 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           stretch main to the viewport and push the footer to the bottom, which is
           the 1218px vertical mismatch in the category compare. Keep min-h-screen
           for the background fill, but let the footer follow the content. */}
-      {/* The skip link (WCAG 2.4.1, which Israeli standard 5568 adopts) is in
+        {/* The skip link (WCAG 2.4.1, which Israeli standard 5568 adopts) is in
           the root layout, ahead of the consent banner, so it is the first Tab
           stop; this layout owns its target below. */}
-      <div className="min-h-screen flex flex-col bg-white">
-        <SiteHeader />
-        {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
+        <div className="min-h-screen flex flex-col bg-white">
+          <SiteHeader />
+          {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
             leaves focus on the link, so the next Tab goes back into the header
             and the skip does nothing for keyboard users. */}
-        <main id="main-content" tabIndex={-1} className="w-full focus:outline-none pb-14 md:pb-0">
-          <Suspense fallback={children}>
-            <MobileContentWrapper>{children}</MobileContentWrapper>
-          </Suspense>
-        </main>
-        <SiteFooter />
-      </div>
-      <Suspense fallback={null}>
-        <MobileNavBar />
-      </Suspense>
-      <WhatsAppFloat />
-      <CrispChat />
-      <DeferredStoreChrome />
+          <main id="main-content" tabIndex={-1} className="w-full focus:outline-none pb-14 md:pb-0">
+            <Suspense fallback={children}>
+              <MobileContentWrapper>{children}</MobileContentWrapper>
+            </Suspense>
+          </main>
+          <SiteFooter />
+        </div>
+        <Suspense fallback={null}>
+          <MobileNavBar />
+        </Suspense>
+        <WhatsAppFloat />
+        <CrispChat />
+        <DeferredStoreChrome />
       </WishlistProvider>
     </CartProvider>
   )

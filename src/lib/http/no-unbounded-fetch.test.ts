@@ -105,6 +105,8 @@ const ALLOWED: Record<string, string> = {
     'Browser typeahead to our own origin, carries its own AbortController so a superseded keystroke is cancelled.',
   'components/category/InfiniteProductGrid.tsx':
     'Browser, listing page append to our own origin on scroll; a hang costs only the next page, and the grid keeps what it has.',
+  'components/home/HomeInfiniteDeals.tsx':
+    'Browser, deals page append to our own origin on scroll; a hang costs only the next page, and the list keeps what it has.',
   'components/supplier/SupplierApplyWizard.tsx':
     'Browser PUT to a presigned R2 URL for an onboarding document, with the wizard showing its own upload state; a client timer cannot tell a lost response from a failed upload.',
   'lib/push/use-push-notifications.ts':

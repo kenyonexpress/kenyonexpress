@@ -96,6 +96,12 @@ const OPERATIONAL: { envName: string; labelHe: string; effectHe: string; money: 
     money: false,
   },
   {
+    envName: 'MEILISEARCH_ENABLED',
+    labelHe: 'חיפוש Meilisearch',
+    effectHe: 'כשכבוי ("false"): החיפוש עובר למסד הנתונים. Meilisearch מושהה בהחלטת הבעלים.',
+    money: false,
+  },
+  {
     envName: 'PUSH_ENABLED',
     labelHe: 'התראות דחיפה',
     effectHe: 'כשכבוי: אין שליחה למכשירים. האירוע נשמר.',

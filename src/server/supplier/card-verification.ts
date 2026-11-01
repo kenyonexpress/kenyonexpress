@@ -25,6 +25,20 @@ import { type SupplierLeadPayload, alertTeam, createSupplierLead } from './lead-
 
 const VERIFICATION_AMOUNT_AGOROT = agorot(100)
 
+/**
+ * C101: a charge on a live (non-sandbox) Cardcom terminal needs
+ * PAYMENTS_PROD_ENABLED=true. Mock and sandbox terminals never touch real money
+ * and are always allowed.
+ */
+export function liveChargeAllowed(
+  providerName: string,
+  sandbox: boolean,
+  source: Record<string, string | undefined> = process.env,
+): boolean {
+  if (providerName !== 'cardcom' || sandbox) return true
+  return source.PAYMENTS_PROD_ENABLED === 'true'
+}
+
 export type StartOutcome =
   | { kind: 'redirect'; url: string }
   | { kind: 'done'; status: 'verified' | 'failed' }

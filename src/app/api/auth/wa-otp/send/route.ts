@@ -98,7 +98,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // first SMS to the same number, then the account's email. The same code is
   // verified with the phone whichever channel carried it.
   const fallback = ('templateRejected' in sent && sent.templateRejected) || sent.skipped
-  if (!fallback) return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
+  if (!fallback) {
+    await recordOtpAttempt({
+      phone,
+      userId: profile.id,
+      kind: 'send',
+      channel: 'whatsapp',
+      outcome: 'send_failed',
+      ip,
+    })
+    return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
+  }
 
   const sms = await sendSmsOtp(phone, code)
   if (sms.ok) {

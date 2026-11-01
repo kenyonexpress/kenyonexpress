@@ -15,7 +15,7 @@ page.tsx files using 'use cache' in code         0
 ```
 
 Caching is a property of the **data functions a route calls**, not of the route.
-Eleven modules carry `'use cache'`, and a page is cached to the extent that
+Twelve modules carry `'use cache'`, and a page is cached to the extent that
 everything it awaits is:
 
 | module | what it caches |
@@ -28,6 +28,7 @@ everything it awaits is:
 | `lib/coupon-deals.ts` | the coupon catalogue |
 | `lib/supplier-storefront.ts` | a supplier's public page |
 | `lib/feeds/catalogue.ts` | the Merchant and RSS feeds |
+| `lib/home-data.ts` | the home page sections and the infinite deals pages |
 | `components/storefront/CouponQrExpiry.tsx` | a coupon QR expiry label (`cacheLife('max')`) |
 | `app/sitemap.ts` | the sitemap |
 | `components/CopyrightYear.tsx` | the footer year |
@@ -47,10 +48,10 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 ## 2. One lifetime and one tag, application-wide
 
 ```
-cacheLife('hours')        22
+cacheLife('hours')        27
 cacheLife('days')          1     CopyrightYear.tsx
 cacheLife('max')           1     CouponQrExpiry.tsx
-cacheTag(CATALOGUE_TAG)   22
+cacheTag(CATALOGUE_TAG)   27
 ```
 
 Every cached read in the product surface has the same one-hour life and the
@@ -76,11 +77,10 @@ server/actions/admin/approvals.ts       2
 server/actions/admin/coupon-deals.ts    2
 server/actions/admin/reviews.ts         1
 server/actions/admin/product-gift-card.ts 1
-server/actions/admin/product-import.ts  1
+server/actions/admin/product-import.ts  2
 server/actions/admin/product-location.ts 1
-server/actions/admin/product-import.ts  1
 server/actions/supplier/profile.ts      1
-                                       23
+                                       24
 ```
 
 **Corrected 2026-09-08.** This list said "four modules, all admin" and totalled

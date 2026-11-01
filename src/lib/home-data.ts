@@ -75,9 +75,10 @@ export async function getDealOfTheDay(): Promise<Product | null> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { data } = await activeProducts(CARD_COLUMNS)
+  const { data, error } = await activeProducts(CARD_COLUMNS)
     .order('created_at', { ascending: false })
     .limit(60)
+  if (error) throw new Error(`home.deal_of_day_failed: ${error.message}`)
   const rows = (data ?? []) as unknown as CardRow[]
   if (rows.length === 0) return null
   const best = rows.reduce((a, b) => (discountOf(b) > discountOf(a) ? b : a))
@@ -90,12 +91,13 @@ export async function getHomeCategories(): Promise<HomeCategory[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { data } = await createPublicClient()
+  const { data, error } = await createPublicClient()
     .from('categories')
     .select('id, name_he, slug, image_url')
     .is('parent_id', null)
     .order('name_he', { ascending: true })
     .limit(12)
+  if (error) throw new Error(`home.categories_failed: ${error.message}`)
   return (data ?? []) as HomeCategory[]
 }
 
@@ -103,10 +105,11 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { data } = await activeProducts(CARD_COLUMNS)
+  const { data, error } = await activeProducts(CARD_COLUMNS)
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
     .limit(8)
+  if (error) throw new Error(`home.featured_failed: ${error.message}`)
   let rows = (data ?? []) as unknown as CardRow[]
   if (rows.length === 0) {
     const fallback = await activeProducts(CARD_COLUMNS)
@@ -121,10 +124,11 @@ export async function getHotCoupons(): Promise<HotCoupon[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { data } = await activeProducts('*, supplier:suppliers(name, logo_url)')
+  const { data, error } = await activeProducts('*, supplier:suppliers(name, logo_url)')
     .eq('type', 'coupon')
     .order('created_at', { ascending: false })
     .limit(4)
+  if (error) throw new Error(`home.hot_coupons_failed: ${error.message}`)
   return (data ?? []) as unknown as HotCoupon[]
 }
 
@@ -134,11 +138,12 @@ export async function getHomeBrands(): Promise<HomeBrand[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { data } = await createPublicClient()
+  const { data, error } = await createPublicClient()
     .from('suppliers')
     .select('id, name, logo_url')
     .not('logo_url', 'is', null)
     .limit(12)
+  if (error) throw new Error(`home.brands_failed: ${error.message}`)
   return ((data ?? []) as { id: string; name: string; logo_url: string }[]).map((s) => ({
     id: s.id,
     name: s.name,
@@ -152,10 +157,11 @@ export async function getDealsPage(
   offset: number,
 ): Promise<{ items: Product[]; nextOffset: number | null }> {
   const from = Math.max(0, Math.floor(offset))
-  const { data } = await activeProducts(CARD_COLUMNS)
+  const { data, error } = await activeProducts(CARD_COLUMNS)
     .order('created_at', { ascending: false })
     .order('id', { ascending: true })
     .range(from, from + HOME_DEALS_PAGE_SIZE)
+  if (error) throw new Error(`home.deals_page_failed: ${error.message}`)
   const rows = (data ?? []) as unknown as CardRow[]
   const hasMore = rows.length > HOME_DEALS_PAGE_SIZE
   return {

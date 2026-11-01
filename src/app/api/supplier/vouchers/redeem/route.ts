@@ -5,6 +5,7 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
+import { getSupplierMemberships } from '@/lib/supplier/rbac'
 import { expireWalletPasses } from '@/lib/wallet/notify'
 import { trackServerEvent } from '@/server/analytics/track'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -357,17 +358,6 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // value is the business's list price and was never our revenue.
     if (!replayed) {
       await reportRedemption(result)
-    }
-
-    // Funnel event, replays excluded so one scan is one event. Swallows its
-    // own errors. Both destinations work now: PostHog always did, and the
-    // first-party copy needed 180 (applied) plus the `session_id` fix.
-    if (!replayed) {
-      await trackServerEvent({
-        eventName: 'voucher_redeemed',
-        userId: user.id,
-        props: { code: (result.code as string) ?? shortCode },
-      })
     }
 
     return respond(
