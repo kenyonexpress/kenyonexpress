@@ -30156,3 +30156,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T21:59:01+07:00
 - item: C120
 - RESULT: DONE
+
+## Archived 2026-11-02T01:06:25+07:00 after M04-c345 (3 lines from STATE.md)
+
+### 2026-11-01T22:08:47+07:00
+- item: C121
+- BLOCKED: live `/` hydration #418 not reproducible on HEAD (suspects in locked components); prod build of HEAD fails type-check from merge 788c1af1a
