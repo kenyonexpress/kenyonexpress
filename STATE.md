@@ -1,7 +1,15 @@
-RESUME FROM: M02-c342
+RESUME FROM: M04-c342
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T20:56:27+07:00
+- item: M03-c342
+- BLOCKED: no-reference
+
+### 2026-11-01T20:54:46+07:00
+- item: M02-c342
+- BLOCKED: gate-fail — product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all above the 11% gate.
 
 ### 2026-11-01T20:40:18+07:00
 - item: M01-c342
@@ -93,14 +101,6 @@ RESUME FROM: M02-c342
 
 ### 2026-11-01T19:17:18+07:00
 - item: M16-c340
-- RESULT: DONE
-
-### 2026-11-01T19:16:12+07:00
-- item: M15-c340
-- BLOCKED: console-errors
-
-### 2026-11-01T19:14:45+07:00
-- item: M14-c340
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
