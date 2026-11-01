@@ -1,7 +1,23 @@
-RESUME FROM: M06-c330
+RESUME FROM: M10-c330
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T10:10:23+07:00
+- item: M09-c330
+- RESULT: DONE
+
+### 2026-11-01T10:09:28+07:00
+- item: M08-c330
+- RESULT: DONE
+
+### 2026-11-01T10:07:11+07:00
+- item: M07-c330
+- RESULT: DONE
+
+### 2026-11-01T10:06:18+07:00
+- item: M06-c330
+- RESULT: DONE
 
 ### 2026-11-01T10:05:01+07:00
 - item: M05-c330
@@ -86,22 +102,6 @@ RESUME FROM: M06-c330
 ### 2026-11-01T08:52:25+07:00
 - item: M03-c329
 - BLOCKED: no-reference
-
-### 2026-11-01T08:51:01+07:00
-- item: M02-c329
-- BLOCKED: no valid reference (live host is our own build); Electro-archive fallback scores 36.17/29.82/20.52% at 380/768/1440, all above 11%
-
-### 2026-11-01T08:41:27+07:00
-- item: M01-c329
-- BLOCKED: compare gate not measurable (live reference is our own build; forced Electro v7 run is 27–40%, above the 11% gate)
-
-### 2026-11-01T08:19:36+07:00
-- item: M18-c328
-- RESULT: DONE
-
-### 2026-11-01T08:16:39+07:00
-- item: M17-c328
-- BLOCKED: locked-component M17-c328
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
