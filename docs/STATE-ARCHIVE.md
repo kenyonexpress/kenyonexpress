@@ -31535,3 +31535,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T17:04:43+07:00
 - item: M03-c338
 - BLOCKED: no valid category reference — kenyonexpress.co.il now serves our own build, so the gate refuses and no Electro v7 category capture exists in refs/
+
+## Archived 2026-11-01T18:13:14+07:00 after M11-c339 (3 lines from STATE.md)
+
+### 2026-11-01T17:05:42+07:00
+- item: M04-c338
+- RESULT: DONE
