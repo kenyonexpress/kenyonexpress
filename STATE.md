@@ -1,7 +1,11 @@
-RESUME FROM: M17-c332
+RESUME FROM: M18-c332
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:52:20+07:00
+- item: M17-c332
+- BLOCKED: locked-component M17-c332
 
 ### 2026-11-01T11:50:43+07:00
 - item: M16-c332
@@ -98,10 +102,6 @@ RESUME FROM: M17-c332
 ### 2026-11-01T11:04:28+07:00
 - item: M11-c331
 - BLOCKED: sitemap `<loc>` and `robots.txt` use the apex host, which 308-redirects to www, and the cached sitemap is about 54 hours old
-
-### 2026-11-01T11:03:29+07:00
-- item: M10-c331
-- BLOCKED: Supabase MCP unauthenticated; cannot list or apply migrations
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
