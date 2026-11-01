@@ -30815,3 +30815,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T11:04:28+07:00
 - item: M11-c331
 - BLOCKED: sitemap `<loc>` and `robots.txt` use the apex host, which 308-redirects to www, and the cached sitemap is about 54 hours old
+
+## Archived 2026-11-01T12:08:16+07:00 after M01-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:05:31+07:00
+- item: M12-c331
+- RESULT: DONE
