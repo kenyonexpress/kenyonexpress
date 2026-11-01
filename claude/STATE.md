@@ -219,3 +219,4 @@
 המשך מ: M05-c328 DONE (2026-11-01): pnpm test 627 files passed, 2 skipped; 7165 tests passed, 28 skipped; no failures; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
 המשך מ: M16-c328 DONE (2026-11-01): product template src/app/(store)/product/[slug]/page.tsx (sole PDP route, serves all products) emits Product + BreadcrumbList JSON-LD via buildProductJsonLd/buildBreadcrumbJsonLd/jsonLdScript; json-ld.test.ts 26/26 pass; no code changes; no forbidden files touched
 המשך מ: M05-c329 DONE (2026-11-01): pnpm test 627 files passed, 2 skipped; 7165 tests passed, 28 skipped; no failures; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
+המשך מ: M06-c329 DONE (2026-11-01): pnpm build exit 0, all routes generated, no type/lint errors; no tracked drift after build (only untracked logs), nothing to fix; no forbidden files touched
