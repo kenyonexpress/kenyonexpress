@@ -1,7 +1,11 @@
-RESUME FROM: M05-c335
+RESUME FROM: M06-c335
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:03:20+07:00
+- item: M05-c335
+- BLOCKED: migration preflights, duplicate numbers (243, 244) and number 300 collision need a renumber and sequencing decision. The 7 credential-dependent failures are DONE-DEFERRED.
 
 ### 2026-11-01T13:56:53+07:00
 - item: M04-c335
@@ -98,10 +102,6 @@ RESUME FROM: M05-c335
 ### 2026-11-01T12:49:55+07:00
 - item: M18-c333
 - RESULT: DONE
-
-### 2026-11-01T12:49:09+07:00
-- item: M17-c333
-- BLOCKED: locked-component M17-c333
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
