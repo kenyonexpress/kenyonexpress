@@ -1,3 +1,4 @@
+המשך מ: C128 BLOCKED (2026-11-01): C121-C126 not DONE (hydration/type-check, compare 25-46%, LH, supabase CLI hang, money grep 346, e2e/migrations); no tag/push/LAUNCH.flag; docs/C128-launch.md
 המשך מ: C124 BLOCKED supabase-cli-hang (supabase db query --linked hangs >120s even for select 1, no output; keychain-backed token not usable non-interactively; no audit output so no migrations/pgTAP/docs written) | prev C120 DONE
 המשך מ: C120 DONE (2026-11-01): logs/, STATE.md.bak, *.raw, claude_STATE.md ignored; 192 tracked logs untracked; stale claude_STATE.md removed; no forbidden files touched
 המשך מ: C119 DONE (2026-11-01): one-agent enforced; ke-autopilot tmux killed, 4 launchd plists disabled, autopilot merged into closeout/v1-final (layout.tsx kept locked)
@@ -265,3 +266,4 @@
 המשך מ: C122 BLOCKED (2026-11-01): compare.mjs home 46.26/41.03/27.97, product 38.97/34.27/25.01, category 43.98/41.67/28.68 at 380/768/1440 vs <11 gate; locked-component: header/topbar/hero bands dominate diff; no code changes; see docs/C122-parity.md
 המשך מ: C123 BLOCKED (2026-11-01): locked-component: Heebo subset/preload and dynamic root providers live in layout.tsx; prod build of HEAD fails type-check (7 files, see docs/C123-lh.md) so no valid after-run; / baseline 68 from C117; no code changes; no forbidden files touched
 המשך מ: C126 BLOCKED (2026-11-01): tsc clean, build passes, vitest 17 fail (migration inventory + env keys), e2e core 16/20 pass, live DB behind migrations (orders.order_number, fraud_flags.kind) blocks checkout/refund specs; see docs/C126-e2e.md; no forbidden files touched
+המשך מ: C129 BLOCKED (2026-11-02): c343 M04 tsc exit 0 DONE; M05 vitest 17 failed/9546 passed BLOCKED; M11/M12 200 DONE; M13 503 meili-only DONE-DEFERRED; C128 tag/LAUNCH.flag still missing; docs/C129-maint.md
