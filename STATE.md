@@ -1,7 +1,11 @@
-RESUME FROM: M15-c335
+RESUME FROM: M16-c335
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:15:48+07:00
+- item: M15-c335
+- BLOCKED: product page has console errors (image 400s, supplier_load_failed, Suspense prerender error)
 
 ### 2026-11-01T14:14:03+07:00
 - item: M14-c335
@@ -98,10 +102,6 @@ RESUME FROM: M15-c335
 ### 2026-11-01T13:19:17+07:00
 - item: M10-c334
 - BLOCKED: Supabase MCP unauthenticated; cannot verify or apply migrations
-
-### 2026-11-01T13:18:30+07:00
-- item: M09-c334
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
