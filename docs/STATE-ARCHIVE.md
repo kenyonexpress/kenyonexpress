@@ -31343,3 +31343,21 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:47:59+07:00
 - item: M08-c336
 - RESULT: DONE
+
+## Archived 2026-11-01T16:24:12+07:00 after M15-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:49:51+07:00
+- item: M09-c336
+- RESULT: DONE
+
+## Archived 2026-11-01T16:25:24+07:00 after M16-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:50:41+07:00
+- item: M10-c336
+- BLOCKED: supabase-mcp-unauthorized
+
+## Archived 2026-11-01T16:27:40+07:00 after M17-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:51:50+07:00
+- item: M11-c336
+- RESULT: DONE

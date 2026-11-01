@@ -1,7 +1,19 @@
-RESUME FROM: M15-c337
+RESUME FROM: M18-c337
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T16:27:40+07:00
+- item: M17-c337
+- BLOCKED: locked-component M17-c337
+
+### 2026-11-01T16:25:24+07:00
+- item: M16-c337
+- RESULT: DONE
+
+### 2026-11-01T16:24:12+07:00
+- item: M15-c337
+- BLOCKED: console-errors-present
 
 ### 2026-11-01T16:22:18+07:00
 - item: M14-c337
@@ -91,18 +103,6 @@ RESUME FROM: M15-c337
 - item: M12-c336
 - RESULT: DONE
 
-### 2026-11-01T14:51:50+07:00
-- item: M11-c336
-- RESULT: DONE
-
-### 2026-11-01T14:50:41+07:00
-- item: M10-c336
-- BLOCKED: supabase-mcp-unauthorized
-
-### 2026-11-01T14:49:51+07:00
-- item: M09-c336
-- RESULT: DONE
-
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
 ### Status
@@ -120,6 +120,8 @@ C03 cache invalidation (autopilot)
 NONE. iPhone will ping on LAUNCH-READY or hard block.
 
 המשך מ: M04-c251 DONE
+
+המשך מ: M16-c337 DONE (product page emits Product + BreadcrumbList JSON-LD via json-ld.ts; gift page noindex; 26 json-ld tests pass; no code changes)
 
 המשך מ: M05-c253 DONE (pnpm test: 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; no drift, no code changes)
 
