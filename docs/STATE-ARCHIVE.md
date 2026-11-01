@@ -31145,3 +31145,21 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T13:21:13+07:00
 - item: M12-c334
 - RESULT: DONE
+
+## Archived 2026-11-01T14:36:50+07:00 after M01-c336 (3 lines from STATE.md)
+
+### 2026-11-01T13:22:00+07:00
+- item: M13-c334
+- RESULT: DONE
+
+## Archived 2026-11-01T14:38:05+07:00 after M02-c336 (3 lines from STATE.md)
+
+### 2026-11-01T13:22:48+07:00
+- item: M14-c334
+- RESULT: DONE
+
+## Archived 2026-11-01T14:39:11+07:00 after M03-c336 (3 lines from STATE.md)
+
+### 2026-11-01T13:24:12+07:00
+- item: M15-c334
+- BLOCKED: console errors present on / and /product/[slug] (Suspense error, /api/cart failure, image warnings; Supabase-key items would be DONE-DEFERRED)

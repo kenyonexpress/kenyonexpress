@@ -1,7 +1,19 @@
-RESUME FROM: M18-c335
+RESUME FROM: M04-c336
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:39:11+07:00
+- item: M03-c336
+- BLOCKED: M03-c336 — no valid compare reference (kenyonexpress.co.il now serves our own build; no Electro category ref)
+
+### 2026-11-01T14:38:05+07:00
+- item: M02-c336
+- BLOCKED: compare.mjs live reference is our own build (self-comparison refused); no Electro-reference mode exists to produce a number
+
+### 2026-11-01T14:36:50+07:00
+- item: M01-c336
+- BLOCKED: gate-fail home 27.52–39.85% (>11%) at 380/768/1440; forbidden hero/header files
 
 ### 2026-11-01T14:19:10+07:00
 - item: M18-c335
@@ -89,18 +101,6 @@ RESUME FROM: M18-c335
 
 ### 2026-11-01T13:25:21+07:00
 - item: M16-c334
-- RESULT: DONE
-
-### 2026-11-01T13:24:12+07:00
-- item: M15-c334
-- BLOCKED: console errors present on / and /product/[slug] (Suspense error, /api/cart failure, image warnings; Supabase-key items would be DONE-DEFERRED)
-
-### 2026-11-01T13:22:48+07:00
-- item: M14-c334
-- RESULT: DONE
-
-### 2026-11-01T13:22:00+07:00
-- item: M13-c334
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
