@@ -1,7 +1,11 @@
-RESUME FROM: M06-c333
+RESUME FROM: M07-c333
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T12:36:00+07:00
+- item: M06-c333
+- RESULT: DONE
 
 ### 2026-11-01T12:34:29+07:00
 - item: M05-c333
@@ -98,10 +102,6 @@ RESUME FROM: M06-c333
 ### 2026-11-01T11:13:30+07:00
 - item: M18-c331
 - RESULT: DONE
-
-### 2026-11-01T11:12:30+07:00
-- item: M17-c331
-- BLOCKED: compare.mjs gate fails on home (bands up to ~67% vs 11% limit); pre-existing, not caused by this verification-only item
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
