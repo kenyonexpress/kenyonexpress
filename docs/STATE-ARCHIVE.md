@@ -30000,3 +30000,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T20:40:18+07:00
 - item: M01-c342
 - BLOCKED: compare-gate 380=12.83% 768=13.8% (locked hero/header bands)
+
+## Archived 2026-11-01T21:59:01+07:00 after C120 (3 lines from STATE.md)
+
+### 2026-11-01T20:54:46+07:00
+- item: M02-c342
+- BLOCKED: gate-fail — product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all above the 11% gate.
