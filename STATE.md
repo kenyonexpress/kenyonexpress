@@ -1,7 +1,11 @@
-RESUME FROM: M17-c346
+RESUME FROM: M18-c346
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T03:28:38+07:00
+- item: M17-c346
+- BLOCKED: rtl-leak-home
 
 ### 2026-11-02T03:25:44+07:00
 - item: M16-c346
@@ -98,10 +102,6 @@ RESUME FROM: M17-c346
 ### 2026-11-02T01:45:06+07:00
 - item: M11-c345
 - RESULT: DONE
-
-### 2026-11-02T01:43:57+07:00
-- item: M10-c345
-- BLOCKED: supabase CLI not linked/logged in (no access token), cannot verify or apply migrations/pending
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
