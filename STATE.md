@@ -223,3 +223,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M06-c332 DONE (2026-11-01): pnpm build green (exit 0), no tracked drift; committed untracked docs/C113-db-cli.md; no code changes; no forbidden files touched
 
 המשך מ: M09-c332 DONE (2026-11-01): audit only, no code changes. 0 removable deps (@mdx-js/loader required by @next/mdx, @types/mdx for mdx-components.tsx; all other prod deps referenced in src/scripts). Dead exports unchanged since c331 (intentional API surface); no forbidden files touched
+
+המשך מ: M04-c336 DONE (2026-11-01): pnpm type-check green (tsc --noEmit exit 0), no tracked drift, no code changes; no forbidden files touched
