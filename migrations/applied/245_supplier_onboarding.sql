@@ -58,9 +58,11 @@
 
 BEGIN;
 
+-- set_updated_at is pinned in production (SET search_path TO ''); restated
+-- with the pin so this replace cannot un-pin it for every table using it.
 CREATE OR REPLACE FUNCTION public.set_updated_at()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN NEW.updated_at = now(); RETURN NEW; END; $$;
+RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $$
+BEGIN NEW.updated_at := now(); RETURN NEW; END; $$;
 
 -- =============================================================================
 -- 1. The vault wrapper

@@ -48,8 +48,8 @@ describe('shipping methods registry', () => {
 
   /**
    * THE PIN. `orders` has no shipping money column in production
-   * (migrations/pending/236_orders_shipping_method.sql is unapplied) and the
-   * settlement engine does not add shipping to the card charge. A non-zero
+   * (migrations/applied/236_orders_shipping_method.sql, applied 2026-11-02, adds
+   * the columns but nothing settles them yet) and the settlement engine does not add shipping to the card charge. A non-zero
    * rate here would make the cart total and the charged amount disagree, which
    * is the one disagreement this repo keeps paying for. Turning a rate on is a
    * three-part change: apply 236, teach `calculateSettlement` the line, and

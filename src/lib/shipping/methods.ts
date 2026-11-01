@@ -13,8 +13,8 @@ import { type Agorot, agorot } from '@/lib/money'
  * WHY EVERY RATE IS ZERO TODAY. Charging for shipping means a line on the card
  * charge that `orders` has nowhere to record: the money columns are resolved
  * per-database in `order-money-columns.ts` and none of them is a shipping
- * amount. `migrations/pending/236_orders_shipping_method.sql` adds the two
- * columns; until it is applied, `methods-cost-nothing.test.ts` pins every rate
+ * amount. `migrations/applied/236_orders_shipping_method.sql` adds the two
+ * columns (applied 2026-11-02); until settlement records them, `methods-cost-nothing.test.ts` pins every rate
  * at zero so the cart total and the settlement engine (which does not know
  * about shipping) cannot show two different numbers. The live site's own
  * rule, "נשלח ישירות על ידי הספק" with the price included, is what zero

@@ -1,3 +1,4 @@
+המשך מ: C136 DONE (2026-11-02): ledger reconcile via db query --linked: 25 applied (BEGIN/COMMIT + ledger rows), 6 already-live moved, 10 SKIPPED kept in pending (184,189,190,193,195,243_club,287,300,305_rename,319); 245 set_updated_at pin fixed; tests 6 fail = baseline; docs/C136-migrations.md
 המשך מ: C135 DONE (2026-11-02): prod redeploy HEAD 243c52522 dpl_9aTp3gF7NPnVTYkdCyMtG6kJ5zKp READY, aliased www, new x-vercel-id; .vercelignore excludes local dirs; docs/C135-deploy.md
 המשך מ: C132 DONE (2026-11-02): pnpm type-check on closeout/v1-final HEAD exit 0, 0 errors, 2164 src files; no code change; docs/C132-types.md
 המשך מ: C131 DONE (2026-11-02): supabase db query --linked "select 'DB-OK'" printed DB-OK, exit 0; docs/C131-db.md

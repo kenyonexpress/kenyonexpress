@@ -862,12 +862,12 @@ async function runBeginCheckout(
 
   // The shipping method, under the same rule as the gift above: its own
   // statement, never a key in the orders INSERT. `orders.shipping_method` is
-  // added by migrations/pending/236_orders_shipping_method.sql and does not
-  // exist in production yet, so this UPDATE fails there with 42703 and the
-  // order goes through as a supplier delivery, which is what every order was
+  // added by migrations/applied/236_orders_shipping_method.sql (applied to
+  // production 2026-11-02, C136); before that the UPDATE failed with 42703 and
+  // the order went through as a supplier delivery, which is what every order was
   // before the selector existed. Only a NON-default pick is written: the
   // default is what a null column already means, and writing it would log a
-  // warning on every checkout until 236 is applied.
+  // warning on every checkout where the column is missing.
   //
   // Read off the server-built cart, not off the input: the cart resolved the
   // shopper's cookie against the registry, so the value here is an id the

@@ -175,7 +175,7 @@ describe('submitSupplierApplication, the acceptance record', () => {
 
 describe('migration 245, the columns the record depends on', () => {
   const sql = readFileSync(
-    join(process.cwd(), 'migrations/pending/245_supplier_onboarding.sql'),
+    join(process.cwd(), 'migrations/applied/245_supplier_onboarding.sql'),
     'utf8',
   )
   const table = sql.slice(sql.indexOf('supplier_contract_acceptances ('))
