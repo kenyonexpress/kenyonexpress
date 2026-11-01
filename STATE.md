@@ -1,7 +1,11 @@
-RESUME FROM: M08-c342
+RESUME FROM: M09-c342
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:04:54+07:00
+- item: M08-c342
+- RESULT: DONE
 
 ### 2026-11-01T21:02:24+07:00
 - item: M07-c342
@@ -98,10 +102,6 @@ RESUME FROM: M08-c342
 ### 2026-11-01T19:59:37+07:00
 - item: M04-c341
 - RESULT: DONE
-
-### 2026-11-01T19:58:27+07:00
-- item: M03-c341
-- BLOCKED: no-reference (no category Electro v7 capture; live URL serves our own build)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
