@@ -30629,3 +30629,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T09:07:33+07:00
 - item: M16-c329
 - RESULT: DONE
+
+## Archived 2026-11-01T10:57:57+07:00 after M06-c331 (3 lines from STATE.md)
+
+### 2026-11-01T09:19:24+07:00
+- item: M17-c329
+- BLOCKED: compare gate not met (home 29–41% vs 11%; local page rendering a data-fetch fallback); RTL check itself clean. If the failed fetch is a 401 or placeholder-key error, this item should be DONE-DEFERRED under the Supabase-recovery rule.
