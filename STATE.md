@@ -1,7 +1,11 @@
-RESUME FROM: M07-c342
+RESUME FROM: M08-c342
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:02:24+07:00
+- item: M07-c342
+- RESULT: DONE
 
 ### 2026-11-01T21:01:14+07:00
 - item: M06-c342
@@ -98,10 +102,6 @@ RESUME FROM: M07-c342
 ### 2026-11-01T19:58:27+07:00
 - item: M03-c341
 - BLOCKED: no-reference (no category Electro v7 capture; live URL serves our own build)
-
-### 2026-11-01T19:57:13+07:00
-- item: M02-c341
-- BLOCKED: product gate fails at all widths (36.58 / 29.82 / 20.52 vs 11%); only valid reference is refs/electro-product-fresh.html, live-site reference is our own build
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
