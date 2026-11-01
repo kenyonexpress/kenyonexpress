@@ -1,7 +1,19 @@
-RESUME FROM: M05-c332
+RESUME FROM: M08-c332
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:37:39+07:00
+- item: M07-c332
+- RESULT: DONE
+
+### 2026-11-01T11:36:42+07:00
+- item: M06-c332
+- RESULT: DONE
+
+### 2026-11-01T11:34:50+07:00
+- item: M05-c332
+- RESULT: DONE
 
 ### 2026-11-01T11:32:42+07:00
 - item: M04-c332
@@ -90,18 +102,6 @@ RESUME FROM: M05-c332
 ### 2026-11-01T10:39:15+07:00
 - item: M01-c331
 - BLOCKED: gate-fail
-
-### 2026-11-01T10:24:05+07:00
-- item: M18-c330
-- RESULT: DONE
-
-### 2026-11-01T10:23:17+07:00
-- item: M17-c330
-- BLOCKED: locked-component M17-c330
-
-### 2026-11-01T10:21:37+07:00
-- item: M16-c330
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
@@ -217,3 +217,7 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c330 DONE (2026-11-01): pnpm type-check clean (tsc --noEmit exit 0), no tracked drift to commit; no code changes; no forbidden files touched
 
 המשך מ: M09-c331 DONE (2026-11-01): audit only, no code changes. 0 removable deps (all 11 name-unreferenced pkgs are implicit: biome/lint-staged via scripts+husky, coverage-v8 via vitest, capacitor native platforms, @mdx-js/loader peer of @next/mdx, @types/*). knip dead exports are intentional API surface (shadcn ui, cardcom/ledger/idempotency, admin actions) or in forbidden HeroSlider; left untouched; no forbidden files touched
+
+המשך מ: M05-c332 DONE (2026-11-01): pnpm test green (627 files passed, 2 skipped; 7165 tests passed, 28 skipped); committed tracked docs drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
+
+המשך מ: M06-c332 DONE (2026-11-01): pnpm build green (exit 0), no tracked drift; committed untracked docs/C113-db-cli.md; no code changes; no forbidden files touched
