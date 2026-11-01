@@ -271,3 +271,4 @@
 המשך מ: M08-c343 DONE (2026-11-02): LH mobile perf / 86/79/90, /product/<slug> 82/82/81 (3 runs each, local build, below 95 G23 target, LCP-driven); proof docs/M08-c343.md; no code changes
 המשך מ: M09-c343 DONE (2026-11-02): knip deps scan: only @capacitor/android flagged, kept (android/ platform + cap sync); no unused runtime deps; dead exports are type-only/generated, left; proof docs/M09-c343.md; no code changes; no forbidden files touched
 המשך מ: M12-c343 DONE (2026-11-02): robots.ts 8/8 tests pass; live www/robots.txt 200, storefront allowed, all private routes disallowed; note prod APP_URL=apex which 308s to www (sitemap/canonical host mismatch, env fix at deploy); proof docs/M12-c343.md; no code changes
+המשך מ: M04-c345 DONE (2026-11-02): pnpm type-check exit 0, zero tsc errors, no drift; proof docs/M04-c345.md; no code changes; no forbidden files touched
