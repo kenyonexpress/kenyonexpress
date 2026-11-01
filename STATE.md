@@ -1,7 +1,11 @@
-RESUME FROM: M07-c345
+RESUME FROM: M08-c345
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T01:36:16+07:00
+- item: M07-c345
+- RESULT: DONE
 
 ### 2026-11-02T01:33:50+07:00
 - item: M06-c345
@@ -98,10 +102,6 @@ RESUME FROM: M07-c345
 ### 2026-11-01T23:07:50+07:00
 - item: C125
 - BLOCKED: gates fail: grep=346 hits, numeric money columns remain, snapshot test skipped not passing
-
-### 2026-11-01T23:02:34+07:00
-- item: C124
-- BLOCKED: supabase-cli-hang
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

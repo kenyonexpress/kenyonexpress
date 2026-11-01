@@ -30180,3 +30180,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T22:55:42+07:00
 - item: C123
 - BLOCKED: locked-component — mobile perf levers (Heebo subset/preload, dynamic root providers) are in `src/app/layout.tsx`, and the HEAD production build fails type-check.
+
+## Archived 2026-11-02T01:36:16+07:00 after M07-c345 (3 lines from STATE.md)
+
+### 2026-11-01T23:02:34+07:00
+- item: C124
+- BLOCKED: supabase-cli-hang
