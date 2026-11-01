@@ -341,7 +341,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
               </select>
               <input
                 type="number"
-                step="0.01"
+                step={priceMode === 'set' ? '1' : '0.01'}
                 value={priceValue}
                 onChange={(e) => setPriceValue(e.target.value)}
                 placeholder={priceMode === 'percent' ? 'למשל: -10' : 'למשל: 99.90'}

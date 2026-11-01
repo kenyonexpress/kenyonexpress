@@ -1,11 +1,11 @@
 import { FaChevronLeft } from '@/components/icons/electro-icons'
-import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
+import { APPLE_BANNER as APPLE, TESLA_BANNER as TESLA } from '@/lib/hero-brand-banners'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const SB = ELECTRO_HERO.sideBanners
 const BANNER_WIDTH = 200
-const BANNER_IMAGE_HEIGHT = 80
 
 type BannerLine = { text: string; bold?: boolean }[]
 
@@ -13,6 +13,8 @@ type PromoBanner = {
   id: string
   href: string
   lines: BannerLine[]
+  /** A real image (C137: no grey placeholders). */
+  image: string
 }
 
 /**
@@ -33,21 +35,30 @@ type PromoBanner = {
  * 13px against the 11px around it, kept because it is a layout fact and not a
  * language one.
  */
+/*
+ * C137: the old site's own blocks in this column were a Tesla mark ("Shop the
+ * Hottest Products", upload 6472) and an Apple mark (upload 6450); those two
+ * are the Tesla and Apple products banners now, with the same images. The
+ * third block keeps restaurants with a real catalogue photograph.
+ */
 const PROMO_BANNERS: PromoBanner[] = [
   {
     id: 'das-1',
-    href: '/category/hot-deals',
-    lines: [[{ text: 'הדילים ' }, { text: 'החמים', bold: true }, { text: ' של השבוע' }]],
+    href: TESLA.href,
+    lines: [[{ text: 'מוצרי ' }, { text: 'Tesla', bold: true }], [{ text: 'החמים ביותר' }]],
+    image: TESLA.logo,
   },
   {
     id: 'das-2',
-    href: '/category/vacation',
-    lines: [[{ text: 'מבצעים ' }, { text: 'גדולים', bold: true }], [{ text: 'על צימרים ומלונות' }]],
+    href: APPLE.href,
+    lines: [[{ text: 'מוצרי ' }, { text: 'Apple', bold: true }], [{ text: 'אייפון ו-AirPods' }]],
+    image: APPLE.logo,
   },
   {
     id: 'das-3',
     href: '/category/restaurants-cafes',
     lines: [[{ text: 'מסעדות, בתי קפה' }, { text: ' ועוד', bold: true }]],
+    image: '/images/products/steak-1-600x512.webp',
   },
 ]
 
@@ -120,7 +131,7 @@ export default function HeroPromoBanners() {
         <Link
           key={banner.id}
           href={banner.href}
-          className={`group relative flex min-h-0 flex-1 items-stretch overflow-hidden px-3 py-4 transition-colors hover:bg-brand-accent/40 ${
+          className={`group relative flex min-h-0 flex-1 items-stretch gap-2 overflow-hidden px-3 py-4 transition-colors hover:bg-brand-accent/40 ${
             idx < PROMO_BANNERS.length - 1 ? 'border-b border-border-alt' : ''
           }`}
         >
@@ -131,12 +142,14 @@ export default function HeroPromoBanners() {
 
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-5 -end-2.5 z-0 w-20 rotate-[16deg]"
-            style={{ height: BANNER_IMAGE_HEIGHT }}
+            className="pointer-events-none relative z-0 size-16 shrink-0 self-end overflow-hidden rounded-sm"
           >
-            <BrandPlaceholder
-              className="absolute inset-0 rounded-sm transition-transform duration-300 group-hover:scale-105"
-              markWidth={64}
+            <Image
+              src={banner.image}
+              alt=""
+              fill
+              sizes="64px"
+              className="object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </div>
         </Link>

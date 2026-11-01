@@ -1066,7 +1066,7 @@ export default function CheckoutForm({
                       inputMode="decimal"
                       min={0}
                       max={walletMaxIls}
-                      step="0.01"
+                      step="1"
                       defaultValue={0}
                       /*
                         The three attributes above enforce nothing: this form is

@@ -106,7 +106,7 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
         setWalletOk(
           result.replay
             ? 'הזיכוי הזה כבר בוצע. לא נזקף סכום נוסף.'
-            : `נזקפו ₪${result.creditedIls.toLocaleString('he-IL', { minimumFractionDigits: 2 })} לארנק הלקוח.`,
+            : `נזקפו ${shekelsFromIls(result.creditedIls)} לארנק הלקוח.`,
         )
         setWalletConfirming(false)
         router.refresh()

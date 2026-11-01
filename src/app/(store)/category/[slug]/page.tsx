@@ -1,4 +1,3 @@
-import CategoryFilterChips from '@/components/CategoryFilterChips'
 import ViewTracker from '@/components/analytics/ViewTracker'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
@@ -408,10 +407,6 @@ async function CategoryPageBody({
         </header>
 
         <CategoryControlBar value={sort} />
-
-        <Suspense fallback={null}>
-          <CategoryFilterChips />
-        </Suspense>
 
         <div className="category-page__body">
           <div className="category-page__main">

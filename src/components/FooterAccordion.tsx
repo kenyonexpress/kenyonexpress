@@ -56,27 +56,29 @@ export default function FooterAccordion({
         <AccordionSection key={col.title} title={col.title} links={col.links} />
       ))}
 
-      {/* Mobile Social & Payment */}
-      <div className="border-b border-gray-800 px-4 py-4">
-        <h2 className="text-white text-footer-heading mb-4">עקבו אחרינו</h2>
-        <div className="flex items-center justify-center gap-4 mb-4">
-          {socials.map(({ label, href }) => {
-            const Icon = label === 'פייסבוק' ? FaFacebook : FaInstagram
-            return (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-                className="w-10 h-10 rounded-full bg-gray-600 hover:bg-brand flex items-center justify-center transition-colors"
-              >
-                <Icon size={20} />
-              </a>
-            )
-          })}
+      {/* Mobile Social & Payment: renders nothing while socials is empty (C137). */}
+      {socials.length > 0 && (
+        <div className="border-b border-gray-800 px-4 py-4">
+          <h2 className="text-white text-footer-heading mb-4">עקבו אחרינו</h2>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            {socials.map(({ label, href }) => {
+              const Icon = label === 'פייסבוק' ? FaFacebook : FaInstagram
+              return (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="w-10 h-10 rounded-full bg-gray-600 hover:bg-brand flex items-center justify-center transition-colors"
+                >
+                  <Icon size={20} />
+                </a>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="px-4 py-4">
         <h2 className="text-white text-footer-heading mb-3">אמצעי תשלום</h2>

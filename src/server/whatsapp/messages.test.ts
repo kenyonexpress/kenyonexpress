@@ -22,8 +22,8 @@ describe('buildWhatsAppText', () => {
     const text = buildWhatsAppText('order_paid', PAYLOAD)
     expect(text).toContain('שלום דנה,')
     expect(text).toContain('ABCDEF12')
-    // 12345 agorot is 123.45 shekels; only the formatter renders it.
-    expect(text).toContain('123.45')
+    // 12345 agorot is 123.45 shekels, displayed as whole shekels: 123.
+    expect(text).toMatch(/(^|[^\d])123(?![\d.])/)
     expect(text).not.toContain('12345')
   })
 
@@ -106,8 +106,8 @@ describe('orderStatusText', () => {
     const text = orderStatusText([ORDER])
     expect(text).toContain('ABCDEF12')
     expect(text).toContain('שולמה ובטיפול')
-    // 12345 agorot is 123.45 shekels; only the formatter renders it.
-    expect(text).toContain('123.45')
+    // 12345 agorot is 123.45 shekels, displayed as whole shekels: 123.
+    expect(text).toMatch(/(^|[^\d])123(?![\d.])/)
     expect(text).not.toContain('12345')
   })
 

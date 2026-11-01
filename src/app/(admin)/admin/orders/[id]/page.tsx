@@ -1,6 +1,7 @@
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import { requireSection } from '@/lib/admin/rbac'
+import { shekelsFromIls } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
@@ -79,10 +80,7 @@ const VOUCHER_STATUS_LABELS: Record<
 
 function ils(value: number | null | undefined): string {
   if (value === null || value === undefined) return '—'
-  return `₪${Number(value).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
+  return shekelsFromIls(value)
 }
 
 function percent(value: number | null | undefined): string {

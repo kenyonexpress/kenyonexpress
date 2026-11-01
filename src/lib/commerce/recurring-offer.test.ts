@@ -36,13 +36,16 @@ describe('what a product may be sold as', () => {
 })
 
 describe('the one-line price', () => {
-  it('speaks whole shekels without decimals and agorot with them', () => {
+  it('speaks whole shekels only, rounding agorot half away from zero', () => {
     expect(
       describeRecurringPrice({ amountAgorot: 4_900, interval: 'monthly', intervalCount: 1 }),
     ).toBe('⁦49 ₪⁩ לחודש')
     expect(
       describeRecurringPrice({ amountAgorot: 4_990, interval: 'monthly', intervalCount: 1 }),
-    ).toBe('⁦49.90 ₪⁩ לחודש')
+    ).toBe('⁦50 ₪⁩ לחודש')
+    expect(
+      describeRecurringPrice({ amountAgorot: 4_949, interval: 'monthly', intervalCount: 1 }),
+    ).toBe('⁦49 ₪⁩ לחודש')
   })
 
   it('names the multi-cycle interval', () => {

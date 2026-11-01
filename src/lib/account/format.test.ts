@@ -15,14 +15,17 @@ import {
 const digits = (s: string) => s.replace(/[^\d.,-]/g, '')
 
 describe('formatIls', () => {
-  it('always shows two decimals', () => {
-    expect(digits(formatIls(agorot(0)))).toBe('0.00')
-    expect(digits(formatIls(agorot(500)))).toBe('5.00')
-    expect(digits(formatIls(agorot(1250)))).toBe('12.50')
+  it('shows whole shekels only, rounding half away from zero', () => {
+    expect(digits(formatIls(agorot(0)))).toBe('0')
+    expect(digits(formatIls(agorot(500)))).toBe('5')
+    expect(digits(formatIls(agorot(1250)))).toBe('13')
+    expect(digits(formatIls(agorot(9949)))).toBe('99')
+    expect(digits(formatIls(agorot(9950)))).toBe('100')
   })
 
   it('keeps the sign for a negative balance', () => {
-    expect(digits(formatIls(agorot(-320)))).toBe('-3.20')
+    expect(digits(formatIls(agorot(-320)))).toBe('-3')
+    expect(digits(formatIls(agorot(-350)))).toBe('-4')
   })
 
   it('refuses a float, which is the whole point of the branded parameter', () => {

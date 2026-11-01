@@ -1,5 +1,7 @@
 'use client'
 
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import {
   type GiftCardBalanceState,
   type GiftCardRedeemState,
@@ -26,11 +28,8 @@ const fieldClass =
 const buttonClass =
   'min-h-11 rounded-lg bg-brand-primary px-5 text-sm font-semibold text-heading disabled:opacity-60'
 
-function formatIls(agorot: number): string {
-  return `₪${(agorot / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: agorot % 100 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  })}`
+function formatIls(value: number): string {
+  return shekels(agorot(Math.trunc(value)))
 }
 
 const STATE_LABELS_HE: Record<string, string> = {

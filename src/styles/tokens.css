@@ -322,6 +322,11 @@
   /* 768: live's slider is x40 w728, i.e. the hero column hugs the right edge
      and leaves 40px on the left (inline-end in RTL). */
   --spacing-hero-inset-tablet: 40px;
+  /* C137 hero brand banners: the 170px strip under the slider (live's category
+     strip slot), the banner photo inside it, and the phone carousel photo. */
+  --spacing-hero-strip: 170px;
+  --spacing-hero-banner-photo: 130px;
+  --spacing-hero-banner-photo-mobile: 180px;
 
   /* --- The app shell, measured at all three widths ---------------------------
      Read off refs/ke_live_computed.json on 2026-09-03. The live shell is

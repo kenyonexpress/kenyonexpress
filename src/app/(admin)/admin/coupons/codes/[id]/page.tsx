@@ -8,6 +8,8 @@ import {
   isLapsedButUnswept,
   isScannable,
 } from '@/lib/admin/voucher-view'
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import { AlertTriangle } from 'lucide-react'
@@ -57,10 +59,7 @@ interface VoucherDetail {
 
 function ils(agorotValue: number | null | undefined): string {
   if (agorotValue === null || agorotValue === undefined) return '—'
-  return `₪${(agorotValue / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
+  return shekels(agorot(Math.trunc(agorotValue)))
 }
 
 function dateTime(value: string | null): string {

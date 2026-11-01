@@ -248,8 +248,8 @@ describe('RFM Analysis', () => {
 
       expect(formatted.recency).toBe('30 days')
       expect(formatted.frequency).toBe('5 orders')
-      expect(formatted.monetary).toBe('₪500.00')
-      expect(formatted.avgOrderValue).toBe('₪100.00')
+      expect(formatted.monetary).toBe('₪500')
+      expect(formatted.avgOrderValue).toBe('₪100')
       expect(formatted.lastOrder).toEqual(new Date('2024-01-15T10:00:00Z'))
     })
 

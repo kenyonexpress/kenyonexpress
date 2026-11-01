@@ -47,7 +47,9 @@ const WELCOME_SLIDE: HeroSlide = {
   // and this slide's image box is 324x434 at x=654, so relative to the slider it
   // sits at x=318 y=18: width 44.5%, inset 11.8% from the right edge, height 434.
   // The previous 49.8% / flush-right / 495 came from the electro demo.
-  imageLayout: { offsetTop: 18, widthPercent: 44.5, insetPercent: 11.8, minHeight: 434 },
+  // C137: inset 11.8 -> 3. At 11.8 the photo's left edge (x665 at 1440) sat
+  // 20px under the end of "לקניון Express"; at 3 it starts at x728, clear of it.
+  imageLayout: { offsetTop: 18, widthPercent: 44.5, insetPercent: 3, minHeight: 434 },
 }
 
 /**

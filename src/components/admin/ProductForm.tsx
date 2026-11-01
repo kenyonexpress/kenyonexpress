@@ -557,7 +557,7 @@ export default function ProductForm({
                 name="kenyon_price"
                 type="number"
                 min="0"
-                step="0.01"
+                step="1"
                 value={kenyonPrice}
                 onChange={(e) => setKenyonPrice(e.target.value)}
                 required
@@ -575,7 +575,7 @@ export default function ProductForm({
                 name="full_price"
                 type="number"
                 min="0"
-                step="0.01"
+                step="1"
                 defaultValue={product?.full_price ?? ''}
                 dir="ltr"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
@@ -678,7 +678,7 @@ export default function ProductForm({
                   name="coupon_price_ils"
                   type="number"
                   min="0.01"
-                  step="0.01"
+                  step="1"
                   value={couponPrice}
                   onChange={(e) => setCouponPrice(e.target.value)}
                   dir="ltr"
@@ -730,7 +730,7 @@ export default function ProductForm({
                     name="recurring_amount_ils"
                     type="number"
                     min="0.01"
-                    step="0.01"
+                    step="1"
                     value={recurringAmount}
                     onChange={(e) => setRecurringAmount(e.target.value)}
                     required
@@ -1111,7 +1111,7 @@ export default function ProductForm({
               name="min_purchase_ils"
               type="number"
               min="0"
-              step="0.01"
+              step="1"
               defaultValue={product?.min_purchase_ils ?? ''}
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
@@ -1521,7 +1521,7 @@ export default function ProductForm({
                       <input
                         type="number"
                         min="0"
-                        step="0.01"
+                        step="1"
                         value={v.price}
                         onChange={(e) => updateVariant(idx, 'price', e.target.value)}
                         dir="ltr"
@@ -1601,11 +1601,7 @@ function Row({ label, value }: { label: string; value: number }) {
     <>
       <dt className="text-gray-600">{label}</dt>
       <dd className="text-end font-medium text-gray-900" dir="ltr">
-        ₪
-        {value.toLocaleString('he-IL', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+        ₪{Math.round(value).toLocaleString('he-IL')}
       </dd>
     </>
   )

@@ -139,13 +139,14 @@ describe('buildCouponShareText', () => {
     expect(text).toContain('https://kenyonexpress.co.il')
   })
 
-  it('takes agorot and prints the agora, so a forwarded message is exact', () => {
+  it('takes agorot and prints whole shekels, rounding half away from zero', () => {
     // This is the message a customer forwards to whoever is coming with them,
     // as a record of what they will still pay at the counter. It used to take
     // shekels, so every caller divided `remaining_amount_due_agorot` by 100
     // and handed over a float that had to be rounded back.
-    expect(share({ collectAmountAgorot: 16_250 })).toContain('⁦162.50 ₪⁩')
-    expect(share({ collectAmountAgorot: 5 })).toContain('⁦0.05 ₪⁩')
+    expect(share({ collectAmountAgorot: 16_250 })).toContain('⁦163 ₪⁩')
+    expect(share({ collectAmountAgorot: 16_249 })).toContain('⁦162 ₪⁩')
+    expect(share({ collectAmountAgorot: 5 })).toContain('⁦0 ₪⁩')
   })
 
   it('says nothing about a balance when the coupon covers the whole price', () => {

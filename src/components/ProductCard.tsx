@@ -334,7 +334,7 @@ function DefaultProductCard({ product }: { product: Product }) {
           isPhysicalShipping={product.is_physical_shipping}
           city={product.city}
           category={product.category}
-          className="flex text-xs"
+          className="flex justify-center text-center text-xs"
         />
 
         <Link

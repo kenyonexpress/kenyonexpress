@@ -29,11 +29,14 @@ const NBSP = ' '
 
 describe('shekels', () => {
   it.each([
-    [0, `0.00${NBSP}₪`],
-    [99, `0.99${NBSP}₪`],
-    [9900, `99.00${NBSP}₪`],
-    [999900, `9,999.00${NBSP}₪`],
-    [-9900, `-99.00${NBSP}₪`],
+    [0, `0${NBSP}₪`],
+    [99, `1${NBSP}₪`],
+    [9900, `99${NBSP}₪`],
+    [9949, `99${NBSP}₪`],
+    [9950, `100${NBSP}₪`],
+    [999900, `9,999${NBSP}₪`],
+    [-9900, `-99${NBSP}₪`],
+    [-9950, `-100${NBSP}₪`],
   ])('formats %i agorot', (value, body) => {
     expect(shekels(agorot(value))).toBe(`${LRI}${body}${PDI}`)
   })
@@ -57,16 +60,20 @@ describe('shekels', () => {
     expect(price).not.toContain(' ')
   })
 
-  it('never produces a float on the way to the string', () => {
-    // 1/3 of a shekel cannot exist in agorot, and the formatter must not invent
-    // one: 3333 agorot is 33.33, not 33.329999999999998.
-    expect(shekelsPlain(agorot(3333))).toBe(`33.33${NBSP}₪`)
-    expect(shekelsPlain(agorot(1))).toBe(`0.01${NBSP}₪`)
-    expect(shekelsPlain(agorot(10))).toBe(`0.10${NBSP}₪`)
+  it('rounds to whole shekels, half away from zero, with no decimals shown', () => {
+    // Owner decision 02.11.2026: every displayed price is whole shekels.
+    // Storage stays integer agorot; only the display rounds.
+    expect(shekelsPlain(agorot(3333))).toBe(`33${NBSP}₪`)
+    expect(shekelsPlain(agorot(1))).toBe(`0${NBSP}₪`)
+    expect(shekelsPlain(agorot(49))).toBe(`0${NBSP}₪`)
+    expect(shekelsPlain(agorot(50))).toBe(`1${NBSP}₪`)
+    expect(shekelsPlain(agorot(-50))).toBe(`-1${NBSP}₪`)
+    expect(shekelsPlain(agorot(9950))).toBe(`100${NBSP}₪`)
+    expect(shekelsPlain(agorot(9949))).toBe(`99${NBSP}₪`)
   })
 
   it('groups thousands the Hebrew locale way', () => {
-    expect(shekelsPlain(agorot(123456789))).toBe(`1,234,567.89${NBSP}₪`)
+    expect(shekelsPlain(agorot(123456789))).toBe(`1,234,568${NBSP}₪`)
   })
 })
 

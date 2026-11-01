@@ -63,15 +63,26 @@ const PDI = '\u2069'
 /** U+00A0. Inside the isolate, so it cannot be resolved against the paragraph. */
 const NBSP = '\u00a0'
 
-/** The digits and the sign, with no isolate. Everything shared lives here. */
-function shekelBody(value: Agorot, withFraction: boolean): string {
+/**
+ * The digits and the sign, with no isolate. Everything shared lives here.
+ *
+ * WHOLE SHEKELS ONLY (decision 02.11.2026). Every price on every surface is
+ * shown without agorot; storage stays integer agorot. Rounded half away from
+ * zero on the integer, so no float is ever formed.
+ */
+function shekelBody(value: Agorot): string {
   const negative = value < 0
-  const absolute = Math.abs(value)
-  const whole = Math.trunc(absolute / AGOROT_PER_ILS)
-  const fraction = absolute % AGOROT_PER_ILS
+  const whole = Math.floor((Math.abs(value) + AGOROT_PER_ILS / 2) / AGOROT_PER_ILS)
   const grouped = whole.toLocaleString('he-IL', { useGrouping: true })
-  const digits = withFraction ? `${grouped}.${String(fraction).padStart(2, '0')}` : grouped
-  return `${negative ? '-' : ''}${digits}${NBSP}₪`
+  return `${negative && whole > 0 ? '-' : ''}${grouped}${NBSP}₪`
+}
+
+/** A legacy shekel float rounded to a whole shekel, for display only. */
+function wholeFromIls(value: number | string | null | undefined): number {
+  const n = typeof value === 'string' ? Number(value) : (value ?? 0)
+  if (!Number.isFinite(n)) return 0
+  const whole = Math.round(Math.abs(n))
+  return n < 0 && whole > 0 ? -whole : whole
 }
 
 /** Wrap a price so no surrounding text can reorder it. See the note above. */
@@ -80,7 +91,7 @@ function isolate(body: string): string {
 }
 
 export function shekels(value: Agorot): string {
-  return isolate(shekelBody(value, true))
+  return isolate(shekelBody(value))
 }
 
 /**
@@ -92,7 +103,7 @@ export function shekels(value: Agorot): string {
  * that is what `shekels` is for, and the whole point of it.
  */
 export function shekelsPlain(value: Agorot): string {
-  return shekelBody(value, true)
+  return shekelBody(value)
 }
 
 export function shekelsRounded(value: Agorot): string {
@@ -122,13 +133,7 @@ export function shekelsRounded(value: Agorot): string {
  * allowed a float, and it is allowed it only to print.
  */
 export function shekelsFromIls(value: number | string | null | undefined): string {
-  const n = typeof value === 'string' ? Number(value) : (value ?? 0)
-  const safe = Number.isFinite(n) ? n : 0
-  const digits = safe.toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  return isolate(`${digits}${NBSP}₪`)
+  return isolate(`${wholeFromIls(value).toLocaleString('he-IL', { useGrouping: true })}${NBSP}₪`)
 }
 
 /** `shekelsFromIls` with no agorot: whole shekels, for dense admin tables. */
@@ -151,7 +156,8 @@ export function shekelsFromIlsPlain(value: number | string | null | undefined): 
 }
 
 /**
- * `399 ₪`, not `399.00 ₪`. Agorot appear only when the price has them.
+ * `399 ₪`, not `399.00 ₪`. Since 02.11.2026 every price is whole shekels, so
+ * this is now the same as `shekelsFromIls`; kept for its call sites.
  *
  * The share message and the OG card both quote a price inside a sentence rather
  * than in a column, and a trailing `.00` reads as clutter there. Both modules
@@ -160,13 +166,7 @@ export function shekelsFromIlsPlain(value: number | string | null | undefined): 
  * their own tests, which is what those tests are for.
  */
 export function shekelsFromIlsCompact(value: number | string | null | undefined): string {
-  const n = typeof value === 'string' ? Number(value) : (value ?? 0)
-  const safe = Number.isFinite(n) ? n : 0
-  const digits = safe.toLocaleString('he-IL', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })
-  return isolate(`${digits}${NBSP}₪`)
+  return shekelsFromIls(value)
 }
 
 /** `shekelsFromIlsCompact` with no isolate, for an RSS body or an OG canvas. */

@@ -1,3 +1,4 @@
+import { HERO_BRAND_BANNERS } from '@/lib/hero-brand-banners'
 import { HERO_SINGLEFILE_SLIDES } from '@/lib/hero-singlefile-data'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -39,6 +40,32 @@ export default function HeroMobile() {
               </span>
             )}
             <span className="text-base">{s.tagline ?? 'מסדרים לך בילוי'}</span>
+          </span>
+        </Link>
+      ))}
+      {/* C137: the Apple and Tesla products banners close the carousel. */}
+      {HERO_BRAND_BANNERS.map((b) => (
+        <Link
+          key={b.id}
+          href={b.href}
+          prefetch={false}
+          data-hero-banner={b.id}
+          className="relative flex h-full min-w-full snap-start items-center gap-4 bg-white px-5"
+        >
+          <span className="flex min-w-0 flex-1 flex-col items-start gap-1 text-start">
+            <Image src={b.logo} alt="" width={48} height={48} className="size-12 object-contain" />
+            <span className="text-2xl font-bold text-heading">{b.title}</span>
+            <span className="text-base text-muted-foreground">{b.subtitle}</span>
+            <span className="mt-1 text-sm font-bold text-link">{b.cta}</span>
+          </span>
+          <span className="relative block size-hero-banner-photo-mobile shrink-0">
+            <Image
+              src={b.photo ?? b.logo}
+              alt=""
+              fill
+              sizes="180px"
+              style={{ objectFit: 'contain' }}
+            />
           </span>
         </Link>
       ))}

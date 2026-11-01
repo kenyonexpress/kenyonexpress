@@ -67,7 +67,7 @@ describe('buildApplePass', () => {
     const pass = buildApplePass(LIVE, APPLE) as {
       storeCard: { headerFields: { key: string; value: string }[] }
     }
-    expect(pass.storeCard.headerFields[0]).toMatchObject({ key: 'due', value: '120.00 ₪' })
+    expect(pass.storeCard.headerFields[0]).toMatchObject({ key: 'due', value: '120 ₪' })
   })
 
   it('is not voided while the voucher is live', () => {
@@ -175,7 +175,7 @@ describe('buildGooglePass', () => {
       textModulesData: { id: string; body: string }[]
     }
     const byId = Object.fromEntries(object.textModulesData.map((m) => [m.id, m.body]))
-    expect(byId).toMatchObject({ due: '120.00 ₪', paid: '80.00 ₪', face: '200.00 ₪' })
+    expect(byId).toMatchObject({ due: '120 ₪', paid: '80 ₪', face: '200 ₪' })
   })
 })
 

@@ -125,7 +125,8 @@ export function bidiVisual(logical: string): string {
 // ---------------------------------------------------------------------------
 
 /**
- * `₪1,234.56`, built by hand rather than through Intl: the he-IL formatter
+ * `₪1,235`: whole shekels only (decision 02.11.2026), rounded half up on the
+ * integer agorot. Built by hand rather than through Intl: the he-IL formatter
  * decorates its output with direction marks that have no glyph in the
  * embedded font and would surface as tofu on the printed page.
  */
@@ -133,13 +134,10 @@ export function formatAmountForPdf(valueAgorot: number): string {
   if (!Number.isSafeInteger(valueAgorot)) {
     throw new TypeError('PDF amounts are integer agorot')
   }
-  const sign = valueAgorot < 0 ? '-' : ''
-  const absolute = Math.abs(valueAgorot)
-  const whole = Math.floor(absolute / 100)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  const fraction = String(absolute % 100).padStart(2, '0')
-  return `${sign}₪${whole}.${fraction}`
+  const rounded = Math.floor((Math.abs(valueAgorot) + 50) / 100)
+  const sign = valueAgorot < 0 && rounded > 0 ? '-' : ''
+  const whole = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return `${sign}₪${whole}`
 }
 
 function formatDate(value: Date): string {

@@ -88,7 +88,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 name="original_price"
                 type="number"
                 min="1"
-                step="0.01"
+                step="1"
                 value={originalPrice || ''}
                 onChange={(e) => setOriginalPrice(Number(e.target.value))}
                 required
@@ -108,7 +108,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 name="platform_price"
                 type="number"
                 min={0}
-                step="0.01"
+                step="1"
                 max={originalPrice || undefined}
                 value={platformPrice || ''}
                 onChange={(e) => setPlatformPrice(Number(e.target.value))}

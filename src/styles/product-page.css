@@ -200,10 +200,19 @@
 }
 
 .pdp-summary__eyebrow {
+  /* C137 card label rule: city + pin (or category for physical), centred. */
+  text-align: center;
   margin: 0;
   font-size: var(--pdp-eyebrow-size);
   line-height: var(--pdp-eyebrow-line);
   color: var(--pdp-muted);
+}
+
+.pdp-summary__eyebrow .product-location {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
 
 .pdp-summary__title {

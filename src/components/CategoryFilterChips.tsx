@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 
 /**
- * F63: Category filter chips row.
- * Four chips: weekend/free shipping/price brackets, multi-select, URL-driven.
- * Mobile sticky at top.
+ * F63: Category filter chips row, URL-driven, multi-select, sticky on mobile.
+ * C137 (decision 02.11.2026): exactly two chips, open-weekend and
+ * free-shipping, and only on /c/<slug>. The price brackets are gone.
  */
 export default function CategoryFilterChips() {
   const pathname = usePathname()
@@ -18,8 +18,6 @@ export default function CategoryFilterChips() {
   const items = [
     { key: 'weekend' as const, label: 'פתוח בסופ״ש', on: filters.weekend },
     { key: 'free_shipping' as const, label: 'משלוח חינם', on: filters.freeShipping },
-    { key: 'price_100' as const, label: 'עד 100₪', on: filters.price100 },
-    { key: 'price_500' as const, label: 'עד 500₪', on: filters.price500 },
   ]
 
   return (

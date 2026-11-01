@@ -9,7 +9,7 @@ import NativeShareButton from '@/components/shared/NativeShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import ProductQuestionLink from '@/components/storefront/ProductQuestionLink'
-import RatingStars, { type RatingSummary } from '@/components/storefront/RatingStars'
+import type { RatingSummary } from '@/components/storefront/RatingStars'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
@@ -132,7 +132,7 @@ export default function ProductInfo({
   isCoupon,
   couponOffer,
   recurringOffer = null,
-  rating = null,
+  rating: _rating = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
 
@@ -263,7 +263,7 @@ export default function ProductInfo({
       <h1 className="pdp-summary__title">{name}</h1>
 
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
-        <RatingStars rating={rating} />
+        {/* No reviews UI (BRAND + LEGAL rule, C137): no star rating here. */}
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>

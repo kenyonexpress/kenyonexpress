@@ -170,8 +170,8 @@ export function formatRFMMetrics(rfm: RFMScore) {
   return {
     recency: `${rfm.recency_days} days`,
     frequency: `${rfm.frequency_count} orders`,
-    monetary: `₪${(rfm.monetary_total_ils / 100).toFixed(2)}`,
-    avgOrderValue: `₪${(rfm.avg_order_value_ils / 100).toFixed(2)}`,
+    monetary: `₪${Math.round(rfm.monetary_total_ils / 100)}`,
+    avgOrderValue: `₪${Math.round(rfm.avg_order_value_ils / 100)}`,
     lastOrder: rfm.last_order_at ? new Date(rfm.last_order_at) : null,
   }
 }

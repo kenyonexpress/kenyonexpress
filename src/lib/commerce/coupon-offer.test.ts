@@ -84,8 +84,9 @@ describe('buildCouponOffer refuses to sell what it cannot price', () => {
 })
 
 describe('shekelsFromIls', () => {
-  it('always shows two decimals so prices align in a column', () => {
-    expect(shekelsFromIls(50)).toBe('⁦50.00 ₪⁩')
-    expect(shekelsFromIls(1234.5)).toBe('⁦1,234.50 ₪⁩')
+  it('shows whole shekels only, rounding half away from zero', () => {
+    expect(shekelsFromIls(50)).toBe('⁦50 ₪⁩')
+    expect(shekelsFromIls(1234.5)).toBe('⁦1,235 ₪⁩')
+    expect(shekelsFromIls(99.49)).toBe('⁦99 ₪⁩')
   })
 })

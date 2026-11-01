@@ -46,19 +46,11 @@ describe('SiteFooter', () => {
     }
   })
 
-  it('renders social media links with correct hrefs', () => {
-    render(<SiteFooter />)
-    const facebookLinks = screen.getAllByRole('link', { name: 'פייסבוק' })
-    const instagramLinks = screen.getAllByRole('link', { name: 'אינסטגרם' })
-
-    // Check desktop version (first one)
-    expect(facebookLinks[0]).toHaveAttribute(
-      'href',
-      'https://www.facebook.com/קניון-Express-114398873446854/',
-    )
-    expect(instagramLinks[0]).toHaveAttribute('href', 'https://www.instagram.com/kenyonexpress')
-    expect(facebookLinks[0]).toHaveAttribute('target', '_blank')
-    expect(instagramLinks[0]).toHaveAttribute('target', '_blank')
+  it('renders no social network links (BRAND + LEGAL rule, C137)', () => {
+    const { container } = render(<SiteFooter />)
+    expect(screen.queryByRole('link', { name: 'פייסבוק' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'אינסטגרם' })).toBeNull()
+    expect(container.querySelector('a[href*="facebook.com"], a[href*="instagram.com"]')).toBeNull()
   })
 
   it('renders payment method indicators on desktop', () => {

@@ -114,10 +114,18 @@ describe('what the bodies must and must not contain', () => {
     expect(body).not.toMatch(/\d+\s*(ימים|ימי עסקים|שעות)/)
   })
 
-  it('drops a .00 that only costs characters', () => {
-    expect(buildSmsMessage('refund_completed', { refunded_agorot: 12_500 })?.body).toContain('₪125')
+  it('shows whole shekels only, rounding half away from zero', () => {
+    expect(buildSmsMessage('refund_completed', { refunded_agorot: 12_500 })?.body).toContain(
+      '₪125 ',
+    )
     expect(buildSmsMessage('refund_completed', { refunded_agorot: 12_550 })?.body).toContain(
-      '₪125.50',
+      '₪126 ',
+    )
+    expect(buildSmsMessage('refund_completed', { refunded_agorot: 12_549 })?.body).toContain(
+      '₪125 ',
+    )
+    expect(buildSmsMessage('refund_completed', { refunded_agorot: 12_550 })?.body).not.toMatch(
+      /\d\.\d/,
     )
   })
 })

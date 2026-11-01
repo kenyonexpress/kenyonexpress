@@ -63,7 +63,7 @@ export default function FlashDealForm({
             name="price_ils"
             required
             min="0.01"
-            step="0.01"
+            step="1"
             dir="ltr"
             className="mt-1 h-11 w-full rounded-lg border px-2"
           />
@@ -75,7 +75,7 @@ export default function FlashDealForm({
             type="number"
             name="reference_ils"
             min="0.01"
-            step="0.01"
+            step="1"
             dir="ltr"
             className="mt-1 h-11 w-full rounded-lg border px-2"
           />

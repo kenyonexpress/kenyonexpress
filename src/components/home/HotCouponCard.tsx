@@ -4,6 +4,8 @@ import { buildCouponOffer, shekelsFromIls } from '@/lib/commerce/coupon-offer'
 import type { HotCoupon } from '@/lib/hot-coupons'
 import { useEffect, useState } from 'react'
 
+const RENDER_EPOCH = new Date(0)
+
 interface HotCouponCardProps {
   coupon: HotCoupon
 }
@@ -30,7 +32,12 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
     couponPriceIls: coupon.coupon_price_ils,
     validUntil: coupon.offer_valid_until,
     expiryDays: coupon.coupon_expiry_days,
+    // Prices only at render: reading the clock while the home page prerenders
+    // is uncached data and fails the build (cacheComponents). Expiry is
+    // checked after mount, in the countdown effect below (C137).
+    now: RENDER_EPOCH,
   })
+  const [expired, setExpired] = useState(false)
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -40,6 +47,7 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
       const diff = offer.validUntil.getTime() - now.getTime()
 
       if (diff <= 0) {
+        setExpired(true)
         setTimeLeft('תוקף פג')
       } else {
         const days = Math.floor(diff / (1000 * 60 * 60 * 24))
@@ -67,7 +75,7 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
     setTimeout(() => setIsCopied(false), 2000)
   }
 
-  if (!offer.sellable) {
+  if (!offer.sellable || expired) {
     return null
   }
 

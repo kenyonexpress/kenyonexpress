@@ -1,4 +1,3 @@
-import DealChips from '@/components/catalog/DealChips'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
@@ -217,9 +216,7 @@ export default function ProductsPage({ searchParams }: Props) {
         <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>
           <ShopControlBar searchParams={searchParams} />
         </Suspense>
-        <Suspense fallback={null}>
-          <DealChips />
-        </Suspense>
+        {/* No filter chips here: chips live on /c/<slug> only (C137). */}
 
         <div className="category-page__body">
           <div className="category-page__main">

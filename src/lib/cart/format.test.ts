@@ -18,27 +18,28 @@ const wrap = (body: string) => `\u2066${body}\u2069`
 
 describe('shekels', () => {
   it('converts agorot to shekels rather than printing them raw', () => {
-    expect(shekels(agorot(20_000))).toBe(wrap('200.00\u00a0₪'))
-    expect(shekels(agorot(10_000))).toBe(wrap('100.00\u00a0₪'))
+    expect(shekels(agorot(20_000))).toBe(wrap('200\u00a0₪'))
+    expect(shekels(agorot(10_000))).toBe(wrap('100\u00a0₪'))
   })
 
-  it('keeps the agorot remainder', () => {
-    expect(shekelsPlain(agorot(9_999))).toBe('99.99\u00a0₪')
-    expect(shekelsPlain(agorot(1))).toBe('0.01\u00a0₪')
-    expect(shekelsPlain(agorot(0))).toBe('0.00\u00a0₪')
+  it('rounds the agorot remainder to whole shekels, half away from zero', () => {
+    expect(shekelsPlain(agorot(9_999))).toBe('100\u00a0₪')
+    expect(shekelsPlain(agorot(9_950))).toBe('100\u00a0₪')
+    expect(shekelsPlain(agorot(9_949))).toBe('99\u00a0₪')
+    expect(shekelsPlain(agorot(1))).toBe('0\u00a0₪')
+    expect(shekelsPlain(agorot(0))).toBe('0\u00a0₪')
   })
 
-  it('pads a single-digit remainder so it never reads as tens', () => {
-    // 1205 agorot is 12.05, not 12.5.
-    expect(shekelsPlain(agorot(1_205))).toBe('12.05\u00a0₪')
+  it('shows no decimals at all, even for a small remainder', () => {
+    expect(shekelsPlain(agorot(1_205))).toBe('12\u00a0₪')
   })
 
   it('groups thousands', () => {
-    expect(shekelsPlain(agorot(123_456))).toBe('1,234.56\u00a0₪')
+    expect(shekelsPlain(agorot(123_456))).toBe('1,235\u00a0₪')
   })
 
   it('signs a negative amount once, ahead of the digits', () => {
-    expect(shekelsPlain(agorot(-2_550))).toBe('-25.50\u00a0₪')
+    expect(shekelsPlain(agorot(-2_550))).toBe('-26\u00a0₪')
   })
 
   /**
@@ -64,7 +65,7 @@ describe('shekels', () => {
    */
   it('isolates the price rather than leaving its direction to the paragraph', () => {
     const output = shekels(agorot(12_345))
-    expect(output).toBe(wrap('123.45\u00a0₪'))
+    expect(output).toBe(wrap('123\u00a0₪'))
 
     // Digits before the sign, which is the whole point.
     const plain = shekelsPlain(agorot(12_345))

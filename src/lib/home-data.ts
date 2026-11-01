@@ -85,22 +85,6 @@ export async function getDealOfTheDay(): Promise<Product | null> {
   return toCardProduct(best)
 }
 
-export type HomeCategory = { id: string; name_he: string; slug: string; image_url: string | null }
-
-export async function getHomeCategories(): Promise<HomeCategory[]> {
-  'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
-  const { data, error } = await createPublicClient()
-    .from('categories')
-    .select('id, name_he, slug, image_url')
-    .is('parent_id', null)
-    .order('name_he', { ascending: true })
-    .limit(12)
-  if (error) throw new Error(`home.categories_failed: ${error.message}`)
-  return (data ?? []) as HomeCategory[]
-}
-
 export async function getFeaturedProducts(): Promise<Product[]> {
   'use cache'
   cacheLife('hours')
@@ -124,8 +108,12 @@ export async function getHotCoupons(): Promise<HotCoupon[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
+  // A coupon is `type = 'coupon'` OR the admin's coupon opt-in, the same
+  // precedence as lib/commerce/product-type.ts. Production's only imaged
+  // coupons are opt-ins on rows typed physical, so `type` alone found none and
+  // the section silently vanished (C137).
   const { data, error } = await activeProducts('*, supplier:suppliers(name, logo_url)')
-    .eq('type', 'coupon')
+    .or('type.eq.coupon,is_coupon_enabled.eq.true')
     .order('created_at', { ascending: false })
     .limit(4)
   if (error) throw new Error(`home.hot_coupons_failed: ${error.message}`)

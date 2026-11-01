@@ -1,6 +1,8 @@
 import ProductCard from '@/components/ProductCard'
 import NewsletterSignup from '@/components/growth/NewsletterSignup'
-import { getDealOfTheDay, getHomeBrands, getHomeCategories, getHotCoupons } from '@/lib/home-data'
+import { HOME_CATEGORIES } from '@/lib/home-categories'
+import { getDealOfTheDay, getHomeBrands, getHotCoupons } from '@/lib/home-data'
+import { repairPriceOrder } from '@/lib/money-format'
 import Link from 'next/link'
 import BrandsRow from './BrandsRow'
 import HotCouponCard from './HotCouponCard'
@@ -23,17 +25,16 @@ export async function DealOfTheDaySection() {
   )
 }
 
-/** 3. Categories row: top-level categories, nationwide. */
-export async function CategoriesRowSection() {
-  const categories = await getHomeCategories()
-  if (categories.length === 0) return null
+/** 3. Categories row: the live menu from KE_LIVE_SPEC.md, nationwide (C137). */
+export function CategoriesRowSection() {
+  const categories = HOME_CATEGORIES
   return (
     <section dir="rtl" aria-label="קטגוריות" className="home-section">
       <ul className="home-categories">
         {categories.map((c) => (
-          <li key={c.id} className="home-categories__item">
+          <li key={c.slug} className="home-categories__item">
             <Link href={`/category/${c.slug}`} className="home-categories__link">
-              {c.name_he}
+              {repairPriceOrder(c.name_he)}
             </Link>
           </li>
         ))}

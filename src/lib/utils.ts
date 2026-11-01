@@ -10,7 +10,8 @@ export function formatPrice(amount: number, currency = 'ILS'): string {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+    // Whole shekels only on every surface (decision 02.11.2026).
+    maximumFractionDigits: 0,
   }).format(amount)
 }
 

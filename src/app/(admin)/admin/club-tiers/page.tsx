@@ -84,7 +84,7 @@ export default async function ClubTiersPage({ searchParams }: Props) {
               סף רכישות (ש&quot;ח)
               <input
                 name="min_spend_ils"
-                defaultValue={agorotToIls(agorot(Number(t.min_spend_agorot))).toFixed(2)}
+                defaultValue={Math.round(agorotToIls(agorot(Number(t.min_spend_agorot))))}
                 inputMode="decimal"
                 required
                 className="rounded-md border border-border px-2 py-1"
@@ -145,9 +145,9 @@ export default async function ClubTiersPage({ searchParams }: Props) {
               <input
                 name="gift_value_ils"
                 inputMode="decimal"
-                defaultValue={agorotToIls(
-                  agorot(Number(benefitsByTier.get(t.id)?.gift_value_agorot ?? 0)),
-                ).toFixed(2)}
+                defaultValue={Math.round(
+                  agorotToIls(agorot(Number(benefitsByTier.get(t.id)?.gift_value_agorot ?? 0))),
+                )}
                 className="rounded-md border border-border px-2 py-1"
                 dir="ltr"
               />

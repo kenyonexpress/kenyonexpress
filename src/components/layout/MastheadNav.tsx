@@ -12,10 +12,9 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  *
  *   cart 135  user 223  heart 284  "בחר אזור" 360..456  search 456..990
  *
- * so RTL, reading right to left after the search: region selector, heart,
- * cart -- with 38px edge-to-edge between the icons at lg (the measured
- * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-nav-gap is that
- * measurement, not a taste.
+ * C137: three icons now (wishlist, account, cart), 20px apart. At the old
+ * 38px nav-gap the third icon pushed the cart 4px past the 1440 viewport
+ * edge (scrollWidth 1452), so the cluster closes up to fit beside the menu.
  *
  * The mega menu displays category items with hover-based dropdowns showing
  * featured content, subcategories, and promo banners. Yellow background per Electro v7.
@@ -25,10 +24,7 @@ export default function MastheadNav() {
     <div className="flex min-w-0 flex-1 items-center justify-between">
       <MegaMenu />
 
-      <nav
-        className="flex shrink-0 items-center gap-4 lg:gap-nav-gap ps-6"
-        aria-label="פעולות חשבון"
-      >
+      <nav className="flex shrink-0 items-center gap-5 ps-6" aria-label="פעולות חשבון">
         <Link
           href="/account/wishlist"
           prefetch={false}
@@ -39,15 +35,8 @@ export default function MastheadNav() {
           <EcFavorites size={ICON.size} aria-hidden="true" />
         </Link>
 
-        {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.
-            The cluster is exactly two icons at every breakpoint -- heart then
-            cart -- and the account entry point lives in the shell's top-left,
-            in exactly one place: TopBar's התחברות. This slot used to hold a
-            third <User> link to /login, which made three icons here, two more
-            account entry points than the rule allows (this one and the
-            handheld one in Header.tsx), and three places to keep in sync.
-            Live's own x at 1440 was cart 135, user 223, heart 284; dropping
-            the middle one closes to cart 135, heart 223. */}
+        {/* C137: HeaderCart renders the account icon and then the cart, so
+            this cluster reads wishlist / account / cart (RTL, right to left). */}
         <HeaderCart />
       </nav>
     </div>

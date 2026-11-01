@@ -104,8 +104,8 @@ describe('the checkout order review', () => {
     renderCheckout()
     // The price is digits-then-sign inside an LTR isolate now, so the regex
     // matches the number and the glyph in render order. See money-format.ts.
-    expect(screen.getByText(/תשלום באתר: .*40\.00.*₪/)).toBeTruthy()
-    expect(screen.getByText(/יתרה בעסק: .*110\.00.*₪/)).toBeTruthy()
+    expect(screen.getByText(/תשלום באתר: .*40(?![\d.]).*₪/)).toBeTruthy()
+    expect(screen.getByText(/יתרה בעסק: .*110(?![\d.]).*₪/)).toBeTruthy()
     expect(screen.getByText('יתרה לתשלום בעסק (בקופון)')).toBeTruthy()
   })
 

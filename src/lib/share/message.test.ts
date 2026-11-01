@@ -59,9 +59,10 @@ describe('buildShareMessage', () => {
     expect(buildShareMessage({ name: 'אוזניות', priceIls: 399, offer: null })).toContain('⁦399 ₪⁩')
   })
 
-  it('drops the agorot when a price has none, as the page does', () => {
+  it('shows whole shekels only, rounding half away from zero, as the page does', () => {
     expect(buildShareMessage({ name: 'x', priceIls: 399, offer: null })).toContain('⁦399 ₪⁩')
-    expect(buildShareMessage({ name: 'x', priceIls: 399.5, offer: null })).toContain('⁦399.5 ₪⁩')
+    expect(buildShareMessage({ name: 'x', priceIls: 399.5, offer: null })).toContain('⁦400 ₪⁩')
+    expect(buildShareMessage({ name: 'x', priceIls: 399.49, offer: null })).toContain('⁦399 ₪⁩')
   })
 
   it('carries no URL: the channel appends its own', () => {

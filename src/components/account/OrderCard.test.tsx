@@ -25,7 +25,7 @@ describe('OrderCard', () => {
 
   it('renders order summary with price and status', () => {
     render(<OrderCard order={mockOrder} />)
-    expect(screen.getByText(/500\.00/)).toBeInTheDocument()
+    expect(screen.getByText(/(^|[^\d.])500(?![\d.])/)).toBeInTheDocument()
     expect(screen.getByText('הושלמה')).toBeInTheDocument()
   })
 

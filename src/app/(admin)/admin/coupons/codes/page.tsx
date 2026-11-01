@@ -13,6 +13,8 @@ import {
   formatVoucherCode,
   isLapsedButUnswept,
 } from '@/lib/admin/voucher-view'
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { likeContains } from '@/lib/utils/search-escape'
 import { AlertTriangle, CalendarX, QrCode, ScanLine, Ticket } from 'lucide-react'
@@ -55,10 +57,7 @@ interface VoucherRow {
 
 function ils(agorotValue: number | null | undefined): string {
   if (agorotValue === null || agorotValue === undefined) return '—'
-  return `₪${(agorotValue / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
+  return shekels(agorot(Math.trunc(agorotValue)))
 }
 
 export default async function AdminVouchersPage(props: {

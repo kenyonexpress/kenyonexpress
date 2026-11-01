@@ -217,10 +217,12 @@ describe('formatCouponCode', () => {
 })
 
 describe('formatAgorot', () => {
-  it('renders agorot as shekels with two decimals', () => {
-    expect(formatAgorot(18000)).toBe('⁦180.00 ₪⁩')
-    expect(formatAgorot(0)).toBe('⁦0.00 ₪⁩')
-    expect(formatAgorot(1)).toBe('⁦0.01 ₪⁩')
+  it('renders agorot as whole shekels, rounding half away from zero', () => {
+    expect(formatAgorot(18000)).toBe('⁦180 ₪⁩')
+    expect(formatAgorot(0)).toBe('⁦0 ₪⁩')
+    expect(formatAgorot(1)).toBe('⁦0 ₪⁩')
+    expect(formatAgorot(9950)).toBe('⁦100 ₪⁩')
+    expect(formatAgorot(9949)).toBe('⁦99 ₪⁩')
   })
 
   it('renders a missing or non-finite amount as a dash, never as zero', () => {

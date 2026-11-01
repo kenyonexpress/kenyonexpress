@@ -58,11 +58,9 @@ function integer(payload: Record<string, unknown>, key: string): number | null {
   return null
 }
 
-/** Agorot to shekels, dropping a `.00` that only costs characters. */
+/** Agorot to whole shekels (decision 02.11.2026: no agorot shown anywhere). */
 function shekels(agorotValue: number): string {
-  const whole = Math.trunc(Math.abs(agorotValue) / 100)
-  const fraction = Math.abs(agorotValue) % 100
-  return fraction === 0 ? `₪${whole}` : `₪${whole}.${String(fraction).padStart(2, '0')}`
+  return `₪${Math.floor((Math.abs(agorotValue) + 50) / 100)}`
 }
 
 /**

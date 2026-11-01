@@ -80,6 +80,16 @@ const VENDOR_PATTERNS = [
   /\belectro-(demo|theme|template)\b/i,
 ]
 
+/**
+ * OWNER-REQUESTED BRAND BANNERS (decision 02.11.2026, C137): the hero carries
+ * one Apple products banner and one Tesla products banner, with the old site's
+ * own Apple and Tesla marks. Exactly these two paths, nothing broader.
+ */
+const OWNER_APPROVED = new Set([
+  'public/images/hero/brands/apple-logo.webp',
+  'public/images/hero/brands/tesla-logo.webp',
+])
+
 const IMAGE_EXT = /\.(png|jpe?g|webp|avif|gif|svg)$/i
 
 function walk(dir, out = []) {
@@ -118,6 +128,7 @@ export function scanTemplateAssets() {
       continue
     }
     if (!DECORATION_DIRS.some((dir) => file.startsWith(dir))) continue
+    if (OWNER_APPROVED.has(file)) continue
     for (const pattern of VENDOR_PATTERNS) {
       if (pattern.test(base)) {
         offenders.push({ where: file, asset: base, why: `matches ${pattern}` })

@@ -75,10 +75,28 @@ describe('the header icon cluster', () => {
     expect(src.indexOf('<EcFavorites')).toBeLessThan(src.indexOf('<HeaderCart'))
   })
 
-  it.each(CLUSTERS)('carries no account icon in %s', (file) => {
+  it.each(CLUSTERS)('carries no account icon of its own in %s', (file) => {
     const src = code(read(file))
-    expect(src, 'the account entry point is TopBar, not the cluster').not.toMatch(/<EcUser\b/)
+    // C137: the account icon comes from HeaderCart, once, for both clusters.
+    expect(src).not.toMatch(/<EcUser\b/)
     expect(src).not.toMatch(/\bUser\b\s*[,}].*from 'lucide-react'/)
+  })
+})
+
+describe('C137 three-icon cluster (decision 02.11.2026)', () => {
+  const headerCart = code(read('src/components/cart/HeaderCart.tsx'))
+  const cartLink = code(read('src/components/cart/CartNavLink.tsx'))
+
+  it('HeaderCart renders exactly one account icon, before the cart control', () => {
+    expect(headerCart.match(/<EcUser\b/g) ?? []).toHaveLength(1)
+    expect(headerCart.indexOf('<EcUser')).toBeLessThan(headerCart.indexOf('<HeaderCartControl'))
+    expect(headerCart).toMatch(/href="\/account"/)
+  })
+
+  it('paints the yellow counter unconditionally and never a 0 price', () => {
+    expect(cartLink).toMatch(/data-cart-count=""[\s\S]*bg-brand-primary/)
+    expect(cartLink).not.toMatch(/itemCount > 0 &&/)
+    expect(cartLink).toMatch(/cart\.subtotal > 0 &&/)
   })
 })
 

@@ -35,11 +35,15 @@ describe('money', () => {
     expect(percentToBasisPoints(100)).toBe(10_000)
   })
 
-  it('formats agorot as Hebrew ILS currency', () => {
+  it('formats agorot as Hebrew ILS currency in whole shekels', () => {
     const formatted = formatIls(agorot(12_345))
 
-    expect(formatted).toContain('123.45')
+    expect(formatted).toContain('123')
+    expect(formatted).not.toContain('123.45')
     expect(formatted).toContain('₪')
+    expect(formatIls(agorot(9_950))).toContain('100')
+    expect(formatIls(agorot(9_949))).toContain('99')
+    expect(formatIls(agorot(9_949))).not.toContain('.')
   })
 
   it('accepts a number as well as a string on the ILS boundary', () => {

@@ -43,18 +43,21 @@ export default function CartNavLink() {
       <span className="sr-only">עגלת קניות, {itemCount} פריטים, </span>
       <span className="relative">
         <EcShoppingBag size={ICON.size} aria-hidden="true" />
-        {itemCount > 0 && (
-          <span
-            className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"
-            aria-hidden="true"
-          >
-            {itemCount > 99 ? '99+' : itemCount}
-          </span>
-        )}
+        {/* Electro v7: the yellow counter is always painted, 0 included. */}
+        <span
+          data-cart-count=""
+          className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"
+          aria-hidden="true"
+        >
+          {itemCount > 99 ? '99+' : itemCount}
+        </span>
       </span>
-      <span className="text-sm font-semibold text-black tabular-nums">
-        {shekelsRounded(cart.subtotal)}
-      </span>
+      {/* No "0 ₪" beside the cart (C137): the total shows only once there is one. */}
+      {cart.subtotal > 0 && (
+        <span className="text-sm font-semibold text-black tabular-nums">
+          {shekelsRounded(cart.subtotal)}
+        </span>
+      )}
     </button>
   )
 }

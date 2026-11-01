@@ -2,8 +2,18 @@
 // All components must read image paths from here — never hardcode paths inline.
 // To swap an asset, change the path here only.
 
-export const LOGO = '/images/logo.webp'
-export const LOGO_FOOTER = '/images/logo-footer.webp'
+/*
+ * C137 logo upgrade: a true vector (cart mark as paths, text outlined from
+ * Heebo, so it needs no web font) plus 1x/2x/3x PNG rasters of the same art.
+ * `-light` is the white-ink variant for the dark footer bar.
+ */
+export const LOGO = '/images/logo.svg'
+export const LOGO_FOOTER = '/images/logo.svg'
+export const LOGO_PNG = {
+  dark: ['/images/logo.png', '/images/logo@2x.png', '/images/logo@3x.png'],
+  light: ['/images/logo-light.png', '/images/logo-light@2x.png', '/images/logo-light@3x.png'],
+} as const
+export const LOGO_LIGHT = '/images/logo-light.svg'
 
 /**
  * THE HERO'S TEN IMAGES ARE GONE, DELIBERATELY.

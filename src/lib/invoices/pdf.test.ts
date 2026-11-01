@@ -39,14 +39,15 @@ describe('bidiVisual', () => {
 })
 
 describe('formatAmountForPdf', () => {
-  it('formats agorot as shekels with grouping', () => {
-    expect(formatAmountForPdf(9_000)).toBe('₪90.00')
-    expect(formatAmountForPdf(123_456_789)).toBe('₪1,234,567.89')
-    expect(formatAmountForPdf(5)).toBe('₪0.05')
+  it('formats agorot as whole shekels with grouping', () => {
+    expect(formatAmountForPdf(9_000)).toBe('₪90')
+    expect(formatAmountForPdf(123_456_789)).toBe('₪1,234,568')
+    expect(formatAmountForPdf(123_449)).toBe('₪1,234')
+    expect(formatAmountForPdf(5)).toBe('₪0')
   })
 
   it('keeps the sign attached', () => {
-    expect(formatAmountForPdf(-1_000)).toBe('-₪10.00')
+    expect(formatAmountForPdf(-1_000)).toBe('-₪10')
   })
 
   it('refuses non-integer money, like everything on this path', () => {

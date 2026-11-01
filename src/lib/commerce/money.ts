@@ -40,15 +40,23 @@ export function agorotToIls(value: Agorot): number {
   return value / AGOROT_PER_ILS
 }
 
+// Display is whole shekels only (decision 02.11.2026); storage stays agorot.
 const ilsFormatter = new Intl.NumberFormat('he-IL', {
   style: 'currency',
   currency: 'ILS',
-  minimumFractionDigits: ILS_FRACTION_DIGITS,
-  maximumFractionDigits: ILS_FRACTION_DIGITS,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
 })
 
+/** Integer agorot to the nearest whole shekel, half away from zero. */
+export function roundToWholeShekels(value: Agorot): number {
+  assertSafeInteger(value, 'agorot')
+  const whole = Math.floor((Math.abs(value) + AGOROT_PER_ILS / 2) / AGOROT_PER_ILS)
+  return value < 0 ? -whole : whole
+}
+
 export function formatIls(value: Agorot): string {
-  return ilsFormatter.format(agorotToIls(value))
+  return ilsFormatter.format(roundToWholeShekels(value))
 }
 
 export function sumAgorot(values: readonly Agorot[]): Agorot {

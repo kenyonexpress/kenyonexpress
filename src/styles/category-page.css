@@ -593,10 +593,20 @@
 
 /* Measured: 11.998px / 12.5979px, h 12.6, link #768b9e, margin-bottom 11.998px */
 .category-card__categories {
+  /* C137 card label rule: the line above the title is centred. */
+  display: block;
+  text-align: center;
   font-size: var(--cat-eyebrow-size);
   color: var(--cat-ink);
   margin-bottom: var(--cat-eyebrow-gap);
   line-height: var(--cat-eyebrow-line);
+}
+
+.category-card__categories .product-location {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
 
 .category-card__categories a {
