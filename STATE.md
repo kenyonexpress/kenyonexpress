@@ -1,7 +1,19 @@
-RESUME FROM: M06-c331
+RESUME FROM: M09-c331
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:01:24+07:00
+- item: M08-c331
+- RESULT: DONE
+
+### 2026-11-01T10:59:04+07:00
+- item: M07-c331
+- RESULT: DONE
+
+### 2026-11-01T10:57:57+07:00
+- item: M06-c331
+- RESULT: DONE
 
 ### 2026-11-01T10:56:36+07:00
 - item: M05-c331
@@ -90,18 +102,6 @@ RESUME FROM: M06-c331
 ### 2026-11-01T10:00:55+07:00
 - item: M02-c330
 - BLOCKED: gate-not-met product 26.82/21.68/11.95**.
-
-### 2026-11-01T09:35:08+07:00
-- item: M01-c330
-- BLOCKED: gate-fail (39.83 / 36.52 / 27.52, all above 11%)
-
-### 2026-11-01T09:20:04+07:00
-- item: M18-c329
-- RESULT: DONE
-
-### 2026-11-01T09:19:24+07:00
-- item: M17-c329
-- BLOCKED: compare gate not met (home 29–41% vs 11%; local page rendering a data-fetch fallback); RTL check itself clean. If the failed fetch is a 401 or placeholder-key error, this item should be DONE-DEFERRED under the Supabase-recovery rule.
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
