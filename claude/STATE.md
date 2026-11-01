@@ -1,3 +1,4 @@
+המשך מ: M13-c336 DONE (2026-11-01): /api/health 200 {database:ok, search:not_configured} and /api/ready 200 {database:ok, redis:ok, cardcom:ok, meilisearch/r2:not_configured} against real Supabase on this repo (own dev server :3917); no code changes; no forbidden files touched
 המשך מ: M07-c336 DONE (2026-11-01): TODO/FIXME scan of src/scripts/migrations/e2e/tests/packages/supabase: same 6 TODO markers (cardcom.ts:249,312; r2-migration.ts:103-106), 0 FIXME, all >7 days old and already filed in docs/BACKLOG.md #1-#3 (Cardcom prod creds / service-role key); nothing resolvable now; BACKLOG stamp bumped; no forbidden files touched
 המשך מ: M06-c336 DONE (2026-11-01): pnpm build passes clean; only drift was docs/M-CYCLE-STATUS.md timestamp bump, committed; no forbidden files touched
 המשך מ: M18-c335 DONE (2026-11-01): claude/STATE.md already under 300 lines (252 before this entry), nothing to archive to docs/STATE-ARCHIVE.md; no forbidden files touched
