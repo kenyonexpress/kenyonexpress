@@ -1,7 +1,11 @@
-RESUME FROM: M02-c329
+RESUME FROM: M03-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T08:51:01+07:00
+- item: M02-c329
+- BLOCKED: no valid reference (live host is our own build); Electro-archive fallback scores 36.17/29.82/20.52% at 380/768/1440, all above 11%
 
 ### 2026-11-01T08:41:27+07:00
 - item: M01-c329
@@ -97,10 +101,6 @@ RESUME FROM: M02-c329
 
 ### 2026-11-01T07:14:43+07:00
 - item: M14-c327
-- RESULT: DONE
-
-### 2026-11-01T07:13:43+07:00
-- item: M13-c327
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
