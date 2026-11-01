@@ -30869,3 +30869,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T11:30:24+07:00
 - item: M02-c332
 - BLOCKED: M02-c332 compare.mjs refuses (exit 5): live reference host now serves our own build, so no valid gate number exists
+
+## Archived 2026-11-01T12:41:42+07:00 after M10-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:31:38+07:00
+- item: M03-c332
+- BLOCKED: category gate has no live reference (kenyonexpress.co.il now serves our own build; compare.mjs exit 5)
