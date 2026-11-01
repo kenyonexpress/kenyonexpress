@@ -1,7 +1,11 @@
-RESUME FROM: M15-c343
+RESUME FROM: M16-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T00:23:54+07:00
+- item: M15-c343
+- BLOCKED: M15-c343 home hydration error #418 on /
 
 ### 2026-11-02T00:15:53+07:00
 - item: M14-c343
@@ -98,10 +102,6 @@ RESUME FROM: M15-c343
 ### 2026-11-01T21:46:18+07:00
 - item: M03-c343
 - BLOCKED: category gate fails at 380 (19.31%) and 768 (16.82%)
-
-### 2026-11-01T21:32:56+07:00
-- item: M02-c343
-- BLOCKED: no product reference exists, since kenyonexpress.co.il serves our own build, so the compare.mjs gate cannot produce a number
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

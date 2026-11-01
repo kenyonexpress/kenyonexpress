@@ -30114,3 +30114,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T21:31:33+07:00
 - item: M01-c343
 - BLOCKED: gate-fail
+
+## Archived 2026-11-02T00:23:54+07:00 after M15-c343 (3 lines from STATE.md)
+
+### 2026-11-01T21:32:56+07:00
+- item: M02-c343
+- BLOCKED: no product reference exists, since kenyonexpress.co.il serves our own build, so the compare.mjs gate cannot produce a number
