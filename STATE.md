@@ -1,7 +1,11 @@
-RESUME FROM: M02-c341
+RESUME FROM: M03-c341
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:57:13+07:00
+- item: M02-c341
+- BLOCKED: product gate fails at all widths (36.58 / 29.82 / 20.52 vs 11%); only valid reference is refs/electro-product-fresh.html, live-site reference is our own build
 
 ### 2026-11-01T19:37:01+07:00
 - item: M01-c341
@@ -97,10 +101,6 @@ RESUME FROM: M02-c341
 
 ### 2026-11-01T18:18:07+07:00
 - item: M16-c339
-- RESULT: DONE
-
-### 2026-11-01T18:17:21+07:00
-- item: M15-c339
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
