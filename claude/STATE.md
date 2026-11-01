@@ -1,3 +1,4 @@
+המשך מ: M04-c328 DONE (2026-11-01): pnpm type-check exit 0 (tsc --noEmit clean); no drift to fix, no source changes; no forbidden files touched
 המשך מ: M07-c327 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
 המשך מ: M06-c326 DONE (2026-11-01): pnpm build exit 0, pnpm test 627 files/7165 tests pass; no drift to fix, no source changes; no forbidden files touched
 המשך מ: M05-c326 DONE (2026-11-01): pnpm test 7164 pass, 1 drift fixed (MEILISEARCH_ENABLED exempted in operational-flags.test.ts); no forbidden files touched
