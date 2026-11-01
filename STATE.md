@@ -3,6 +3,10 @@ RESUME FROM: M07-c341
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T20:02:58+07:00
+- item: M06-c341
+- RESULT: DONE
+
 ### 2026-11-01T20:02:33+07:00
 - item: M06-c341
 - RESULT: DONE
@@ -98,10 +102,6 @@ RESUME FROM: M07-c341
 ### 2026-11-01T18:55:29+07:00
 - item: M02-c340
 - BLOCKED: product gate not met (36.58% / 29.82% / 20.52%; default reference is our own build, grid mismatch 12 vs 4 cards)
-
-### 2026-11-01T18:35:34+07:00
-- item: M01-c340
-- BLOCKED: gate-fail
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
