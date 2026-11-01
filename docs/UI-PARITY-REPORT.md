@@ -473,3 +473,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-31 10:38 | category | 380 | n/a | **UNMEASURED** | `242816162` | frozen capture not found |
 | 2026-10-31 10:38 | category | 768 | n/a | **UNMEASURED** | `242816162-dirty` | frozen capture not found |
 | 2026-10-31 10:38 | category | 1440 | n/a | **UNMEASURED** | `242816162-dirty` | frozen capture not found |
+| 2026-11-01 04:10 | home | 1440 | 7.78% | PASS | `4b11880e7` | ref everything loaded; overall 28.89% (reference blank 13.03%, ours blank 8.08%) |
