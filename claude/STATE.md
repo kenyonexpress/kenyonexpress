@@ -260,3 +260,4 @@
 המשך מ: M04-c337 DONE (2026-11-01): pnpm type-check green (tsc --noEmit, 0 errors); no tracked drift, no code changes; no forbidden files touched
 המשך מ: M06-c337 DONE (2026-11-01): pnpm build green (Next.js, all routes generated); no tracked drift, no code changes; no forbidden files touched
 המשך מ: M07-c337 DONE (2026-11-01): TODO/FIXME scan; 6 markers in 3 backlog items (cardcom.ts:249, cardcom.ts:312, r2-migration.ts:103-106), all >7d old, all filed in docs/BACKLOG.md (Cardcom prod creds / Supabase service-role key deferred), none resolvable now; BACKLOG re-verified; no forbidden files touched
+המשך מ: M09-c337 DONE (2026-11-01): knip re-run (SUPABASE_DB_URL stub); only unused devDep @capacitor/android kept for android/; remaining unused exports are script helpers/shadcn/schema (no safe removals); no code changes; no forbidden files touched
