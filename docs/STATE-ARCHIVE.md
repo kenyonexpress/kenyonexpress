@@ -30287,3 +30287,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T06:21:23+07:00
 - item: M15-c326
 - BLOCKED: console errors on / and /product — Supabase invalid key (DONE-DEFERRED part), product Suspense/prerender error, CSP blocking Vercel scripts
+
+## Archived 2026-11-01T07:57:38+07:00 after M03-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:22:24+07:00
+- item: M16-c326
+- RESULT: DONE
