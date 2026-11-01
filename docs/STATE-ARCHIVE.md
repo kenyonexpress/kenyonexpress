@@ -30174,3 +30174,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T22:53:45+07:00
 - item: C122
 - BLOCKED: locked-component (header/topbar/hero bands) + gate not met
+
+## Archived 2026-11-02T01:33:50+07:00 after M06-c345 (3 lines from STATE.md)
+
+### 2026-11-01T22:55:42+07:00
+- item: C123
+- BLOCKED: locked-component — mobile perf levers (Heebo subset/preload, dynamic root providers) are in `src/app/layout.tsx`, and the HEAD production build fails type-check.
