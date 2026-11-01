@@ -31433,3 +31433,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T15:36:24+07:00
 - item: M04-c337
 - RESULT: DONE
+
+## Archived 2026-11-01T17:20:20+07:00 after M12-c338 (3 lines from STATE.md)
+
+### 2026-11-01T16:11:17+07:00
+- item: M05-c337
+- BLOCKED: migration-numbering
