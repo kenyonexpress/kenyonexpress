@@ -1,7 +1,11 @@
-RESUME FROM: M18-c328
+RESUME FROM: M02-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T08:41:27+07:00
+- item: M01-c329
+- BLOCKED: compare gate not measurable (live reference is our own build; forced Electro v7 run is 27–40%, above the 11% gate)
 
 ### 2026-11-01T08:19:36+07:00
 - item: M18-c328
@@ -96,10 +100,6 @@ RESUME FROM: M18-c328
 - RESULT: DONE
 
 ### 2026-11-01T07:13:43+07:00
-- item: M13-c327
-- RESULT: DONE
-
-### 2026-11-01T07:13:21+07:00
 - item: M13-c327
 - RESULT: DONE
 
