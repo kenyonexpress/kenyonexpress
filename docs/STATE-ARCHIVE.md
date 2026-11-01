@@ -31643,3 +31643,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T18:01:58+07:00
 - item: M03-c339
 - BLOCKED: category reference missing: kenyonexpress.co.il now serves our own Vercel build**
+
+## Archived 2026-11-01T19:05:27+07:00 after M09-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:02:58+07:00
+- item: M04-c339
+- RESULT: DONE
