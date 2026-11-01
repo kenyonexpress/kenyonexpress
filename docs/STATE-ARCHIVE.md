@@ -30210,3 +30210,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T23:53:52+07:00
 - item: C128
 - BLOCKED: C128 tag v2.1.0 missing, LAUNCH.flag missing; C121 C122 C123 C124 C125 C126 not DONE
+
+## Archived 2026-11-02T01:46:17+07:00 after M12-c345 (3 lines from STATE.md)
+
+### 2026-11-02T00:02:01+07:00
+- item: C129
+- BLOCKED: M05 test (17 failing, migration-gate tests plus push/backup/proxy); C128 still BLOCKED
