@@ -1,7 +1,19 @@
-RESUME FROM: M04-c336
+RESUME FROM: M07-c336
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:43:44+07:00
+- item: M06-c336
+- RESULT: DONE
+
+### 2026-11-01T14:42:26+07:00
+- item: M05-c336
+- RESULT: DONE
+
+### 2026-11-01T14:40:34+07:00
+- item: M04-c336
+- RESULT: DONE
 
 ### 2026-11-01T14:39:11+07:00
 - item: M03-c336
@@ -90,18 +102,6 @@ RESUME FROM: M04-c336
 ### 2026-11-01T13:42:27+07:00
 - item: M01-c335
 - BLOCKED: gate-fail
-
-### 2026-11-01T13:27:27+07:00
-- item: M18-c334
-- RESULT: DONE
-
-### 2026-11-01T13:26:23+07:00
-- item: M17-c334
-- BLOCKED: locked-component M17-c334
-
-### 2026-11-01T13:25:21+07:00
-- item: M16-c334
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
@@ -223,3 +223,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M06-c332 DONE (2026-11-01): pnpm build green (exit 0), no tracked drift; committed untracked docs/C113-db-cli.md; no code changes; no forbidden files touched
 
 המשך מ: M09-c332 DONE (2026-11-01): audit only, no code changes. 0 removable deps (@mdx-js/loader required by @next/mdx, @types/mdx for mdx-components.tsx; all other prod deps referenced in src/scripts). Dead exports unchanged since c331 (intentional API surface); no forbidden files touched
+
+המשך מ: M04-c336 DONE (2026-11-01): pnpm type-check green (tsc --noEmit exit 0), no tracked drift, no code changes; no forbidden files touched
