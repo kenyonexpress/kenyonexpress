@@ -31505,3 +31505,21 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T16:25:24+07:00
 - item: M16-c337
 - RESULT: DONE
+
+## Archived 2026-11-01T18:06:27+07:00 after M06-c339 (3 lines from STATE.md)
+
+### 2026-11-01T16:27:40+07:00
+- item: M17-c337
+- BLOCKED: locked-component M17-c337
+
+## Archived 2026-11-01T18:07:31+07:00 after M07-c339 (3 lines from STATE.md)
+
+### 2026-11-01T16:28:31+07:00
+- item: M18-c337
+- RESULT: DONE
+
+## Archived 2026-11-01T18:09:52+07:00 after M08-c339 (3 lines from STATE.md)
+
+### 2026-11-01T16:44:42+07:00
+- item: M01-c338
+- BLOCKED: gate-exceeded home 380=12.83% 768=13.8% (1440=5.8% passes)
