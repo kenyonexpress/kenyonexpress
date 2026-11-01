@@ -1,7 +1,11 @@
-RESUME FROM: M11-c343
+RESUME FROM: M12-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T00:12:47+07:00
+- item: M11-c343
+- RESULT: DONE
 
 ### 2026-11-02T00:11:23+07:00
 - item: M10-c343
@@ -98,10 +102,6 @@ RESUME FROM: M11-c343
 ### 2026-11-01T21:15:31+07:00
 - item: M17-c342
 - BLOCKED: locked-component M17-c342
-
-### 2026-11-01T21:14:06+07:00
-- item: M16-c342
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
