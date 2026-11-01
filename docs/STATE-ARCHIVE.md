@@ -31415,3 +31415,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T15:17:28+07:00
 - item: M01-c337
 - BLOCKED: gate-fail (home 380 39.85%, 768 36.53%, 1440 27.53%, all over 11%)
+
+## Archived 2026-11-01T17:17:23+07:00 after M09-c338 (3 lines from STATE.md)
+
+### 2026-11-01T15:34:15+07:00
+- item: M02-c337
+- BLOCKED: gate-fail product 380=36.58% 768=29.82% 1440=20.52% (gate <11%)
