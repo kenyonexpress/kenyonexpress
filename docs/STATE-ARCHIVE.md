@@ -30863,3 +30863,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T11:29:20+07:00
 - item: M01-c332
 - BLOCKED: gate-fail
+
+## Archived 2026-11-01T12:40:46+07:00 after M09-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:30:24+07:00
+- item: M02-c332
+- BLOCKED: M02-c332 compare.mjs refuses (exit 5): live reference host now serves our own build, so no valid gate number exists

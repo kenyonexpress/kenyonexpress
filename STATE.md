@@ -1,7 +1,11 @@
-RESUME FROM: M09-c333
+RESUME FROM: M10-c333
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T12:40:46+07:00
+- item: M09-c333
+- RESULT: DONE
 
 ### 2026-11-01T12:39:36+07:00
 - item: M08-c333
@@ -98,10 +102,6 @@ RESUME FROM: M09-c333
 ### 2026-11-01T11:31:38+07:00
 - item: M03-c332
 - BLOCKED: category gate has no live reference (kenyonexpress.co.il now serves our own build; compare.mjs exit 5)
-
-### 2026-11-01T11:30:24+07:00
-- item: M02-c332
-- BLOCKED: M02-c332 compare.mjs refuses (exit 5): live reference host now serves our own build, so no valid gate number exists
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
