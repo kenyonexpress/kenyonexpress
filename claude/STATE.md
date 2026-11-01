@@ -259,3 +259,4 @@
 המשך מ: M10-c336 BLOCKED (2026-11-01): migrations/pending/ still holds 72 files (none moved to applied/); cannot verify or apply: Supabase MCP unauthenticated in non-interactive session (ixvwfbuvfxxsjiywhbbb); no code changes; no forbidden files touched
 המשך מ: M04-c337 DONE (2026-11-01): pnpm type-check green (tsc --noEmit, 0 errors); no tracked drift, no code changes; no forbidden files touched
 המשך מ: M06-c337 DONE (2026-11-01): pnpm build green (Next.js, all routes generated); no tracked drift, no code changes; no forbidden files touched
+המשך מ: M07-c337 DONE (2026-11-01): TODO/FIXME scan; 6 markers in 3 backlog items (cardcom.ts:249, cardcom.ts:312, r2-migration.ts:103-106), all >7d old, all filed in docs/BACKLOG.md (Cardcom prod creds / Supabase service-role key deferred), none resolvable now; BACKLOG re-verified; no forbidden files touched
