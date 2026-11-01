@@ -1,3 +1,4 @@
+המשך מ: M18-c332 DONE (2026-11-01): claude/STATE.md already under 300 lines (237 before this entry), nothing to archive to docs/STATE-ARCHIVE.md; no forbidden files touched
 המשך מ: M07-c332 DONE (2026-11-01): TODO/FIXME scan of src/scripts/migrations/e2e/tests/packages/supabase: same 6 TODO markers (cardcom.ts:249,312; r2-migration.ts:103-106), 0 FIXME, all >7 days old and already filed in docs/BACKLOG.md #1-#3 (Cardcom prod creds / service-role key); nothing resolvable now; BACKLOG stamp bumped; no forbidden files touched
 המשך מ: M18-c331 DONE (2026-11-01): STATE.md already under 300 lines (claude/STATE.md 233, STATE.md 219), nothing to archive; no forbidden files touched
 המשך מ: M07-c331 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
@@ -234,3 +235,4 @@
 המשך מ: M05-c331 DONE (2026-11-01): pnpm test 627 files passed / 7165 tests passed, 0 failures; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
 המשך מ: M14-c331 DONE-DEFERRED (SENTRY_AUTH_TOKEN placeholder)
 המשך מ: M04-c332 DONE (2026-11-01): pnpm type-check (tsc --noEmit) exit 0, zero errors; no tracked drift to commit; no code changes; no forbidden files touched
+המשך מ: M17-c332 BLOCKED locked-component (2026-11-01): RTL probe at 380/768/1440 on / and /product/צימר-מאסטר: html dir=rtl lang=he, zero horizontal overflow, product page zero LTR leaks; rtl-lint 102 hits are comments/OG-image text, none real. Home leak: HeroSlider.tsx:555-628 dir="ltr" wrappers make hero promo paragraphs (Hebrew) direction:ltr; locked file, not edited. compare.mjs gate not run; no code changes
