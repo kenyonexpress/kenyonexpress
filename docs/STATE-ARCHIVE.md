@@ -30737,3 +30737,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T10:21:37+07:00
 - item: M16-c330
 - RESULT: DONE
+
+## Archived 2026-11-01T11:36:42+07:00 after M06-c332 (3 lines from STATE.md)
+
+### 2026-11-01T10:23:17+07:00
+- item: M17-c330
+- BLOCKED: locked-component M17-c330
