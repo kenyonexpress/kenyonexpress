@@ -30126,3 +30126,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T21:46:18+07:00
 - item: M03-c343
 - BLOCKED: category gate fails at 380 (19.31%) and 768 (16.82%)
+
+## Archived 2026-11-02T00:28:27+07:00 after M17-c343 (3 lines from STATE.md)
+
+### 2026-11-01T21:47:46+07:00
+- item: M04-c343
+- RESULT: DONE

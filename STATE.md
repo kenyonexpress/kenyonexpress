@@ -1,7 +1,11 @@
-RESUME FROM: M17-c343
+RESUME FROM: M18-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T00:28:27+07:00
+- item: M17-c343
+- BLOCKED: M17-c343 prod home hero still has `dir="ltr"` on Hebrew text; the fix is already in HEAD and needs a redeploy. Re-verify after the next production deploy.
 
 ### 2026-11-02T00:26:20+07:00
 - item: M16-c343
@@ -97,10 +101,6 @@ RESUME FROM: M17-c343
 
 ### 2026-11-01T21:54:28+07:00
 - item: M05-c343
-- RESULT: DONE
-
-### 2026-11-01T21:47:46+07:00
-- item: M04-c343
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
