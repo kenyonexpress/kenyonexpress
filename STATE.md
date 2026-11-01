@@ -1,7 +1,27 @@
-RESUME FROM: M10-c341
+RESUME FROM: M15-c341
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T20:14:56+07:00
+- item: M14-c341
+- RESULT: DONE
+
+### 2026-11-01T20:14:13+07:00
+- item: M13-c341
+- BLOCKED: prod /api/health and /api/ready return 503 because Meilisearch is down (unknown_error); the other dependencies are healthy
+
+### 2026-11-01T20:13:07+07:00
+- item: M12-c341
+- RESULT: DONE
+
+### 2026-11-01T20:12:16+07:00
+- item: M11-c341
+- RESULT: DONE
+
+### 2026-11-01T20:10:47+07:00
+- item: M10-c341
+- BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot verify or apply migrations/pending (72 files)
 
 ### 2026-11-01T20:09:43+07:00
 - item: M09-c341
@@ -81,26 +101,6 @@ RESUME FROM: M10-c341
 
 ### 2026-11-01T19:05:27+07:00
 - item: M09-c340
-- RESULT: DONE
-
-### 2026-11-01T19:04:22+07:00
-- item: M08-c340
-- RESULT: DONE
-
-### 2026-11-01T19:02:43+07:00
-- item: M07-c340
-- RESULT: DONE
-
-### 2026-11-01T19:01:33+07:00
-- item: M06-c340
-- RESULT: DONE
-
-### 2026-11-01T18:59:52+07:00
-- item: M05-c340
-- RESULT: DONE
-
-### 2026-11-01T18:57:59+07:00
-- item: M04-c340
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
