@@ -31475,3 +31475,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T16:19:07+07:00
 - item: M11-c337
 - BLOCKED: sitemap-stale
+
+## Archived 2026-11-01T17:43:47+07:00 after M01-c339 (3 lines from STATE.md)
+
+### 2026-11-01T16:20:15+07:00
+- item: M12-c337
+- RESULT: DONE
