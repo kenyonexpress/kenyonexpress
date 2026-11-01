@@ -30305,3 +30305,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T06:24:55+07:00
 - item: M18-c326
 - RESULT: DONE
+
+## Archived 2026-11-01T08:01:49+07:00 after M06-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:39:44+07:00
+- item: M01-c327
+- BLOCKED: gate-fail
