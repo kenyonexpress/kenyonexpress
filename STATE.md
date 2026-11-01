@@ -1,7 +1,11 @@
-RESUME FROM: M07-c340
+RESUME FROM: M08-c340
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:02:43+07:00
+- item: M07-c340
+- RESULT: DONE
 
 ### 2026-11-01T19:01:33+07:00
 - item: M06-c340
@@ -98,10 +102,6 @@ RESUME FROM: M07-c340
 ### 2026-11-01T18:01:58+07:00
 - item: M03-c339
 - BLOCKED: category reference missing: kenyonexpress.co.il now serves our own Vercel build**
-
-### 2026-11-01T18:00:41+07:00
-- item: M02-c339
-- BLOCKED: no valid reference (live host is our own build) and product-card count mismatch 12 vs 4; forced 380/768/1440 = 36.58/29.82/20.51%, all over the 11% gate
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
