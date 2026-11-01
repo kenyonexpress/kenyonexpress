@@ -257,3 +257,4 @@
 המשך מ: M05-c336 DONE (2026-11-01): pnpm test green (627 files passed, 2 skipped; 7165 tests passed, 28 skipped); no drift, no code changes; no forbidden files touched
 המשך מ: M09-c336 DONE (2026-11-01): knip re-run (SUPABASE_DB_URL stub); only unused devDep @capacitor/android kept for android/; 126 dead exports are shadcn ui primitives/drizzle schema/script helpers (+1 in locked HeroSlider.tsx, untouched); no removals, no code changes; no forbidden files touched
 המשך מ: M10-c336 BLOCKED (2026-11-01): migrations/pending/ still holds 72 files (none moved to applied/); cannot verify or apply: Supabase MCP unauthenticated in non-interactive session (ixvwfbuvfxxsjiywhbbb); no code changes; no forbidden files touched
+המשך מ: M04-c337 DONE (2026-11-01): pnpm type-check green (tsc --noEmit, 0 errors); no tracked drift, no code changes; no forbidden files touched
