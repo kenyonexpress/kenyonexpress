@@ -232,3 +232,4 @@
 המשך מ: M10-c330 BLOCKED (2026-11-01): migrations/pending/ still holds 72 files (306,310-321 etc. present, none moved to applied/); cannot verify or apply: Supabase MCP unauthenticated in non-interactive session (ixvwfbuvfxxsjiywhbbb); no code changes; no forbidden files touched
 המשך מ: M05-c331 DONE (2026-11-01): pnpm test 627 files passed / 7165 tests passed, 0 failures; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
 המשך מ: M14-c331 DONE-DEFERRED (SENTRY_AUTH_TOKEN placeholder)
+המשך מ: M04-c332 DONE (2026-11-01): pnpm type-check (tsc --noEmit) exit 0, zero errors; no tracked drift to commit; no code changes; no forbidden files touched

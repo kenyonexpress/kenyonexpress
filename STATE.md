@@ -1,7 +1,23 @@
-RESUME FROM: M18-c331
+RESUME FROM: M05-c332
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:32:42+07:00
+- item: M04-c332
+- RESULT: DONE
+
+### 2026-11-01T11:31:38+07:00
+- item: M03-c332
+- BLOCKED: category gate has no live reference (kenyonexpress.co.il now serves our own build; compare.mjs exit 5)
+
+### 2026-11-01T11:30:24+07:00
+- item: M02-c332
+- BLOCKED: M02-c332 compare.mjs refuses (exit 5): live reference host now serves our own build, so no valid gate number exists
+
+### 2026-11-01T11:29:20+07:00
+- item: M01-c332
+- BLOCKED: gate-fail
 
 ### 2026-11-01T11:13:30+07:00
 - item: M18-c331
@@ -85,22 +101,6 @@ RESUME FROM: M18-c331
 
 ### 2026-11-01T10:21:37+07:00
 - item: M16-c330
-- RESULT: DONE
-
-### 2026-11-01T10:20:34+07:00
-- item: M15-c330
-- BLOCKED: console error on / (React #418 hydration mismatch); no source repo in workdir to fix
-
-### 2026-11-01T10:19:09+07:00
-- item: M14-c330
-- RESULT: DONE
-
-### 2026-11-01T10:18:20+07:00
-- item: M13-c330
-- RESULT: DONE
-
-### 2026-11-01T10:17:21+07:00
-- item: M12-c330
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
