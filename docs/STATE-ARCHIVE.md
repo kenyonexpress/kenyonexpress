@@ -30197,3 +30197,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T05:42:32+07:00
 - item: M01-c326
 - BLOCKED: gate-fail
+
+## Archived 2026-11-01T07:04:46+07:00 after M07-c327 (3 lines from STATE.md)
+
+### 2026-11-01T05:58:54+07:00
+- item: M02-c326
+- BLOCKED: gate not passed — product page diff 36.58% / 29.82% / 20.52% at 380 / 768 / 1440 against the Electro reference file, with the card-count mismatch forced. The live site can no longer serve as a reference.

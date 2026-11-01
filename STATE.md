@@ -1,7 +1,11 @@
-RESUME FROM: M07-c327
+RESUME FROM: M08-c327
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T07:04:46+07:00
+- item: M07-c327
+- RESULT: DONE
 
 ### 2026-11-01T07:03:51+07:00
 - item: M06-c327
@@ -98,10 +102,6 @@ RESUME FROM: M07-c327
 ### 2026-11-01T05:59:58+07:00
 - item: M03-c326
 - BLOCKED: no valid category reference (kenyonexpress.co.il now serves our own build; compare.mjs refuses)
-
-### 2026-11-01T05:58:54+07:00
-- item: M02-c326
-- BLOCKED: gate not passed — product page diff 36.58% / 29.82% / 20.52% at 380 / 768 / 1440 against the Electro reference file, with the card-count mismatch forced. The live site can no longer serve as a reference.
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
