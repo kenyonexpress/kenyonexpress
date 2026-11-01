@@ -30192,3 +30192,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T23:07:50+07:00
 - item: C125
 - BLOCKED: gates fail: grep=346 hits, numeric money columns remain, snapshot test skipped not passing
+
+## Archived 2026-11-02T01:40:39+07:00 after M09-c345 (3 lines from STATE.md)
+
+### 2026-11-01T23:51:25+07:00
+- item: C126
+- BLOCKED: **. The live database is behind the repo's migrations, and I didn't apply them. Two commits are pushed to `closeout/v1-final`: `150168b93` and `f81312771`.
