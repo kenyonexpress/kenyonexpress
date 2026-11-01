@@ -1,7 +1,15 @@
-RESUME FROM: M02-c337
+RESUME FROM: M04-c337
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T15:35:27+07:00
+- item: M03-c337
+- BLOCKED: category reference unavailable (live host is our own build, no Electro v7 category capture)
+
+### 2026-11-01T15:34:15+07:00
+- item: M02-c337
+- BLOCKED: gate-fail product 380=36.58% 768=29.82% 1440=20.52% (gate <11%)
 
 ### 2026-11-01T15:17:28+07:00
 - item: M01-c337
@@ -93,14 +101,6 @@ RESUME FROM: M02-c337
 
 ### 2026-11-01T14:17:00+07:00
 - item: M16-c335
-- RESULT: DONE
-
-### 2026-11-01T14:15:48+07:00
-- item: M15-c335
-- BLOCKED: product page has console errors (image 400s, supplier_load_failed, Suspense prerender error)
-
-### 2026-11-01T14:14:03+07:00
-- item: M14-c335
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
