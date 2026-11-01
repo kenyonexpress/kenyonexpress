@@ -30276,3 +30276,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T00:26:20+07:00
 - item: M16-c343
 - RESULT: DONE
+
+## Archived 2026-11-02T02:53:15+07:00 after M05-c346 (3 lines from STATE.md)
+
+### 2026-11-02T00:28:27+07:00
+- item: M17-c343
+- BLOCKED: M17-c343 prod home hero still has `dir="ltr"` on Hebrew text; the fix is already in HEAD and needs a redeploy. Re-verify after the next production deploy.

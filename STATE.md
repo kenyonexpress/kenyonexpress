@@ -1,7 +1,11 @@
-RESUME FROM: M05-c346
+RESUME FROM: M06-c346
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T02:53:15+07:00
+- item: M05-c346
+- BLOCKED: migration-ledger-drift
 
 ### 2026-11-02T02:31:15+07:00
 - item: M04-c346
@@ -98,10 +102,6 @@ RESUME FROM: M05-c346
 ### 2026-11-02T00:29:11+07:00
 - item: M18-c343
 - RESULT: DONE
-
-### 2026-11-02T00:28:27+07:00
-- item: M17-c343
-- BLOCKED: M17-c343 prod home hero still has `dir="ltr"` on Hebrew text; the fix is already in HEAD and needs a redeploy. Re-verify after the next production deploy.
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
