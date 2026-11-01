@@ -31067,3 +31067,21 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T12:49:09+07:00
 - item: M17-c333
 - BLOCKED: locked-component M17-c333
+
+## Archived 2026-11-01T14:04:40+07:00 after M06-c335 (3 lines from STATE.md)
+
+### 2026-11-01T12:49:55+07:00
+- item: M18-c333
+- RESULT: DONE
+
+## Archived 2026-11-01T14:05:46+07:00 after M07-c335 (3 lines from STATE.md)
+
+### 2026-11-01T12:52:54+07:00
+- item: M01-c334
+- BLOCKED: compare.mjs refuses — live reference is our own build, no diff % obtainable
+
+## Archived 2026-11-01T14:08:17+07:00 after M08-c335 (3 lines from STATE.md)
+
+### 2026-11-01T13:08:36+07:00
+- item: M02-c334
+- BLOCKED: gate not met: official reference refused (live host is our own build), fallback Electro reference measures 36.58 / 29.82 / 20.52% against the 11% gate
