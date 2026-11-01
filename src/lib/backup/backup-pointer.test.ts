@@ -8,8 +8,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
  * Prerequisites: migration 130_pg_cron_pg_net.sql applied
  */
 
-describe('backup pointer system', () => {
-  const admin = createAdminClient()
+// Talks to a real database, so it needs a real key; without one it skips
+// rather than failing at collection.
+const hasAdminKey = Boolean(
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY,
+)
+
+describe.skipIf(!hasAdminKey)('backup pointer system', () => {
+  const admin = hasAdminKey ? createAdminClient() : (undefined as never)
 
   beforeEach(async () => {
     // Clean up test backup entries

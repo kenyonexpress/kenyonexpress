@@ -32,6 +32,10 @@ let cookies: any
 
 beforeEach(() => {
   vi.clearAllMocks()
+  // The library is mocked, but the proxy still reads the URL and anon key before
+  // calling it. Placeholders keep this test independent of the machine's .env.
+  vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://localhost:54321')
+  vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'test-anon-key')
   getUser.mockResolvedValue({ data: { user: null } })
   createServerClient.mockImplementation((_url: string, _key: string, options: any) => {
     cookies = options.cookies

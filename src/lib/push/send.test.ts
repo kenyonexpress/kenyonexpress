@@ -22,6 +22,10 @@ vi.mock('@supabase/supabase-js', () => ({
 describe('Push notifications', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // supabase-js is mocked above, but createAdminClient still refuses to build
+    // without a key. A placeholder keeps the test independent of the machine's .env.
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://localhost:54321')
+    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-role-key')
   })
 
   it('sendPushToUser returns sent/failed counts', async () => {

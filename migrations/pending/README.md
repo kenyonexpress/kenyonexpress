@@ -1112,6 +1112,16 @@ site. The two have to change together.
 - `312_otp_attempts_wa_otp_flag.sql` - otp_attempts audit table + wa_otp_enabled flag (C90, rc5 F15). Pending, not applied.
 - `313_card_verify_enabled_flag.sql` - card_verify_enabled flag (C91, F07). Pending, not applied.
 - `314_voucher_transfer.sql` - voucher transfer between customers (G105). Pending, not applied.
+- `312_payment_production_flag.sql` - payment_production flag (G104), OFF: the checkout submit creates no live charge. Pending, not applied.
+- `313_partner_redeem.sql` - partner redeem (G107): 8-digit counter PIN, advisory-locked redeem, audit events. Pending, not applied.
+- `314_wa_otp_enabled_flag.sql` - wa_otp_enabled flag (G111), OFF: the WhatsApp sign-in code routes answer 404. Pending, not applied.
+- `315_products_supplier_transfer_days.sql` - per-product supplier_transfer_days (C97), additive nullable integer days, no money. Pending, not applied.
+- `316_notification_consents_view.sql` - notification_consents, the notification slice of the consent log (C99), a view over user_consents. Pending, not applied.
+- `317_user_passkeys_phone_verifications.sql` - user_passkeys view over webauthn_credentials plus user_phone_verifications (C100, F15). Pending, not applied.
+- `318_club_tier_benefits.sql` - per-tier club benefit values (C102, F11), integer percent, hours and agorot. Pending, not applied.
+- `319_affiliate_links_product.sql` - an affiliate link can point at one product (C103, F12), one link per product per affiliate. Pending, not applied.
+- `320_products_opening_hours.sql` - products.opening_hours jsonb driving the open-on-weekend chip (C104, F13). Pending, not applied.
+- `321_card_verify_enabled_flag.sql` - card_verify_enabled flag (C91), OFF: supplier applications skip the 1 ILS card verification. Pending, not applied.
 - `171_category_name_shekel_order.sql` - The shekel sign in a category name renders on the wrong side. Applied; lives in `migrations/applied/`.
 - `226_fraud_controls.sql` - Two server-only tables behind the checkout fraud gate (fraud_flags, fraud_review_queue). Applied; lives in `migrations/applied/`.
 - `228_invoice_sequences.sql` - Platform-owned sequential document numbering per terminal and series. Applied; lives in `migrations/applied/`.
