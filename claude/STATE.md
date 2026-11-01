@@ -1,3 +1,4 @@
+המשך מ: M16-c330 DONE (2026-11-01): /product/[slug] emits Product + BreadcrumbList JSON-LD (two scripts, via lib/seo/json-ld.ts); json-ld.test.ts 26/26 pass; /product/[slug]/gift is noindex so excluded; no code changes; no forbidden files touched
 המשך מ: M05-c330 DONE (2026-11-01): pnpm test clean, 627 files / 7165 tests passed, 2 skipped files, no drift to fix; no code changes; no forbidden files touched
 המשך מ: M07-c330 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
 המשך מ: M07-c329 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
