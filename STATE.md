@@ -217,3 +217,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c330 DONE (2026-11-01): pnpm type-check clean (tsc --noEmit exit 0), no tracked drift to commit; no code changes; no forbidden files touched
 
 המשך מ: M09-c331 DONE (2026-11-01): audit only, no code changes. 0 removable deps (all 11 name-unreferenced pkgs are implicit: biome/lint-staged via scripts+husky, coverage-v8 via vitest, capacitor native platforms, @mdx-js/loader peer of @next/mdx, @types/*). knip dead exports are intentional API surface (shadcn ui, cardcom/ledger/idempotency, admin actions) or in forbidden HeroSlider; left untouched; no forbidden files touched
+
+המשך מ: M05-c332 DONE (2026-11-01): pnpm test green (627 files passed, 2 skipped; 7165 tests passed, 28 skipped); committed tracked docs drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
