@@ -2,7 +2,7 @@ import { log } from '@/lib/observability/log'
 import type { createAdminClient } from '@/lib/supabase/admin'
 
 /**
- * Writers and readers for the two fraud tables (migrations/pending/226).
+ * Writers and readers for the two fraud tables (migrations/applied/226).
  *
  * BEST-EFFORT BY CONTRACT. Every function here is called from inside the
  * checkout path, and the fraud rail must never be the reason a sale dies:

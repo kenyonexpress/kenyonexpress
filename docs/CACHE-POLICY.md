@@ -28,9 +28,9 @@ everything it awaits is:
 | `lib/coupon-deals.ts` | the coupon catalogue |
 | `lib/supplier-storefront.ts` | a supplier's public page |
 | `lib/feeds/catalogue.ts` | the Merchant and RSS feeds |
-| `server/queries/reviews.ts` | approved reviews and the rating summary |
 | `app/sitemap.ts` | the sitemap |
 | `components/CopyrightYear.tsx` | the footer year |
+| `components/storefront/CouponQrExpiry.tsx` | the coupon QR expiry label |
 
 So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 `product-seo.ts` and `related-products.ts`, not the page file.
@@ -49,6 +49,7 @@ So "is `/product/x` cached?" is answered by reading `product-detail.ts`,
 ```
 cacheLife('hours')        22
 cacheLife('days')          1     CopyrightYear.tsx
+cacheLife('max')           1     CouponQrExpiry.tsx
 cacheTag(CATALOGUE_TAG)   22
 ```
 
@@ -65,7 +66,7 @@ always safe - it costs a cache miss, never a wrong answer. It is worth revisitin
 when the catalogue is large enough that a full cold rebuild is expensive, and
 not before.
 
-**Who invalidates.** Nine modules, and **not all of them are admin**:
+**Who invalidates.** Ten modules, and **not all of them are admin**:
 
 ```
 server/actions/admin/products.ts        6 calls
@@ -75,9 +76,10 @@ server/actions/admin/approvals.ts       2
 server/actions/admin/coupon-deals.ts    2
 server/actions/admin/reviews.ts         1
 server/actions/admin/product-location.ts 1
-server/actions/admin/product-import.ts  1
+server/actions/admin/product-import.ts  2
+server/actions/admin/product-gift-card.ts 1
 server/actions/supplier/profile.ts      1
-                                       22
+                                       24
 ```
 
 **Corrected 2026-09-08.** This list said "four modules, all admin" and totalled

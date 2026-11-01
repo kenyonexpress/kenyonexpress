@@ -1101,3 +1101,27 @@ site. The two have to change together.
 - `319_affiliate_links_product.sql` - C103 `affiliate_links.product_id` plus a unique index (affiliate_id, product_id): one link per affiliate per product. No money.
 - `320_products_opening_hours.sql` - C104 `products.opening_hours` jsonb (sun..sat, each `{open, from, to}`) for the open-on-weekend chip (fri or sat open). No money.
 - `321_card_verify_enabled_flag.sql` - C91 seeds the `card_verify_enabled` flag in `feature_flags` as `false`: supplier applications skip the 1 ILS card step. Boolean, no money.
+- `171_category_name_shekel_order.sql` - 187: the shekel sign in a category name renders on the wrong side.. Lives in `migrations/applied/`.
+- `190_whatsapp_otp.sql` - 190_whatsapp_otp.sql. Lives in `migrations/pending/`.
+- `193_affiliate_campaigns.sql` - Migration 193: Affiliate campaigns tracking. Lives in `migrations/pending/`.
+- `195_push_subscriptions.sql` - ============================================================================. Lives in `migrations/pending/`.
+- `196_push_notifications_tracking.sql` - ============================================================================. Lives in `migrations/pending/`.
+- `226_fraud_controls.sql` - 226: fraud controls. Two server-only tables behind the checkout fraud gate:. Lives in `migrations/applied/`.
+- `228_invoice_sequences.sql` - 228_invoice_sequences.sql. Lives in `migrations/applied/`.
+- `231_bell_fanout.sql` - 231_bell_fanout.sql. Lives in `migrations/applied/`.
+- `232_reviews_admin_moderation_only.sql` - 232_reviews_admin_moderation_only.sql. Lives in `migrations/applied/`.
+- `233_wishlist_alerts.sql` - 233_wishlist_alerts.sql. Lives in `migrations/applied/`.
+- `234_gift_cards.sql` - 234_gift_cards.sql. Lives in `migrations/applied/`.
+- `236_orders_shipping_method.sql` - 236_orders_shipping_method.sql. Lives in `migrations/pending/`.
+- `237_user_ban_and_store_settings.sql` - 237_user_ban_and_store_settings.sql. Lives in `migrations/pending/`.
+- `238_search_events_daily.sql` - 238_search_events_daily.sql. Lives in `migrations/pending/`.
+- `239_push_deliveries_sms_log_opt_outs.sql` - 239_push_deliveries_sms_log_opt_outs.sql. Lives in `migrations/pending/`.
+- `242_job_dlq.sql` - 242_job_dlq.sql. Lives in `migrations/pending/`.
+- `243_club_tiers.sql` - 243_club_tiers.sql. Lives in `migrations/pending/`.
+- `243_product_full_address.sql` - 243_product_full_address.sql. Lives in `migrations/pending/`.
+- `244_abandoned_cart_second_reminder.sql` - 244: the second abandoned-cart reminder.. Lives in `migrations/pending/`.
+- `244_product_is_physical_shipping.sql` - 244_product_is_physical_shipping.sql. Lives in `migrations/pending/`.
+- `245_supplier_onboarding.sql` - the earlier supplier onboarding migration. Lives in `migrations/pending/`.
+- `305_rename_gift_send_at_to_gift_scheduled_at.sql` - 305: Rename gift_send_at to gift_scheduled_at for clarity. Lives in `migrations/pending/`.
+- `312_otp_attempts_wa_otp_flag.sql` - 312: otp_attempts audit table + wa_otp_enabled flag (C90, rc5 F15).. Lives in `migrations/pending/`.
+- `313_card_verify_enabled_flag.sql` - 313: card_verify_enabled flag (C91, F07).. Lives in `migrations/pending/`.

@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { measureSms } from '@/lib/sms/segments'
 
 /**
@@ -130,7 +131,7 @@ export async function sendSms(args: {
 
   let res: Response
   try {
-    res = await fetch(`${API}/Accounts/${configured.accountSid}/Messages.json`, {
+    res = await fetchWithTimeout(`${API}/Accounts/${configured.accountSid}/Messages.json`, {
       method: 'POST',
       headers: {
         Authorization: `Basic ${Buffer.from(`${configured.accountSid}:${configured.authToken}`).toString('base64')}`,

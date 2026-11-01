@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GET } from './route'
 
+vi.mock('@/lib/push/send', () => ({
+  sendPushToUsers: vi.fn(async () => undefined),
+}))
+
 vi.mock('@/lib/push/trigger-notifications', () => ({
   triggerVoucherExpiryNotifications: vi.fn(async () => ({ sent: 1, failed: 0 })),
 }))

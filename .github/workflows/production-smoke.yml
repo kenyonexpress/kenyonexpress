@@ -55,7 +55,7 @@ jobs:
     steps:
       # The job had no checkout while it only ran curl against two literal
       # paths. The cron probe reads scripts/cron-jobs.json, so it needs one.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # NOTHING SECRET IS NEEDED AND THE JOB SAYS SO RATHER THAN GUESSING.
       #

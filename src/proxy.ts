@@ -18,6 +18,7 @@ import {
   maintenanceEnabled,
 } from '@/lib/security/maintenance'
 import { maintenanceFlagOn } from '@/lib/security/maintenance-flag'
+import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { wpLegacyTarget } from '@/lib/seo/wp-legacy'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
@@ -157,6 +158,17 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
           'cache-control': 'no-store',
         },
       }),
+      requestId,
+      pathname,
+      nonce,
+    )
+  }
+
+  // A state-changing call to a route handler from a page that is not ours is
+  // refused before it costs a session refresh.
+  if (isCrossSiteApiMutation(request)) {
+    return withRequestId(
+      NextResponse.json(CROSS_SITE_REJECTION, { status: 403 }),
       requestId,
       pathname,
       nonce,

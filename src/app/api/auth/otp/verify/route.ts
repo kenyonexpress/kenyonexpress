@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
@@ -81,7 +82,7 @@ async function handlePOST(req: NextRequest) {
       .eq('id', otpSession.id)
 
     if (updateError) {
-      console.error('Failed to mark OTP as verified:', updateError)
+      log.error('otp.mark_verified_failed', { reason: updateError.message })
       return NextResponse.json({ error: 'Failed to verify OTP' }, { status: 500 })
     }
 
@@ -107,7 +108,7 @@ async function handlePOST(req: NextRequest) {
       })
 
       if (updateAuthError) {
-        console.error('Failed to update auth user:', updateAuthError)
+        log.error('otp.update_auth_user_failed', { reason: updateAuthError.message })
         return NextResponse.json({ error: 'Failed to update user metadata' }, { status: 500 })
       }
 
@@ -127,7 +128,7 @@ async function handlePOST(req: NextRequest) {
       message: 'Phone verified successfully',
     })
   } catch (error) {
-    console.error('OTP verify error:', error)
+    log.error('otp.verify_failed', { reason: error instanceof Error ? error.message : 'unknown' })
     return NextResponse.json({ error: 'Failed to verify OTP' }, { status: 500 })
   }
 }

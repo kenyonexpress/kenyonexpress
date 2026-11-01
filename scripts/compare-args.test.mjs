@@ -96,7 +96,7 @@ describe('the gate consumes the parser', () => {
   })
 
   it('names the baseline in the ledger notes so a frozen run is never read as a fresh shot', () => {
-    expect(compare).toMatch(/baseline \$\{ARGS\.baseline\.name\}/)
+    expect(compare).toMatch(/baseline \$\{ARGS\.baseline\?\.name/)
   })
 
   it('exposes the gate as `pnpm run compare`', () => {

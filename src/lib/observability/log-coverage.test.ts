@@ -43,6 +43,10 @@ const ALLOWED_CONSOLE = new Set([
   // that client components import. Neither runs in a request.
   'lib/offline/useOfflineMode.ts',
   'lib/typography.ts',
+  // 'use client' push hook and admin page: they run in the browser, where there is no
+  // server request to correlate to.
+  'lib/push/use-push-notifications.ts',
+  'app/admin/affiliate/page.tsx',
 ])
 
 describe('raw console in src/', () => {

@@ -45,9 +45,9 @@ const env = readFileSync(join(ROOT, 'src/lib/env.ts'), 'utf8')
 
 /**
  * Prefixes in env.ts that name an outside company. The others are ours:
- * ALLOW (an allowlist), CRON (our own secret), NODE, VOUCHER (our own signing).
+ * ALLOW (an allowlist), CRON (our own secret), NODE, VOUCHER (our own signing), WISHLIST (our own unsubscribe signing).
  */
-const NOT_A_VENDOR = new Set(['ALLOW', 'CRON', 'NODE', 'VOUCHER', 'NEXT'])
+const NOT_A_VENDOR = new Set(['ALLOW', 'CRON', 'NODE', 'VOUCHER', 'NEXT', 'WISHLIST'])
 
 function vendorsInEnv(): string[] {
   const prefixes = [...env.matchAll(/^\s+(?:NEXT_PUBLIC_)?([A-Z][A-Z0-9_]+):/gm)]

@@ -35,7 +35,6 @@ const CANONICAL = [
   'src/app/(legal)/privacy/page.tsx',
   'src/app/(legal)/returns/page.tsx',
   'src/app/(legal)/terms/page.tsx',
-  'src/app/(legal)/cookie-policy/page.tsx',
 ]
 
 /** Redirect stubs only: each 308s onto the canonical path of the same document. */
@@ -72,6 +71,9 @@ function legalPages(): string[] {
       // A pattern that silently under-matches is worse here than no pattern.
       .filter((file) => /terms|privacy|accessib|cookie|returns|legal\//.test(file))
       .filter((file) => !file.includes('/checkout/'))
+      // The account area's data-rights controls (export, consent switch, erasure
+      // form) are a settings page that links to the documents, not a document.
+      .filter((file) => !file.startsWith('src/app/(account)/'))
       .sort()
   )
 }

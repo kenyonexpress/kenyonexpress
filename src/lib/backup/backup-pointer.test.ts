@@ -8,8 +8,15 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
  * Prerequisites: migration 130_pg_cron_pg_net.sql applied
  */
 
-describe('backup pointer system', () => {
-  const admin = createAdminClient()
+// Integration test against the real backup_log table: it only means something
+// with a service key, and must skip (not crash at collection) without one.
+const hasDb = Boolean(
+  (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY) &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+)
+
+describe.skipIf(!hasDb)('backup pointer system', () => {
+  const admin = hasDb ? createAdminClient() : (undefined as never)
 
   beforeEach(async () => {
     // Clean up test backup entries

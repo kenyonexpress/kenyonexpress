@@ -51,6 +51,18 @@ const RAW_ENV_READERS: Record<string, { because: string; mustContain: string }> 
     because: 'boot-time liveness check must read the raw key to test it against the project',
     mustContain: 'probeEnvironment',
   },
+  'src/lib/auth/challenge-cookie.ts': {
+    because: 'signs the passkey challenge cookie, falling back to the secret key as HMAC key',
+    mustContain: 'SUPABASE_SERVICE_ROLE_KEY',
+  },
+  'src/server/auth/wa-otp-gate.ts': {
+    because: 'HMAC key for the WhatsApp OTP gate cookie, same fallback chain as passkeys',
+    mustContain: 'SUPABASE_SECRET_KEY',
+  },
+  'src/server/auth/wa-otp.ts': {
+    because: 'HMAC key for WhatsApp OTP codes, same fallback chain as passkeys',
+    mustContain: 'SUPABASE_SERVICE_ROLE_KEY',
+  },
   'src/lib/auth/passkeys/config.ts': {
     because: 'passkey store reads the key pair directly (178 lifecycle)',
     mustContain: 'SUPABASE_SERVICE_ROLE_KEY',

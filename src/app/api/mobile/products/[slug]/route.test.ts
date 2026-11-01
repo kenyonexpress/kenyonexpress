@@ -128,6 +128,8 @@ describe('GET /api/mobile/products/[slug]', () => {
     const request = new NextRequest('http://localhost/api/mobile/products/test-product')
     const response = await GET(request, { params: Promise.resolve({ slug: 'test-product' }) })
 
-    expect(response.headers.get('cache-control')).toBe('public, max-age=3600')
+    expect(response.headers.get('cache-control')).toBe(
+      'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+    )
   })
 })

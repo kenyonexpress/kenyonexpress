@@ -1,9 +1,9 @@
 'use client'
 
-import { useProductLive } from '@/lib/product-live/use-product-live'
 import { useCart } from '@/components/cart/CartProvider'
 import { EcAddToCart } from '@/components/icons/electro-icons'
 import ProductLocation from '@/components/product-card/ProductLocation'
+import WishlistButton from '@/components/product/WishlistButton'
 import CopyLinkButton from '@/components/shared/CopyLinkButton'
 import NativeShareButton from '@/components/shared/NativeShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
@@ -16,6 +16,7 @@ import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
+import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -438,6 +439,7 @@ export default function ProductInfo({
             and this line used to send a friend "₪200" for a deal the page
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex items-center gap-4">
+          <WishlistButton productId={productId} variant="inline" />
           <WhatsAppShareButton
             productId={productId}
             message={[

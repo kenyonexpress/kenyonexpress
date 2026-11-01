@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 import { parseCompareArgs } from './compare-args.mjs'
 import { loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
+import { defaultBaselineFor, recaptureHint } from './parity-baseline.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout|account|supplier]
@@ -44,6 +45,14 @@ const ARGS = parseCompareArgs(process.argv.slice(2))
 // been measured. Height stays 2600: the diff is banded down the page and the
 // bands must line up run to run for the numbers to be comparable.
 const VIEW = { width: ARGS.width, height: 2600 }
+// The frozen reference capture: an explicit `--baseline=` / `--live-png=`, else
+// the page's Electro v7 default from parity-baseline.mjs (KEN-8), else null.
+// `--live=<url>` asks for a live navigation and gets no default swapped in.
+const LIVE_PNG =
+  defaultBaselineFor(page, {
+    live: argOf('live', null),
+    livePng: ARGS.baseline?.path ?? argOf('live-png', null),
+  })?.replaceAll('{width}', String(VIEW.width)) ?? null
 
 // `--widths=380,768,1440` is one run per width, in order, each a child with the
 // same arguments and a singular `--width=`. The parent exits with the first
@@ -1167,12 +1176,18 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  if (ARGS.baseline) {
-    // A frozen reference, by request. No archive shot, no load shortfall to
-    // report, and the ledger row says so (COMPARE_NOTES below).
-    copyFileSync(ARGS.baseline.path, runShot('live'))
+  if (LIVE_PNG) {
+    // A frozen reference, by request or by default. No archive shot, no load
+    // shortfall to report, and the ledger row says so (COMPARE_NOTES below).
+    if (!existsSync(LIVE_PNG)) {
+      console.error(
+        `compare: frozen capture ${LIVE_PNG} not found. ${recaptureHint(LIVE_PNG) ?? ''}`,
+      )
+      process.exit(5)
+    }
+    copyFileSync(LIVE_PNG, runShot('live'))
     console.log(
-      `${runShot('live')} copied from ${ARGS.baseline.path} (frozen baseline, not a fresh shot of the archive)`,
+      `${runShot('live')} copied from ${LIVE_PNG} (frozen baseline, not a fresh shot of the archive)`,
     )
   } else {
     await shoot(liveUrl, runShot('live'), 'live')
@@ -1410,8 +1425,8 @@ await new Promise((resolvePromise, reject) => {
         // Before the reference shortfall: the cell is clipped at 160 characters
         // and this is the caveat that changes what the number means.
         ownCaveat,
-        ARGS.baseline
-          ? `baseline ${ARGS.baseline.name} (frozen PNG, ${statSync(ARGS.baseline.path).mtime.toISOString()}), not a fresh archive shot`
+        LIVE_PNG
+          ? `baseline ${ARGS.baseline?.name ?? LIVE_PNG} (frozen PNG, ${statSync(LIVE_PNG).mtime.toISOString()}), not a fresh archive shot`
           : `ref ${loadShortfall(missedLoads.live)}`,
       ]
         .filter(Boolean)

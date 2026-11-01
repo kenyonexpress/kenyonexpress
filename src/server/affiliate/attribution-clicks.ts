@@ -11,13 +11,17 @@ export async function recordAffiliateClick(input: {
   const now = input.now ?? new Date()
 
   try {
-    const { data: campaign } = await admin
+    const { data: campaign, error: campaignError } = await admin
       .from('affiliate_campaigns')
       .select('id')
       .eq('slug', input.campaignSlug)
       .eq('active', true)
       .maybeSingle()
 
+    if (campaignError) {
+      log.error('affiliate.campaign_read_failed', { reason: campaignError.message })
+      return
+    }
     if (!campaign) return
 
     await admin.from('affiliate_clicks').insert({
@@ -47,13 +51,17 @@ export async function attributeOrderToAffiliate(input: {
 
   try {
     // Get campaign
-    const { data: campaign } = await admin
+    const { data: campaign, error: campaignError } = await admin
       .from('affiliate_campaigns')
       .select('id, commission_rate, cookie_days')
       .eq('slug', input.campaignSlug)
       .eq('active', true)
       .maybeSingle()
 
+    if (campaignError) {
+      log.error('affiliate.campaign_read_failed', { reason: campaignError.message })
+      return
+    }
     if (!campaign) return
 
     // Find the most recent unattributed click for this campaign and user

@@ -6,7 +6,12 @@
 // ProductCard shape.
 
 import { log } from '@/lib/observability/log'
-import { type PendingSearchProductRow, pendingSearchRpc, type SearchProductsArgs, callSearchProductsRpc } from '@/lib/supabase/pending-search'
+import {
+  type PendingSearchProductRow,
+  type SearchProductsArgs,
+  callSearchProductsRpc,
+  pendingSearchRpc,
+} from '@/lib/supabase/pending-search'
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { expandQueryWord } from '@/lib/search/db-expansion'
@@ -47,15 +52,23 @@ async function searchMeili(
   categorySlug?: string,
 ): Promise<SearchOutcome | null> {
   const index = process.env.MEILISEARCH_INDEX ?? 'products'
+  // `type` and `category_slug` are filterable attributes (see
+  // lib/search/meili-settings.ts), so both facets are applied in the engine and
+  // estimatedTotalHits stays truthful. The slug is quoted and escaped so it
+  // cannot smuggle a second clause into the filter expression.
+  const filter = [
+    ...(productType ? [`type = ${productType}`] : []),
+    ...(categorySlug
+      ? [`category_slug = "${categorySlug.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`]
+      : []),
+  ]
   const data = await meiliSearch<{ hits: MeiliHit[]; estimatedTotalHits?: number }>(
     `/indexes/${index}/search`,
     'POST',
     {
       q,
       limit,
-      // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
-      // the facet is applied in the engine and estimatedTotalHits stays truthful.
-      ...(productType ? { filter: `type = ${productType}` } : {}),
+      ...(filter.length > 0 ? { filter } : {}),
     },
   )
 
@@ -199,10 +212,9 @@ async function searchDb(
     : 'categories!products_category_id_fkey(name_he, slug)'
   let query = supabase
     .from('products')
-    .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, categories!products_category_id_fkey(name_he, slug)',
-      { count: 'exact' },
-    )
+    .select(`id, slug, name_he, kenyon_price, full_price, images, stock_quantity, city, ${embed}`, {
+      count: 'exact',
+    })
     .eq('status', 'active')
     .is('deleted_at', null)
 
@@ -266,6 +278,7 @@ async function searchDb(
   // Same coupon/physical facet the archives expose, applied in the query so the
   // count stays truthful rather than filtering an already-capped page.
   if (productType) query = query.eq('type', productType)
+  if (categorySlug) query = query.eq('categories.slug', categorySlug)
 
   const { data, count } = await query.limit(limit)
 

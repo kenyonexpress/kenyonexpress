@@ -1,8 +1,9 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
 import { sendPushToUser } from './send'
 
-export async function triggerOrderShippedNotification(userId: string, orderId: string) {
+async function runTriggerOrderShippedNotification(userId: string, orderId: string) {
   return sendPushToUser(userId, {
     title: 'הזמנה שלך נשלחה',
     body: 'הזמנה שלך בדרך אליך',
@@ -12,7 +13,7 @@ export async function triggerOrderShippedNotification(userId: string, orderId: s
   })
 }
 
-export async function triggerOrderDeliveredNotification(userId: string, orderId: string) {
+async function runTriggerOrderDeliveredNotification(userId: string, orderId: string) {
   return sendPushToUser(userId, {
     title: 'הזמנה שלך הגיעה',
     body: 'הזמנה שלך הגיעה! אנו מקווים שאתה מרוצה',
@@ -22,7 +23,7 @@ export async function triggerOrderDeliveredNotification(userId: string, orderId:
   })
 }
 
-export async function triggerFlashDealMatchNotification(
+async function runTriggerFlashDealMatchNotification(
   userId: string,
   productName: string,
   productSlug: string,
@@ -36,7 +37,7 @@ export async function triggerFlashDealMatchNotification(
   })
 }
 
-export async function triggerVoucherExpiryNotifications(
+async function runTriggerVoucherExpiryNotifications(
   userVoucherMap: Record<string, { code: string; count: number }>,
 ) {
   const notifications = Object.entries(userVoucherMap).map(([userId, { code, count }]) =>
@@ -56,5 +57,35 @@ export async function triggerVoucherExpiryNotifications(
   return results.reduce(
     (acc, curr) => ({ sent: acc.sent + curr.sent, failed: acc.failed + curr.failed }),
     { sent: 0, failed: 0 },
+  )
+}
+
+export async function triggerOrderShippedNotification(userId: string, orderId: string) {
+  return withActionContext('push.trigger.triggerOrderShippedNotification', () =>
+    runTriggerOrderShippedNotification(userId, orderId),
+  )
+}
+
+export async function triggerOrderDeliveredNotification(userId: string, orderId: string) {
+  return withActionContext('push.trigger.triggerOrderDeliveredNotification', () =>
+    runTriggerOrderDeliveredNotification(userId, orderId),
+  )
+}
+
+export async function triggerFlashDealMatchNotification(
+  userId: string,
+  productName: string,
+  productSlug: string,
+) {
+  return withActionContext('push.trigger.triggerFlashDealMatchNotification', () =>
+    runTriggerFlashDealMatchNotification(userId, productName, productSlug),
+  )
+}
+
+export async function triggerVoucherExpiryNotifications(
+  userVoucherMap: Record<string, { code: string; count: number }>,
+) {
+  return withActionContext('push.trigger.triggerVoucherExpiryNotifications', () =>
+    runTriggerVoucherExpiryNotifications(userVoucherMap),
   )
 }

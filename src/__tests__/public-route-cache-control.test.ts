@@ -29,20 +29,36 @@ const EXCLUDED_SEGMENTS =
   /\/(admin|cron|supplier|account|auth|webhooks|payments|checkout|monitoring|debug)\//
 
 /** `src/app/api/app/` is the till app's API, bearer-authenticated. */
-const EXCLUDED_PREFIXES = ['src/app/api/app/']
+const EXCLUDED_PREFIXES = [
+  'src/app/api/app/',
+  // Secret-, admin- or API-key-gated, like the groups above but not under one
+  // of their segment names: purge/push/test hooks, the SMS admin API, and the
+  // partner API.
+  'src/app/api/cache/',
+  'src/app/api/campaigns/hooks/',
+  'src/app/api/push/send/',
+  'src/app/api/sms/',
+  'src/app/api/partners/',
+  'src/app/api/test/',
+]
 
 type Policy = 'public' | 'private' | 'redirect'
 
 const LEDGER: Record<string, Policy> = {
+  // Records a click and sets the attribution cookie: per-caller.
+  'src/app/api/affiliate/track/route.ts': 'private',
   'src/app/api/alerts/uptimerobot/route.ts': 'private',
   'src/app/api/cart/route.ts': 'private',
   'src/app/api/catalogue/listing/route.ts': 'public',
   'src/app/api/health/route.ts': 'private',
+  'src/app/api/images/r2/route.ts': 'public',
+  'src/app/api/mobile/products/[slug]/route.ts': 'public',
   'src/app/api/ready/route.ts': 'private',
   'src/app/api/search/facets/route.ts': 'public',
   'src/app/api/search/quick-links/route.ts': 'private',
   'src/app/api/search/route.ts': 'public',
   'src/app/api/search/suggest/route.ts': 'private',
+  'src/app/api/supplier-apply/card-verify/route.ts': 'redirect',
   'src/app/api/wallet/apple/[id]/route.ts': 'private',
   // Sets the coupon cookie and 307s home. A redirect that sets a cookie is
   // per-caller by construction; NextResponse.redirect carries no
@@ -85,7 +101,9 @@ describe('public GET route handlers', () => {
       }
       if (policy === 'public') {
         // The constant, not a literal: a literal is how three copies drift.
-        expect(source).toMatch(/CacheControl\.(search|feed|postalCode)/)
+        expect(source).toMatch(
+          /(CacheControl\.(search|feed|postalCode)|IMMUTABLE_ASSET_CACHE_CONTROL)/,
+        )
         expect(source).not.toMatch(/['"]public,\s*(max-age|s-maxage)/)
         return
       }

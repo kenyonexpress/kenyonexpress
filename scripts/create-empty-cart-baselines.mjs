@@ -17,13 +17,18 @@ async function captureBaseline(page, url, name, width) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
   await page.waitForTimeout(2000) // Let any animations settle
 
+  // /checkout with an empty cart lands on /cart. That is the state being
+  // captured, but the landing path is recorded so the file is not mistaken for
+  // checkout's own render.
+  const finalPath = new URL(page.url()).pathname
+
   const screenshot = await page.screenshot({
     fullPage: false,
     clip: { x: 0, y: 0, width, height: HEIGHT },
   })
   const filename = `refs/nextjs_${name}_${width}.png`
   writeFileSync(resolve(process.cwd(), filename), screenshot)
-  console.log(`✓ Created ${filename}`)
+  console.log(`✓ Created ${filename} (requested ${new URL(url).pathname}, finalPath ${finalPath})`)
 }
 
 async function main() {

@@ -54,6 +54,12 @@ vi.mock('@/lib/supabase/read-replica', () => {
   return { createCatalogueReadClient: () => builder }
 })
 
+// getShopProducts reads through the anon client; same builder, same results.
+vi.mock('@/lib/supabase/anon', async () => {
+  const { createCatalogueReadClient } = await import('@/lib/supabase/read-replica')
+  return { createPublicClient: () => createCatalogueReadClient() }
+})
+
 const logError = vi.fn()
 vi.mock('@/lib/observability/log', () => ({ log: { error: (...a: unknown[]) => logError(...a) } }))
 

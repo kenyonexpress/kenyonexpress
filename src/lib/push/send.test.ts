@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { sendPushToUser, sendPushToUsers } from './send'
 
 vi.mock('web-push')
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({
     from: vi.fn((table) => ({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({

@@ -389,7 +389,7 @@ async function CategoryPageBody({
       <script
         type="application/ld+json"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListLd) }}
       />
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">

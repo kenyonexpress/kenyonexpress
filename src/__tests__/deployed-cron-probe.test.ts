@@ -83,7 +83,7 @@ describe('the probe covers the whole registry', () => {
     const registry = JSON.parse(readFileSync(resolve(process.cwd(), REGISTRY), 'utf8'))
     expect(registry.jobs.length).toBeGreaterThanOrEqual(13)
     for (const job of registry.jobs) {
-      expect(job.path).toMatch(/^\/api\/cron\/[a-z-]+$/)
+      expect(job.path).toMatch(/^\/api\/cron\/[a-z0-9-]+$/)
     }
   })
 })

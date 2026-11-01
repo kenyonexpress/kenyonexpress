@@ -41,6 +41,17 @@ const LIMITER_CALL =
  */
 const SECRET_AUTHENTICATED: { path: string; guard: RegExp; reason: string }[] = [
   {
+    path: 'src/app/api/admin/seed-search/route.ts',
+    guard: /bearerMatches\(/,
+    reason: 'a one-off search seeder behind CRON_SECRET, compared in constant time',
+  },
+  {
+    path: 'src/app/api/push/send/route.ts',
+    guard: /cronSecretMatches\(|bearerMatches\(/,
+    reason:
+      'pg_net posts with CRON_SECRET as x-cron-secret or a Bearer token, compared in constant time',
+  },
+  {
     path: 'src/app/api/alerts/uptimerobot/route.ts',
     guard: /secretEquals\(/,
     reason: 'UptimeRobot posts with a shared secret, compared in constant time',

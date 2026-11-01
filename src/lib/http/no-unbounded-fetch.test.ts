@@ -49,8 +49,6 @@ const ALLOWED: Record<string, string> = {
     'AbortController with 5000ms timeout to Vercel cache API. Purge failure is non-blocking and silent.',
   'lib/admin/legal-docs-verifier.ts':
     'AbortSignal.timeout(5000). HEAD requests to verify legal document presence for compliance audit.',
-  'app/api/cron/health/route.ts':
-    'AbortSignal.timeout(5000) on the ntfy push. A cron that hangs on its own notification never reports the health it measured.',
 
   // --- Browser calls to our own origin ------------------------------------
   'lib/search.ts':
@@ -90,6 +88,28 @@ const ALLOWED: Record<string, string> = {
     'Browser, fire-and-forget subscribe to our own origin after the permission prompt; a hang costs the page nothing.',
   'lib/offline/sync.ts':
     'Browser replay of the offline queue to our own origin; a stalled item stays queued and is retried with backoff, which is its own ceiling.',
+
+  // --- Added with the postal-code, push, category and supplier-apply work
+  'app/api/checkout/postal-code/route.ts':
+    'AbortController + LOOKUP_TIMEOUT_MS cleared in finally. A postal-code lookup that hangs must degrade to no suggestion, and it does.',
+  'lib/observability/telegram.ts':
+    'AbortSignal.timeout(4000), same shape as alert.ts: a hung operator alert must not hold the caller open.',
+  'lib/jobs/runner.ts':
+    'AbortSignal.timeout(8000) on each job call, so one stuck route cannot stall the runner.',
+  'lib/analytics/feature-flags.ts':
+    'AbortSignal.timeout(2_000), and every error path resolves to the default flag value.',
+  'app/(auth)/signup/WhatsAppOtpForm.tsx':
+    'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
+  'app/(store)/checkout/CheckoutForm.tsx':
+    'Browser postal-code lookup to our own origin with its own AbortController signal, cancelled on the next keystroke or unmount.',
+  'components/category/CategoryAutocomplete.tsx':
+    'Browser suggest call to our own origin with an AbortController per keystroke, so a superseded query is cancelled.',
+  'components/category/InfiniteProductGrid.tsx':
+    'Browser page fetch to our own origin from an infinite grid that shows its own loading state; a hang costs the page nothing.',
+  'components/supplier/SupplierApplyWizard.tsx':
+    'Browser PUT of a document to a presigned upload URL from a wizard step that shows its own progress; a client timeout would only orphan the upload.',
+  'lib/push/use-push-notifications.ts':
+    'Browser, to our own /api/push/subscribe, fired by a user click that shows its busy state; a hang costs the page nothing.',
 
   // --- Server calls to external APIs -------------------------------------
   'lib/auth/whatsapp-otp.ts':

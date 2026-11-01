@@ -52,6 +52,10 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:generatePasskeyAuthOptions', 'WebAuthn sign-in entry point'],
   ['auth.ts:verifyPasskeyAuth', 'WebAuthn verification, browser-bounded ceremony'],
   [
+    'passkeys.ts:beginPasskeyLogin',
+    'usernameless WebAuthn sign-in entry point, rate limited per IP, issues only a sealed challenge',
+  ],
+  [
     'auth.ts:sendWhatsAppOtp',
     'WhatsApp OTP sign-in entry point, rate limited per IP and per number',
   ],

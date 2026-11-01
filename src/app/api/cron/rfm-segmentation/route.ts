@@ -14,7 +14,7 @@
 
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { NextRequest } from 'next/server'
 
 export const maxDuration = 300
@@ -38,16 +38,7 @@ async function handlePOST(req: NextRequest): Promise<Response> {
 
   try {
     // Create Supabase client with service role for admin operations
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      },
-    )
+    const supabase = createAdminClient()
 
     // Step 1: Calculate RFM scores for all users
     const { data: rfmResults, error: rfmError } = await supabase.rpc('fn_calculate_rfm_scores')

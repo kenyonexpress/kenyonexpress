@@ -1,8 +1,9 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
 import { sendPushToUser } from './send'
 
-export async function notifyOrderShipped(userId: string, orderId: string) {
+async function runNotifyOrderShipped(userId: string, orderId: string) {
   return sendPushToUser(userId, {
     title: 'הזמנה שלך נשלחה',
     body: 'הזמנה שלך בדרך אליך',
@@ -12,7 +13,7 @@ export async function notifyOrderShipped(userId: string, orderId: string) {
   })
 }
 
-export async function notifyOrderDelivered(userId: string, orderId: string) {
+async function runNotifyOrderDelivered(userId: string, orderId: string) {
   return sendPushToUser(userId, {
     title: 'הזמנה שלך הגיעה',
     body: 'הזמנה שלך הגיעה! אנו מקווים שאתה מרוצה',
@@ -22,11 +23,7 @@ export async function notifyOrderDelivered(userId: string, orderId: string) {
   })
 }
 
-export async function notifyFlashDealMatch(
-  userId: string,
-  productName: string,
-  productSlug: string,
-) {
+async function runNotifyFlashDealMatch(userId: string, productName: string, productSlug: string) {
   return sendPushToUser(userId, {
     title: 'דיל הבזק שחיפשת',
     body: `${productName} בהנחה עכשיו!`,
@@ -34,4 +31,26 @@ export async function notifyFlashDealMatch(
       url: `/products/${productSlug}`,
     },
   })
+}
+
+export async function notifyOrderShipped(userId: string, orderId: string) {
+  return withActionContext('push.notify.notifyOrderShipped', () =>
+    runNotifyOrderShipped(userId, orderId),
+  )
+}
+
+export async function notifyOrderDelivered(userId: string, orderId: string) {
+  return withActionContext('push.notify.notifyOrderDelivered', () =>
+    runNotifyOrderDelivered(userId, orderId),
+  )
+}
+
+export async function notifyFlashDealMatch(
+  userId: string,
+  productName: string,
+  productSlug: string,
+) {
+  return withActionContext('push.notify.notifyFlashDealMatch', () =>
+    runNotifyFlashDealMatch(userId, productName, productSlug),
+  )
 }

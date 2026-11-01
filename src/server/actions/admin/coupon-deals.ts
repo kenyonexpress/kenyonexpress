@@ -5,6 +5,7 @@ import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { triggerFlashDealMatchNotification } from '@/lib/push/trigger-notifications'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -102,11 +103,14 @@ async function runUpsertCouponDeal(
 
   if (id) {
     // Get previous status to detect activation
-    const { data: existing } = await supabase
+    const { data: existing, error: existingError } = await supabase
       .from('coupon_deals')
       .select('status, title_he')
       .eq('id', id)
       .maybeSingle()
+    if (existingError) {
+      log.warn('coupon_deals.previous_status_read_failed', { reason: existingError.message })
+    }
 
     const isNewActivation = wasActivated && existing?.status !== 'active'
 
@@ -133,10 +137,15 @@ async function runUpsertCouponDeal(
   // For now, send to all users with push subscriptions when deal goes active
   if (dealTitle) {
     const admin = createAdminClient()
-    const { data: subscriptions } = await admin
+    const { data: subscriptions, error: subscriptionsError } = await admin
       .from('push_subscriptions')
       .select('user_id')
       .limit(1000)
+    if (subscriptionsError) {
+      log.warn('coupon_deals.flash_subscribers_read_failed', {
+        reason: subscriptionsError.message,
+      })
+    }
 
     const userIds = new Set<string>()
     for (const sub of subscriptions || []) {
@@ -147,7 +156,9 @@ async function runUpsertCouponDeal(
 
     for (const userId of userIds) {
       triggerFlashDealMatchNotification(userId, dealTitle, 'deals').catch((err) => {
-        console.error('Failed to send flash deal notification:', err)
+        log.error('coupon_deals.flash_push_failed', {
+          reason: err instanceof Error ? err.message : String(err),
+        })
       })
     }
   }

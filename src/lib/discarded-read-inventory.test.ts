@@ -51,6 +51,10 @@ const REACHES_POSTGREST = /\.from\(|\.rpc\(/
 
 /** file -> how many discarded reads it holds today. */
 const INVENTORY: Record<string, number> = {
+  // Display-only reads where an empty result is the correct fallback render.
+  'src/app/(account)/account/notifications/page.tsx': 1,
+  'src/app/admin/affiliate/page.tsx': 1,
+  'src/components/account/NotificationBell.tsx': 1,
   'src/app/(account)/account/orders/[id]/invoice/route.ts': 1,
   'src/app/(admin)/admin/approvals/page.tsx': 1,
   'src/app/(admin)/admin/categories/new/page.tsx': 1,
@@ -72,7 +76,6 @@ const INVENTORY: Record<string, number> = {
   'src/app/api/cron/wishlist-digest/route.ts': 1,
   'src/app/api/supplier/vouchers/redeem/route.ts': 2,
   'src/app/auth/callback/route.ts': 1,
-  'src/components/auth/PasskeyBanner.tsx': 1,
   'src/components/home/FeaturedProducts.tsx': 1,
   'src/lib/admin/rbac.ts': 1,
   'src/lib/auth/passkeys.ts': 4,

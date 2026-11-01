@@ -62,7 +62,7 @@ export async function shipAxiomEvent(
   if (!config) return
   const dataset = options.dataset ?? config.dataset
   try {
-    await fetchWithTimeout(`${API}/${encodeURIComponent(config.dataset)}/ingest`, {
+    await fetchWithTimeout(`${API}/${encodeURIComponent(dataset)}/ingest`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${config.token}`,

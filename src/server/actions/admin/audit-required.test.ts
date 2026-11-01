@@ -66,7 +66,13 @@ function implementations(source: string): { name: string; body: string }[] {
     // the compiler cannot know that, and silencing it with `!` would be the one
     // place in this file where a wrong assumption could not fail loudly.
     const next = starts[i + 1]
-    const end = next ? next.at : source.length
+    // A run function ends at the next top-level declaration of any kind, so a
+    // helper between two of them (a rollback that deletes, say) is not
+    // attributed to the preview above it.
+    const after = source.slice(s.at + 1)
+    const decl = after.search(/^(?:export |async function |function |type |const |interface )/m)
+    const declEnd = decl === -1 ? source.length : s.at + 1 + decl
+    const end = next ? Math.min(next.at, declEnd) : declEnd
     out.push({ name: s.name, body: source.slice(s.at, end) })
   }
   return out

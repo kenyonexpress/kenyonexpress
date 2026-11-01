@@ -64,6 +64,9 @@ export const CacheControl = {
   private: 'private, no-store',
 } as const
 
+/** Content-addressed bytes that never change under their URL. Outside `CacheControl`: that table is ISR policies. */
+export const IMMUTABLE_ASSET_CACHE_CONTROL = 'public, max-age=31536000, immutable'
+
 export type CacheControlPolicy = (typeof CacheControl)[keyof typeof CacheControl]
 
 /**

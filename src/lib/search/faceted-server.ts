@@ -2,6 +2,7 @@ import 'server-only'
 
 import { getCategoryIndex } from '@/lib/category-page'
 import { categorySubtree } from '@/lib/category-tree'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 import {
   FACET_ATTRIBUTES,
@@ -118,7 +119,7 @@ async function searchMeiliFaceted(params: FacetedSearchParams): Promise<FacetsRe
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const sort = buildMeiliSort(params.sort)
     for (const facets of attempts) {
-      const res = await fetch(`${host}/indexes/${PRODUCTS_INDEX}/search`, {
+      const res = await fetchWithTimeout(`${host}/indexes/${PRODUCTS_INDEX}/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

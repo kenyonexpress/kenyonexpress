@@ -205,9 +205,10 @@ describe('the three slots beside the price', () => {
     })
     expect(writeText).toHaveBeenCalledWith(window.location.href)
     expect(screen.getByRole('button', { name: 'הקישור הועתק' })).toBeInTheDocument()
-    // The two channel buttons are still there beside it.
+    // The WhatsApp channel button is still there beside it. There is no Facebook
+    // share: no social network links anywhere on the site.
     expect(screen.getByRole('button', { name: 'שתפו בוואטסאפ' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'שיתוף בפייסבוק' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'שיתוף בפייסבוק' })).toBeNull()
   })
 
   it('uses the share sheet when there is one', async () => {

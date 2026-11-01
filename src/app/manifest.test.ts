@@ -52,9 +52,9 @@ describe('web app manifest', () => {
     expect(m.lang).toBe('he')
     expect(m.dir).toBe('rtl')
     // The launcher label, in the language of every other string the shopper
-    // sees. A Latin name under the icon reads as somebody else's app.
-    expect(m.name).toBe('קניון אקספרס')
-    expect(m.short_name).toBe('קניון אקספרס')
+    // sees. The display name is mixed Hebrew + Latin by design.
+    expect(m.name).toBe('קניון EXPRESS')
+    expect(m.short_name).toBe('קניון EXPRESS')
   })
 
   it('starts at a bare URL, so the cached document is the one that is served', () => {

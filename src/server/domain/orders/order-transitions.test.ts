@@ -59,7 +59,7 @@ describe('order transition effect plan', () => {
   })
 
   it('never contradicts the DB guard: every machine edge is guard-legal', () => {
-    // The guard (migrations/pending/137, mirrored in status-transitions.json)
+    // The guard (migrations/applied/137, mirrored in status-transitions.json)
     // is a superset that also carries legacy platform_settled rows. If a
     // machine edge is missing there, the first write down that edge raises
     // 23514 in production.

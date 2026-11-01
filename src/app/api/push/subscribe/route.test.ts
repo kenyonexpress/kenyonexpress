@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: vi.fn(async () => true) }))
 import { POST } from './route'
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: vi.fn(() => ({
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({
     auth: {
       getUser: vi.fn(async (_token) => ({
         data: { user: { id: 'user-123' } },

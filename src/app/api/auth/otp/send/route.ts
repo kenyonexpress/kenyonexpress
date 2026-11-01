@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, tooManyRequests } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
@@ -59,7 +60,7 @@ async function handlePOST(req: NextRequest) {
     })
 
     if (insertError) {
-      console.error('Failed to store OTP:', insertError)
+      log.error('otp.store_failed', { reason: insertError.message })
       return NextResponse.json({ error: 'Failed to create OTP session' }, { status: 500 })
     }
 
@@ -79,7 +80,7 @@ async function handlePOST(req: NextRequest) {
       messageId: result.sid,
     })
   } catch (error) {
-    console.error('OTP send error:', error)
+    log.error('otp.send_failed', { reason: error instanceof Error ? error.message : 'unknown' })
     return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 })
   }
 }

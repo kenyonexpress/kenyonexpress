@@ -78,6 +78,16 @@ describe('every env flag that gates behaviour is on one of the two tables', () =
     // Default-on and only the literal "false" turns it off, the inverse of `isOn`, so a row
     // here would read "off" when unset. Search degrades to Postgres; the `search` kill switch covers it.
     'MEILISEARCH_ENABLED',
+    // Default-on overrides read by their own gate (wa-otp-gate.ts,
+    // card-verify-gate.ts); only a literal "false" changes anything, the inverse
+    // of `isOn`, so a row would read "off" when unset. NEXT_PUBLIC_ is the client
+    // mirror of FLAG_WA_OTP_ENABLED.
+    'FLAG_WA_OTP_ENABLED',
+    'NEXT_PUBLIC_WHATSAPP_OTP_ENABLED',
+    'FLAG_CARD_VERIFY_ENABLED',
+    // Twilio SMS is off unless the literal "true" is set and has no degraded
+    // path to describe: sms/twilio.ts simply does not send.
+    'SMS_ENABLED',
   ])
 
   it('finds gating flags at all, so a regex change cannot empty this test', () => {

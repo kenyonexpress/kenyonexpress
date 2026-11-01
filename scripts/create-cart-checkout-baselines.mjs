@@ -23,6 +23,15 @@ async function captureBaseline(page, url, name, width, setupFn) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
   await page.waitForTimeout(2000) // Let any animations settle
 
+  // An empty cart sends /checkout to /cart. If the seed did not take, refuse
+  // rather than save the cart's pixels under checkout's name.
+  const finalPath = new URL(page.url()).pathname
+  if (finalPath !== new URL(url).pathname) {
+    throw new Error(
+      `${name}@${width}: asked for ${url} but landed on ${finalPath}; cart not seeded?`,
+    )
+  }
+
   const screenshot = await page.screenshot({
     fullPage: false,
     clip: { x: 0, y: 0, width, height: HEIGHT },

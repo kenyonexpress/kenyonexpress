@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { log } from '@/lib/observability/log'
+import { createAdminClient } from '@/lib/supabase/admin'
 import webpush from 'web-push'
 
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
@@ -18,10 +19,7 @@ export async function sendPushToUser(
   userId: string,
   notification: PushNotification,
 ): Promise<{ sent: number; failed: number }> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const supabase = createAdminClient()
 
   const { data: subscriptions, error } = await supabase
     .from('push_subscriptions')
@@ -29,7 +27,7 @@ export async function sendPushToUser(
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Failed to fetch subscriptions:', error)
+    log.error('push.fetch_subscriptions_failed', { reason: error.message })
     return { sent: 0, failed: 0 }
   }
 
@@ -59,7 +57,7 @@ export async function sendPushToUser(
 
       sent++
     } catch (err) {
-      console.error('Failed to send notification:', err)
+      log.error('push.send_failed', { reason: err instanceof Error ? err.message : String(err) })
       failed++
 
       if (err instanceof Error && err.message.includes('410')) {

@@ -1,13 +1,13 @@
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { sendPushToUsers } from '@/lib/push/send'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET
-  const authHeader = request.headers.get('authorization')
-
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+const handleGET = async (request: NextRequest) => {
+  if (!bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -18,12 +18,17 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
-    const { data: vouchersAboutToExpire } = await admin
+    const { data: vouchersAboutToExpire, error: vouchersError } = await admin
       .from('vouchers')
       .select('id, user_id, code')
       .lt('expires_at', next24h.toISOString())
       .gt('expires_at', now.toISOString())
       .is('push_expiry_notified_at', null)
+
+    if (vouchersError) {
+      log.error('cron.push_voucher_expiry_read_failed', { reason: vouchersError.message })
+      return NextResponse.json({ error: 'Failed to read vouchers' }, { status: 500 })
+    }
 
     let notified = 0
 
@@ -70,7 +75,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ notified })
   } catch (error) {
-    console.error('Error sending voucher expiry notifications:', error)
+    log.error('cron.push_voucher_expiry_failed', {
+      reason: error instanceof Error ? error.message : String(error),
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const GET = withRequestLog('/api/cron/push-voucher-expiry', handleGET)

@@ -4,7 +4,7 @@ describe('WhatsAppOtpForm', () => {
   it('normalizes Israeli phone numbers correctly', () => {
     // Test cases for phone number normalization
     const testCases = [
-      { input: '0501234567', expected: '+9725012345670' },
+      { input: '0501234567', expected: '+972501234567' },
       { input: '972501234567', expected: '+972501234567' },
       { input: '+972501234567', expected: '+972501234567' },
     ]

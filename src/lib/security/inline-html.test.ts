@@ -39,7 +39,12 @@ function sourcesUnder(dir: string): { path: string; source: string }[] {
 /** `dangerouslySetInnerHTML={{ __html: <expression> }}`, expression captured. */
 const OPT_OUT = /dangerouslySetInnerHTML=\{\{\s*__html:\s*([^}]+?)\s*\}\}/g
 
-const ALLOWED_PRODUCERS = [/^jsonLdScript\(/, /^CONSENT_PREPAINT_SCRIPT$/]
+const ALLOWED_PRODUCERS = [
+  /^jsonLdScript\(/,
+  /^CONSENT_PREPAINT_SCRIPT$/,
+  // A fixed string built from two module constants; no input reaches it.
+  /^SUBMIT_HIDES_SCRIPT$/,
+]
 
 type OptOut = { path: string; line: number; expression: string }
 

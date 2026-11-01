@@ -127,6 +127,14 @@ file is in a repository.
 20 https://kenyonexpress.vercel.app/api/cron/rfm-segmentation     GET  20 1 * * *     Authorization: Bearer <CRON_SECRET>
 21 https://kenyonexpress.vercel.app/api/cron/search-report        GET  0 6 * * 1      Authorization: Bearer <CRON_SECRET>
 22 https://kenyonexpress.vercel.app/api/cron/scheduled-gifts       GET  */10 * * * *   Authorization: Bearer <CRON_SECRET>
+23 https://kenyonexpress.vercel.app/api/cron/whatsapp                     GET  */5 * * * *      Authorization: Bearer <CRON_SECRET>
+24 https://kenyonexpress.vercel.app/api/cron/backup                       GET  20 2 * * *       Authorization: Bearer <CRON_SECRET>
+25 https://kenyonexpress.vercel.app/api/cron/wishlist-alerts              GET  45 4 * * *       Authorization: Bearer <CRON_SECRET>
+26 https://kenyonexpress.vercel.app/api/cron/wishlist-digest              GET  0 5 * * 5        Authorization: Bearer <CRON_SECRET>
+27 https://kenyonexpress.vercel.app/api/cron/daily-deals                  GET  0 3 * * *        Authorization: Bearer <CRON_SECRET>
+28 https://kenyonexpress.vercel.app/api/cron/email-retry                  GET  30 */6 * * *     Authorization: Bearer <CRON_SECRET>
+29 https://kenyonexpress.vercel.app/api/cron/cashback-settlement          GET  0 4 * * *        Authorization: Bearer <CRON_SECRET>
+30 https://kenyonexpress.vercel.app/api/cron/push-voucher-expiry          GET  30 2 * * *       Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -171,6 +179,14 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 20 | 01:20 daily | `20 1 * * *` | `https://kenyonexpress.vercel.app/api/cron/rfm-segmentation` |
 | 21 | Monday 06:00 | `0 6 * * 1` | `https://kenyonexpress.vercel.app/api/cron/search-report` |
 | 22 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/scheduled-gifts` |
+| 23 | `*/5 * * * *` | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
+| 24 | `20 2 * * *` | `20 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/backup` |
+| 25 | `45 4 * * *` | `45 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
+| 26 | `0 5 * * 5` | `0 5 * * 5` | `https://kenyonexpress.vercel.app/api/cron/wishlist-digest` |
+| 27 | `0 3 * * *` | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/daily-deals` |
+| 28 | `30 */6 * * *` | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/email-retry` |
+| 29 | `0 4 * * *` | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/cashback-settlement` |
+| 30 | `30 2 * * *` | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/push-voucher-expiry` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.

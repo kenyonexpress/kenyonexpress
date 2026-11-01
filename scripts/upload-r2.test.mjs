@@ -185,16 +185,22 @@ describe('cost cap logic', () => {
 })
 
 describe('upload-r2.mjs dry-run', () => {
-  it('runs without errors in dry-run mode', async () => {
-    const { execSync } = await import('node:child_process')
-    const output = execSync('node scripts/upload-r2.mjs --dry-run', {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-      stdio: 'pipe',
-    })
+  // The manifest is an ingest artifact (`node scripts/ingest-live-assets.mjs`),
+  // not a tracked file; without it the script refuses, correctly, so there is
+  // nothing to dry-run.
+  it.skipIf(!existsSync(join(process.cwd(), 'refs/live-assets/manifest.json')))(
+    'runs without errors in dry-run mode',
+    async () => {
+      const { execSync } = await import('node:child_process')
+      const output = execSync('node scripts/upload-r2.mjs --dry-run', {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        stdio: 'pipe',
+      })
 
-    expect(output).toMatch(/upload-r2:/)
-    expect(output).toMatch(/DRY RUN/)
-    expect(output).toMatch(/objects/)
-  })
+      expect(output).toMatch(/upload-r2:/)
+      expect(output).toMatch(/DRY RUN/)
+      expect(output).toMatch(/objects/)
+    },
+  )
 })

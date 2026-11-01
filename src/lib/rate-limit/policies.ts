@@ -260,6 +260,55 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 86400,
     reason: 'new orders naming one delivery phone in a day, across accounts',
   },
+  // -- Added with passkeys, MFA, gift cards, push and supplier onboarding.
+  'passkey-register': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'passkey enrolment options, per IP',
+  },
+  'passkey-register-user': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'passkey enrolment, per signed-in user',
+  },
+  'passkey-login': { limit: 30, windowSeconds: 3600, reason: 'passkey sign-in challenge, per IP' },
+  'passkey-login-finish': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'passkey assertion guessing, per IP',
+  },
+  'email-verify': { limit: 20, windowSeconds: 3600, reason: 'mail OTP code guessing, per IP' },
+  'email-verify-address': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'mail OTP code guessing, per address, so proxies cannot buy one account more tries',
+  },
+  'mfa-enrol': { limit: 10, windowSeconds: 3600, reason: 'MFA factor enrolment, per user' },
+  'mfa-verify': { limit: 10, windowSeconds: 900, reason: 'MFA code guessing, per user' },
+  'mfa-verify-ip': { limit: 30, windowSeconds: 900, reason: 'MFA code guessing, per IP' },
+  'push-subscribe': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'push subscription writes from the server action, per IP',
+  },
+  'push-unsubscribe': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'push unsubscribe route, per signed-in user',
+  },
+  coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'coupon QR cookie set, per IP' },
+  gift_card_check: { limit: 20, windowSeconds: 3600, reason: 'gift card code guessing, per IP' },
+  gift_card_redeem: { limit: 10, windowSeconds: 3600, reason: 'gift card redemption, per user' },
+  'supplier-apply': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'supplier application submissions, per user',
+  },
+  'supplier-doc-upload': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'supplier document upload tickets, per user',
+  },
 } as const satisfies Record<string, RateLimitPolicy>
 
 export type RateLimitPolicyName = keyof typeof RATE_LIMIT_POLICIES
