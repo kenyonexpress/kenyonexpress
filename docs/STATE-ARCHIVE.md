@@ -31187,3 +31187,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T13:42:27+07:00
 - item: M01-c335
 - BLOCKED: gate-fail
+
+## Archived 2026-11-01T14:47:59+07:00 after M08-c336 (3 lines from STATE.md)
+
+### 2026-11-01T13:54:40+07:00
+- item: M02-c335
+- BLOCKED: ** because the gate fails at all three widths.
