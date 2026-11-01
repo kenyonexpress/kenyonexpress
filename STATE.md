@@ -1,7 +1,11 @@
-RESUME FROM: M16-c337
+RESUME FROM: M17-c337
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T16:25:24+07:00
+- item: M16-c337
+- RESULT: DONE
 
 ### 2026-11-01T16:24:12+07:00
 - item: M15-c337
@@ -98,10 +102,6 @@ RESUME FROM: M16-c337
 ### 2026-11-01T14:51:50+07:00
 - item: M11-c336
 - RESULT: DONE
-
-### 2026-11-01T14:50:41+07:00
-- item: M10-c336
-- BLOCKED: supabase-mcp-unauthorized
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
