@@ -1,7 +1,31 @@
-RESUME FROM: M09-c331
+RESUME FROM: M15-c331
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:07:08+07:00
+- item: M14-c331
+- RESULT: DONE
+
+### 2026-11-01T11:06:21+07:00
+- item: M13-c331
+- BLOCKED: Meilisearch down in prod, /api/health and /api/ready return 503
+
+### 2026-11-01T11:05:31+07:00
+- item: M12-c331
+- RESULT: DONE
+
+### 2026-11-01T11:04:28+07:00
+- item: M11-c331
+- BLOCKED: sitemap `<loc>` and `robots.txt` use the apex host, which 308-redirects to www, and the cached sitemap is about 54 hours old
+
+### 2026-11-01T11:03:29+07:00
+- item: M10-c331
+- BLOCKED: Supabase MCP unauthenticated; cannot list or apply migrations
+
+### 2026-11-01T11:02:43+07:00
+- item: M09-c331
+- RESULT: DONE
 
 ### 2026-11-01T11:01:24+07:00
 - item: M08-c331
@@ -78,30 +102,6 @@ RESUME FROM: M09-c331
 ### 2026-11-01T10:09:28+07:00
 - item: M08-c330
 - RESULT: DONE
-
-### 2026-11-01T10:07:11+07:00
-- item: M07-c330
-- RESULT: DONE
-
-### 2026-11-01T10:06:18+07:00
-- item: M06-c330
-- RESULT: DONE
-
-### 2026-11-01T10:05:01+07:00
-- item: M05-c330
-- RESULT: DONE
-
-### 2026-11-01T10:03:03+07:00
-- item: M04-c330
-- RESULT: DONE
-
-### 2026-11-01T10:02:08+07:00
-- item: M03-c330
-- BLOCKED: no category reference — live host serves our own build, compare.mjs refuses (exit 5)
-
-### 2026-11-01T10:00:55+07:00
-- item: M02-c330
-- BLOCKED: gate-not-met product 26.82/21.68/11.95**.
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
@@ -215,3 +215,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 
 המשך מ: M06-c323 DONE (pnpm build clean, exit 0; committed tracked docs drift docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md; no code changes)
 המשך מ: M04-c330 DONE (2026-11-01): pnpm type-check clean (tsc --noEmit exit 0), no tracked drift to commit; no code changes; no forbidden files touched
+
+המשך מ: M09-c331 DONE (2026-11-01): audit only, no code changes. 0 removable deps (all 11 name-unreferenced pkgs are implicit: biome/lint-staged via scripts+husky, coverage-v8 via vitest, capacitor native platforms, @mdx-js/loader peer of @next/mdx, @types/*). knip dead exports are intentional API surface (shadcn ui, cardcom/ledger/idempotency, admin actions) or in forbidden HeroSlider; left untouched; no forbidden files touched

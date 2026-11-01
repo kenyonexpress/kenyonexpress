@@ -30647,3 +30647,39 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T09:35:08+07:00
 - item: M01-c330
 - BLOCKED: gate-fail (39.83 / 36.52 / 27.52, all above 11%)
+
+## Archived 2026-11-01T11:02:43+07:00 after M09-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:00:55+07:00
+- item: M02-c330
+- BLOCKED: gate-not-met product 26.82/21.68/11.95**.
+
+## Archived 2026-11-01T11:03:29+07:00 after M10-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:02:08+07:00
+- item: M03-c330
+- BLOCKED: no category reference — live host serves our own build, compare.mjs refuses (exit 5)
+
+## Archived 2026-11-01T11:04:28+07:00 after M11-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:03:03+07:00
+- item: M04-c330
+- RESULT: DONE
+
+## Archived 2026-11-01T11:05:31+07:00 after M12-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:05:01+07:00
+- item: M05-c330
+- RESULT: DONE
+
+## Archived 2026-11-01T11:06:21+07:00 after M13-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:06:18+07:00
+- item: M06-c330
+- RESULT: DONE
+
+## Archived 2026-11-01T11:07:08+07:00 after M14-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:07:11+07:00
+- item: M07-c330
+- RESULT: DONE
