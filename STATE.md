@@ -1,7 +1,11 @@
-RESUME FROM: M03-c334
+RESUME FROM: M04-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T13:09:50+07:00
+- item: M03-c334
+- BLOCKED: no valid category reference (kenyonexpress.co.il now serves our own build; no Electro category ref in refs/)
 
 ### 2026-11-01T13:08:36+07:00
 - item: M02-c334
@@ -98,10 +102,6 @@ RESUME FROM: M03-c334
 ### 2026-11-01T11:49:55+07:00
 - item: M15-c332
 - BLOCKED: console-errors-on-product (2 missing images, Suspense/runtime-data error; the Invalid API key part is DONE-DEFERRED)**
-
-### 2026-11-01T11:48:10+07:00
-- item: M14-c332
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
