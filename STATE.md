@@ -1,7 +1,11 @@
-RESUME FROM: M10-c334
+RESUME FROM: M11-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T13:19:17+07:00
+- item: M10-c334
+- BLOCKED: Supabase MCP unauthenticated; cannot verify or apply migrations
 
 ### 2026-11-01T13:18:30+07:00
 - item: M09-c334
@@ -98,10 +102,6 @@ RESUME FROM: M10-c334
 ### 2026-11-01T12:32:18+07:00
 - item: M04-c333
 - RESULT: DONE
-
-### 2026-11-01T12:31:29+07:00
-- item: M03-c333
-- BLOCKED: no valid category reference (live host is our own build; no Electro v7 category capture in refs/)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

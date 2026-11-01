@@ -30977,3 +30977,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T12:30:08+07:00
 - item: M02-c333
 - BLOCKED: no valid /product reference — live host is our own build; Electro-fresh reference needs matching related-products grid (4 vs 12 cards); override diffs 36.58/29.82/20.52% at 380/768/1440 all >11%
+
+## Archived 2026-11-01T13:19:17+07:00 after M10-c334 (3 lines from STATE.md)
+
+### 2026-11-01T12:31:29+07:00
+- item: M03-c333
+- BLOCKED: no valid category reference (live host is our own build; no Electro v7 category capture in refs/)
