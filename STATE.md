@@ -1,7 +1,23 @@
-RESUME FROM: M02-c328
+RESUME FROM: M06-c328
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T08:00:30+07:00
+- item: M05-c328
+- RESULT: DONE
+
+### 2026-11-01T07:58:32+07:00
+- item: M04-c328
+- RESULT: DONE
+
+### 2026-11-01T07:57:38+07:00
+- item: M03-c328
+- BLOCKED: no-reference
+
+### 2026-11-01T07:56:18+07:00
+- item: M02-c328
+- BLOCKED: gate-fail (product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all over 11%)
 
 ### 2026-11-01T07:39:00+07:00
 - item: M01-c328
@@ -86,22 +102,6 @@ RESUME FROM: M02-c328
 ### 2026-11-01T06:39:44+07:00
 - item: M01-c327
 - BLOCKED: gate-fail
-
-### 2026-11-01T06:24:55+07:00
-- item: M18-c326
-- RESULT: DONE
-
-### 2026-11-01T06:24:07+07:00
-- item: M17-c326
-- BLOCKED: locked-component**. The home page has an LTR leak, and the only fix is in a locked file.
-
-### 2026-11-01T06:22:24+07:00
-- item: M16-c326
-- RESULT: DONE
-
-### 2026-11-01T06:21:23+07:00
-- item: M15-c326
-- BLOCKED: console errors on / and /product — Supabase invalid key (DONE-DEFERRED part), product Suspense/prerender error, CSP blocking Vercel scripts
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

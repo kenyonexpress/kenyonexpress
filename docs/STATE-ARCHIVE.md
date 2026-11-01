@@ -30281,3 +30281,27 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T06:19:44+07:00
 - item: M14-c326
 - RESULT: DONE
+
+## Archived 2026-11-01T07:56:18+07:00 after M02-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:21:23+07:00
+- item: M15-c326
+- BLOCKED: console errors on / and /product — Supabase invalid key (DONE-DEFERRED part), product Suspense/prerender error, CSP blocking Vercel scripts
+
+## Archived 2026-11-01T07:57:38+07:00 after M03-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:22:24+07:00
+- item: M16-c326
+- RESULT: DONE
+
+## Archived 2026-11-01T07:58:32+07:00 after M04-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:24:07+07:00
+- item: M17-c326
+- BLOCKED: locked-component**. The home page has an LTR leak, and the only fix is in a locked file.
+
+## Archived 2026-11-01T08:00:30+07:00 after M05-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:24:55+07:00
+- item: M18-c326
+- RESULT: DONE
