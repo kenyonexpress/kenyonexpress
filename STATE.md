@@ -1,7 +1,11 @@
-RESUME FROM: M08-c329
+RESUME FROM: M09-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T09:00:08+07:00
+- item: M08-c329
+- RESULT: DONE
 
 ### 2026-11-01T08:57:48+07:00
 - item: M07-c329
@@ -98,10 +102,6 @@ RESUME FROM: M08-c329
 ### 2026-11-01T07:56:18+07:00
 - item: M02-c328
 - BLOCKED: gate-fail (product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all over 11%)
-
-### 2026-11-01T07:39:00+07:00
-- item: M01-c328
-- BLOCKED: reference snapshot images don't load, so compare.mjs can't produce a gate number for / (forced diffs are 27–40%, well above 11%)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

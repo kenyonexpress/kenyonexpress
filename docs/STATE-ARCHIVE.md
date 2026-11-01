@@ -30425,3 +30425,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T07:19:00+07:00
 - item: M18-c327
 - RESULT: DONE
+
+## Archived 2026-11-01T09:00:08+07:00 after M08-c329 (3 lines from STATE.md)
+
+### 2026-11-01T07:39:00+07:00
+- item: M01-c328
+- BLOCKED: reference snapshot images don't load, so compare.mjs can't produce a gate number for / (forced diffs are 27–40%, well above 11%)
