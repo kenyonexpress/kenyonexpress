@@ -275,3 +275,4 @@
 המשך מ: M04-c345 DONE (2026-11-02): pnpm type-check exit 0, zero tsc errors, no drift; proof docs/M04-c345.md; no code changes; no forbidden files touched
 המשך מ: M12-c345 DONE (2026-11-02): live www/robots.txt 200, Allow /, no blanket Disallow, private routes disallowed; note prod APP_URL=apex 308s to www (env fix at deploy, unchanged); proof docs/M12-c345.md; no code changes; no forbidden files touched
 המשך מ: M04-c346 DONE (2026-11-02): pnpm type-check exit 0, zero tsc errors, no drift; proof docs/M04-c346.md; no code changes; no forbidden files touched
+- המשך מ: M07-c346 DONE (2026-11-02): TODO/FIXME scan of src/migrations/scripts: 6 comment lines in 3 groups (cardcom.ts:254, :317; r2-migration.ts:103-106), all older than 7 days, all already filed in docs/BACKLOG.md (Cardcom prod creds / Supabase service-role key blocked); proof docs/M07-c346.md; no code changes; no forbidden files touched
