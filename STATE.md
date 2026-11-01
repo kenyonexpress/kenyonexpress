@@ -1,7 +1,15 @@
-RESUME FROM: M17-c329
+RESUME FROM: M18-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T09:20:04+07:00
+- item: M18-c329
+- RESULT: DONE
+
+### 2026-11-01T09:19:24+07:00
+- item: M17-c329
+- BLOCKED: compare gate not met (home 29–41% vs 11%; local page rendering a data-fetch fallback); RTL check itself clean. If the failed fetch is a 401 or placeholder-key error, this item should be DONE-DEFERRED under the Supabase-recovery rule.
 
 ### 2026-11-01T09:07:33+07:00
 - item: M16-c329
@@ -94,14 +102,6 @@ RESUME FROM: M17-c329
 ### 2026-11-01T08:11:35+07:00
 - item: M12-c328
 - RESULT: DONE
-
-### 2026-11-01T08:10:37+07:00
-- item: M11-c328
-- RESULT: DONE
-
-### 2026-11-01T08:09:42+07:00
-- item: M10-c328
-- BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot list or apply migrations
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
