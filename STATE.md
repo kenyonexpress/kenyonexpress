@@ -1,7 +1,31 @@
-RESUME FROM: M13-c336
+RESUME FROM: M18-c336
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:59:41+07:00
+- item: M17-c336
+- RESULT: DONE
+
+### 2026-11-01T14:58:27+07:00
+- item: M16-c336
+- RESULT: DONE
+
+### 2026-11-01T14:58:06+07:00
+- item: M16-c336
+- RESULT: DONE
+
+### 2026-11-01T14:57:25+07:00
+- item: M15-c336
+- BLOCKED: console errors on / and /product (prerender-Suspense error on /product, image-dimension warnings on /, /api/cart failure, plus Supabase invalid-key errors)
+
+### 2026-11-01T14:56:07+07:00
+- item: M14-c336
+- RESULT: DONE
+
+### 2026-11-01T14:55:21+07:00
+- item: M13-c336
+- RESULT: DONE
 
 ### 2026-11-01T14:52:37+07:00
 - item: M12-c336
@@ -77,30 +101,6 @@ RESUME FROM: M13-c336
 
 ### 2026-11-01T14:12:18+07:00
 - item: M12-c335
-- RESULT: DONE
-
-### 2026-11-01T14:11:17+07:00
-- item: M11-c335
-- BLOCKED: sitemap-stale
-
-### 2026-11-01T14:10:19+07:00
-- item: M10-c335
-- BLOCKED: Supabase MCP unauthenticated; cannot verify or apply pending migrations
-
-### 2026-11-01T14:09:23+07:00
-- item: M09-c335
-- RESULT: DONE
-
-### 2026-11-01T14:08:17+07:00
-- item: M08-c335
-- RESULT: DONE
-
-### 2026-11-01T14:05:46+07:00
-- item: M07-c335
-- RESULT: DONE
-
-### 2026-11-01T14:04:40+07:00
-- item: M06-c335
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF

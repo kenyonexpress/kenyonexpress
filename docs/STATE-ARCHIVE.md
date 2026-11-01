@@ -31217,3 +31217,39 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:03:20+07:00
 - item: M05-c335
 - BLOCKED: migration preflights, duplicate numbers (243, 244) and number 300 collision need a renumber and sequencing decision. The 7 credential-dependent failures are DONE-DEFERRED.
+
+## Archived 2026-11-01T14:55:21+07:00 after M13-c336 (3 lines from STATE.md)
+
+### 2026-11-01T14:04:40+07:00
+- item: M06-c335
+- RESULT: DONE
+
+## Archived 2026-11-01T14:56:07+07:00 after M14-c336 (3 lines from STATE.md)
+
+### 2026-11-01T14:05:46+07:00
+- item: M07-c335
+- RESULT: DONE
+
+## Archived 2026-11-01T14:57:25+07:00 after M15-c336 (3 lines from STATE.md)
+
+### 2026-11-01T14:08:17+07:00
+- item: M08-c335
+- RESULT: DONE
+
+## Archived 2026-11-01T14:58:06+07:00 after M16-c336 (3 lines from STATE.md)
+
+### 2026-11-01T14:09:23+07:00
+- item: M09-c335
+- RESULT: DONE
+
+## Archived 2026-11-01T14:58:27+07:00 after M16-c336 (3 lines from STATE.md)
+
+### 2026-11-01T14:10:19+07:00
+- item: M10-c335
+- BLOCKED: Supabase MCP unauthenticated; cannot verify or apply pending migrations
+
+## Archived 2026-11-01T14:59:41+07:00 after M17-c336 (3 lines from STATE.md)
+
+### 2026-11-01T14:11:17+07:00
+- item: M11-c335
+- BLOCKED: sitemap-stale
