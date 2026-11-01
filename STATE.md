@@ -3,6 +3,10 @@ RESUME FROM: M18-c336
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T15:00:49+07:00
+- item: M18-c336
+- RESULT: DONE
+
 ### 2026-11-01T14:59:41+07:00
 - item: M17-c336
 - RESULT: DONE
@@ -97,10 +101,6 @@ RESUME FROM: M18-c336
 
 ### 2026-11-01T14:13:14+07:00
 - item: M13-c335
-- RESULT: DONE
-
-### 2026-11-01T14:12:18+07:00
-- item: M12-c335
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
