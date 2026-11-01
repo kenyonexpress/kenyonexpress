@@ -31943,3 +31943,15 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T20:14:56+07:00
 - item: M14-c341
 - RESULT: DONE
+
+## Archived 2026-11-01T21:46:18+07:00 after M03-c343 (3 lines from STATE.md)
+
+### 2026-11-01T20:16:28+07:00
+- item: M15-c341
+- BLOCKED: console errors present on / and /product (Supabase Invalid API key is credential-deferred; CSP-blocked Vercel scripts, product-page Suspense error and image-ratio warnings are not)
+
+## Archived 2026-11-01T21:47:46+07:00 after M04-c343 (3 lines from STATE.md)
+
+### 2026-11-01T20:17:27+07:00
+- item: M16-c341
+- RESULT: DONE
