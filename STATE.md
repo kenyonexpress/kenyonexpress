@@ -1,7 +1,11 @@
-RESUME FROM: M08-c337
+RESUME FROM: M09-c337
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T16:16:14+07:00
+- item: M08-c337
+- RESULT: DONE
 
 ### 2026-11-01T16:13:46+07:00
 - item: M07-c337
@@ -98,10 +102,6 @@ RESUME FROM: M08-c337
 ### 2026-11-01T14:39:11+07:00
 - item: M03-c336
 - BLOCKED: M03-c336 — no valid compare reference (kenyonexpress.co.il now serves our own build; no Electro category ref)
-
-### 2026-11-01T14:38:05+07:00
-- item: M02-c336
-- BLOCKED: compare.mjs live reference is our own build (self-comparison refused); no Electro-reference mode exists to produce a number
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
