@@ -1,7 +1,11 @@
-RESUME FROM: M16-c335
+RESUME FROM: M17-c335
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:17:00+07:00
+- item: M16-c335
+- RESULT: DONE
 
 ### 2026-11-01T14:15:48+07:00
 - item: M15-c335
@@ -98,10 +102,6 @@ RESUME FROM: M16-c335
 ### 2026-11-01T13:20:20+07:00
 - item: M11-c334
 - BLOCKED: sitemap stale (CDN age 2.3 days, lastmod 27 Oct) and `<loc>` uses the apex host, which redirects to www. Needs the production `NEXT_PUBLIC_APP_URL` fixed and a redeploy or cache purge.
-
-### 2026-11-01T13:19:17+07:00
-- item: M10-c334
-- BLOCKED: Supabase MCP unauthenticated; cannot verify or apply migrations
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
