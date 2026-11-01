@@ -1,7 +1,23 @@
-RESUME FROM: M02-c330
+RESUME FROM: M06-c330
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T10:05:01+07:00
+- item: M05-c330
+- RESULT: DONE
+
+### 2026-11-01T10:03:03+07:00
+- item: M04-c330
+- RESULT: DONE
+
+### 2026-11-01T10:02:08+07:00
+- item: M03-c330
+- BLOCKED: no category reference — live host serves our own build, compare.mjs refuses (exit 5)
+
+### 2026-11-01T10:00:55+07:00
+- item: M02-c330
+- BLOCKED: gate-not-met product 26.82/21.68/11.95**.
 
 ### 2026-11-01T09:35:08+07:00
 - item: M01-c330
@@ -86,22 +102,6 @@ RESUME FROM: M02-c330
 ### 2026-11-01T08:16:39+07:00
 - item: M17-c328
 - BLOCKED: locked-component M17-c328
-
-### 2026-11-01T08:15:21+07:00
-- item: M16-c328
-- RESULT: DONE
-
-### 2026-11-01T08:14:25+07:00
-- item: M15-c328
-- RESULT: DONE
-
-### 2026-11-01T08:13:11+07:00
-- item: M14-c328
-- RESULT: DONE
-
-### 2026-11-01T08:12:25+07:00
-- item: M13-c328
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
@@ -214,3 +214,4 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c322 DONE (pnpm type-check clean, tsc --noEmit exit 0; no tracked drift beyond pre-existing docs/UI-PARITY-REPORT.md, untracked logs; no code changes)
 
 המשך מ: M06-c323 DONE (pnpm build clean, exit 0; committed tracked docs drift docs/M-CYCLE-STATUS.md + docs/UI-PARITY-REPORT.md; no code changes)
+המשך מ: M04-c330 DONE (2026-11-01): pnpm type-check clean (tsc --noEmit exit 0), no tracked drift to commit; no code changes; no forbidden files touched
