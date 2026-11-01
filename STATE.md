@@ -1,7 +1,11 @@
-RESUME FROM: M08-c334
+RESUME FROM: M09-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T13:17:26+07:00
+- item: M08-c334
+- RESULT: DONE
 
 ### 2026-11-01T13:15:03+07:00
 - item: M07-c334
@@ -98,10 +102,6 @@ RESUME FROM: M08-c334
 ### 2026-11-01T12:30:08+07:00
 - item: M02-c333
 - BLOCKED: no valid /product reference — live host is our own build; Electro-fresh reference needs matching related-products grid (4 vs 12 cards); override diffs 36.58/29.82/20.52% at 380/768/1440 all >11%
-
-### 2026-11-01T12:08:16+07:00
-- item: M01-c333
-- BLOCKED: gate-fail
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
