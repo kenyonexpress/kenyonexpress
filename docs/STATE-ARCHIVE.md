@@ -30240,3 +30240,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T00:11:23+07:00
 - item: M10-c343
 - BLOCKED: supabase CLI not linked/authenticated for ixvwfbuvfxxsjiywhbbb
+
+## Archived 2026-11-02T01:56:00+07:00 after M17-c345 (3 lines from STATE.md)
+
+### 2026-11-02T00:12:47+07:00
+- item: M11-c343
+- RESULT: DONE
