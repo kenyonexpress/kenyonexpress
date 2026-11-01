@@ -3,6 +3,10 @@ RESUME FROM: M18-c334
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T13:27:27+07:00
+- item: M18-c334
+- RESULT: DONE
+
 ### 2026-11-01T13:26:23+07:00
 - item: M17-c334
 - BLOCKED: locked-component M17-c334
@@ -98,10 +102,6 @@ RESUME FROM: M18-c334
 ### 2026-11-01T12:43:39+07:00
 - item: M12-c333
 - RESULT: DONE
-
-### 2026-11-01T12:42:51+07:00
-- item: M11-c333
-- BLOCKED: sitemap-stale — live deploy predates HEAD (Last-Modified 29 Oct, newest lastmod 27 Oct); `<loc>` host is the apex, which redirects to `www`
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

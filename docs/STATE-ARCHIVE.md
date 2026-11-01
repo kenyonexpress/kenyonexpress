@@ -31025,3 +31025,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T12:41:42+07:00
 - item: M10-c333
 - BLOCKED: Supabase MCP unauthenticated; cannot verify or apply migrations/pending
+
+## Archived 2026-11-01T13:27:27+07:00 after M18-c334 (3 lines from STATE.md)
+
+### 2026-11-01T12:42:51+07:00
+- item: M11-c333
+- BLOCKED: sitemap-stale — live deploy predates HEAD (Last-Modified 29 Oct, newest lastmod 27 Oct); `<loc>` host is the apex, which redirects to `www`
