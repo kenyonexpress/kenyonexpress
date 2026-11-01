@@ -1,7 +1,11 @@
-RESUME FROM: M03-c336
+RESUME FROM: M04-c336
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:39:11+07:00
+- item: M03-c336
+- BLOCKED: M03-c336 — no valid compare reference (kenyonexpress.co.il now serves our own build; no Electro category ref)
 
 ### 2026-11-01T14:38:05+07:00
 - item: M02-c336
@@ -98,10 +102,6 @@ RESUME FROM: M03-c336
 ### 2026-11-01T13:25:21+07:00
 - item: M16-c334
 - RESULT: DONE
-
-### 2026-11-01T13:24:12+07:00
-- item: M15-c334
-- BLOCKED: console errors present on / and /product/[slug] (Suspense error, /api/cart failure, image warnings; Supabase-key items would be DONE-DEFERRED)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
