@@ -30264,3 +30264,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T00:15:53+07:00
 - item: M14-c343
 - RESULT: DONE
+
+## Archived 2026-11-02T02:30:06+07:00 after M03-c346 (3 lines from STATE.md)
+
+### 2026-11-02T00:23:54+07:00
+- item: M15-c343
+- BLOCKED: M15-c343 home hydration error #418 on /

@@ -1,7 +1,11 @@
-RESUME FROM: M03-c346
+RESUME FROM: M04-c346
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T02:30:06+07:00
+- item: M03-c346
+- BLOCKED: category-reference-missing
 
 ### 2026-11-02T02:28:24+07:00
 - item: M02-c346
@@ -98,10 +102,6 @@ RESUME FROM: M03-c346
 ### 2026-11-02T00:26:20+07:00
 - item: M16-c343
 - RESULT: DONE
-
-### 2026-11-02T00:23:54+07:00
-- item: M15-c343
-- BLOCKED: M15-c343 home hydration error #418 on /
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
