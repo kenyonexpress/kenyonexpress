@@ -31931,3 +31931,15 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T20:13:07+07:00
 - item: M12-c341
 - RESULT: DONE
+
+## Archived 2026-11-01T21:31:33+07:00 after M01-c343 (3 lines from STATE.md)
+
+### 2026-11-01T20:14:13+07:00
+- item: M13-c341
+- BLOCKED: prod /api/health and /api/ready return 503 because Meilisearch is down (unknown_error); the other dependencies are healthy
+
+## Archived 2026-11-01T21:32:56+07:00 after M02-c343 (3 lines from STATE.md)
+
+### 2026-11-01T20:14:56+07:00
+- item: M14-c341
+- RESULT: DONE
