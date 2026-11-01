@@ -1,3 +1,4 @@
+המשך מ: M16-c334 DONE (2026-11-01): /product/[slug] (the only product route) emits Product + BreadcrumbList JSON-LD via src/lib/seo/json-ld.ts, full category trail, no aggregateRating (no reviews UI); json-ld.test.ts 26/26 pass; no code change, no forbidden files touched
 המשך מ: M11-c329 BLOCKED sitemap-stale (2026-11-01): www sitemap.xml 200 application/xml, 76 URLs, no private paths, but Age 185957s (s-maxage=3600), newest lastmod 2026-10-27, all loc on apex host (apex 308 to www); sitemap.ts code fine, deployed cache stale pending Supabase recovery + redeploy; no code change, no forbidden files touched
 המשך מ: M04-c329 DONE (2026-11-01): pnpm type-check (tsc --noEmit) clean, working tree clean, no drift to fix or commit; no forbidden files touched
 המשך מ: M04-c324 DONE (2026-11-01): pnpm type-check (tsc --noEmit) clean, working tree clean, no drift to fix or commit; no forbidden files touched
