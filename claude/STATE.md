@@ -1,3 +1,4 @@
+המשך מ: C119 DONE (2026-11-01): one-agent enforced; ke-autopilot tmux killed, 4 launchd plists disabled, autopilot merged into closeout/v1-final (layout.tsx kept locked)
 המשך מ: M07-c342 DONE (2026-11-01): TODO/FIXME scan of src found 6 TODOs (cardcom.ts:254, :317; r2-migration.ts:103-106), all already filed in docs/BACKLOG.md #1-#3 (blocked on Cardcom prod creds / Supabase service-role key); none resolvable now; no forbidden files touched
 המשך מ: M04-c342 DONE (2026-11-01): pnpm type-check (tsc --noEmit) passes with 0 errors, no drift to fix; no code change, no forbidden files touched
 המשך מ: M13-c340 DONE-DEFERRED (2026-11-01): local :3000 /api/health 503 {database:down}, /api/ready 503 {database:down,redis:down; meilisearch/r2/cardcom not_configured}; no .env.local in repo, Supabase creds placeholder/invalid pending post-C51 recovery; routes exist and report honestly; no code change, no forbidden files touched
