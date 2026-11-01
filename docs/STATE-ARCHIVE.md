@@ -31529,3 +31529,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T17:03:31+07:00
 - item: M02-c338
 - BLOCKED: gate fail product 36.58/29.82/20.52 (380/768/1440), mismatch-scored vs electro-product-fresh
+
+## Archived 2026-11-01T18:12:02+07:00 after M10-c339 (3 lines from STATE.md)
+
+### 2026-11-01T17:04:43+07:00
+- item: M03-c338
+- BLOCKED: no valid category reference — kenyonexpress.co.il now serves our own build, so the gate refuses and no Electro v7 category capture exists in refs/
