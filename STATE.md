@@ -1,7 +1,11 @@
-RESUME FROM: M02-c333
+RESUME FROM: M03-c333
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T12:30:08+07:00
+- item: M02-c333
+- BLOCKED: no valid /product reference — live host is our own build; Electro-fresh reference needs matching related-products grid (4 vs 12 cards); override diffs 36.58/29.82/20.52% at 380/768/1440 all >11%
 
 ### 2026-11-01T12:08:16+07:00
 - item: M01-c333
@@ -98,10 +102,6 @@ RESUME FROM: M02-c333
 ### 2026-11-01T11:07:08+07:00
 - item: M14-c331
 - RESULT: DONE
-
-### 2026-11-01T11:06:21+07:00
-- item: M13-c331
-- BLOCKED: Meilisearch down in prod, /api/health and /api/ready return 503
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
