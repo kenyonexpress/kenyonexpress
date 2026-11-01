@@ -42,6 +42,8 @@ const CRON_ROOT = 'src/app/api/cron'
 const ALSO_MACHINE_DRIVEN = [
   'src/app/api/search/index-job/route.ts',
   'src/app/api/search/index-dlq/route.ts',
+  'src/app/api/jobs/run/route.ts',
+  'src/app/api/jobs/dlq/route.ts',
 ]
 
 /**
@@ -124,26 +126,40 @@ describe('scheduled routes authenticate', () => {
     expect(cronRouteFiles()).toEqual([
       'src/app/api/cron/abandoned-cart/route.ts',
       'src/app/api/cron/affiliate-payouts/route.ts',
+      'src/app/api/cron/backup/route.ts',
+      'src/app/api/cron/cashback-settlement/route.ts',
+      'src/app/api/cron/daily-deals/route.ts',
       'src/app/api/cron/deal-scraper/route.ts',
+      'src/app/api/cron/email-retry/route.ts',
+      'src/app/api/cron/expire-cashback/route.ts',
+      'src/app/api/cron/expire-coupons/route.ts',
       'src/app/api/cron/expire-vouchers/route.ts',
       'src/app/api/cron/fraud-monitor/route.ts',
       'src/app/api/cron/health/route.ts',
       'src/app/api/cron/invoices/route.ts',
+      'src/app/api/cron/job-dlq/route.ts',
       'src/app/api/cron/notifications/route.ts',
       'src/app/api/cron/observability-check/route.ts',
       'src/app/api/cron/p95-monitor/route.ts',
+      'src/app/api/cron/push-voucher-expiry/route.ts',
       'src/app/api/cron/reap-carts/route.ts',
       'src/app/api/cron/reconcile/route.ts',
       'src/app/api/cron/retention/route.ts',
       'src/app/api/cron/rfm-segmentation/route.ts',
       'src/app/api/cron/scheduled-gifts/route.ts',
+      'src/app/api/cron/search-outbox/route.ts',
+      'src/app/api/cron/search-reindex/route.ts',
       'src/app/api/cron/search-report/route.ts',
       'src/app/api/cron/sms-broadcasts/route.ts',
       'src/app/api/cron/stock-notifications/route.ts',
       'src/app/api/cron/stock/route.ts',
       'src/app/api/cron/stranded-payments/route.ts',
       'src/app/api/cron/subscriptions/route.ts',
+      'src/app/api/cron/webhook-dlq/route.ts',
       'src/app/api/cron/weekly-digest/route.ts',
+      'src/app/api/cron/whatsapp/route.ts',
+      'src/app/api/cron/wishlist-alerts/route.ts',
+      'src/app/api/cron/wishlist-digest/route.ts',
     ])
   })
 })

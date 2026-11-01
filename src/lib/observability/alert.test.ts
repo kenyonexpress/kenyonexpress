@@ -79,3 +79,61 @@ describe('sendAlert', () => {
     expect(body).not.toMatch(/₪|agorot|\d+\.\d{2}/)
   })
 })
+
+describe('sendAlert fan-out to Telegram', () => {
+  const originalFetch = globalThis.fetch
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    vi.unstubAllEnvs()
+  })
+
+  it('posts to ntfy only when Telegram is not configured', async () => {
+    const urls: string[] = []
+    globalThis.fetch = (async (url: string) => {
+      urls.push(url)
+      return new Response('ok')
+    }) as never
+
+    await sendAlert({ title: 'T', message: 'm' })
+    expect(urls).toHaveLength(1)
+    expect(urls[0]).toContain('ntfy.sh')
+  })
+
+  it('posts to both channels when the bot is configured, title on its own line', async () => {
+    vi.stubEnv('TELEGRAM_BOT_TOKEN', '1:a')
+    vi.stubEnv('TELEGRAM_CHAT_ID', '9')
+    const calls: { url: string; body: string }[] = []
+    globalThis.fetch = (async (url: string, init: RequestInit) => {
+      calls.push({ url, body: String(init.body) })
+      return new Response('ok')
+    }) as never
+
+    await sendAlert({ title: 'KE money path: finalize', message: 'הזמנה: ord-1' })
+
+    const telegram = calls.find((c) => c.url.includes('api.telegram.org'))
+    const ntfy = calls.find((c) => c.url.includes('ntfy.sh'))
+    expect(ntfy?.body).toBe('הזמנה: ord-1')
+    expect(JSON.parse(telegram?.body ?? '{}').text).toBe('KE money path: finalize\nהזמנה: ord-1')
+  })
+
+  it('counts as delivered when ntfy fails but Telegram accepts', async () => {
+    vi.stubEnv('TELEGRAM_BOT_TOKEN', '1:a')
+    vi.stubEnv('TELEGRAM_CHAT_ID', '9')
+    globalThis.fetch = (async (url: string) =>
+      new Response('x', { status: url.includes('ntfy.sh') ? 500 : 200 })) as never
+
+    expect(await sendAlert({ title: 'T', message: 'm' })).toBe(true)
+  })
+
+  it('sends to the topic override when one is given', async () => {
+    const urls: string[] = []
+    globalThis.fetch = (async (url: string) => {
+      urls.push(url)
+      return new Response('ok')
+    }) as never
+
+    await sendAlert({ title: 'T', message: 'm', topic: 'kenyon-health' })
+    expect(urls[0]).toMatch(/\/kenyon-health$/)
+  })
+})

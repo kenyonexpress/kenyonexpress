@@ -52,6 +52,12 @@ const ARBITRARY_PX_RE = /\[-?\d+(?:\.\d+)?px\]/g
  * `--color-slider-dot-idle` in tokens.css. If anything ever renders from this
  * object, the value has to move into the palette first.
  *
+ * THE PDF. `qr-pdf.ts` calls pdf-lib's `rgb()`, which takes three floats in
+ * 0..1, not the 0..255 integers CSS means by the same three letters. Those
+ * numbers cannot come from the palette without a conversion the token layer
+ * does not own, and they paint a PDF, which no stylesheet reaches. The
+ * scanner sees `rgb(0.78, 0.78, 0.78)` and reads a CSS colour; it is not one.
+ *
  * THE TWO COMPONENTS. GoogleLogo reproduces Google's mark to their branding
  * guidelines and is deliberately not ours to tokenise -- a KenyonExpress
  * rebrand must leave it alone. global-error.tsx renders when the root layout
@@ -64,6 +70,13 @@ export const COLOUR_ALLOWLIST = new Set([
   'src/lib/electro-hero-tokens.ts',
   'src/lib/ke-live-revslider-slides.ts',
   'src/lib/ke-live-hero-data.ts',
+  'src/lib/coupons/qr-pdf.ts',
+  // The invoice PDF is print, not site chrome, same as qr-pdf above: pdf-lib
+  // takes rgb() components and a tax document's ink does not rebrand with the
+  // site theme.
+  'src/lib/invoices/pdf.ts',
+  // The order receipt is the same kind of print artefact as the invoice.
+  'src/lib/orders/receipt-pdf.ts',
   'src/components/shared/GoogleLogo.tsx',
   'src/app/global-error.tsx',
 ])

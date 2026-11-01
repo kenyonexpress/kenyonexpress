@@ -1,4 +1,9 @@
--- 170_composite_indexes_top_queries.sql
+-- 186_composite_indexes_top_queries.sql
+--
+-- RENUMBERED 170 -> 186 on 2026-09-09. Production had already used
+-- 170 for a different migration (see migrations/applied/), so the number
+-- is burned and this unapplied file had to move rather than the applied one.
+-- The measurement that established it is in migrations/pending/APPLY-ORDER.md.
 -- Composite indexes for the ten most frequent query patterns.
 -- Pattern source: ARCHITECTURE.md points to docs/MASTER-ARCHITECTURE.md,
 -- whose section 2.12 (planned 038_performance_indexes) defers to

@@ -11,7 +11,7 @@ Status: **מדוד מול פרודקשן**, ‏2026-08-19 · פרויקט `ixvwf
 | עובדה | ערך מדוד | למה זה קובע |
 | --- | --- | --- |
 | מסלול תמחור | **Pro** | ‏Pro = גיבוי יומי אוטומטי. ‏Free היה אומר **אפס** גיבויים, ולפי המדיניות אסור לפרודקשן |
-| ‏PITR | **לא מאושר במדידה** | ראה סעיף 2 |
+| ‏PITR | **כבוי, נמדד ‏08.10.2026** (‏`pitr_enabled: false` מה-management API) | ראה סעיף 2 |
 | גודל המסד | **‏20 MB** (‏20,950,163 בתים) | זה המספר שמפרק את כל יעדי ה-RTO הישנים |
 | טבלאות ב-public | 53 | |
 | ‏Postgres | ‏17.6, ‏`ga` | |
@@ -42,6 +42,26 @@ Status: **מדוד מול פרודקשן**, ‏2026-08-19 · פרויקט `ixvwf
 **שאלה לאופיר:** האם תוסף ה-PITR נרכש? הבדיקה: ‏Dashboard ← Project ←
 ‏Database ← Backups. אם מופיע שם בורר timestamp ולא רק רשימת גיבויים יומיים,
 ‏PITR פעיל.
+
+**נענה במדידה, ‏08.10.2026 (‏STEP 38).** ה-management API כן מבדיל:
+‏`GET /v1/projects/{ref}/database/backups` מחזיר ‏`pitr_enabled: false`,
+‏`walg_enabled: true` ו-7 גיבויים פיזיים ‏COMPLETED (החדש ‏20 שעות). לכן
+ההנחה השמרנית של סעיף 4 היא העובדה: ‏RPO של ‏24 שעות. הפירוט ב-§1.
+
+**מה עולה להפעיל, ומה נבנה.** ‏`GET .../billing/addons` מחזיר
+‏`selected_addons: []`, כלומר הפרויקט רץ על ‏Nano, ו-Supabase דורש לפחות
+‏Small מתחת ל-PITR. המחיר המדוד: ‏Small ‏$15 לחודש + ‏`pitr_7` ‏$100 לחודש
+(‏`pitr_14` ‏$200, ‏`pitr_28` ‏$400), כלומר ‏~$115 לחודש חיוב חוזר. זו
+החלטת חיוב, ולכן **לא הופעל אוטומטית**. ההפעלה היא פקודה אחת שמדפיסה את
+התוכנית והסכום ומסרבת בלי ‏`--yes`:
+
+```bash
+node scripts/dr/pitr.mjs --status --keychain            # קריאה בלבד
+node scripts/dr/pitr.mjs --enable --variant=pitr_7 --yes
+```
+
+עד אז ‏`.github/workflows/backup-health.yml` מדווח ‏`pitr_disabled` כאזהרה
+בכל ‏heartbeat של יום שני. הנוהל המלא ב-`docs/DB-RESTORE-RUNBOOK.md`.
 
 ---
 
@@ -124,5 +144,13 @@ Status: **מדוד מול פרודקשן**, ‏2026-08-19 · פרויקט `ixvwf
    לכן `scripts/backup-schema.sh` **לא הורץ מול פרודקשן** ולו פעם אחת. הלוגיקה
    שלו נבדקה במלואה מול stub, אבל החיבור האמיתי לא. פתרון: ‏`brew install libpq`
    או `supabase link --project-ref ixvwfbuvfxxsjiywhbbb`.
-2. **סטטוס PITR** (סעיף 2).
-3. **תרגיל שחזור מעולם לא בוצע.** דורש הקצאת פרויקט חדש.
+2. **סטטוס PITR** (סעיף 2): נמדד כבוי ב-08.10.2026; ההפעלה היא ‏~$115 לחודש
+   והיא פקודה אחת, אבל החיוב הוא של אופיר.
+3. **תרגיל שחזור מעולם לא בוצע.** דורש הקצאת פרויקט חדש. התרגיל הרבעוני
+   האוטומטי (‏`.github/workflows/db-restore-drill.yml`) דולג על ‏`if:`
+   כל עוד ‏`DB_BACKUP_ENABLED` חסר, ו-`backup-health.yml` מזכיר זאת.
+4. **ה-dump היומי ל-R2 לא רץ.** ‏`db-backup.yml` מסתיים ‏`skipped` כל יום
+   (נמדד ‏08.10.2026): אין ‏`DB_BACKUP_ENABLED`, אין ‏`SUPABASE_DB_URL`, ואין
+   אף ‏credential של ‏R2 במכונה, ב-Vercel או ב-GitHub. ‏6 ההגדרות ב-RUNBOOK
+   הן פעולות דשבורד של אופיר; מרגע שקיימות, השער הירוק הבא של
+   ‏`backup-health.yml` הוא ההוכחה.

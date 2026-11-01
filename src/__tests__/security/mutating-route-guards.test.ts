@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest'
  * Every route handler that accepts a mutation must hold a gate.
  *
  * Two gate families are recognised, because the API has exactly two kinds of
- * mutating caller: humans (rate-limited -- checkRateLimit), and machines
+ * mutating caller: humans (rate-limited -- `rateLimit` or the legacy
+ * `checkRateLimit`; BOTH names are listed, because a route that migrates to
+ * the newer one must not read as ungated for a commit), and machines
  * (cryptographically verified -- a constant-time secret compare, a QStash
  * signature, or a Bearer secret). A handler with NEITHER is an open write
  * endpoint, which is how the two ungated-search-webhook incidents happened.
@@ -21,7 +23,7 @@ const API_DIR = resolve(process.cwd(), 'src/app/api')
 const MUTATING = /export\s+(?:const|async\s+function)\s+(POST|PUT|PATCH|DELETE)\b/
 const GATES = [
   /checkRateLimit|enforceRateLimit|\brateLimit\(/, // human callers
-  /timingSafeEqual|bearerMatches|verifyQstashSignature/, // machine callers
+  /timingSafeEqual|bearerMatches|secretEquals|twilioSignatureValid|verifyQstashSignature/, // machine callers
 ]
 
 function routeFiles(dir: string): string[] {
@@ -49,9 +51,8 @@ describe('mutating API routes', () => {
         return !GATES.some((gate) => gate.test(source))
       })
       .map((file) => relative(process.cwd(), file))
-    expect(
-      naked,
-      'mutating routes with no gate -- add checkRateLimit or a signature check',
-    ).toEqual([])
+    expect(naked, 'mutating routes with no gate -- add rateLimit() or a signature check').toEqual(
+      [],
+    )
   })
 })

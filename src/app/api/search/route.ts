@@ -1,13 +1,19 @@
+import { CacheControl } from '@/lib/cache/http'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { callSearchProductsRpc, pendingSearchRpc } from '@/lib/supabase/pending-search'
+import type { SearchProductsArgs } from '@/lib/supabase/pending-search'
 import { createClient } from '@/lib/supabase/server'
-import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { getClientIp } from '@/lib/utils/rate-limit'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { type NextRequest, NextResponse } from 'next/server'
 
-// Stage 1 search (ARCHITECTURE section 10): Postgres ILIKE over name_he +
-// description_he. Moves to Meilisearch past ~1,000 products. Returns a compact
-// product list for the search dropdown / results page.
+// Postgres full-text search via the `search_products` RPC (migration 171:
+// GIN over a `simple`+unaccent tsvector, prefix-matched, ts_rank-ordered,
+// SECURITY INVOKER so anon RLS scopes the rows). A database without 171
+// falls back to the original stage-1 ILIKE below. Returns a compact product
+// list for the search dropdown / results page.
 
 export type SearchResult = {
   id: string
@@ -44,11 +50,47 @@ async function handleGET(request: NextRequest) {
   // checkRateLimit fails open by design (rate-limit.ts:22), so a limiter
   // outage degrades to today's behaviour rather than breaking search.
   const ip = await getClientIp()
-  if (!(await checkRateLimit(`search:${ip}`, 120, 300))) {
-    return NextResponse.json({ query: q, results: [], error: 'rate_limited' }, { status: 429 })
+  const decision = await rateLimit('search', ip)
+  if (!decision.allowed) {
+    return NextResponse.json(
+      { query: q, results: [], error: 'rate_limited' },
+      { status: 429, headers: rateLimitHeaders(decision) },
+    )
   }
 
   const supabase = await createClient()
+
+  // FTS path. The RPC folds the category filter in as a join on the slug: a
+  // slug that is not a category matches no join row and narrows to nothing,
+  // the same contract the fallback's explicit lookup keeps.
+  const args: SearchProductsArgs = { q, max_results: limit }
+  if (category) args.category = category
+  const fts = await callSearchProductsRpc(() =>
+    supabase.rpc(pendingSearchRpc('search_products'), args as never),
+  )
+  if (fts.ok) {
+    const results: SearchResult[] = fts.rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name_he: row.name_he,
+      kenyon_price: row.kenyon_price,
+      full_price: row.full_price,
+      image: firstImage(row.images),
+      category: row.category_name_he,
+    }))
+    return NextResponse.json(
+      { query: q, results },
+      { headers: { 'Cache-Control': CacheControl.search } },
+    )
+  }
+  if (!fts.missing) {
+    // Same degradation contract as the ILIKE path below: log the reason,
+    // answer with a code, never the upstream message.
+    log.error('search.fts_failed', { reason: fts.message })
+    return NextResponse.json({ query: q, results: [], error: 'search_failed' }, { status: 500 })
+  }
+
+  // Missing RPC: a database without migration 171. Stage-1 ILIKE fallback.
   let query = supabase
     .from('products')
     .select(
@@ -112,7 +154,7 @@ async function handleGET(request: NextRequest) {
 
   return NextResponse.json(
     { query: q, results },
-    { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } },
+    { headers: { 'Cache-Control': CacheControl.search } },
   )
 }
 

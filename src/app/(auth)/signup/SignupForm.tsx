@@ -5,6 +5,7 @@ import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
+import WhatsAppOtpForm from './WhatsAppOtpForm'
 
 function getError(state: AuthState): string | null {
   return state && 'error' in state ? state.error : null
@@ -18,11 +19,11 @@ export default function SignupForm({ next }: Props) {
   const [state, setState] = useState<AuthState>(null)
   const [pending, setPending] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const submitSignup = async (form: HTMLFormElement, phone: string | null) => {
     setPending(true)
     try {
-      const formData = new FormData(e.currentTarget)
+      const formData = new FormData(form)
+      if (phone) formData.set('phone', phone)
       const res = await fetch('/api/auth/signup', { method: 'POST', body: formData })
       const data = await res.json()
 
@@ -44,7 +45,50 @@ export default function SignupForm({ next }: Props) {
     null,
   )
 
+  const [verifyingPhone, setVerifyingPhone] = useState(false)
+  const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null)
+  const [formPhone, setFormPhone] = useState('')
+
   const topError = getError(googleState)
+
+  const handlePhoneVerified = (phone: string) => {
+    setVerifiedPhone(phone)
+    setVerifyingPhone(false)
+  }
+
+  const handlePhoneCancel = () => {
+    setVerifyingPhone(false)
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const form = e.currentTarget
+    const phoneInput = (form.elements.namedItem('phone') as HTMLInputElement)?.value || ''
+
+    // If WhatsApp OTP verification is enabled and phone is not verified, show OTP form
+    if (process.env.NEXT_PUBLIC_WHATSAPP_OTP_ENABLED !== 'false' && !verifiedPhone && phoneInput) {
+      setFormPhone(phoneInput)
+      setVerifyingPhone(true)
+      return
+    }
+
+    // Submit the form
+    void submitSignup(form, verifiedPhone)
+  }
+
+  if (verifyingPhone && formPhone) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-xl font-semibold mb-6">אימות וואטסאפ</h2>
+        <WhatsAppOtpForm
+          phone={formPhone}
+          onVerified={handlePhoneVerified}
+          onCancel={handlePhoneCancel}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -122,9 +166,11 @@ export default function SignupForm({ next }: Props) {
             autoComplete="tel"
             placeholder="050-1234567"
             dir="ltr"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-start"
+            disabled={verifiedPhone !== null}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-start disabled:bg-gray-50 disabled:text-gray-500"
           />
           <p className="mt-1 text-xs text-gray-500">מספר ישראלי (050, 052, 054 וכו׳)</p>
+          {verifiedPhone && <p className="mt-1 text-xs text-green-600">✓ מספר מאומת</p>}
         </div>
 
         <div>

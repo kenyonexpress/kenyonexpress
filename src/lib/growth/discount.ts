@@ -40,7 +40,7 @@ export type DiscountCampaign = {
   is_active: boolean
 }
 
-type DiscountFailure =
+export type DiscountFailure =
   | 'unknown'
   | 'inactive'
   | 'not-started'
@@ -50,6 +50,7 @@ type DiscountFailure =
   | 'nothing-to-discount'
   | 'no-commission'
   | 'stacking-not-allowed'
+  | 'gift-card-in-cart'
 
 export type DiscountEvaluation =
   | {
@@ -63,7 +64,7 @@ export type DiscountEvaluation =
   | { ok: false; reason: DiscountFailure; message: string }
 
 /** Which ceiling actually bound the result. Reported so the UI can explain it. */
-type CapReason = 'max-discount' | 'commission' | 'payable'
+export type CapReason = 'max-discount' | 'commission' | 'payable'
 
 const MESSAGES: Record<DiscountFailure, string> = {
   unknown: 'קוד ההנחה לא נמצא',
@@ -75,6 +76,7 @@ const MESSAGES: Record<DiscountFailure, string> = {
   'nothing-to-discount': 'אין סכום לחיוב באתר שעליו אפשר להחיל את הקוד',
   'no-commission': 'לא ניתן להחיל את הקוד על העגלה הזו',
   'stacking-not-allowed': 'לא ניתן לצרף את הקוד הזה לקוד אחר',
+  'gift-card-in-cart': 'לא ניתן להחיל קוד הנחה על גיפט קארד',
 }
 
 /**
@@ -96,6 +98,13 @@ export type DiscountCartFacts = {
   commissionAgorot: number
   /** True when another code is already applied. */
   hasOtherDiscount?: boolean
+  /**
+   * True when the cart holds a gift-card product. A gift card's price IS its
+   * face value; discounting it would sell stored value below par, funded from
+   * a "commission" that is really the card's own liability. Nothing on such a
+   * cart is discountable, whatever the code.
+   */
+  giftCardInCart?: boolean
 }
 
 function fail(reason: DiscountFailure): DiscountEvaluation {
@@ -151,6 +160,10 @@ export function evaluateDiscount(
   // Stacking is off unless the campaign opts in, per the goal. Checked before
   // the amount so a rejected stack never quotes a number the cart will not honour.
   if (cart.hasOtherDiscount && !campaign.allow_stacking) return fail('stacking-not-allowed')
+
+  // Before the amount too, and before 'nothing-to-discount': the shopper with
+  // a gift card in the cart needs the real reason, not a generic refusal.
+  if (cart.giftCardInCart) return fail('gift-card-in-cart')
 
   if (cart.payableAgorot <= 0) return fail('nothing-to-discount')
   if (cart.payableAgorot < campaign.min_order_agorot) return fail('below-minimum')

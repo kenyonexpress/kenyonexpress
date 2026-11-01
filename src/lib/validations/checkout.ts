@@ -210,6 +210,7 @@ export type CheckoutActionErrorCode =
   | 'NOT_FOUND'
   | 'INSUFFICIENT_STOCK'
   | 'INSUFFICIENT_WALLET'
+  | 'COUPON_INVALID'
   | 'CONSENT_REQUIRED'
   | 'ADDRESS_REQUIRED'
   /** The verified-shipping gate (lib/checkout/verified-shipping.ts) refused. */
@@ -219,6 +220,7 @@ export type CheckoutActionErrorCode =
   | 'PAYMENT_PROVIDER_ERROR'
   | 'PAYMENT_DECLINED'
   | 'RATE_LIMITED'
+  | 'REVIEW_REQUIRED'
   | 'CHECKOUT_DISABLED'
   | 'INTERNAL'
 

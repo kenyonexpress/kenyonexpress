@@ -1,9 +1,12 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
+import { DISCOUNT_SORT_CAP, sortByDiscountDesc } from '@/lib/catalogue/discount-sort'
+import type { CategoryNode } from '@/lib/category-tree'
+import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
 
@@ -15,7 +18,7 @@ import { cache } from 'react'
  * catalogue answer could ever be cached (a cached scope cannot touch request
  * APIs), and the rows returned depended on who was asking - an admin's session
  * could see rows a shopper could not, from the same function.
- * `createPublicClient()` is always exactly `anon`, which is both cacheable and
+ * `createCatalogueReadClient()` is always exactly `anon`, which is both cacheable and
  * the same catalogue for everybody. It is the client the cart already reads the
  * catalogue with, proven against the hosted project.
  *
@@ -33,7 +36,24 @@ import { cache } from 'react'
  * cache` function here that silently has neither.
  */
 
-export const CATEGORY_PAGE_SIZE = 12
+/**
+ * Twenty-four cards a page, the same as /products (closeout L10 row 4,
+ * D-45). It was eight until 2026-10-14, when the grid started appending the
+ * next page on scroll: a page is now a unit of loading, not a screen, and
+ * eight made a shopper wait for a request every two rows. The grid, the
+ * result-count wording and the page-window arithmetic all read this one
+ * constant, and `category-page.test.ts` pins the number.
+ */
+export const CATEGORY_PAGE_SIZE = 24
+
+/**
+ * The placeholder is still eight cards, and deliberately not the page size.
+ * Most categories hold fewer than ten products, and every placeholder row the
+ * results do not fill collapses when the grid resolves and drags the footer
+ * up with it (the measurements are on `SEARCH_SKELETON_CARDS` in
+ * search/page.tsx). Eight is what the placeholder was measured at.
+ */
+export const CATEGORY_SKELETON_CARDS = 8
 
 /**
  * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.
@@ -129,7 +149,7 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase
       .from('categories')
@@ -147,12 +167,40 @@ export async function getAllCategorySlugs(): Promise<string[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug').eq('is_active', true)),
     'catalogue.category_slugs_failed',
   )
   return (data ?? []).map((c) => c.slug)
+}
+
+/**
+ * Every active category as `{ id, slug, name_he, parent_id }`: the whole tree,
+ * in one cached read, for the walks in `lib/category-tree.ts`.
+ *
+ * ONE READ AND NOT ONE PER LEVEL. The alternative is `getCategoryParent` in a
+ * loop, which costs a round trip per ancestor to assemble a breadcrumb, on a
+ * table of a dozen rows. Reading it once and walking in memory also means the
+ * walk is a pure function a test can exercise without a database.
+ *
+ * ACTIVE ONLY, deliberately. An inactive ancestor is a category whose page
+ * `getCategoryBySlug` refuses, so putting it in a breadcrumb would render a
+ * crumb that 404s. `categoryAncestors` truncates at a parent it cannot find,
+ * which makes "deactivate a parent" produce a shorter trail, not a broken one.
+ *
+ * Ported from the production branch (closeout L10, row 28).
+ */
+export async function getCategoryIndex(): Promise<CategoryNode[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createCatalogueReadClient()
+  const data = orFail(
+    await supabase.from('categories').select('id, slug, name_he, parent_id').eq('is_active', true),
+    'catalogue.category_index_failed',
+  )
+  return (data ?? []).map((row) => ({ ...row, name_he: repairPriceOrder(row.name_he) }))
 }
 
 export async function getCategoryParent(
@@ -161,7 +209,7 @@ export async function getCategoryParent(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase.from('categories').select('slug, name_he').eq('id', parentId).single(),
     'catalogue.category_parent_failed',
@@ -209,6 +257,18 @@ export function productTypeFilter(productType: ProductTypeFilter): {
   return productType === 'coupon'
     ? { column: 'or', value: 'type.eq.coupon,is_coupon_enabled.is.true' }
     : { column: 'and', value: 'type.neq.coupon,is_coupon_enabled.is.false' }
+}
+
+/**
+ * The city slug from the URL, or undefined.
+ *
+ * Validated against the city table rather than passed through: an unknown slug
+ * becomes "no filter" instead of an empty page, and nothing user-controlled
+ * reaches a query.
+ */
+export function parseCity(raw: string | string[] | undefined): string | undefined {
+  const value = Array.isArray(raw) ? raw[0] : raw
+  return typeof value === 'string' && cityBySlug(value) ? value : undefined
 }
 
 export function parseProductType(
@@ -303,7 +363,7 @@ export function collectionFilter(
  * every request.
  */
 async function newestProductIds(
-  supabase: ReturnType<typeof createPublicClient>,
+  supabase: ReturnType<typeof createCatalogueReadClient>,
   limit: number,
 ): Promise<string[]> {
   const data = orFail(
@@ -320,7 +380,34 @@ async function newestProductIds(
   return (data ?? []).map((row) => row.id)
 }
 
-async function getCategoryProducts(opts: {
+/**
+ * The window a sort needs from the database.
+ *
+ * Every sort but one is an `.order()` and takes exactly its page. The discount
+ * sort has no column to order by (see `catalogue/discount-sort.ts`), so it
+ * reads a bounded set and `pageOf` orders and slices it.
+ */
+function paged<Q extends { range(from: number, to: number): Q }>(
+  query: Q,
+  sort: SortValue,
+  from: number,
+  pageSize: number,
+): Q {
+  return sort === 'discount_desc'
+    ? query.range(0, DISCOUNT_SORT_CAP - 1)
+    : query.range(from, from + pageSize - 1)
+}
+
+function pageOf<T extends { full_price?: number | null; kenyon_price?: number | null }>(
+  rows: T[],
+  sort: SortValue,
+  from: number,
+  pageSize: number,
+): T[] {
+  return sort === 'discount_desc' ? sortByDiscountDesc(rows).slice(from, from + pageSize) : rows
+}
+
+export async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
   sort: SortValue
@@ -351,7 +438,7 @@ async function getCategoryProducts(opts: {
     tag,
     collection,
   } = opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
   let query = supabase
@@ -405,6 +492,10 @@ async function getCategoryProducts(opts: {
     case 'newest':
       query = query.order('created_at', { ascending: false })
       break
+    case 'discount_desc':
+      // Ordered in memory by `pageOf`; newest first is the tie-break it keeps.
+      query = query.order('created_at', { ascending: false })
+      break
     default:
       /*
        * menu_order / popularity / rating.
@@ -428,13 +519,12 @@ async function getCategoryProducts(opts: {
   }
 
   const { data, count } = orFailWithCount(
-    await query.range(from, from + CATEGORY_PAGE_SIZE - 1),
+    await paged(query, sort, from, CATEGORY_PAGE_SIZE),
     'catalogue.category_products_failed',
     { category_id: opts.categoryId, page },
   )
-  const items = (data ?? []).map((row) =>
-    normalizeCategoryJoin(row as CategoryProductRow, category),
-  )
+  const pageRows = pageOf(data ?? [], sort, from, CATEGORY_PAGE_SIZE)
+  const items = pageRows.map((row) => normalizeCategoryJoin(row as CategoryProductRow, category))
 
   /**
    * The city filter runs HERE, on the page that was fetched, and not as a
@@ -461,7 +551,7 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug, name_he').eq('is_active', true)),
     'catalogue.all_categories_failed',
@@ -489,7 +579,7 @@ export async function getShopProducts(opts: {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const { sort, page, priceMin, priceMax, productType, weekend, freeShipping } = opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
   let query = supabase
@@ -525,16 +615,20 @@ export async function getShopProducts(opts: {
     case 'newest':
       query = query.order('created_at', { ascending: false })
       break
+    case 'discount_desc':
+      // Ordered in memory by `pageOf`; newest first is the tie-break it keeps.
+      query = query.order('created_at', { ascending: false })
+      break
     default:
       query = query.order('name_he', { ascending: true })
   }
 
   const { data, count } = orFailWithCount(
-    await query.range(from, from + SHOP_PAGE_SIZE - 1),
+    await paged(query, sort, from, SHOP_PAGE_SIZE),
     'catalogue.shop_products_failed',
     { page, sort },
   )
-  const items = (data ?? []).map((row) => {
+  const items = pageOf(data ?? [], sort, from, SHOP_PAGE_SIZE).map((row) => {
     const r = row as CategoryProductRow
     const joined = r.categories
     const primary = Array.isArray(joined) ? joined[0] : joined
@@ -570,7 +664,7 @@ export async function getCategoryPriceBounds(categoryId: string): Promise<{
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   const { data, error } = await supabase
     .from('products')
@@ -603,7 +697,7 @@ export async function getCategorySuppliersFilter(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   // Use Supabase's native query to get supplier counts directly from PostgreSQL
   // This avoids fetching all products and computing counts in JavaScript
@@ -658,7 +752,7 @@ export async function getCategoryTagsFilter(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   // Get products in this category with their tags
   const products = orFail(

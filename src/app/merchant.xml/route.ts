@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import { getFeedProducts } from '@/lib/feeds/catalogue'
 import { buildMerchantFeed } from '@/lib/feeds/merchant'
 import { log } from '@/lib/observability/log'
@@ -46,7 +47,7 @@ async function handleGET(): Promise<NextResponse> {
   return new NextResponse(feed.xml, {
     headers: {
       'content-type': 'application/xml; charset=utf-8',
-      'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
+      'cache-control': CacheControl.feed,
     },
   })
 }

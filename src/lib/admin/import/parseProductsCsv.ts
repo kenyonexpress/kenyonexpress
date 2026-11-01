@@ -22,7 +22,7 @@ function emptyToNull(value: unknown): unknown {
   return value
 }
 
-const productImportRowSchema = z.object({
+export const productImportRowSchema = z.object({
   slug: z
     .string()
     .trim()
@@ -61,9 +61,9 @@ const productImportRowSchema = z.object({
   ),
 })
 
-type ProductImportRow = z.infer<typeof productImportRowSchema>
+export type ProductImportRow = z.infer<typeof productImportRowSchema>
 
-interface ProductImportRowError {
+export interface ProductImportRowError {
   /** 1-based physical row in the source file, as Excel numbers it. 0 = file-level error. */
   row: number
   /** Offending column name, or null for file-level / whole-row problems. */

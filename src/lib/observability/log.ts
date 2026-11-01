@@ -27,7 +27,7 @@ import { redact } from './scrub'
  * logger cannot drift from what Sentry redacts (SEC-SCRUB).
  */
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 const SEVERITY: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 }
 
@@ -97,10 +97,10 @@ function emit(level: LogLevel, event: string, fields: Fields): void {
     else if (level === 'warn') console.warn(line)
     else console.log(line)
 
-    // The Axiom leg (marathon step 14): the SAME redacted entry, shipped
-    // fire-and-forget. Inert without AXIOM_TOKEN/AXIOM_DATASET; nothing here
-    // is awaited or allowed to throw, so the console transport above remains
-    // the source of truth and this is strictly additive.
+    // The Axiom leg: the SAME redacted entry, shipped fire-and-forget. Inert
+    // without AXIOM_TOKEN/AXIOM_DATASET; nothing here is awaited or allowed to
+    // throw, so the console transport above remains the source of truth and
+    // this is strictly additive.
     if (isAxiomEnabled()) void shipAxiomEvent(entry)
   } catch {
     // A logger that throws turns a handled failure into an unhandled one, and

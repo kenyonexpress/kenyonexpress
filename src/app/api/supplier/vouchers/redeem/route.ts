@@ -2,10 +2,9 @@ import { sendGaEvent } from '@/lib/analytics/server-events'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
-import { getSupplierMemberships } from '@/lib/supplier/rbac'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { expireWalletPasses } from '@/lib/wallet/notify'
 import { trackServerEvent } from '@/server/analytics/track'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -103,8 +102,8 @@ type RedeemResponse = {
   redeemed_at?: string | null
 }
 
-function respond(body: RedeemResponse, status: number): NextResponse {
-  return NextResponse.json(body, { status })
+function respond(body: RedeemResponse, status: number, headers?: Headers): NextResponse {
+  return NextResponse.json(body, { status, headers })
 }
 
 function asOutcome(value: unknown): Outcome {
@@ -209,11 +208,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   //
   // Tighter than lookup's 300 because of that asymmetry, and still far above a
   // real till: 120 redemptions an hour from one member is a scan every thirty
-  // seconds, without pause, for an hour. `checkRateLimit` fails open, which is
+  // seconds, without pause, for an hour. `rateLimit` fails open, which is
   // the right direction with a customer waiting at the counter.
-  const allowed = await checkRateLimit(`voucher-redeem:${user.id}`, 120, 3600)
-  if (!allowed) {
-    return respond({ outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited }, 429)
+  const decision = await rateLimit('voucher-redeem', user.id)
+  if (!decision.allowed) {
+    return respond(
+      { outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited },
+      429,
+      rateLimitHeaders(decision),
+    )
   }
 
   const parsed = redeemRequestSchema.safeParse(await request.json().catch(() => null))
@@ -264,9 +267,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // from several tills (or by a guesser rotating accounts) hits its own bucket.
   // Ten an hour is far above a real counter, which scans a code once, maybe
   // twice on a retry; an idempotent replay of the same scan is one of those.
-  const codeAllowed = await checkRateLimit(`voucher-redeem-code:${shortCode}`, 10, 3600)
-  if (!codeAllowed) {
-    return respond({ outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited }, 429)
+  const codeDecision = await rateLimit('voucher-redeem-code', shortCode)
+  if (!codeDecision.allowed) {
+    return respond(
+      { outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited },
+      429,
+      rateLimitHeaders(codeDecision),
+    )
   }
 
   const rpcArgs = {
@@ -327,7 +334,9 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Funnel event (marathon step 14), replays excluded so one scan is one
-    // event. Swallows its own errors; skipped by the DB whitelist until 169.
+    // event. Swallows its own errors. The DB whitelist accepts it since 180;
+    // what kept it out of the table until 2026-09-09 was the NOT NULL
+    // `session_id`, since a till has no browser session of ours.
     if (!replayed) {
       await trackServerEvent({
         eventName: 'voucher_redeemed',
@@ -348,6 +357,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // value is the business's list price and was never our revenue.
     if (!replayed) {
       await reportRedemption(result)
+    }
+
+    // Funnel event, replays excluded so one scan is one event. Swallows its
+    // own errors. Both destinations work now: PostHog always did, and the
+    // first-party copy needed 180 (applied) plus the `session_id` fix.
+    if (!replayed) {
+      await trackServerEvent({
+        eventName: 'voucher_redeemed',
+        userId: user.id,
+        props: { code: (result.code as string) ?? shortCode },
+      })
     }
 
     return respond(

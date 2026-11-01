@@ -44,10 +44,23 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:sendMagicLink', 'sign-in entry point'],
   ['auth.ts:sendPhoneOtp', 'sign-in entry point, rate limited per IP and per number'],
   ['auth.ts:verifyPhoneOtp', 'sign-in entry point, rate limited per IP'],
+  ['auth.ts:verifyEmailOtp', 'sign-in entry point, rate limited per IP and per address'],
   ['auth.ts:signOut', "acts on the caller's own session, no arguments"],
   ['auth.ts:signOutAll', "acts on the caller's own session, no arguments"],
   ['auth.ts:sendPasswordReset', 'reset must work when locked out'],
   ['auth.ts:updatePassword', 'runs against the recovery session Supabase issued'],
+  ['auth.ts:generatePasskeyAuthOptions', 'WebAuthn sign-in entry point'],
+  [
+    'passkeys.ts:beginPasskeyLogin',
+    'WebAuthn usernameless sign-in entry point, rate limited per IP',
+  ],
+  ['auth.ts:verifyPasskeyAuth', 'WebAuthn verification, browser-bounded ceremony'],
+  [
+    'auth.ts:sendWhatsAppOtp',
+    'WhatsApp OTP sign-in entry point, rate limited per IP and per number',
+  ],
+  ['auth.ts:verifyWhatsAppOtp', 'WhatsApp OTP verification, rate limited per IP'],
+  ['auth.ts:checkAuthFallback', 'public helper to determine auth method availability'],
   // The guest cart is open by business-model decision: browsing and adding to
   // cart never require an account.
   ['cart.ts:mergeGuestCart', 'internal helper, see STATE.md 20.08 finding 1'],
@@ -68,6 +81,22 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['newsletter.ts:confirmNewsletter', 'token in the confirmation link is the authorisation'],
   ['newsletter.ts:unsubscribeByToken', 'unsubscribe must work from an email client'],
   ['gifts.ts:loadGiftPreview', 'claim token is the authorisation'],
+  // The recipient of a printed gift card usually has no account yet; the
+  // 78-bit bearer code is the authorisation, rate limited per IP in the body.
+  ['gift-cards.ts:checkGiftCardBalance', 'bearer code is the authorisation, rate limited'],
+  // Read-only and per-browser: the id list lives in the caller's own
+  // localStorage and never identifies an account, so there is nothing here a
+  // session check would protect.
+  // The same shape as the read below: ids from the caller's own browser,
+  // active products only, through the public client.
+  [
+    'compare.ts:getCompareProducts',
+    "public catalogue read, ids come from the caller's own localStorage",
+  ],
+  [
+    'recently-viewed.ts:getRecentlyViewedProducts',
+    "public catalogue read, ids come from the caller's own localStorage",
+  ],
 ])
 
 function filesUnder(dir: string): string[] {

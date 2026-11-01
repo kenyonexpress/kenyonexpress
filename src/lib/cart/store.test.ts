@@ -19,6 +19,7 @@ const updateCartItem = vi.fn()
 const removeFromCart = vi.fn()
 const clearCart = vi.fn()
 const removeUnavailableItems = vi.fn()
+const setShippingMethod = vi.fn()
 
 vi.mock('@/server/actions/cart', () => ({
   addToCart: (...args: unknown[]) => addToCart(...args),
@@ -26,6 +27,7 @@ vi.mock('@/server/actions/cart', () => ({
   removeFromCart: (...args: unknown[]) => removeFromCart(...args),
   clearCart: () => clearCart(),
   removeUnavailableItems: () => removeUnavailableItems(),
+  setShippingMethod: (...args: unknown[]) => setShippingMethod(...args),
 }))
 
 const { CART_MIRROR_KEY, applyOptimistic, createCartStore, displayItemCount } = await import(
@@ -277,6 +279,72 @@ describe('cart store', () => {
     store.getState().setCart(fresh)
     expect(store.getState().cart).toBe(fresh)
     expect(store.getState().serverCart).toBe(fresh)
+  })
+
+  it('moves the shipping label at once and keeps the server-priced cart on success', async () => {
+    const start = cart([item()])
+    start.shipping = { method: 'supplier_delivery', label: 'משלוח עד הבית', cost: agorot(0) }
+    const confirmed = cart([item()])
+    confirmed.shipping = { method: 'pickup', label: 'איסוף עצמי מהספק', cost: agorot(0) }
+    let resolveAction: (value: unknown) => void = () => undefined
+    setShippingMethod.mockReturnValue(
+      new Promise((resolve) => {
+        resolveAction = resolve
+      }),
+    )
+    const store = createCartStore(start)
+
+    const pending = store.getState().setShippingMethod('pickup')
+
+    expect(store.getState().cart.shipping?.method).toBe('pickup')
+    expect(store.getState().cart.shipping?.label).toBe('איסוף עצמי מהספק')
+    expect(store.getState().isPending).toBe(true)
+    expect(setShippingMethod).toHaveBeenCalledWith('pickup')
+
+    resolveAction({ ok: true, cart: confirmed })
+    expect(await pending).toBe(true)
+    expect(store.getState().cart).toBe(confirmed)
+    expect(store.getState().serverCart).toBe(confirmed)
+    expect(store.getState().isPending).toBe(false)
+  })
+
+  it('restores the previous method and says why when the server refuses the pick', async () => {
+    const start = cart([item()])
+    start.shipping = { method: 'supplier_delivery', label: 'משלוח עד הבית', cost: agorot(0) }
+    setShippingMethod.mockResolvedValue({
+      ok: false,
+      error: 'אופן משלוח לא מוכר',
+      code: 'VALIDATION',
+    })
+    const feedback = vi.fn()
+    const store = createCartStore(start, feedback)
+
+    expect(await store.getState().setShippingMethod('pickup')).toBe(false)
+
+    expect(store.getState().cart.shipping?.method).toBe('supplier_delivery')
+    expect(feedback).toHaveBeenCalledWith({ kind: 'error', message: 'אופן משלוח לא מוכר' })
+  })
+
+  it('restores the previous method when the shipping action throws', async () => {
+    const start = cart([item()])
+    start.shipping = { method: 'supplier_delivery', label: 'משלוח עד הבית', cost: agorot(0) }
+    setShippingMethod.mockRejectedValue(new Error('boom'))
+    const feedback = vi.fn()
+    const store = createCartStore(start, feedback)
+
+    expect(await store.getState().setShippingMethod('pickup')).toBe(false)
+
+    expect(store.getState().cart).toEqual(start)
+    expect(store.getState().isPending).toBe(false)
+    expect(feedback).toHaveBeenCalledWith({ kind: 'error', message: 'הפעולה נכשלה, נסו שוב' })
+  })
+
+  it('does not invent a shipping block on a cart that has none', () => {
+    const next = applyOptimistic(cart([item({ type: 'coupon' })]), {
+      type: 'setShipping',
+      methodId: 'pickup',
+    })
+    expect(next.shipping).toBeNull()
   })
 
   it('opens, closes and toggles the drawer', () => {

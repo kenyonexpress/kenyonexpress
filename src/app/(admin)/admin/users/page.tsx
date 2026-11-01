@@ -6,6 +6,7 @@ import { canWriteSection } from '@/lib/admin/permissions'
 import { ROLE_LABELS, ROLE_ORDER, requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
+import { loadBannedIds } from '@/server/queries/user-bans'
 import type { UserRole } from '@/types/database'
 import Link from 'next/link'
 import { z } from 'zod'
@@ -33,7 +34,9 @@ export default async function AdminUsersPage(props: {
     .order('created_at', { ascending: false })
     .range(from, to)
 
-  if (params.role) query = query.eq('role', params.role)
+  // The cast covers 'read_only' until 181 regenerates the types; a filter on
+  // it before apply-day simply matches zero rows.
+  if (params.role) query = query.eq('role', params.role as UserRole)
   // sanitizeOrTerm, not the raw term: PostgREST `.or()` takes an expression
   // string in which , ( ) " and \\ are structural, so a search for a name
   // containing a comma silently appends a condition of its own.
@@ -44,12 +47,21 @@ export default async function AdminUsersPage(props: {
 
   const { data: profiles, count } = await query
 
+  // Second read, not a column on the first: `banned_at` is outside the
+  // generated types until 237 is applied, and naming it above would 42703
+  // the whole list. Empty set on a miss.
+  const bannedIds = await loadBannedIds(
+    supabase,
+    (profiles ?? []).map((p) => p.id),
+  )
+
   const users: UserRow[] = (profiles ?? []).map((p) => ({
     id: p.id,
     email: p.email,
     full_name: p.full_name,
     role: p.role as UserRole,
     created_at: p.created_at,
+    banned: bannedIds.has(p.id),
   }))
 
   const urlParams = { q: params.q, role: params.role, per: params.per, page: params.page }

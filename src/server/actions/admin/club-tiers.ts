@@ -20,6 +20,7 @@ const schema = z.object({
     .trim()
     .regex(/^\d+(\.\d{1,2})?$/),
   benefits: z.string().max(2000),
+  cashback_bonus_percent: z.coerce.number().min(0).max(100),
   sort_order: z.coerce.number().int().min(0).max(10_000),
   cashback_percent: z.coerce.number().int().min(0).max(100),
   early_access_hours: z.coerce.number().int().min(0).max(720),
@@ -43,6 +44,7 @@ async function runUpdateClubTier(formData: FormData): Promise<void> {
     name_he: formData.get('name_he') ?? '',
     min_spend_ils: formData.get('min_spend_ils') ?? '',
     benefits: formData.get('benefits') ?? '',
+    cashback_bonus_percent: formData.get('cashback_bonus_percent') ?? '0',
     sort_order: formData.get('sort_order') ?? '0',
     cashback_percent: formData.get('cashback_percent') ?? '0',
     early_access_hours: formData.get('early_access_hours') ?? '0',
@@ -62,6 +64,7 @@ async function runUpdateClubTier(formData: FormData): Promise<void> {
     name_he: d.name_he,
     min_spend_agorot: ilsToAgorot(d.min_spend_ils),
     benefits_json: benefits,
+    cashback_bonus_percent: d.cashback_bonus_percent,
     sort_order: d.sort_order,
     active: d.active === 'on',
     updated_at: new Date().toISOString(),

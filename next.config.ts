@@ -8,6 +8,8 @@ import {
   PAYMENT_FRAME_PATHS,
   contentSecurityPolicyFor,
   permissionsPolicyFor,
+  reportingEndpointsHeader,
+  sentrySecurityEndpoint,
 } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
@@ -43,6 +45,17 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // Static headers that don't need per-request dynamic values.
 // CSP, X-Frame-Options, and Permissions-Policy are now set dynamically in src/proxy.ts
 // with nonces and path-dependent values, so they're omitted here to avoid overwriting.
+// CSP violation reports go to Sentry when a DSN is configured at build time.
+// The CSP itself is set in src/proxy.ts, which derives the same endpoint
+// (cspReportUri), so its `report-to` group always has this header to point at.
+const CSP_REPORT_URI = sentrySecurityEndpoint(
+  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+  process.env.SENTRY_ENVIRONMENT ||
+    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
+    process.env.VERCEL_ENV,
+)
+const REPORTING_ENDPOINTS = reportingEndpointsHeader(CSP_REPORT_URI)
+
 const headersWithPolicy = (
   _csp: string,
   _frameOptions: 'DENY' | 'SAMEORIGIN',
@@ -50,6 +63,7 @@ const headersWithPolicy = (
 ) => [
   // CSP, X-Frame-Options, and Permissions-Policy are set in src/proxy.ts with nonces
   // and are NOT included here to avoid overwriting the dynamic middleware headers.
+  ...(REPORTING_ENDPOINTS ? [{ key: 'Reporting-Endpoints', value: REPORTING_ENDPOINTS }] : []),
   /*
    * `preload` REMOVED 2026-09-08, and this is not a downgrade of the policy.
    *
@@ -218,6 +232,14 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  async rewrites() {
+    // Printed coupon QRs point at /c/<8-digit code>. The category page owns
+    // /c/[slug], so the digits-only shape is rewritten to the coupon route.
+    // A category slug is never 8 digits, so the two cannot collide.
+    return {
+      beforeFiles: [{ source: '/c/:code(\\d{8})', destination: '/api/coupon-qr/:code' }],
+    }
+  },
   async redirects() {
     return [
       // NO `/scan` -> `/supplier/scan` rule here. The scanner LIVES at /scan
@@ -266,6 +288,27 @@ const nextConfig: NextConfig = {
     // 50/60 for below-fold deal thumbs ([33]); Lighthouse image-delivery wanted
     // denser compression on 157px paints that were still shipping q=75.
     qualities: [50, 60, 75, 90, 95],
+    /**
+     * AVIF first, WebP for the browsers that cannot decode it
+     * (ARCHITECTURE-PERFORMANCE-SEO.md 4.2). Next 16's default is WebP only.
+     * The order is the preference order when the Accept header allows both;
+     * an animated or SVG source is passed through unchanged regardless, so the
+     * catalogue's photos are the only things this touches. Both formats are
+     * cached separately by Vercel Image Optimization, which is storage, not
+     * transformations, and transformations are what the plan bills.
+     */
+    formats: ['image/avif', 'image/webp'],
+    /**
+     * 31 days at the edge for an optimized image (2678400 = 31 * 24 * 3600).
+     *
+     * Next 16 raised its own default from 60s to 4 hours, and 4 hours is still
+     * six re-optimizations a day per (source, width, quality, format) tuple
+     * that nobody asked for: a product photo here changes by changing its PATH
+     * (4.2 rule 5, and `media_assets` keys on the path), so the bytes behind a
+     * given URL never change and a long TTL forfeits nothing. It also caps the
+     * upstream reads Supabase Storage sees for the same photo.
+     */
+    minimumCacheTTL: 2678400,
     /**
      * Next's default, plus one rung at 288.
      *

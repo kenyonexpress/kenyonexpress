@@ -4,8 +4,10 @@ import { canWriteSection } from '@/lib/admin/permissions'
 import { ROLE_LABELS, requireSection } from '@/lib/admin/rbac'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
+import { loadBanRecord } from '@/server/queries/user-bans'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import UserBanClient from '../UserBanClient'
 import UserRoleClient from '../UserRoleClient'
 
 export const metadata = { title: 'משתמש 360' }
@@ -13,7 +15,7 @@ export const metadata = { title: 'משתמש 360' }
 export default async function AdminUserDetailPage(props: {
   params: Promise<{ id: string }>
 }) {
-  const { role: callerRole } = await requireSection('users')
+  const { userId: callerId, role: callerRole } = await requireSection('users')
   const { id } = await props.params
 
   const supabase = await createClient()
@@ -25,7 +27,7 @@ export default async function AdminUserDetailPage(props: {
 
   if (!profile) notFound()
 
-  const [{ data: orders }, { data: wallet }, { data: walletTx }, { data: coupons }] =
+  const [{ data: orders }, { data: wallet }, { data: walletTx }, { data: coupons }, ban] =
     await Promise.all([
       supabase
         .from('orders')
@@ -52,9 +54,13 @@ export default async function AdminUserDetailPage(props: {
         .eq('user_id', id)
         .order('created_at', { ascending: false })
         .limit(5),
+      // Separate read on purpose: its columns are outside the generated
+      // types until 237 is applied, and a miss must not 404 the page.
+      loadBanRecord(supabase, id),
     ])
 
   const canEditRoles = canWriteSection(callerRole, 'users')
+  const isSelf = callerId === profile.id
 
   return (
     <div className="space-y-6">
@@ -72,7 +78,14 @@ export default async function AdminUserDetailPage(props: {
 
       <div className="grid gap-4 md:grid-cols-3">
         <section className="rounded-xl border border-black/10 bg-white p-5">
-          <h2 className="mb-3 text-sm font-semibold text-gray-800">פרטים</h2>
+          <h2 className="mb-3 text-sm font-semibold text-gray-800">
+            פרטים
+            {ban.record?.banned_at && (
+              <span className="ms-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                חסום
+              </span>
+            )}
+          </h2>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-2">
               <dt className="text-black/50">אימייל</dt>
@@ -104,9 +117,19 @@ export default async function AdminUserDetailPage(props: {
                 userId={profile.id}
                 currentRole={profile.role}
                 callerRole={callerRole}
+                isSelf={isSelf}
               />
             </div>
           )}
+          <div className="mt-4 border-t border-black/5 pt-3">
+            <p className="mb-2 text-xs text-black/50">חסימה</p>
+            <UserBanClient
+              userId={profile.id}
+              record={ban.record}
+              recordAvailable={ban.available}
+              canWrite={canEditRoles && !isSelf}
+            />
+          </div>
         </section>
 
         <section className="rounded-xl border border-black/10 bg-white p-5">

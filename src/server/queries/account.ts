@@ -28,7 +28,7 @@ export interface WalletSummary {
   accountId: string | null
 }
 
-type WalletDirection = 'credit' | 'debit'
+export type WalletDirection = 'credit' | 'debit'
 
 export interface WalletLedgerRow {
   id: string
@@ -83,6 +83,8 @@ export interface AccountPaymentToken {
  */
 export const WALLET_REASON_LABELS: Record<string, string> = {
   order_cashback: 'קאשבק על רכישה',
+  cashback_bonus: 'בונוס קאשבק',
+  cashback_expiry: 'פקיעת קאשבק',
   order_spend: 'שימוש בארנק',
   order_refund: 'החזר על ביטול',
   refund_to_wallet: 'זיכוי לארנק',
@@ -94,6 +96,10 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   // wallet credits nobody has to buy anything to receive.
   referral_bonus: 'בונוס הזמנת חבר',
   voucher_expiry_credit: 'קרדיט על שובר שפג',
+  // Written by the cashback ledger's admin adjustment (migration 177) and by
+  // gift-card redemption (migration 234), both in the DATABASE.
+  cashback_adjustment: 'התאמת קאשבק',
+  gift_card_redeem: 'מימוש כרטיס מתנה',
   // Legacy, and all three measured against production on 2026-09-07 as having
   // NO live writer: `coupon_expired` was superseded by `voucher_expiry_credit`,
   // and `cashback_earn` / `manual_adjust` come from the 042-era wallet that no

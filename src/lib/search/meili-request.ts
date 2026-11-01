@@ -14,7 +14,7 @@ export interface MeiliRequestOptions {
   retryIfOlderThan?: string
 }
 
-interface MeiliErrorDetail {
+export interface MeiliErrorDetail {
   code: string
   message: string
   status: number

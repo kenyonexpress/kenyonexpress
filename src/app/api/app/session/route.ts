@@ -1,7 +1,7 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -42,8 +42,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // enough for an app that re-establishes on every cold start, tight enough
   // that this cannot be used to grind tokens.
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  const allowed = await checkRateLimit(`app-session:${ip}`, 30, 600)
-  if (!allowed) return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
+  const decision = await rateLimit('app-session', ip)
+  if (!decision.allowed) {
+    return NextResponse.json(
+      { ok: false, error: 'rate_limited' },
+      { status: 429, headers: rateLimitHeaders(decision) },
+    )
+  }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {

@@ -1,6 +1,11 @@
 'use server'
 
-import { writeAuditLog } from '@/lib/admin/audit'
+// No writeAuditLog import: this action writes its audit_log row inline, after
+// the persistence block, so it can carry a metadata object (payment id, refund
+// transaction id, both amounts, the supplier debits, the reason) that the
+// helper's signature does not take. The actor is written there from the session
+// requireAdminSession() proved, which the 169 trigger cannot supply on this
+// path because the refund runs on the service-role client.
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -13,6 +18,7 @@ import {
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { pendingRestockRpc } from '@/lib/supabase/pending-restock'
 import { trackServerEvent } from '@/server/analytics/track'
 import {
   RefundError,
@@ -23,6 +29,7 @@ import {
 } from '@/server/domain/orders/refund'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
 import { enqueueRefundCreditNote, issueQueuedInvoice } from '@/server/payments/invoices'
+import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { type RefundRecordAdmin, groundFor, recordRefund } from '@/server/payments/refund-record'
 import {
   type SettlementEventRow,
@@ -224,6 +231,21 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
   const provider = getPaymentProvider(
     typeof payment.cardcom_account_id === 'string' ? payment.cardcom_account_id : null,
   )
+  // The journal rows 130 reserved for money going back out, which nothing
+  // wrote until now: a refund done here was visible in settlement_events and
+  // audit_log but absent from the payment journal, so the 3am read of
+  // payment_events showed a charge with no exit. Best-effort by contract
+  // (recordPaymentEvent never throws), so none of these can fail the refund.
+  await recordPaymentEvent({
+    eventType: 'refund_requested',
+    stage: 'cardcom_refund',
+    orderId: order.id,
+    paymentId,
+    transactionId,
+    amountAgorot: plan.refundAmountAgorot,
+    actorRole: 'admin',
+    detail: { cancel_only: plan.cancelOnly, reason: input.reason },
+  })
   const refund = await provider.refundByTransactionId({
     transactionId,
     amountAgorot: plan.refundAmountAgorot,
@@ -239,11 +261,45 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       paymentId,
       detail: { failure_code: refund.failureCode, cancel_only: plan.cancelOnly },
     })
+    await recordPaymentEvent({
+      eventType: 'refund_failed',
+      stage: 'cardcom_refund',
+      orderId: order.id,
+      paymentId,
+      transactionId,
+      amountAgorot: plan.refundAmountAgorot,
+      actorRole: 'admin',
+      detail: { failure_code: refund.failureCode ?? null, cancel_only: plan.cancelOnly },
+    })
     return {
       ok: false,
       error: refund.failureMessage ?? 'הזיכוי נדחה על ידי Cardcom',
       code: 'PROVIDER_ERROR',
     }
+  }
+
+  // Recorded the moment the provider says yes, OUTSIDE the persistence try:
+  // if the bookkeeping below diverges, the journal must still say the money
+  // moved, because it did.
+  await recordPaymentEvent({
+    eventType: 'refund_succeeded',
+    stage: 'cardcom_refund',
+    orderId: order.id,
+    paymentId,
+    transactionId: refund.refundTransactionId ?? transactionId,
+    amountAgorot: plan.refundAmountAgorot,
+    actorRole: 'admin',
+    detail: { cancel_only: plan.cancelOnly },
+  })
+  if (plan.cancellationFeeAgorot > 0) {
+    await recordPaymentEvent({
+      eventType: 'cancellation_fee_applied',
+      stage: 'cardcom_refund',
+      orderId: order.id,
+      paymentId,
+      amountAgorot: plan.cancellationFeeAgorot,
+      actorRole: 'admin',
+    })
   }
 
   try {
@@ -329,11 +385,38 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       .eq('id', paymentId)
       .eq('status', payment.status as string)
 
-    await admin
+    const { data: flipped, error: flipError } = await admin
       .from('orders')
       .update({ status: 'refunded' })
       .eq('id', order.id)
       .eq('status', 'paid')
+      .select('id')
+      .maybeSingle()
+    if (flipError) {
+      // The card is already credited; a failed status write is bookkeeping
+      // divergence, the same class the catch below alarms on. Logged here
+      // (rather than thrown) because the writes after this one - settlement
+      // events, credit note, audit - must still be attempted.
+      log.warn('refund.status_flip_failed', { order_id: order.id, err: flipError.message })
+    }
+
+    // Put the consumed stock back on the shelf, the `restock_consumed` effect
+    // order-transitions.ts declares for every `-> refunded` edge. Gated on the
+    // CAS above actually flipping the row, so a raced replay that lost the
+    // status write cannot restock a second time (the RPC is idempotent per
+    // reservation anyway; this keeps the two guards independent). Best effort,
+    // like every step after the provider call: the money already moved back,
+    // and a failure here costs shelf accuracy, not the refund. `release` would
+    // be the wrong verb - the hold was consumed at payment, so the level was
+    // really decremented and must be really incremented (migration 223).
+    if (flipped) {
+      const { error: restockError } = await admin.rpc(pendingRestockRpc(), {
+        p_order_id: order.id,
+      } as never)
+      if (restockError) {
+        log.warn('refund.restock_failed', { order_id: order.id, err: restockError.message })
+      }
+    }
 
     await recordSettlementEvents(admin, buildRefundEvents(order.id, paymentId, plan, now))
 
@@ -426,24 +509,10 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       }
     }
 
-    await writeAuditLog({
-      actorId: session.userId,
-      actorRole: session.role,
-      action: 'manual_override',
-      entityType: 'orders',
-      entityId: order.id,
-      changes: {
-        old: { status: 'paid' },
-        new: {
-          status: 'refunded',
-          reason: input.reason,
-          refunded_agorot: plan.refundAmountAgorot,
-        },
-      },
-    })
-
-    // Funnel event (marathon step 14). Swallows its own errors; the card is
-    // already credited. Skipped by the DB whitelist until draft 169 applies.
+    // Funnel event. Swallows its own errors; the card is already credited.
+    // An admin browser carries no guest-session cookie, which is why the
+    // first-party copy needed the `session_id` fallback in track.ts and not
+    // only 180's widened whitelist.
     await trackServerEvent({
       eventName: 'order_refunded',
       userId: order.user_id,

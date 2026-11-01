@@ -19,8 +19,25 @@ const schema = z
 
     NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20).optional(),
+    /**
+     * Server-side override for the anon key, read first by
+     * `lib/supabase/anon-key.ts`. Exists for rotation: an env change moves the
+     * server to a new key without waiting for the rebuild that updates the
+     * inlined NEXT_PUBLIC_ value. Optional everywhere, because the NEXT_PUBLIC_
+     * variant above remains the required baseline: the browser bundle can only
+     * ever see that one.
+     */
+    SUPABASE_ANON_KEY: z.string().min(20).optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(40).optional(),
     SUPABASE_SECRET_KEY: z.string().min(20).optional(),
+    /**
+     * The read replica's REST endpoint (Supabase's load-balanced
+     * `https://<ref>-all.supabase.co`). OPTIONAL EVERYWHERE and unset in every
+     * environment this repo can see: `lib/supabase/read-replica.ts` routes the
+     * catalogue's cookie-free reads there when present and to the primary when
+     * not, so provisioning a replica is an env change and no deploy.
+     */
+    SUPABASE_READ_REPLICA_URL: z.string().url().optional().or(z.literal('')),
 
     CARDCOM_TERMINAL_NUMBER: z.string().optional(),
     CARDCOM_API_NAME: z.string().optional(),
@@ -45,9 +62,56 @@ const schema = z
     /** Milliseconds. Defaults to 1000 in `lib/rate-limit/upstash.ts`. */
     UPSTASH_REDIS_REST_TIMEOUT_MS: z.string().optional(),
 
+    /**
+     * The Cloudflare async-offload Worker (infra/cloudflare/workers/async-offload).
+     * OPTIONAL EVERYWHERE and inert unless BOTH are set: `lib/workers/
+     * async-offload.ts` runs the caller's inline fallback otherwise. The
+     * secret is the Worker's TASK_SECRET; twenty characters is the floor the
+     * producer enforces before it will sign anything with it.
+     */
+    CF_ASYNC_WORKER_URL: z.string().url().optional().or(z.literal('')),
+    CF_ASYNC_WORKER_SECRET: z.string().min(20).optional().or(z.literal('')),
+
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),
+    /**
+     * Signs the wishlist-alert unsubscribe links. OPTIONAL EVERYWHERE:
+     * `lib/wishlist/unsubscribe-token.ts` derives a key from CRON_SECRET when
+     * this is absent, so production (where CRON_SECRET is required) always
+     * signs, and setting this later only rotates the links, not the feature.
+     */
+    WISHLIST_UNSUB_SECRET: z.string().min(20).optional().or(z.literal('')),
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
+
+    /**
+     * The private phone channel next to the public ntfy topic. OPTIONAL
+     * EVERYWHERE and inert unless BOTH are set (lib/observability/telegram.ts):
+     * half a configuration degrades to ntfy alone rather than failing boot.
+     */
+    TELEGRAM_BOT_TOKEN: z.string().min(20).optional().or(z.literal('')),
+    TELEGRAM_CHAT_ID: z.string().optional().or(z.literal('')),
+    /**
+     * Gate for /api/alerts/uptimerobot. Unset means the route answers 401 to
+     * everything, which is closed rather than open: an unauthenticated relay
+     * would let anyone page the operator at will.
+     */
+    UPTIMEROBOT_WEBHOOK_SECRET: z.string().min(20).optional().or(z.literal('')),
+
+    /**
+     * The Axiom log leg. OPTIONAL EVERYWHERE and inert unless BOTH are set,
+     * same contract as Upstash above: half a configuration degrades to the
+     * console transport rather than failing anything. `lib/observability/
+     * axiom.ts` is the only reader; log.ts ships every structured line there
+     * when enabled. Retention and dashboards: scripts/axiom/setup.mjs.
+     */
+    AXIOM_TOKEN: z.string().min(10).optional().or(z.literal('')),
+    AXIOM_DATASET: z.string().optional().or(z.literal('')),
+    /**
+     * Where revenue facts (revenue.purchase / revenue.refund) land. Optional
+     * on top of the pair above: unset means the log dataset, so the cohort
+     * dashboard still has data on a half-configured environment.
+     */
+    AXIOM_REVENUE_DATASET: z.string().optional().or(z.literal('')),
 
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
@@ -168,5 +232,5 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV ==
 // After parsing, so a malformed environment fails on its own terms first.
 assertNoCompromisedKeys(isDeployedRuntime())
 
-const env = parsed.data
+export const env = parsed.data
 export type Env = typeof env

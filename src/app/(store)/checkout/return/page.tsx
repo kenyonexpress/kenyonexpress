@@ -1,3 +1,4 @@
+import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import PasskeyBanner from '@/components/auth/PasskeyBanner'
 import LocationPin from '@/components/product/LocationPin'
 import PushPrompt from '@/components/push/PushPrompt'
@@ -173,6 +174,10 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
           {shekels(agorot(orderMoney.totalAgorot))}
         </p>
+
+        {/* A link to the notifications page, never a permission dialog. It
+            renders nothing unless push is possible, undecided and unasked. */}
+        <PostPurchasePushPrompt />
 
         {couponsWithQr.length > 0 && (
           <section aria-label="הקופונים שלך" style={{ maxWidth: 640, marginInline: 'auto' }}>

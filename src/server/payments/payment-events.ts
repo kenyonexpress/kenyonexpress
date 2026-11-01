@@ -88,7 +88,7 @@ export const PAYMENT_EVENT_TYPES = [
   'reconciliation_amount_differs',
 ] as const
 
-type PaymentEventType = (typeof PAYMENT_EVENT_TYPES)[number]
+export type PaymentEventType = (typeof PAYMENT_EVENT_TYPES)[number]
 
 export interface PaymentEvent {
   eventType: PaymentEventType

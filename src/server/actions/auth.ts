@@ -22,9 +22,13 @@ import {
 } from '@/lib/fraud/signup-validation'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { escapeLikePattern } from '@/lib/utils/search-escape'
 import {
+  changePasswordSchema,
+  emailOtpVerifySchema,
   loginSchema,
   magicLinkSchema,
   newPasswordSchema,
@@ -34,6 +38,7 @@ import {
   signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -65,6 +70,10 @@ const ERROR_MAP: Record<string, string> = {
     this project, and the fallback now names anything new rather than hiding it.
   */
   'Auth session missing': 'קישור האיפוס פג או שכבר נעשה בו שימוש — בקשו קישור חדש',
+  // What `verifyOtp` answers for a typed code that is wrong, reused, or older
+  // than the project's OTP expiry. One sentence for all three on purpose:
+  // distinguishing "wrong" from "expired" tells a guesser which digits to keep.
+  'Token has expired or is invalid': 'הקוד שגוי או שפג תוקפו — בקשו קוד חדש',
 }
 
 /**
@@ -297,14 +306,21 @@ async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthS
   const parsed = magicLinkSchema.safeParse({ email: formData.get('email') })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data.email,
-    options: {
-      emailRedirectTo: authRedirect('/auth/callback'),
-    },
-  })
-  if (error) return { error: toHebrew(error.message) }
+  // The branded Hebrew mail via Resend, when it can be sent (existing user,
+  // keys configured). Falls back to Supabase's own mail otherwise, so a login
+  // is never blocked by the pretty path; the success copy is identical on both
+  // legs and reveals nothing about whether the address exists.
+  const branded = await trySendBrandedMagicLink(parsed.data.email)
+  if (!branded) {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.signInWithOtp({
+      email: parsed.data.email,
+      options: {
+        emailRedirectTo: authRedirect('/auth/callback'),
+      },
+    })
+    if (error) return { error: toHebrew(error.message) }
+  }
   return { success: 'שלחנו קישור כניסה לאימייל שלך — בדקו את תיבת הדואר' }
 }
 
@@ -337,7 +353,7 @@ async function attachPhoneToExistingAccount(e164: string): Promise<void> {
   const { data: profiles } = await admin
     .from('profiles')
     .select('id, phone, email')
-    .ilike('phone', `%${suffix}`)
+    .ilike('phone', `%${escapeLikePattern(suffix)}`)
     .limit(50)
   const candidates = (profiles ?? []).filter((row) => toE164Israeli(row.phone) === e164)
 
@@ -553,6 +569,95 @@ async function runUpdatePassword(_: AuthState, formData: FormData): Promise<Auth
   redirect('/')
 }
 
+// ──────────────────────────────────────────────
+// Email OTP (the code from the login mail, typed instead of clicked)
+// ──────────────────────────────────────────────
+async function runVerifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  const ip = await getClientIp()
+  // Same ceiling as the SMS code and for the same reason: six digits is a
+  // million codes, and without this the mail gate is decorative.
+  const allowed = await checkRateLimit(`email-verify:${ip}`, 20, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const parsed = emailOtpVerifySchema.safeParse({
+    email: formData.get('email'),
+    token: formData.get('token'),
+  })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  // Per-address as well as per-IP, the way the password login is, so a list of
+  // proxies cannot buy one address twenty tries each.
+  const addressAllowed = await checkRateLimit(`email-verify-address:${parsed.data.email}`, 20, 3600)
+  if (!addressAllowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const supabase = await createClient()
+  // `type: 'email'` is what GoTrue expects for the code that rides with a
+  // magic link (`email_otp` off `generateLink`); 'magiclink' is the token_hash
+  // leg the callback route consumes. Both verify the same secret.
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: parsed.data.email,
+    token: parsed.data.token,
+    type: 'email',
+  })
+  if (error) return { error: toHebrew(error.message) }
+
+  // From here on this is the callback route's job, done here because the
+  // session was minted in this request and never passes through /auth/callback.
+  const sessionId = await getGuestSessionId()
+  if (data.user && sessionId) {
+    const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
+  }
+  if (data.user) {
+    await claimReferralOnce(data.user.id, sessionId)
+  }
+
+  redirect(safeNext(formData.get('next')))
+}
+
+// ──────────────────────────────────────────────
+// Change password (signed in, current password re-proves the owner)
+// ──────────────────────────────────────────────
+async function runChangePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user?.email) return { error: 'יש להתחבר' }
+
+  // Keyed on the session, not the IP: the thing being guessed here is one
+  // account's current password, from a device that already holds its cookies.
+  const allowed = await checkRateLimit(`change-password:${user.id}`, 10, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const parsed = changePasswordSchema.safeParse({
+    current_password: formData.get('current_password'),
+    password: formData.get('password'),
+    confirm_password: formData.get('confirm_password'),
+  })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  // `updateUser` trusts the session, and a session is exactly what a shared
+  // or stolen device has. The current password is checked against GoTrue on
+  // a throwaway anon client that persists nothing: a wrong one fails here and
+  // the real session is untouched; a right one mints a session we revoke on
+  // the spot, so the check leaves no second login behind.
+  const verifier = createPublicClient()
+  const { error: verifyError } = await verifier.auth.signInWithPassword({
+    email: user.email,
+    password: parsed.data.current_password,
+  })
+  if (verifyError) return { error: 'הסיסמה הנוכחית שגויה' }
+  await verifier.auth.signOut({ scope: 'local' })
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+  if (error) return { error: toHebrew(error.message) }
+  return { success: 'הסיסמה עודכנה' }
+}
+
 export async function signInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
   return withActionContext('auth.sign_in_google', () => runSignInWithGoogle(_, formData))
 }
@@ -591,4 +696,379 @@ export async function sendPasswordReset(_: AuthState, formData: FormData): Promi
 
 export async function updatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
   return withActionContext('auth.update_password', () => runUpdatePassword(_, formData))
+}
+
+export async function verifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.verify_email_otp', () => runVerifyEmailOtp(_, formData))
+}
+
+export async function changePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.change_password', () => runChangePassword(_, formData))
+}
+
+// ──────────────────────────────────────────────
+// Passkey (WebAuthn) registration
+// ──────────────────────────────────────────────
+import {
+  generatePasskeyAuthenticationOptions,
+  generatePasskeyRegistrationOptions,
+  verifyAndStorePasskey,
+  verifyPasskeyAuthentication,
+} from '@/lib/auth/passkeys'
+import type { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/server'
+
+export async function generatePasskeyOptions(): Promise<any> {
+  return withActionContext('auth.generate_passkey_options', async () => {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    const options = await generatePasskeyRegistrationOptions(
+      user.id,
+      user.email || '',
+      user.user_metadata.full_name || user.email || 'User',
+    )
+
+    return options
+  })
+}
+
+export async function verifyPasskeyRegistration(
+  response: RegistrationResponseJSON,
+  expectedChallenge: string,
+  friendlyName?: string,
+): Promise<{ success: boolean; error?: string }> {
+  return withActionContext('auth.verify_passkey_registration', async () => {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: 'User not authenticated' }
+    }
+
+    return verifyAndStorePasskey(user.id, response, expectedChallenge, friendlyName)
+  })
+}
+
+// ──────────────────────────────────────────────
+// Passkey authentication
+// ──────────────────────────────────────────────
+export async function generatePasskeyAuthOptions(userId?: string): Promise<any> {
+  return withActionContext('auth.generate_passkey_auth_options', async () => {
+    return generatePasskeyAuthenticationOptions(userId)
+  })
+}
+
+export async function verifyPasskeyAuth(
+  response: AuthenticationResponseJSON,
+  expectedChallenge: string,
+): Promise<{ success: boolean; userId?: string; sessionToken?: string; error?: string }> {
+  return withActionContext('auth.verify_passkey_auth', async () => {
+    const result = await verifyPasskeyAuthentication(response, expectedChallenge)
+
+    if (result?.success && result.userId) {
+      const admin = createAdminClient()
+      const { data: userData, error: userError } = await admin.auth.admin.getUserById(result.userId)
+
+      if (userError || !userData.user) {
+        await recordAuthAttempt({
+          userId: result.userId,
+          attemptType: 'passkey',
+          success: false,
+        })
+        return { success: false, error: 'User not found' }
+      }
+
+      // Generate a one-time link that includes a session token
+      const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+        type: 'magiclink',
+        email: userData.user.email || '',
+        options: {
+          redirectTo: siteUrl(),
+        },
+      })
+
+      if (linkError || !linkData) {
+        await recordAuthAttempt({
+          userId: result.userId,
+          attemptType: 'passkey',
+          success: false,
+        })
+        return { success: false, error: 'Failed to create session' }
+      }
+
+      // Record successful passkey auth
+      await recordAuthAttempt({
+        userId: result.userId,
+        attemptType: 'passkey',
+        success: true,
+      })
+
+      // Return the session token from the generated link
+      // The client will use this to establish the session
+      const url = new URL(linkData.properties.action_link)
+      const token = url.searchParams.get('token')
+
+      if (!token) {
+        return { success: false, error: 'Failed to generate session token' }
+      }
+
+      return {
+        success: true,
+        userId: result.userId,
+        sessionToken: token,
+      }
+    }
+
+    await recordAuthAttempt({
+      attemptType: 'passkey',
+      success: false,
+    })
+    return result || { success: false, error: 'Verification failed' }
+  })
+}
+
+import { recordAuthAttempt, shouldFallbackToEmail } from '@/lib/auth/auth-fallback'
+// ──────────────────────────────────────────────
+// WhatsApp OTP
+// ──────────────────────────────────────────────
+import {
+  generateOtpCode,
+  sendWhatsAppOtp as sendWhatsAppOtpMessage,
+  whatsAppOtpEnabled,
+  whatsAppOtpErrorHebrew,
+} from '@/lib/auth/whatsapp-otp'
+
+async function runSendWhatsAppOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  if (!whatsAppOtpEnabled()) {
+    return { error: 'שירות WhatsApp אינו זמין כרגע' }
+  }
+
+  const ip = await getClientIp()
+  const allowed = await checkRateLimit(`whatsapp-otp:${ip}`, 5, 3600)
+  if (!allowed) {
+    return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+  }
+
+  const parsed = phoneOtpSchema.safeParse({ phone: formData.get('phone') })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+  }
+
+  const e164 = toE164Israeli(parsed.data.phone)
+  if (!e164 || !isSmsCapableIsraeli(parsed.data.phone)) {
+    return { error: 'יש להזין מספר טלפון נייד ישראלי (05X)' }
+  }
+
+  const numberAllowed = await checkRateLimit(`whatsapp-otp-number:${e164}`, 5, 3600)
+  if (!numberAllowed) {
+    return { error: 'יותר מדי בקשות למספר הזה — נסו שוב בעוד שעה' }
+  }
+
+  const code = generateOtpCode()
+  const result = await sendWhatsAppOtpMessage(e164, code)
+
+  if (!result.success) {
+    await recordAuthAttempt({
+      phone: e164,
+      attemptType: 'whatsapp_otp',
+      success: false,
+      ipAddress: ip,
+    })
+    return { error: whatsAppOtpErrorHebrew(result.error || '') }
+  }
+
+  // Store the code for verification
+  const { storeOtpCode } = await import('@/lib/auth/otp-store')
+  const storeResult = await storeOtpCode({
+    identifier: e164,
+    code,
+    channel: 'whatsapp',
+  })
+
+  if (!storeResult.success) {
+    log.error('auth.whatsapp_otp_store_failed', {})
+    return { error: 'שליחת הקוד נכשלה — נסו שוב' }
+  }
+
+  return { success: e164 }
+}
+
+export async function sendWhatsAppOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.send_whatsapp_otp', () => runSendWhatsAppOtp(_, formData))
+}
+
+async function runVerifyWhatsAppOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  if (!whatsAppOtpEnabled()) {
+    return { error: 'שירות WhatsApp אינו זמין כרגע' }
+  }
+
+  const ip = await getClientIp()
+  const allowed = await checkRateLimit(`whatsapp-verify:${ip}`, 20, 3600)
+  if (!allowed) {
+    return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+  }
+
+  const parsed = phoneVerifySchema.safeParse({
+    phone: formData.get('phone'),
+    token: formData.get('token'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+  }
+
+  const e164 = toE164Israeli(parsed.data.phone)
+  if (!e164) {
+    return { error: 'מספר הטלפון אינו תקין' }
+  }
+
+  // Verify the OTP code
+  const { verifyOtpCode } = await import('@/lib/auth/otp-store')
+  const verifyResult = await verifyOtpCode({
+    identifier: e164,
+    code: parsed.data.token,
+    channel: 'whatsapp',
+  })
+
+  if (!verifyResult.success) {
+    await recordAuthAttempt({
+      phone: e164,
+      attemptType: 'whatsapp_otp',
+      success: false,
+      ipAddress: ip,
+    })
+    return { error: verifyResult.error || 'הקוד שגוי או פג תוקפו' }
+  }
+
+  // Attach phone to existing account or find user by phone
+  const admin = createAdminClient()
+
+  // Try to find existing user with this phone
+  const suffix = e164.slice(-7)
+  const { data: profiles } = await admin
+    .from('profiles')
+    .select('id, phone')
+    .ilike('phone', `%${escapeLikePattern(suffix)}`)
+    .limit(10)
+
+  let userId: string | null = null
+
+  if (profiles && profiles.length > 0) {
+    // Find exact match
+    for (const profile of profiles) {
+      if (toE164Israeli(profile.phone) === e164) {
+        userId = profile.id
+        break
+      }
+    }
+  }
+
+  // If no user found, create new one
+  if (!userId) {
+    const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+      phone: e164,
+      phone_confirm: true,
+      user_metadata: { phone: e164 },
+    })
+
+    if (createError || !newUser.user) {
+      await recordAuthAttempt({
+        phone: e164,
+        attemptType: 'whatsapp_otp',
+        success: false,
+        ipAddress: ip,
+      })
+      return { error: 'יצירת המשתמש נכשלה' }
+    }
+
+    userId = newUser.user.id
+
+    // Create profile
+    await admin.from('profiles').insert({ id: userId, phone: e164 })
+  }
+
+  // Create session for the user
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: 'magiclink',
+    email: `${userId}@whatsapp.placeholder`, // Placeholder email for phone-only users
+    options: {
+      redirectTo: siteUrl(),
+    },
+  })
+
+  if (linkError || !linkData) {
+    await recordAuthAttempt({
+      userId,
+      phone: e164,
+      attemptType: 'whatsapp_otp',
+      success: false,
+      ipAddress: ip,
+    })
+    return { error: 'יצירת חיבור נכשלה' }
+  }
+
+  // Record successful attempt
+  await recordAuthAttempt({
+    userId,
+    phone: e164,
+    attemptType: 'whatsapp_otp',
+    success: true,
+    ipAddress: ip,
+  })
+
+  // Get the session token from the generated link
+  const url = new URL(linkData.properties.action_link)
+  const token = url.searchParams.get('token')
+
+  if (!token) {
+    return { error: 'Failed to generate session token' }
+  }
+
+  // Exchange token for session using the client
+  const supabase = await createClient()
+  const { error: sessionError } = await supabase.auth.verifyOtp({
+    type: 'magiclink',
+    token_hash: token,
+  })
+
+  if (sessionError) {
+    return { error: 'יצירת חיבור נכשלה' }
+  }
+
+  // Merge guest cart and handle referral
+  const sessionId = await getGuestSessionId()
+  if (userId && sessionId) {
+    const merged = await mergeGuestCart(supabase, userId, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
+    await claimReferralOnce(userId, sessionId)
+  }
+
+  redirect(safeNext(formData.get('next')))
+}
+
+export async function verifyWhatsAppOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.verify_whatsapp_otp', () => runVerifyWhatsAppOtp(_, formData))
+}
+
+// ──────────────────────────────────────────────
+// Auth fallback check
+// ──────────────────────────────────────────────
+export async function checkAuthFallback(params: {
+  email?: string
+  phone?: string
+}): Promise<{ shouldFallback: boolean }> {
+  return withActionContext('auth.check_fallback', async () => {
+    const shouldFallback = await shouldFallbackToEmail(params)
+    return { shouldFallback }
+  })
 }

@@ -22,7 +22,7 @@ import type { SearchIndexJob } from '@/lib/search/pipeline-contracts'
  */
 
 const QSTASH_URL = 'https://qstash.upstash.io'
-const QSTASH_RETRIES = 5
+export const QSTASH_RETRIES = 5
 
 export type EnqueueOutcome =
   | { transport: 'qstash'; messageId: string }

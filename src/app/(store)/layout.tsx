@@ -1,3 +1,4 @@
+import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
@@ -46,7 +47,10 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   return (
     <CartProvider>
       <CartBootstrap />
-      {/* Measured live: the footer sits directly after the content (top 871 on
+      {/* Inside CartProvider: the wishlist reads the session flag the cart
+          bootstrap sets. It renders nothing and reads only after mount. */}
+      <WishlistProvider>
+        {/* Measured live: the footer sits directly after the content (top 871 on
           hot-deals) with white space below, i.e. no sticky footer. flex-1 would
           stretch main to the viewport and push the footer to the bottom, which is
           the 1218px vertical mismatch in the category compare. Keep min-h-screen
@@ -72,6 +76,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <WhatsAppFloat />
       <CrispChat />
       <DeferredStoreChrome />
+      </WishlistProvider>
     </CartProvider>
   )
 }

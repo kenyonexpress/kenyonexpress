@@ -33,6 +33,7 @@ async function runApproveProduct(id: string): Promise<{ error?: string }> {
     .from('products')
     .select('id, name_he, approval_status')
     .eq('id', id)
+    .is('deleted_at', null)
     .single()
   if (!product) return { error: 'מוצר לא נמצא' }
 
@@ -79,6 +80,7 @@ async function runRejectProduct(id: string, reason: string): Promise<{ error?: s
     .from('products')
     .select('id, name_he, approval_status, status')
     .eq('id', id)
+    .is('deleted_at', null)
     .single()
   if (!product) return { error: 'מוצר לא נמצא' }
 

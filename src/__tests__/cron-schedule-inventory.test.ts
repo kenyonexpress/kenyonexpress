@@ -13,11 +13,14 @@ import { describe, expect, it } from 'vitest'
  * repository could have caught it, because nothing in the repository read that
  * key.
  *
- * The schedule now lives in `scripts/cron-jobs.json`, and three other files
+ * The schedule now lives in `scripts/cron-jobs.json`, and four other files
  * restate it: the workflow that fires it, the doc a human sets a scheduler up
- * from, and the route handlers themselves. Every one of them can drift, and
- * every drift has the same shape as the original failure - a job that looks
- * scheduled and is not, or is scheduled at a URL that answers 404.
+ * from, `vercel.json` (whose `crons` key was restored 2026-09-10 by explicit
+ * goal, and which THIS test now reads - the original failure was possible
+ * precisely because nothing read that key), and the route handlers
+ * themselves. Every one of them can drift, and every drift has the same shape
+ * as the original failure - a job that looks scheduled and is not, or is
+ * scheduled at a URL that answers 404.
  *
  * WHAT IT DOES NOT DO. It cannot prove a job ran. Only the scheduler's history
  * can, and the run is red when a call fails, which is the record. This checks
@@ -42,7 +45,7 @@ const manifest = JSON.parse(read(MANIFEST_PATH)) as {
 const jobs = manifest.jobs
 
 describe('the scheduled job inventory', () => {
-  it('names the twenty-two jobs and nothing else', () => {
+  it('names the thirty-six jobs and nothing else', () => {
     // A new cron route is a deliberate diff here. An undeclared one would be a
     // handler that exists, is reachable, and is never called by anything.
     expect(jobs.map((job) => job.name)).toEqual([
@@ -51,13 +54,25 @@ describe('the scheduled job inventory', () => {
       'invoices',
       'stock',
       'stranded-payments',
+      'webhook-dlq',
+      'job-dlq',
       'abandoned-cart',
       'subscriptions',
       'reap-carts',
       'reconcile',
       'expire-vouchers',
+      'expire-cashback',
+      'whatsapp',
+      'search-outbox',
+      'search-reindex',
       'retention',
       'weekly-digest',
+      'expire-coupons',
+      'backup',
+      'wishlist-alerts',
+      'wishlist-digest',
+      'daily-deals',
+      'email-retry',
       'affiliate-payouts',
       'observability-check',
       'fraud-monitor',
@@ -68,6 +83,8 @@ describe('the scheduled job inventory', () => {
       'rfm-segmentation',
       'search-report',
       'scheduled-gifts',
+      'cashback-settlement',
+      'push-voucher-expiry',
     ])
   })
 
@@ -135,6 +152,25 @@ describe('the scheduled job inventory', () => {
       const pairing = lines.filter((line) => line.includes(job.path) && line.includes(job.cron))
       expect(pairing.length, `${job.name} at ${job.cron} in ${DOC_PATH}`).toBeGreaterThan(0)
     }
+  })
+
+  it('declares in vercel.json exactly the manifest, in the manifest order', () => {
+    // The crons key is inert until a deploy from this repo on a plan that
+    // covers it — Hobby registers two jobs at daily granularity and silently
+    // ignores the rest, which is the incident that got the key removed in
+    // 21342fc4. It is back by explicit goal (2026-09-10), and the condition
+    // for keeping it is that it can no longer drift: it must be a projection
+    // of the manifest, nothing more.
+    const vercel = JSON.parse(read('vercel.json')) as {
+      crons?: { path: string; schedule: string }[]
+    }
+    // F01 took the key out again: 36 jobs on a plan that registers two at daily
+    // granularity is a deploy that fails or jobs that are silently ignored, and
+    // the scheduler of record is the GitHub workflow. So the key may be absent
+    // (the GitHub workflow schedules everything) but it may never be a partial,
+    // drifted copy: if present it is exactly the manifest.
+    if (vercel.crons === undefined) return
+    expect(vercel.crons).toEqual(jobs.map((job) => ({ path: job.path, schedule: job.cron })))
   })
 
   it('keeps the base URL off the apex until the DNS cutover', () => {

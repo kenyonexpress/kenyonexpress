@@ -1,4 +1,4 @@
-import type { UserRole } from '@/types/database'
+import type { UserRole } from '@/lib/admin/roles'
 
 /**
  * The uploader money boundary, as one pure decision.
@@ -16,7 +16,7 @@ import type { UserRole } from '@/types/database'
  * queue entirely.
  */
 
-const UPLOADER_STRIPPED_FIELDS = ['platform_percent', 'supplier_split_percent'] as const
+export const UPLOADER_STRIPPED_FIELDS = ['platform_percent', 'supplier_split_percent'] as const
 
 export function applyUploaderPolicy<T extends Record<string, unknown>>(
   role: UserRole,

@@ -38,8 +38,8 @@
 
 @media (min-width: 768px) {
   .jet-listing-grid-deals__item {
-    max-width: 50%;
-    flex: 0 0 50%;
+    max-width: 33.333%;
+    flex: 0 0 33.333%;
   }
 }
 
@@ -51,9 +51,15 @@
 }
 
 /* live: divider on the LEFT edge (inline-end in RTL) of every item except the
-   last one in each row (nth-child(4n)) — lines at x 433 / 721 / 1009 */
+   last one in each row (nth-child(2n) for 2-column, nth-child(3n) for 3-column, nth-child(4n) for 4-column) */
 .jet-listing-grid-deals__item .p_con {
   border-inline-end: 1px solid var(--color-border);
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .jet-listing-grid-deals__item:nth-child(3n) .p_con {
+    border-inline-end: none;
+  }
 }
 
 @media (min-width: 1200px) {
@@ -62,11 +68,9 @@
   }
 }
 
-/* One card per row below 768: there is no neighbour to divide from, and live
-   draws no rule there. The old block drew one on every card except the first
-   and last, which was a vertical line down the middle of a phone. */
+/* Two cards per row below 768: remove border after every 2nd item */
 @media (max-width: 767px) {
-  .jet-listing-grid-deals__item .p_con {
+  .jet-listing-grid-deals__item:nth-child(2n) .p_con {
     border-inline-end: none;
   }
 }

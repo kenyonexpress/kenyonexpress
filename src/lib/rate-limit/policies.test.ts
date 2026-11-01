@@ -75,7 +75,18 @@ describe('key construction', () => {
  * the first, and it fails on the commit that ADDS a limit the table does not
  * know about rather than on the deploy that needs it.
  */
-type CallSite = { file: string; name: string; limit: number; windowSeconds: number }
+type CallSite = {
+  file: string
+  name: string
+  /**
+   * Null for a `rateLimit('name', id)` call site, and that is the point of the
+   * newer API: it takes its numbers FROM this table, so there is no second
+   * copy that could disagree. Only the legacy `checkRateLimit` form carries
+   * literals, and only those are checked against the table below.
+   */
+  limit: number | null
+  windowSeconds: number | null
+}
 
 function sourceFiles(dir: string, found: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -102,20 +113,44 @@ function resolveNumber(token: string | undefined, source: string): number | null
   return declared ? Number(declared[1]) : Number.NaN
 }
 
+/**
+ * BOTH CALL SHAPES, because the tree now speaks two.
+ *
+ * `checkRateLimit('name:id', 120, 300)` is the legacy form: it hand-writes the
+ * numbers, so those are what the table is checked against. `rateLimit('name',
+ * id)` is the form new code uses and the one the HTTP routes were moved to so
+ * they could answer with `Retry-After`; it reads the numbers from this table,
+ * so there is nothing to disagree with.
+ *
+ * Scanning only the first would have made this audit blind the moment a call
+ * site migrated: the policy would have looked ORPHANED (no `checkRateLimit`
+ * naming it) while being in daily use. That is the same failure this file
+ * exists to prevent, one API version later.
+ */
 function scanCallSites(): CallSite[] {
   const root = join(process.cwd(), 'src')
-  const pattern =
+  const legacy =
     /checkRateLimit\(\s*`([A-Za-z0-9_-]+):[\s\S]*?`\s*(?:,\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_]+)\s*)?,?\s*\)/g
+  // Lowercase `rateLimit(` cannot occur inside `checkRateLimit`, and the `(`
+  // immediately after the name excludes `rateLimitByKey` and `rateLimitHeaders`.
+  const named = /rateLimit\(\s*'([A-Za-z0-9_-]+)'\s*,/g
   const sites: CallSite[] = []
   for (const file of sourceFiles(root)) {
     const source = readFileSync(file, 'utf8')
-    if (!source.includes('checkRateLimit(')) continue
-    for (const match of source.matchAll(pattern)) {
+    for (const match of source.matchAll(legacy)) {
       sites.push({
         file: relative(process.cwd(), file),
         name: match[1] as string,
         limit: resolveNumber(match[2], source) ?? DEFAULT_LIMIT,
         windowSeconds: resolveNumber(match[3], source) ?? DEFAULT_WINDOW_SECONDS,
+      })
+    }
+    for (const match of source.matchAll(named)) {
+      sites.push({
+        file: relative(process.cwd(), file),
+        name: match[1] as string,
+        limit: null,
+        windowSeconds: null,
       })
     }
   }
@@ -139,6 +174,7 @@ describe('the table against the call sites', () => {
 
   it('agrees with every call site on the limit and the window', () => {
     const disagreements = sites
+      .filter((s) => s.limit !== null && s.windowSeconds !== null)
       .filter((s) => s.name in RATE_LIMIT_POLICIES)
       .filter((s) => {
         const p = policy(s.name as RateLimitPolicyName)

@@ -334,24 +334,27 @@ describe('readOrderMoney on the ils generation reads the generated agorot twins'
     const money = readOrderMoney('ils', {
       subtotal_ils_agorot: 21990,
       total_ils_agorot: 20490,
-      cashback_applied_ils: 15,
+      cashback_applied_agorot: 1500,
       // The numeric sources are present and deliberately disagree. If the
       // reader ever falls back to them, these values are what it would report.
       subtotal_ils: 1,
       total_ils: 2,
+      cashback_applied_ils: 15,
     })
 
     expect(money.subtotalAgorot).toBe(21990)
     expect(money.totalAgorot).toBe(20490)
   })
 
-  it('still converts cashback_applied_ils, which has no generated twin', () => {
-    // Four columns the readers use never got an agorot twin:
-    //   orders.cashback_applied_ils      orders.discount_ils
+  it('reads the cashback from its 224 twin, not the numeric source', () => {
+    // 224 gave cashback_applied_ils a generated agorot twin under the post-059
+    // name. Three columns the readers do NOT use still have no twin:
+    //   orders.discount_ils
     //   order_items.supplier_payout_ils  order_items.cashback_earned_ils
     const money = readOrderMoney('ils', {
       subtotal_ils_agorot: 21990,
       total_ils_agorot: 20490,
+      cashback_applied_agorot: 1500,
       cashback_applied_ils: 15,
     })
 
@@ -365,7 +368,7 @@ describe('readOrderMoney on the ils generation reads the generated agorot twins'
     const money = readOrderMoney('ils', {
       subtotal_ils_agorot: '21990',
       total_ils_agorot: '20490',
-      cashback_applied_ils: '15',
+      cashback_applied_agorot: '1500',
     })
 
     expect(money.subtotalAgorot).toBe(21990)
@@ -373,43 +376,43 @@ describe('readOrderMoney on the ils generation reads the generated agorot twins'
     expect(money.walletAppliedAgorot).toBe(1500)
   })
 
-  it('reports zero rather than NaN when the agorot column is absent', () => {
+  it('reports zero rather than NaN when the agorot columns are absent', () => {
     const money = readOrderMoney('ils', { cashback_applied_ils: 0 })
 
     expect(money.subtotalAgorot).toBe(0)
     expect(money.totalAgorot).toBe(0)
+    expect(money.walletAppliedAgorot).toBe(0)
   })
 })
 
 describe('the generation-resolved read fragments (marathon step 1)', () => {
-  // These three exist because finalize, the order detail query and the invoice
+  // These exist because finalize, the order detail query and the invoice
   // issuer all hardcoded post-059 names into their selects. On the hosted
   // pre-059 project one unknown name is 42703 and the WHOLE select fails --
   // which aborts a finalize for a card that has already been charged
-  // (PAYMENT-FLOW, known defect). The fragments answer per generation.
+  // (PAYMENT-FLOW, known defect). 224 made the cashback and unit price names
+  // real on both generations; only total_price_agorot still needs an alias.
 
-  it('names the cashback column each generation actually has', () => {
-    expect(orderCashbackSelect('agorot')).toBe('cashback_applied_agorot')
-    expect(orderCashbackSelect('ils')).toBe('cashback_applied_ils')
+  it('names the one cashback column both generations now have', () => {
+    expect(orderCashbackSelect()).toBe('cashback_applied_agorot')
   })
 
-  it('normalises the cashback spend to integer agorot from either generation', () => {
-    expect(readOrderCashbackAgorot('agorot', { cashback_applied_agorot: 1500 })).toBe(1500)
-    // Pre-059 stores shekels; 12.30 must come back 1230, not 1229.9999...,
-    // which is what a bare Number('12.30') * 100 produces.
-    expect(readOrderCashbackAgorot('ils', { cashback_applied_ils: '12.30' })).toBe(1230)
-    expect(readOrderCashbackAgorot('ils', { cashback_applied_ils: 15 })).toBe(1500)
-    expect(readOrderCashbackAgorot('agorot', null)).toBe(0)
-    expect(readOrderCashbackAgorot('ils', {})).toBe(0)
+  it('reads the cashback spend as integer agorot, string or number, absent as zero', () => {
+    expect(readOrderCashbackAgorot({ cashback_applied_agorot: 1500 })).toBe(1500)
+    // bigint crosses PostgREST as a string past 2^53; the wire shape must not
+    // matter.
+    expect(readOrderCashbackAgorot({ cashback_applied_agorot: '1230' })).toBe(1230)
+    expect(readOrderCashbackAgorot(null)).toBe(0)
+    expect(readOrderCashbackAgorot({})).toBe(0)
   })
 
-  it('aliases the pre-059 generated price twins back to the post-059 names', () => {
-    // Unit-safe on purpose: unit_price_ils_agorot is GENERATED AS
+  it('aliases only total_price back; unit_price_agorot is real on both since 224', () => {
+    // Unit-safe on purpose: the pre-059 twins are GENERATED AS
     // round(ils * 100)::bigint, so both fragments answer in integer agorot
     // and a caller typed against unit_price_agorot never notices.
     expect(orderItemPriceSelect('agorot')).toBe('unit_price_agorot, total_price_agorot')
     expect(orderItemPriceSelect('ils')).toBe(
-      'unit_price_agorot:unit_price_ils_agorot, total_price_agorot:total_price_ils_agorot',
+      'unit_price_agorot, total_price_agorot:total_price_ils_agorot',
     )
   })
 })

@@ -1,4 +1,5 @@
 import { buildCachePaths, buildCacheTags, sendCachePurgeRequest } from '@/lib/cache'
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { requestIp } from '@/lib/rate-limit/request-ip'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -67,4 +68,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 }
 
 export const POST = withRequestLog('/api/cache/purge', handlePOST)
-export const GET = withRequestLog('/api/cache/purge', handleGET)
+export const GET = withCacheControl(
+  CacheControl.private,
+  withRequestLog('/api/cache/purge', handleGET),
+)

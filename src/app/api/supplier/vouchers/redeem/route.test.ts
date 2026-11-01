@@ -18,7 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const rpc = vi.fn()
 const identityScopedClient = vi.fn()
-const checkRateLimit = vi.fn()
+const rateLimit = vi.fn()
 const expireWalletPasses = vi.fn()
 const sendGaEvent = vi.fn()
 const recordRefusedScan = vi.fn()
@@ -35,10 +35,23 @@ vi.mock('@/lib/supplier/rbac', () => ({ getSupplierMemberships: async () => ['su
 vi.mock('@/lib/supabase/bearer', () => ({
   identityScopedClient: (request: unknown) => identityScopedClient(request),
 }))
-vi.mock('@/lib/utils/rate-limit', () => ({
-  checkRateLimit: (key: string, limit: number, window: number) =>
-    checkRateLimit(key, limit, window),
+/** `rateLimitHeaders` stays real, so the 429's headers cannot be mocked true. */
+vi.mock('@/lib/rate-limit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
+  rateLimit: (name: string, identifier: string) => rateLimit(name, identifier),
 }))
+/** What the limiter hands back on the burn path. */
+function decision(allowed: boolean) {
+  return {
+    allowed,
+    limit: 120,
+    windowSeconds: 3600,
+    remaining: allowed ? 119 : 0,
+    resetAtMs: Date.now() + 3_600_000,
+    backend: 'upstash' as const,
+  }
+}
+
 vi.mock('@/lib/wallet/notify', () => ({
   expireWalletPasses: (codes: string[]) => expireWalletPasses(codes),
 }))
@@ -111,7 +124,7 @@ describe('supplier scan endpoint', () => {
     identityScopedClient
       .mockReset()
       .mockResolvedValue({ client: { rpc }, identity: { user: { id: 'user-1' } } })
-    checkRateLimit.mockReset().mockResolvedValue(true)
+    rateLimit.mockReset().mockResolvedValue(decision(true))
     expireWalletPasses.mockReset().mockResolvedValue(undefined)
     sendGaEvent.mockReset().mockResolvedValue(undefined)
     recordRefusedScan.mockReset().mockResolvedValue(undefined)
@@ -130,7 +143,7 @@ describe('supplier scan endpoint', () => {
       const response = await POST(request({ code: 'ABCD123456' }))
       expect(response.status).toBe(401)
       expect(await response.json()).toMatchObject({ outcome: 'unauthorized' })
-      expect(checkRateLimit).not.toHaveBeenCalled()
+      expect(rateLimit).not.toHaveBeenCalled()
       expect(rpc).not.toHaveBeenCalled()
     })
 
@@ -165,28 +178,31 @@ describe('supplier scan endpoint', () => {
       // not be the decorative one. 120/hour is a scan every thirty seconds for
       // an hour without pause.
       await POST(request({ code: 'ABCD123456' }))
-      expect(checkRateLimit).toHaveBeenCalledWith('voucher-redeem:user-1', 120, 3600)
+      expect(rateLimit).toHaveBeenCalledWith('voucher-redeem', 'user-1')
     })
 
     it('rate limits per voucher code as well as per member', async () => {
       await POST(request({ code: 'ABCD123456' }))
-      expect(checkRateLimit).toHaveBeenCalledWith('voucher-redeem-code:ABCD123456', 10, 3600)
+      expect(rateLimit).toHaveBeenCalledWith('voucher-redeem-code', 'ABCD123456')
     })
 
     it('answers 429 without redeeming when one voucher is over its own ceiling', async () => {
-      checkRateLimit.mockImplementation(
-        async (key: string) => !key.startsWith('voucher-redeem-code:'),
-      )
+      rateLimit.mockImplementation(async (name: string) => decision(name !== 'voucher-redeem-code'))
       const response = await POST(request({ code: 'ABCD123456' }))
       expect(response.status).toBe(429)
       expect(rpc).not.toHaveBeenCalled()
     })
 
     it('answers 429 without touching the voucher when the ceiling is hit', async () => {
-      checkRateLimit.mockResolvedValue(false)
+      rateLimit.mockResolvedValue(decision(false))
       const response = await POST(request({ code: 'ABCD123456' }))
       expect(response.status).toBe(429)
       expect(rpc).not.toHaveBeenCalled()
+      // A till that is refused has to know when to scan again. Before this the
+      // route hand-rolled the 429 and sent no header at all, so the app could
+      // only guess -- at a counter with a customer waiting.
+      expect(response.headers.get('Retry-After')).not.toBeNull()
+      expect(response.headers.get('RateLimit-Limit')).toBe('120')
     })
   })
 

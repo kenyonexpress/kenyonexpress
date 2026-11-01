@@ -31,7 +31,7 @@ export interface OrderSummary {
   hasInvoice?: boolean
 }
 
-interface OrderVoucher {
+export interface OrderVoucher {
   code: string
   status: string
   expiresAt: string | null
@@ -42,7 +42,7 @@ interface OrderVoucher {
   usedAt: string | null
 }
 
-interface OrderLineSupplier {
+export interface OrderLineSupplier {
   id: string
   name: string
   address: string | null
@@ -50,7 +50,7 @@ interface OrderLineSupplier {
   phone: string | null
 }
 
-interface OrderLine {
+export interface OrderLine {
   id: string
   productId: string | null
   productName: string
@@ -64,6 +64,10 @@ interface OrderLine {
   balanceDueAgorot: Agorot
   settlementStatus: SettlementState
   itemStatus: string
+  carrier: string | null
+  trackingNumber: string | null
+  shippedAt: string | null
+  deliveredAt: string | null
   supplier: OrderLineSupplier | null
   vouchers: OrderVoucher[]
 }
@@ -92,7 +96,7 @@ export interface OrderDetail {
   invoice: OrderInvoice | null
 }
 
-interface OrderInvoice {
+export interface OrderInvoice {
   documentNumber: string | null
   issuedAt: string | null
 }
@@ -252,7 +256,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     await admin
       .from('order_items')
       .select(
-        `id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status`,
+        `id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status, carrier, tracking_number, shipped_at, delivered_at`,
       )
       .eq('order_id', order.id),
     'orders.items_read_failed',
@@ -270,6 +274,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
         balance_due_agorot: number | null
         settlement_status: string
         item_status: string
+        carrier: string | null
+        tracking_number: string | null
+        shipped_at: string | null
+        delivered_at: string | null
       }[]
     | null
 
@@ -388,6 +396,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       balanceDueAgorot: agorot(item.balance_due_agorot ?? 0),
       settlementStatus: asSettlementState(item.settlement_status),
       itemStatus: item.item_status,
+      carrier: item.carrier,
+      trackingNumber: item.tracking_number,
+      shippedAt: item.shipped_at,
+      deliveredAt: item.delivered_at,
       supplier: supplier
         ? {
             id: supplier.id,

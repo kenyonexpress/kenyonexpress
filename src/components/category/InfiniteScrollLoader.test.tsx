@@ -10,9 +10,9 @@ describe('InfiniteScrollLoader', () => {
     mockOnLoadMore = vi.fn()
 
     mockObserver = {
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
+      observe: vi.fn() as any,
+      unobserve: vi.fn() as any,
+      disconnect: vi.fn() as any,
     }
 
     // `new IntersectionObserver()` needs a constructor; an arrow function is not one.
@@ -186,7 +186,7 @@ describe('InfiniteScrollLoader', () => {
   })
 
   it('should update onLoadMore callback without losing observers', () => {
-    const mockOnLoadMore2 = vi.fn()
+    const mockOnLoadMore2 = vi.fn() as any
 
     const { rerender } = render(
       <InfiniteScrollLoader onLoadMore={mockOnLoadMore} hasMore={true} isLoading={false} />,

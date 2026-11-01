@@ -132,7 +132,7 @@ export function buildOrderMoneyRow(
 export function orderMoneySelect(generation: MoneySchemaGeneration): string {
   return generation === 'agorot'
     ? 'subtotal_agorot, total_agorot, customer_pays_now_agorot, cashback_applied_agorot'
-    : 'subtotal_ils_agorot, total_ils_agorot, cashback_applied_ils'
+    : 'subtotal_ils_agorot, total_ils_agorot, cashback_applied_agorot'
 }
 
 export interface OrderMoneyRead {
@@ -140,11 +140,6 @@ export interface OrderMoneyRead {
   /** What the customer actually paid on the site. */
   totalAgorot: number
   walletAppliedAgorot: number
-}
-
-function fromIls(value: unknown): number {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? Math.round(parsed * 100) : 0
 }
 
 function fromAgorot(value: unknown): number {
@@ -176,64 +171,62 @@ export function readOrderMoney(
     }
   }
   // `subtotal_ils_agorot` and `total_ils_agorot` are GENERATED ALWAYS AS
-  // `round(<col> * 100)::bigint` STORED, applied 2026-09-01. Reading them means
-  // the multiply happens once, in Postgres, against the numeric source. The
-  // `fromIls` path below did the same multiply in JavaScript on a value that
-  // had already crossed a JSON boundary as a string, which is the arithmetic
-  // this module exists to keep out of the callers.
+  // `round(<col> * 100)::bigint` STORED, applied 2026-09-01, and 224 gave
+  // `cashback_applied_ils` the same treatment under the post-059 name
+  // `cashback_applied_agorot`. Reading the twins means the multiply happens
+  // once, in Postgres, against the numeric source, instead of in JavaScript on
+  // a value that had already crossed a JSON boundary as a string - which is
+  // the arithmetic this module exists to keep out of the callers.
   //
-  // `cashback_applied_ils` has NO generated twin, so it still converts here.
-  // Four columns are in that position and none of them got one:
-  //   orders.cashback_applied_ils   orders.discount_ils
+  // Three columns still have NO generated twin; none of them is read here:
+  //   orders.discount_ils
   //   order_items.supplier_payout_ils   order_items.cashback_earned_ils
   return {
     subtotalAgorot: fromAgorot(row.subtotal_ils_agorot),
     totalAgorot: fromAgorot(row.total_ils_agorot),
-    walletAppliedAgorot: fromIls(row.cashback_applied_ils),
+    walletAppliedAgorot: fromAgorot(row.cashback_applied_agorot),
   }
 }
 
 /**
- * The order cashback/wallet column for this generation, as a select fragment.
+ * The order cashback/wallet column, as a select fragment.
  *
- * Post-059 the number lives in `cashback_applied_agorot` (integer agorot); the
- * hosted pre-059 schema carries `cashback_applied_ils` (numeric shekels) with
- * NO generated agorot twin -- it is one of the four columns 138 left without
- * one. The units differ, so unlike the price columns below this cannot be
- * papered over with a PostgREST alias; read it back through
- * `readOrderCashbackAgorot`, which knows which conversion applies.
+ * Generation-free since 224: post-059 the number lives in
+ * `cashback_applied_agorot` (integer agorot, writable), and 224 added the same
+ * name to the hosted pre-059 schema as a GENERATED twin of
+ * `cashback_applied_ils` (`round(<ils> * 100)::bigint` STORED). Both
+ * generations now answer this name in integer agorot, so no probe and no
+ * per-generation conversion - which also removes the round-trip finalize paid
+ * before reading an order it was about to mark paid.
  */
-export function orderCashbackSelect(generation: MoneySchemaGeneration): string {
-  return generation === 'agorot' ? 'cashback_applied_agorot' : 'cashback_applied_ils'
+export function orderCashbackSelect(): string {
+  return 'cashback_applied_agorot'
 }
 
-/** Normalises the cashback/wallet spend to integer agorot, per generation. */
-export function readOrderCashbackAgorot(
-  generation: MoneySchemaGeneration,
-  row: Record<string, unknown> | null | undefined,
-): number {
+/** Normalises the cashback/wallet spend to integer agorot. */
+export function readOrderCashbackAgorot(row: Record<string, unknown> | null | undefined): number {
   if (!row) return 0
-  return generation === 'agorot'
-    ? fromAgorot(row.cashback_applied_agorot)
-    : fromIls(row.cashback_applied_ils)
+  return fromAgorot(row.cashback_applied_agorot)
 }
 
 /**
  * The line price columns for this generation, as PostgREST select fragments
  * that ALIAS the pre-059 names back to the post-059 ones.
  *
- * This is unit-safe in a way the cashback column above is not:
- * `unit_price_ils_agorot` and `total_price_ils_agorot` are GENERATED ALWAYS AS
- * `round(<ils> * 100)::bigint` STORED, so both generations answer in integer
- * agorot and a caller typed against `unit_price_agorot` keeps working
- * untouched. Selecting the bare post-059 names on the hosted project is 42703
- * and fails the WHOLE select -- which is how finalize could abort for a card
- * that had already been charged (PAYMENT-FLOW, known defect).
+ * This is unit-safe in a way the cashback column above needed 224 to become:
+ * the pre-059 twins are GENERATED ALWAYS AS `round(<ils> * 100)::bigint`
+ * STORED, so both generations answer in integer agorot and a caller typed
+ * against `unit_price_agorot` keeps working untouched. 224 added
+ * `unit_price_agorot` itself to the hosted project as such a twin, so only
+ * `total_price_agorot` still needs the alias; selecting IT bare on the hosted
+ * project is still 42703 and fails the WHOLE select -- which is how finalize
+ * could abort for a card that had already been charged (PAYMENT-FLOW, known
+ * defect).
  */
 export function orderItemPriceSelect(generation: MoneySchemaGeneration): string {
   return generation === 'agorot'
     ? 'unit_price_agorot, total_price_agorot'
-    : 'unit_price_agorot:unit_price_ils_agorot, total_price_agorot:total_price_ils_agorot'
+    : 'unit_price_agorot, total_price_agorot:total_price_ils_agorot'
 }
 
 // ---------------------------------------------------------------------------

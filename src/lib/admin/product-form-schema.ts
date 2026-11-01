@@ -128,6 +128,8 @@ export const productSchema = z
     max_per_order: z.coerce.number().int().min(1).nullable().optional(),
     // logistics (048)
     requires_shipping: z.coerce.boolean().default(true),
+    is_physical_shipping: z.coerce.boolean().optional(),
+    full_address: z.string().nullable().optional(),
     whatsapp_enabled: z.coerce.boolean().default(false),
     weight_grams: z.coerce.number().int().min(0).nullable().optional(),
     // Millimetres, whole. The cm columns are superseded by migration 112 and
@@ -250,6 +252,17 @@ export const productSchema = z
           path: ['supplier_split_percent'],
         })
       }
+    }
+    // City is required unless the product is marked as physical shipping for entire country.
+    // However, we only enforce this if is_physical_shipping is explicitly set to false
+    // (not just when it defaults to false), to avoid breaking existing imports that
+    // don't have either field set.
+    if (data.is_physical_shipping === false && !data.city) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'עיר נדרשת כאשר המוצר לא משתלח לכל הארץ',
+        path: ['city'],
+      })
     }
   })
 

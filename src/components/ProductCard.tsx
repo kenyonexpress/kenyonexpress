@@ -5,11 +5,14 @@ import AddToCartButton from '@/components/cart/AddToCartButton'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import LocationPin from '@/components/product/LocationPin'
 import SupplierVerificationBadge from '@/components/supplier/SupplierVerificationBadge'
+import WishlistHeart from '@/components/wishlist/WishlistHeart'
+import { cityByName } from '@/lib/geo/cities'
+import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
 
-type GalleryAsset = {
+export type GalleryAsset = {
   alt: string | null
   blurDataURL: string | null
 }
@@ -23,6 +26,8 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** Ships nationwide (a physical product); renders as nationwide regardless of city. */
+  is_physical_shipping?: boolean | null
   /** products.city; NULL renders as nationwide. */
   city?: string | null
   /** products.latitude for Waze navigation */
@@ -109,6 +114,26 @@ function CartPlusIcon() {
   )
 }
 
+function LocationLabel({ product }: { product: Product }) {
+  let cityName: string
+  if (product.is_physical_shipping) {
+    cityName = 'כל הארץ'
+  } else if (product.city) {
+    const city = cityByName(product.city)
+    cityName = city?.name ?? product.city
+  } else {
+    cityName = 'כל הארץ'
+  }
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100">
+        <MapPin size={14} className="text-black" aria-hidden="true" />
+      </span>
+      📍 {cityName}
+    </span>
+  )
+}
+
 function DealsProductCard({ product }: { product: Product }) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
@@ -145,6 +170,9 @@ function DealsProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="p_con__image-wrap relative">
+        {/* The heart. An overlay inside the image wrap, so it adds nothing to
+            the card's flow and cannot move a measured element. */}
+        <WishlistHeart productId={product.id} productName={product.name_he} />
         {/* aria-label, not just the img alt: a product with no thumbnail renders
             this link with NO children at all, and an empty link has no
             accessible name. Lighthouse flags exactly one on the homepage today,

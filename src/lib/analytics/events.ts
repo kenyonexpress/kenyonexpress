@@ -11,23 +11,24 @@ export const CLIENT_EVENT_NAMES = [
   'remove_from_cart',
   'checkout_step',
   'web_vital',
-  // A WhatsApp tap is an exit the funnel cannot see otherwise: the shopper
-  // leaves for a chat and any purchase happens off-platform. Counted with the
-  // product when the tap came from a PDP. Lands with migration 151, which is
-  // also what turns the REST of this pipeline on -- fn_ingest_analytics_events
-  // did not exist in production until it, so every event above was silently
-  // failing too.
+  // In the DEPLOYED fn_ingest_analytics_events whitelist (read off production
+  // 2026-09-07), so it belongs in the mirror even though this branch has no
+  // emitter for it yet: a WhatsApp tap is an exit the funnel cannot see
+  // otherwise, and the name must not be reinvented differently when the
+  // button starts reporting.
   'whatsapp_click',
 ] as const
 
 export type ClientEventName = (typeof CLIENT_EVENT_NAMES)[number]
 
 // Emitted server-side only, never accepted from a browser. begin_checkout
-// comes from beginCheckout; the other three are the funnel's money moments
-// (marathon step 14): finalize, the voucher scan, and the admin refund.
-// NOTE: the DB whitelist in fn_ingest_analytics_events must carry the same
-// names -- draft migration 169 widens it (151 shipped with only the client
-// eight, so server events were silently skipped until it applies).
+// comes from beginCheckout; the other three are the funnel's money moments:
+// finalize, the voucher scan, and the admin refund.
+// The DB whitelist in fn_ingest_analytics_events must carry the same names.
+// 180 widened it and IS APPLIED: read off production 2026-09-09, the deployed
+// function accepts all four, and a rolled-back probe took 1 of 1 for each.
+// PostHog receives all four regardless -- the fan-out in track.ts needs no
+// migration.
 export const SERVER_EVENT_NAMES = [
   'begin_checkout',
   'purchase',
@@ -36,7 +37,7 @@ export const SERVER_EVENT_NAMES = [
 ] as const
 export type ServerEventName = (typeof SERVER_EVENT_NAMES)[number]
 
-const CHECKOUT_STEPS = ['identity', 'address', 'payment_redirect'] as const
+export const CHECKOUT_STEPS = ['identity', 'address', 'payment_redirect'] as const
 export type CheckoutStep = (typeof CHECKOUT_STEPS)[number]
 
 export const WEB_VITAL_METRICS = ['LCP', 'CLS', 'INP', 'TTFB', 'FCP'] as const
@@ -44,7 +45,7 @@ export type WebVitalMetric = (typeof WEB_VITAL_METRICS)[number]
 
 // Required props per client event, mirroring the registry seed in migrations
 // 033 and 053. Keep in sync when adding an event.
-const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
+export const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
   page_view: [],
   view_product: ['product_id'],
   view_category: ['category_id'],
@@ -57,7 +58,7 @@ const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
 }
 
 export const MAX_BATCH_SIZE = 20
-const PROPS_MAX_BYTES = 4096
+export const PROPS_MAX_BYTES = 4096
 
 const utmSchema = z
   .object({

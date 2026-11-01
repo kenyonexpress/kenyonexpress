@@ -1,0 +1,7 @@
+M02-c216 Lighthouse /product sample, 2026-10-29: NOT MEASURED, production build fails at HEAD.
+`next build` (Turbopack): (1) ambiguous route /c/[slug] vs /c/[code]; with src/app/c/[code] moved aside temporarily (restored, tree clean): 25 errors:
+ - duplicate definitions: VERIFICATION_AMOUNT_AGOROT, handleSubmit (signup/SignupForm.tsx, signup/page.tsx, checkout/return/page.tsx)
+ - unresolved modules: @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, @pdf-lib/fontkit
+   (lib/storage/r2-service.ts, lib/invoices/pdf.ts, lib/orders/receipt-pdf.ts, server/payments/*, server/actions/*)
+No .next/BUILD_ID, so `next start` impossible. :3841 is a dev server from kenyonexpress-autopilot, not comparable, not used.
+Last valid: c213 380 80 / 768 79 / 1440 99. No code changes; no forbidden files touched.

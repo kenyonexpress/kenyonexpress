@@ -1,0 +1,50 @@
+Design and implement comprehensive RLS policies across all Supabase tables with definer security boundary verification via Supabase MCP testing each policy against attack vectors from authenticated and anonymous roles
+Build automated migration rollback system with point-in-time recovery integration using Supabase MCP to create rehearsal snapshots and verify zero-downtime migration paths before production execution
+Implement composite B-tree indexes on wallet_entries debit_account credit_account created_at and orders user_id status created_at measured via EXPLAIN ANALYZE through Supabase MCP with sub-50ms p99 latency gates
+Create fraud detection engine analyzing velocity patterns across order creation payment retries and wallet withdrawals with real-time blocking rules stored in edge_config and logged to observability pipeline
+Establish Cardcom webhook signature verification with replay attack prevention using nonce tracking in Redis and automatic DLQ routing for failed verification attempts monitored through Sentry
+Build multi-tenant wallet ledger reconciliation cron that compares wallet_accounts balance_ils cache against SUM of wallet_entries and auto-files drift alerts to Linear via GitHub MCP when variance exceeds 1 agora
+Design ISR strategy with on-demand revalidation for product catalog pages using Next.js 16 cacheLife profiles measured against Core Web Vitals targets with Lighthouse CI gates blocking PRs below thresholds
+Implement progressive migration system for pending SQL files with dependency graph validation dry-run verification via Supabase MCP management API and automated rollback on CHECK constraint violations
+Create admin audit trail capturing all product pricing platform_percent and inventory mutations with row-level versioning temporal queries and compliance export endpoints satisfying Israeli data retention laws
+Build Sentry source map upload pipeline integrated into Vercel deployment hooks with release tracking environment tagging and automatic GitHub issue creation for new error fingerprints above volume thresholds
+Design Hebrew full-text search with Meilisearch index pipeline handling RTL tokenization synonym expansion and typo tolerance with sub-100ms p95 query latency measured via monitoring dashboards
+Implement PWA manifest with offline cart persistence using IndexedDB sync queue that reconciles with Supabase on reconnection and handles conflict resolution through last-write-wins with created_at timestamps
+Create GDPR-compliant user deletion workflow that cascades through orders wallet_entries profiles and auth.users while preserving financial audit trail through anonymization and exports zip archive before deletion
+Build cashback accrual engine that posts wallet_entries on order completion calculates tiered percentages from loyalty_tiers and prevents double-crediting through idempotency_key enforcement tested via Supabase MCP
+Design referral tracking system with UTM parameter persistence cookie-to-user attribution on signup and multi-level commission calculation stored in wallet ledger with fraud detection on self-referral patterns
+Implement A/B testing framework using Vercel Edge Config for feature flags with PostHog event tracking cohort analysis and automatic winner selection based on conversion lift statistical significance
+Create recommendation engine analyzing collaborative filtering on order_items building sparse matrices in background workers and serving personalized suggestions via Redis cache with sub-50ms API response time
+Build marketing automation pipeline triggered by Supabase database webhooks for cart abandonment win-back campaigns and post-purchase NPS surveys with Twilio SMS and email rendering using React Email templates
+Design multi-region CDN strategy for product images with R2 origin automatic WebP AVIF conversion via Next.js image optimizer and Cache-Control headers measured through Cloudflare Analytics bandwidth savings
+Implement real-time inventory sync between Supabase products.stock_quantity and order pipeline with optimistic locking preventing oversell and automatic supplier notification when stock drops below reorder threshold
+Create supplier payout automation calculating settlement amounts from order_items.supplier_due_ils aggregating by supplier and settlement period with bank file export format and reconciliation dashboard
+Build comprehensive E2E test suite covering guest-to-authenticated cart merge Cardcom payment webhook idempotency voucher QR generation and refund flows executed in Playwright with visual regression via Percy
+Design schema migration testing pipeline that provisions ephemeral Supabase branches via management API runs pending migrations against production-like data and validates application compatibility before merge
+Implement rate limiting infrastructure using Upstash Redis with tiered limits per endpoint IP-based and user-based tracking and automatic CAPTCHA challenge via Turnstile when velocity thresholds breached
+Create monitoring dashboards aggregating Vercel Web Vitals Sentry error rates Supabase connection pool metrics and Cardcom payment success rates with PagerDuty escalation on SLO violations
+Build disaster recovery runbook with automated backup verification Supabase PITR testing synthetic transaction probes and documented RTO RPO targets with quarterly DR drill execution
+Design Hebrew i18n infrastructure using next-intl with RTL layout utilities server-side message resolution and translation memory integration preventing hardcoded strings through ESLint rules
+Implement voucher lifecycle state machine with QR code generation supplier redemption API rate-limited scanning endpoint preventing double-redemption and expiration handling with customer notification
+Create performance budgeting system measuring JavaScript bundle size per route with automated bundle analysis on PR creation tree-shaking verification and lazy loading gates blocking merges exceeding 200KB baseline
+Build SEO optimization pipeline generating dynamic Open Graph images via Satori structured data schema.org markup for LocalBusiness XML sitemap with priority scoring and automatic Search Console integration
+Design admin dashboard with role-based access control separating super_admin supplier_manager and support_agent permissions enforced through RLS policies and audit logged to compliance table
+Implement idempotent Cardcom integration with token vault PCI-compliant iframe embedding 3DS authentication flow and webhook retry logic handling network failures with exponential backoff to 72-hour DLQ
+Create wallet transaction dispute system allowing users to contest charges with admin review workflow evidence attachment support and automated refund posting on approval logged to financial audit trail
+Build customer support ticket system integrating Linear API via GitHub MCP for issue creation automatic tagging from user context and SLA tracking with escalation rules based on severity and response time
+Design loyalty program with point accrual on purchases tiered membership levels expiration policies and redemption workflow converting points to wallet credits with fraud detection on point farming
+Implement analytics event pipeline capturing funnel stages product views add-to-cart checkout-begin purchase with PostHog batch API compliance consent gating and GDPR export endpoint
+Create supplier onboarding workflow with document upload KYC verification bank account validation and contract e-signature integration with DocuSign API triggering supplier account activation
+Build product catalog import ETL parsing WordPress XML exports mapping legacy IDs deduplicating SKUs validating pricing constraints and staging imports for admin review before production promotion
+Design inventory alert system monitoring stock levels across products triggering supplier notifications via email SMS and webhook with configurable thresholds per product and automatic reorder suggestions
+Implement customer wallet top-up flow with Cardcom payment integration minimum maximum amount validation transaction fee calculation and instant credit posting with SMS confirmation
+Create advanced search filters supporting price range category facets supplier filtering rating sorting and geolocation proximity with Meilisearch faceted search and filter state persistence in URL params
+Build financial reporting dashboard aggregating daily revenue by category supplier payouts outstanding platform fees AR aging and export to Excel CSV with chart visualizations using Recharts
+Design webhook delivery infrastructure for supplier notifications with payload signing retry logic with exponential backoff delivery attempt logging and admin dashboard showing webhook health per supplier
+Implement promotional campaign system with discount codes percentage-based and fixed-amount rules minimum purchase requirements usage limits per customer and automatic expiration with analytics tracking
+Create customer review moderation workflow with spam detection sentiment analysis Hebrew profanity filtering admin approval queue and supplier response capability with notification triggers
+Build infrastructure cost monitoring aggregating Vercel bandwidth Supabase compute Upstash requests R2 storage with budget alerts forecasting overruns and automated resource scaling recommendations
+Design compliance audit system logging all financial transactions user data access admin actions with tamper-evident checksums retention policies and automated report generation for regulatory review
+Implement geofencing for location-based deals using customer coordinates matched against supplier lat lng radius with privacy controls opt-in consent and cache invalidation on position change
+Create supplier analytics dashboard showing sales trends top products customer demographics conversion funnels with downloadable reports and API access for third-party BI tool integration
+Build automated security scanning pipeline with Snyk dependency audits Semgrep SAST rules secrets detection via GitGuardian and DAST probes against staging with GitHub MCP issue creation on findings

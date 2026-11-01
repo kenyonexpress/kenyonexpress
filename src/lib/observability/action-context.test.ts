@@ -17,7 +17,11 @@ import { getRequestContext } from './request-context'
  * helper never reaches the caller.
  */
 
-const headerStore = { value: null as string | null, outsideRequest: false }
+const headerStore = {
+  value: null as string | null,
+  cookie: null as string | null,
+  outsideRequest: false,
+}
 
 vi.mock('next/headers', () => ({
   headers: async () => {
@@ -27,16 +31,35 @@ vi.mock('next/headers', () => ({
     }
     const headers = new Headers()
     if (headerStore.value !== null) headers.set('x-request-id', headerStore.value)
+    if (headerStore.cookie !== null) headers.set('cookie', headerStore.cookie)
     return headers
   },
 }))
+
+// Only what action-context reaches for. The real module would accept the call
+// and write to a scope nobody reads in a test; the spy is what lets the
+// assertions below say WHAT was tagged, not just that nothing threw.
+const setUser = vi.hoisted(() => vi.fn())
+vi.mock('@sentry/nextjs', () => ({
+  setUser: (...args: unknown[]) => setUser(...args),
+}))
+
+/** A Supabase auth cookie whose JWT carries the given sub. */
+function authCookie(sub: string): string {
+  const enc = (obj: Record<string, unknown>) =>
+    Buffer.from(JSON.stringify(obj)).toString('base64url')
+  const jwt = `${enc({ alg: 'none' })}.${enc({ sub })}.sig`
+  return `sb-testref-auth-token=${encodeURIComponent(JSON.stringify({ access_token: jwt }))}`
+}
 
 describe('withActionContext', () => {
   let error: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     headerStore.value = null
+    headerStore.cookie = null
     headerStore.outsideRequest = false
+    setUser.mockReset()
     error = vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -139,6 +162,35 @@ describe('withActionContext', () => {
     // No id rather than a wrong one, which is the same answer getRequestId
     // gives outside a request.
     expect(seen.context).toBeUndefined()
+  })
+
+  it('tags the Sentry user with the cookie sub and nothing else', async () => {
+    headerStore.cookie = `theme=dark; ${authCookie('7f9c2f7e-3a41-4b6e-9d10-2f8a54c1e9ab')}`
+
+    await withActionContext('order.refund', async () => null)
+
+    expect(setUser).toHaveBeenCalledTimes(1)
+    // Exactly { id }: no email, no ip, nothing else off the session.
+    expect(setUser).toHaveBeenCalledWith({ id: '7f9c2f7e-3a41-4b6e-9d10-2f8a54c1e9ab' })
+  })
+
+  it('leaves the Sentry user unset for an anonymous request', async () => {
+    headerStore.cookie = 'theme=dark; cart=abc'
+
+    await withActionContext('cart.add', async () => null)
+
+    expect(setUser).not.toHaveBeenCalled()
+  })
+
+  it('runs the action even when tagging itself throws', async () => {
+    headerStore.cookie = authCookie('7f9c2f7e-3a41-4b6e-9d10-2f8a54c1e9ab')
+    setUser.mockImplementation(() => {
+      throw new Error('no client initialised')
+    })
+
+    const result = await withActionContext('order.refund', async () => ({ ok: true as const }))
+
+    expect(result).toEqual({ ok: true })
   })
 
   it('keeps two overlapping actions apart', async () => {

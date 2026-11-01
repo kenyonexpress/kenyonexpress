@@ -4,8 +4,13 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
-import { type ProductTypeFilter, parseProductType } from '@/lib/category-page'
-import { searchProductsCached } from '@/lib/search-server'
+import SearchFacetNav from '@/components/search/SearchFacetNav'
+import SearchSortNav from '@/components/search/SearchSortNav'
+import { parseProductType } from '@/lib/category-page'
+import { loadFacetContext } from '@/lib/search/facet-labels'
+import { hasActiveFacets, toFacetSearchParams } from '@/lib/search/facet-links'
+import { parseFacetedParams } from '@/lib/search/faceted'
+import { type FacetHit, facetedSearchCached } from '@/lib/search/faceted-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
 import { createClient } from '@/lib/supabase/server'
 import { SITE } from '@/styles/tokens'
@@ -46,9 +51,19 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   }
 }
 
-/** Count and grid share one search call via searchProductsCached. */
-async function ResultCount({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
-  const { total, engine } = await searchProductsCached(q, 48, productType)
+/**
+ * ONE SEARCH, THREE CONSUMERS. The count, the grid and the facet navigation
+ * each await `facetedSearchCached` with the page's own params; React's
+ * request cache runs it once. The engine is the faceted one
+ * (lib/search/faceted-server.ts, the same code behind /api/search/facets),
+ * so a count in the navigation is exactly the count the grid shows after
+ * the click, and the page and the API cannot disagree about a URL.
+ */
+async function ResultCount({ params }: { params: URLSearchParams }) {
+  const outcome = await facetedSearchCached(params)
+  const q = params.get('q') ?? ''
+  const total = 'error' in outcome ? 0 : outcome.total
+  const engine = 'error' in outcome ? null : outcome.engine
 
   // Recorded HERE, on the results page, and never in the type-ahead route: the
   // suggest endpoint fires on every keystroke, so recording there would fill
@@ -59,9 +74,18 @@ async function ResultCount({ q, productType }: { q: string; productType?: Produc
   //
   // Awaited rather than fired and forgotten: a serverless invocation can be
   // frozen the moment its response is returned. Neither call can throw.
-  await recordSearchTerm(q, total)
-  await recordRecentSearch(await createClient(), q)
+  //
+  // Recorded for the QUERY, not for the narrowed view: a shopper who typed
+  // ספא and then clicked a city facet down to zero results has not told us
+  // the catalogue lacks spas. Only the un-narrowed search is the signal the
+  // admin's empty-results list exists to collect.
+  const parsed = parseFacetedParams(params)
+  if (!parsed.ok || !hasActiveFacets(parsed.params)) {
+    await recordSearchTerm(q, total)
+    await recordRecentSearch(await createClient(), q)
+  }
 
+  const productType = parseProductType(params.get('type') ?? undefined)
   const filterLabel =
     productType === 'coupon' ? 'קופונים' : productType === 'physical' ? 'מוצרים פיזיים' : null
 
@@ -80,8 +104,27 @@ async function ResultCount({ q, productType }: { q: string; productType?: Produc
   )
 }
 
-async function ResultGrid({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
-  const { results } = await searchProductsCached(q, 48, productType)
+/** A hit as the listing card wants it. The card owns the gallery shape. */
+function toCard(hit: FacetHit): CategoryProduct {
+  return {
+    id: hit.id,
+    slug: hit.slug,
+    name_he: hit.name_he,
+    kenyon_price: hit.kenyon_price,
+    full_price: hit.full_price,
+    images: hit.images,
+    stock_quantity: hit.stock_quantity,
+    categories:
+      hit.category && hit.category_slug ? [{ name_he: hit.category, slug: hit.category_slug }] : [],
+  }
+}
+
+async function ResultGrid({ params }: { params: URLSearchParams }) {
+  const outcome = await facetedSearchCached(params)
+  const q = params.get('q') ?? ''
+  const results = 'error' in outcome ? [] : outcome.results
+  const parsed = parseFacetedParams(params)
+  const narrowed = parsed.ok && hasActiveFacets(parsed.params)
 
   if (results.length === 0) {
     return (
@@ -107,20 +150,25 @@ async function ResultGrid({ q, productType }: { q: string; productType?: Product
 
   return (
     <ul className="category-products">
-      {results.map((product) => (
-        <li key={product.id} className="category-products__item">
-          <CategoryProductCard
-            product={
-              {
-                ...product,
-                categories: product.category ? [product.category] : [],
-              } as unknown as CategoryProduct
-            }
-          />
+      {results.map((hit) => (
+        <li key={hit.id} className="category-products__item">
+          <CategoryProductCard product={toCard(hit)} />
         </li>
       ))}
     </ul>
   )
+}
+
+/**
+ * The facet navigation, from the same search. Renders nothing for a query
+ * too short to run and nothing when the engine found no facets at all, so
+ * an empty catalogue does not draw an empty sidebar.
+ */
+async function ResultFacets({ params }: { params: URLSearchParams }) {
+  const outcome = await facetedSearchCached(params)
+  if ('error' in outcome) return null
+  const context = await loadFacetContext(outcome.facets, params)
+  return <SearchFacetNav facets={outcome.facets} current={params} context={context} />
 }
 
 /**
@@ -190,6 +238,7 @@ function SearchPageFallback() {
           {/* The count's box too, so the shell is the same height as the page
               that replaces it. */}
           <div className="category-page__count category-page__count--pending" aria-hidden="true" />
+          <SearchSortNav current={new URLSearchParams()} pending />
         </header>
         <div className="category-page__body">
           <div className="category-page__main category-page__main--search">
@@ -215,6 +264,10 @@ async function SearchPageBody({ searchParams }: Props) {
   const sp = await searchParams
   const q = firstStr(sp.q).trim()
   const productType = parseProductType(sp.type)
+  // The engine's view of the URL: query, facets, sort, and the sidebar's
+  // price bounds under the facet API's names.
+  const params = toFacetSearchParams(sp)
+  const canSearch = q.length >= MIN_QUERY
 
   return (
     <div className="category-page">
@@ -230,29 +283,42 @@ async function SearchPageBody({ searchParams }: Props) {
               header then pushes the entire page down - measured on
               /search?q=barbecue as two shifts, both attributed to the footer,
               CLS 0.401. The placeholder is the same box, held open. */}
-          {q.length >= MIN_QUERY && (
+          {canSearch && (
             <Suspense
               fallback={
                 <div className="category-page__count category-page__count--pending" aria-hidden />
               }
             >
-              <ResultCount q={q} productType={productType} />
+              <ResultCount params={params} />
             </Suspense>
           )}
+          {/* From the URL alone, so outside the boundary. Without a query
+              there is nothing to order and the line is only held open. */}
+          <SearchSortNav current={params} pending={!canSearch} />
         </header>
 
         <div className="category-page__body">
           <div className="category-page__main category-page__main--search">
-            {q.length < MIN_QUERY ? (
+            {!canSearch ? (
               <div className="category-page__empty">
                 <p>הקלידו לפחות {MIN_QUERY} תווים כדי לחפש.</p>
               </div>
             ) : (
               <Suspense fallback={<CategoryGridSkeleton count={SEARCH_SKELETON_CARDS} />}>
-                <ResultGrid q={q} productType={productType} />
+                <ResultGrid params={params} />
               </Suspense>
             )}
           </div>
+
+          {/* Below the grid, like the sidebar: `.category-page__body` is
+              display: block, and the CLS note above explains why nothing may
+              sit beside the grid. No fallback: the nav has no fixed height
+              and streams in under the sidebar's border, off screen. */}
+          {canSearch && (
+            <Suspense fallback={null}>
+              <ResultFacets params={params} />
+            </Suspense>
+          )}
 
           <CategoryFilterSidebar
             priceMin={undefined}

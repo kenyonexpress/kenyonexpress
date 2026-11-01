@@ -1,7 +1,9 @@
 import {
+  SCAN_FORMATS,
   buildRedeemUrl,
   normalizeScannedCode,
   parseScanInput,
+  pickScanFormats,
   tokenFromRedeemUrl,
 } from '@/lib/vouchers/scan-input'
 import { describe, expect, it } from 'vitest'
@@ -110,5 +112,30 @@ describe('buildRedeemUrl', () => {
 describe('normalizeScannedCode', () => {
   it('strips separators and upper-cases', () => {
     expect(normalizeScannedCode('ab-cd ef')).toBe('ABCDEF')
+  })
+})
+
+describe('pickScanFormats', () => {
+  it('keeps only the wanted formats the device supports, QR first', () => {
+    expect(pickScanFormats(['ean_13', 'qr_code', 'aztec', 'code_128'])).toEqual([
+      'qr_code',
+      'code_128',
+      'ean_13',
+    ])
+  })
+
+  it('falls back to QR alone when support cannot be read', () => {
+    expect(pickScanFormats(null)).toEqual(['qr_code'])
+    expect(pickScanFormats(undefined)).toEqual(['qr_code'])
+    expect(pickScanFormats([])).toEqual(['qr_code'])
+  })
+
+  it('always asks for QR, even when the device did not list it', () => {
+    expect(pickScanFormats(['code_128'])).toEqual(['qr_code', 'code_128'])
+  })
+
+  it('never returns a format outside the wanted list', () => {
+    const picked = pickScanFormats(['pdf417', 'data_matrix', 'qr_code', 'itf'])
+    for (const format of picked) expect(SCAN_FORMATS).toContain(format)
   })
 })

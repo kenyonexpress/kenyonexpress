@@ -1,7 +1,16 @@
--- 171: the shekel sign in a category name renders on the wrong side.
+-- 187: the shekel sign in a category name renders on the wrong side.
 --
--- NOT APPLIED. Drafted 2026-09-04, awaiting approval like every other file in
--- this directory. Rollback is at the foot.
+-- RENUMBERED 171 -> 187 on 2026-09-09. Production had already used
+-- 171 for a different migration (see migrations/applied/), so the number
+-- is burned and this unapplied file had to move rather than the applied one.
+-- The measurement that established it is in migrations/pending/APPLY-ORDER.md.
+--
+-- APPLIED 2026-09-09 via MCP as `category_name_shekel_order_187`. Rollback is
+-- at the foot. Production held the broken string right up to the write
+-- (codepoints 1506,1491,32,8362,57,57 -- sign before digits, no isolate) and
+-- holds 1506,1491,32,8294,57,57,160,8362,8297 after it, which is exactly what
+-- `isolate()` in src/lib/money-format.ts emits. No other categories row still
+-- matches the broken shape.
 --
 -- WHAT IS WRONG. `categories.name_he` for the `under-99` department reads
 -- `עד ₪99`. In an RTL document the shekel glyph is bidi class ET, and a run of

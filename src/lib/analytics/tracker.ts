@@ -20,7 +20,7 @@ import {
 import { EventQueue, FLUSH_INTERVAL_MS, type SendResult } from '@/lib/analytics/queue'
 import { type AnalyticsSession, touchSession } from '@/lib/analytics/session'
 
-const INGEST_PATH = '/api/a'
+export const INGEST_PATH = '/api/a'
 
 function readCookie(name: string): string | null {
   if (typeof document === 'undefined') return null

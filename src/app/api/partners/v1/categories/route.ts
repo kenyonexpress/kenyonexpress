@@ -1,3 +1,4 @@
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
 // Partner API: Read-only categories endpoint
 
 import { log } from '@/lib/observability/log'
@@ -94,4 +95,7 @@ async function handleGET(req: NextRequest) {
   }
 }
 
-export const GET = withRequestLog('/api/partners/v1/categories', handleGET)
+export const GET = withCacheControl(
+  CacheControl.private,
+  withRequestLog('/api/partners/v1/categories', handleGET),
+)

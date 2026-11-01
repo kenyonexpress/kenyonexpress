@@ -136,6 +136,23 @@ in the meantime. Turning `CRON_SCHEDULER_ENABLED` off is the whole rollback, and
 it has to happen the day the other scheduler is set up: two schedulers means
 every job runs twice.
 
+## `db-backup.yml`, `db-restore-drill.yml`, `backup-health.yml`
+
+The Postgres DR pipeline, documented in `docs/DB-RESTORE-RUNBOOK.md`.
+`db-backup.yml` (03:00 UTC daily) dumps the hosted Supabase project to R2
+with a 30-day retention window and a floor of seven dumps;
+`db-restore-drill.yml` (2nd day of each quarter) restores the newest dump
+into a scratch Postgres 17 and gates on `scripts/dr/verify-restore.sql`.
+Both are gated on the `DB_BACKUP_ENABLED` variable and **skip** while it is
+absent, which has been the case on every scheduled run to date.
+
+`backup-health.yml` (06:30 UTC daily, STEP 38) exists because a skipped run
+is green. It reads the other two workflows' run history with the runner's own
+`GITHUB_TOKEN`, optionally the Supabase platform backups and PITR flag
+(`SUPABASE_ACCESS_TOKEN`) and the R2 bucket (`BACKUP_R2_*`), and pages
+`ntfy.sh/$CRON_NTFY_TOPIC` daily on any FAIL plus a Monday heartbeat. It is
+not gated on anything, on purpose.
+
 ## `commit-monitor.yml`
 
 Half-hourly `git log --oneline -3` to the project's ntfy topic, so progress is

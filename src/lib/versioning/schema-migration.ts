@@ -19,9 +19,9 @@
 
 import { MIGRATION_MANIFEST, type MigrationEntry } from '@/lib/admin/migration-manifest'
 
-type BlockReason = 'cancelled' | 'missing-preflight' | 'awaiting-approval'
+export type BlockReason = 'cancelled' | 'missing-preflight' | 'awaiting-approval'
 
-interface MigrationBlocker {
+export interface MigrationBlocker {
   number: string
   file: string
   reason: BlockReason

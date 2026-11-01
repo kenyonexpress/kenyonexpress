@@ -1,11 +1,12 @@
 'use client'
 
 import { type AltSubjectKind, suggestAltHe } from '@/lib/images/alt-text'
-import { isValidHebrewAlt, validateImageFile } from '@/lib/images/validate'
+import { compressImageFile, validateStagedFile } from '@/lib/images/client-compress'
+import { MAX_ORIGINAL_BYTES, isValidHebrewAlt } from '@/lib/images/validate'
 import { processAndUploadImage } from '@/server/actions/admin/images'
 import { ImagePlus, Trash2, Upload } from 'lucide-react'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
+import { type DragEvent, useRef, useState } from 'react'
 
 interface Props {
   /** Supabase fallback bucket (R2 is preferred when configured server-side). */
@@ -48,8 +49,12 @@ export default function ImageUploader({
 }: Props) {
   const [staged, setStaged] = useState<StagedFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  // Counter, not boolean: dragging over the dropzone's children fires
+  // enter/leave pairs, and a boolean flickers off between them.
+  const dragDepth = useRef(0)
 
   function stageFiles(files: FileList) {
     setError(null)
@@ -65,7 +70,7 @@ export default function ImageUploader({
     const alreadyHave = value.length + staged.length
     const total = alreadyHave + incoming.length
     for (const [offset, file] of incoming.entries()) {
-      const err = validateImageFile(file)
+      const err = validateStagedFile(file)
       if (err) {
         setError(err)
         return
@@ -100,6 +105,27 @@ export default function ImageUploader({
   }
 
   const allAltsValid = staged.length > 0 && staged.every((s) => isValidHebrewAlt(s.alt))
+  const canAcceptMore = value.length + staged.length < maxFiles && !uploading
+
+  function onDragEnter(e: DragEvent) {
+    e.preventDefault()
+    dragDepth.current += 1
+    if (canAcceptMore) setIsDragging(true)
+  }
+
+  function onDragLeave(e: DragEvent) {
+    e.preventDefault()
+    dragDepth.current = Math.max(0, dragDepth.current - 1)
+    if (dragDepth.current === 0) setIsDragging(false)
+  }
+
+  function onDrop(e: DragEvent) {
+    e.preventDefault()
+    dragDepth.current = 0
+    setIsDragging(false)
+    if (!canAcceptMore) return
+    if (e.dataTransfer.files.length > 0) stageFiles(e.dataTransfer.files)
+  }
 
   async function uploadStaged() {
     if (!allAltsValid) return
@@ -108,8 +134,14 @@ export default function ImageUploader({
     try {
       const urls: string[] = []
       for (const s of staged) {
+        // Downscale + re-encode in the browser so only ~hundreds of KB travel;
+        // falls back to the original bytes when the browser cannot compress.
+        const file = await compressImageFile(s.file)
+        if (file.size > MAX_ORIGINAL_BYTES) {
+          throw new Error(`"${s.file.name}" גדול מדי גם לאחר דחיסה (מקסימום 8MB)`)
+        }
         const formData = new FormData()
-        formData.set('file', s.file)
+        formData.set('file', file)
         formData.set('alt_he', s.alt.trim())
         formData.set('folder', folder)
         formData.set('bucket', bucket)
@@ -208,11 +240,25 @@ export default function ImageUploader({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
+          onDragEnter={onDragEnter}
+          onDragOver={(e) => e.preventDefault()}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
           disabled={uploading}
-          className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-brand hover:text-brand transition-colors disabled:opacity-60"
+          aria-label="גרירת תמונות לכאן או לחיצה לבחירה"
+          className={`flex w-full flex-col items-center gap-1.5 px-4 py-6 border-2 border-dashed rounded-lg text-sm transition-colors disabled:opacity-60 ${
+            isDragging
+              ? 'border-brand bg-brand/5 text-brand'
+              : 'border-gray-300 text-gray-500 hover:border-brand hover:text-brand'
+          }`}
         >
-          <ImagePlus size={16} />
-          בחירת תמונות
+          <ImagePlus size={20} />
+          <span className="font-medium">
+            {isDragging ? 'שחררו כדי להוסיף את התמונות' : 'גרירת תמונות לכאן או לחיצה לבחירה'}
+          </span>
+          <span className="text-xs text-gray-400">
+            JPG, PNG, WebP עד 25MB - התמונות נדחסות אוטומטית לפני ההעלאה
+          </span>
         </button>
       )}
 

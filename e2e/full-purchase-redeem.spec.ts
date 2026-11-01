@@ -20,8 +20,17 @@ import {
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
- * guest cart → login at pay (Google button present; email used in CI) →
- * mock hosted page return → coupon issued with QR → supplier scan redeem.
+ * guest cart → guest checkout form → sign-in on the pay leg (email in CI;
+ * the Google hop uses the same /auth/callback mergeGuestCart path) →
+ * mock hosted page → finalize → coupon with QR → supplier scan redeem.
+ *
+ * REWRITTEN 2026-09-16 for the guest-at-pay gate. This spec used to pin the
+ * OLD shape — an anonymous /checkout bouncing to /login — and had been red
+ * since the checkout became guest-fillable with sign-in demanded on the pay
+ * press (see src/app/(store)/checkout/page.tsx and checkout.spec.ts, which
+ * pins the gate itself). CI cannot complete the real Google OAuth hop, so
+ * the paid leg signs in with the seeded email user before paying; the
+ * guest-notice assertion below is what keeps the Google-at-pay design pinned.
  *
  * Requires:
  *   - scripts/seed-test-data.mjs (products + customer + supplier member)
@@ -30,6 +39,48 @@ import {
  * Skip with E2E_PAID_FLOW=0 when the shared DB cannot host fixtures.
  */
 
+/** Walk the stepped checkout form from wherever it starts to the confirm step.
+ * A returning customer with a saved address starts past the steps they have
+ * answered, so each leg is conditional on its fields being on screen. */
+async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page): Promise<void> {
+  // Field ids rather than labels: the footer newsletter box also answers to
+  // "כתובת אימייל", so labels are ambiguous the moment the footer renders.
+  // Step 1: personal details.
+  if (
+    await page
+      .locator('#co-first-name')
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await page.locator('#co-first-name').fill('בדיקה')
+    await page.locator('#co-last-name').fill('אוטומטית')
+    await page.locator('#co-phone').fill('0501234567')
+    await page.locator('#co-email').fill(E2E_CUSTOMER_EMAIL)
+    await page.getByRole('button', { name: 'המשך', exact: true }).click()
+  }
+
+  // Step 2: address (required even for coupon-only carts).
+  if (
+    await page
+      .locator('#co-city')
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await page.locator('#co-city').fill('תל אביב')
+    await page.locator('#co-street').fill('הרצל')
+    await page.locator('#co-number').fill('1')
+    await page.getByRole('button', { name: 'המשך', exact: true }).click()
+  }
+
+  // Step 3: review asks nothing; move on to the confirm step.
+  const toConfirm = page.getByRole('button', { name: 'המשך לאישור' })
+  if (await toConfirm.isVisible().catch(() => false)) {
+    await toConfirm.click()
+  }
+
+  await expect(page.locator('input[name="accept_terms"]')).toBeVisible()
+}
+
 test.describe('full purchase to redeem @checkout @redeem @money', () => {
   test.describe.configure({ timeout: 150_000 })
 
@@ -37,7 +88,7 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
   })
 
-  test('guest coupon cart → auth gate with Google → mock pay → voucher → supplier redeem', async ({
+  test('guest coupon cart → guest checkout → email sign-in at pay → mock pay → voucher → supplier redeem', async ({
     browser,
   }) => {
     const customer = await newFixtureContext(browser)
@@ -46,6 +97,7 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
     await expectHebrewRtl(page)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
+    await addOpenProductToCart(page)
 
     const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
     const buyable = await buy.isVisible().catch(() => false)
@@ -101,11 +153,11 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
       timeout: PAY_RETURN_TIMEOUT,
     })
-    await expect(page.getByTestId('coupon-code').first()).toBeVisible()
-    await expect(page.getByTestId('coupon-qr').first()).toBeVisible()
+    await expect(page.locator('.coupon-card__code').first()).toBeVisible()
+    await expect(page.locator('.coupon-card__qr img').first()).toBeVisible()
     await expectHebrewRtl(page)
 
-    const codeText = (await page.getByTestId('coupon-code').first().textContent()) ?? ''
+    const codeText = (await page.locator('.coupon-card__code').first().textContent()) ?? ''
     const voucherCode = codeText.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
     expect(voucherCode.length).toBe(10)
 
@@ -143,7 +195,7 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await supplier.close()
   })
 
-  test('Google button is the primary CTA on the pay gate (no silent email-only)', async ({
+  test('the identity ask sits on the pay leg: guest reaches the form, Google leads on /login', async ({
     page,
   }) => {
     await clearBrowserSession(page)
@@ -154,7 +206,6 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/)
     const google = page.getByRole('button', { name: /כניסה עם Google/ })
     await expect(google).toBeVisible()
-    // Google is above the email form divider.
     const googleBox = await google.boundingBox()
     const emailBox = await page.getByRole('textbox', { name: 'אימייל', exact: true }).boundingBox()
     expect(googleBox && emailBox && googleBox.y < emailBox.y).toBeTruthy()

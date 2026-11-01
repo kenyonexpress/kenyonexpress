@@ -175,7 +175,7 @@ export const WALLET_AMOUNT_CANDIDATES: readonly ColumnCandidate<number>[] = [
  * `balance_agorot`. `fn_wallet_transfer` in production reads and writes
  * `balance_ils`, so that is the live truth there.
  */
-const WALLET_BALANCE_CANDIDATES: readonly ColumnCandidate<number>[] = [
+export const WALLET_BALANCE_CANDIDATES: readonly ColumnCandidate<number>[] = [
   { column: 'balance_agorot', toCanonical: (v) => (v == null ? null : Math.round(Number(v))) },
   { column: 'balance_ils', toCanonical: (v) => (v == null ? null : Math.round(Number(v) * 100)) },
 ]
@@ -236,7 +236,7 @@ export type Coupon054Row = {
  * in each direction, each time as the fix for the other. Probing instead of
  * guessing is what stops the third time.
  */
-const STICKER_PRICE_CANDIDATES = [
+export const STICKER_PRICE_CANDIDATES = [
   { column: 'price_ils', toIls: (v: number) => v },
   { column: 'price_agorot', toIls: (v: number) => v / 100 },
 ] as const

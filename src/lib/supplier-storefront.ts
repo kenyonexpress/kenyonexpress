@@ -1,6 +1,6 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
 
@@ -55,7 +55,7 @@ export async function loadSupplierStorefront(id: string): Promise<SupplierStoref
   cacheTag(CATALOGUE_TAG)
   if (!isSupplierId(id)) return null
 
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const row = orFail(
     await supabase
       .from('suppliers')
@@ -87,7 +87,7 @@ export async function loadSupplierStorefrontProducts(
 
   const safePage = Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1
   const from = (safePage - 1) * SUPPLIER_PAGE_SIZE
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const { data, count } = orFailWithCount(
     await supabase
       .from('products')
@@ -116,7 +116,7 @@ export async function listSupplierIdsForPrerender(): Promise<string[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const rows = orFail(
     await supabase
       .from('suppliers')

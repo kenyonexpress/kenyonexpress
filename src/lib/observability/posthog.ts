@@ -120,6 +120,46 @@ export function isPostHogEnabled(): boolean {
 }
 
 /**
+ * The id this browser's events are keyed on, for the ONE caller that must not
+ * invent its own: the session-replay loader bootstraps posthog-js with it, so
+ * a recording and the fetch-path events land on the same person. Server-side
+ * it degrades to the per-process id, which no caller should want -- replay is
+ * browser-only by nature.
+ */
+export function currentDistinctId(): string {
+  return distinctId()
+}
+
+/**
+ * The replay loader parks the initialised posthog-js client here. Typed
+ * structurally rather than importing the SDK's types: this module must stay
+ * importable from every runtime, and the SDK is a lazy, browser-only guest.
+ */
+type PostHogGlobal = { capture: (event: string, properties?: Record<string, unknown>) => void }
+
+function sdkClient(): PostHogGlobal | null {
+  if (typeof window === 'undefined') return null
+  const candidate = (window as unknown as { __ke_posthog?: PostHogGlobal }).__ke_posthog
+  return candidate && typeof candidate.capture === 'function' ? candidate : null
+}
+
+/**
+ * With no SDK there is no client object to construct, so init only warms the
+ * distinct id (creating and persisting it in the browser before the first
+ * event). Idempotent, synchronous, no network. Kept as the explicit entry
+ * point so call sites read the same as initSentry and so a future move to a
+ * real SDK changes this file only.
+ */
+export function initPostHog(): void {
+  if (!KEY) return
+  try {
+    distinctId()
+  } catch {
+    // Best effort by definition.
+  }
+}
+
+/**
  * Property values are restricted to scalars on purpose: it makes accidentally
  * attaching a whole order, profile or request object a type error instead of a
  * PII leak discovered in the PostHog UI.
@@ -132,6 +172,15 @@ export type TrackOptions = {
    * there is no browser identity to fall back on.
    */
   distinctId?: string
+  /**
+   * Person properties to write alongside the event, sent as PostHog's `$set`.
+   * Scalars only, same reasoning as EventProperties: person properties are
+   * what cohorts filter on, and an object here would be a PII leak with a
+   * longer shelf life than any single event. Keys should come from a named
+   * constant (see lib/analytics/cashback-tier.ts) so the writer and the
+   * cohort definition cannot drift apart.
+   */
+  set?: EventProperties
 }
 
 /**
@@ -149,11 +198,26 @@ export function trackEvent(
 ): void {
   if (!KEY) return
   try {
+    // When the session-replay loader has mounted posthog-js, route through it:
+    // the SDK stamps $session_id, which is what makes an event click through
+    // to the exact moment in a recording. The fetch path below cannot know it.
+    // The SDK was bootstrapped with this module's distinct id, so the identity
+    // is the same either way, and an explicit distinctId override still means
+    // "not this browser's id", which only server callers pass -- the SDK never
+    // sees those because there is no window there.
+    // `$set` travels inside properties on both paths; the capture endpoint and
+    // posthog-js both peel it off there and write the person, not the event.
+    const withSet = options.set ? { ...properties, $set: options.set } : properties
+    const sdk = sdkClient()
+    if (sdk && options.distinctId === undefined) {
+      sdk.capture(event, { ...withSet, $lib: 'kenyonexpress-fetch' })
+      return
+    }
     const body = JSON.stringify({
       api_key: KEY,
       event,
       distinct_id: options.distinctId ?? distinctId(),
-      properties: { ...properties, $lib: 'kenyonexpress-fetch' },
+      properties: { ...withSet, $lib: 'kenyonexpress-fetch' },
       timestamp: new Date().toISOString(),
     })
     void fetch(`${HOST}/capture/`, {

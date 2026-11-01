@@ -1,0 +1,6 @@
+# M08-c201 Lighthouse mobile sample 2026-10-25T19:54:18Z (local server :3000, simulate throttling, 2 runs/page)
+http://localhost:3000/ performance=81 accessibility=100 best-practices=96 seo=100 LCP=4.6 s TBT=0 ms CLS=0.006
+http://localhost:3000/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90 performance=86 accessibility=100 best-practices=96 seo=100 LCP=4.1 s TBT=0 ms CLS=0.000
+http://localhost:3000/ performance=83 accessibility=100 best-practices=96 seo=100 LCP=4.4 s TBT=0 ms CLS=0.003
+http://localhost:3000/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90 performance=87 accessibility=100 best-practices=96 seo=100 LCP=3.9 s TBT=0 ms CLS=0.000
+Note: G23 target 95+ not met (home 81-83, product 86-87). LCP-bound (3.9-4.6 s simulated); slightly below c200 (home 87-90). Sample-only item, no code changes.

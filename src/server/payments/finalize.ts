@@ -1,3 +1,4 @@
+import { createSubscriptionsForOrder, type RecurringProductBilling, type SubscriptionAdmin, planSubscriptions } from '@/server/payments/subscription-create'
 import { sendServerPurchase } from '@/lib/analytics/server-events'
 import { orFail } from '@/lib/catalogue-read'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
@@ -7,7 +8,6 @@ import {
   orderCashbackSelect,
   orderItemPriceSelect,
   readOrderCashbackAgorot,
-  resolveOrderGeneration,
   resolveOrderItemGeneration,
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
@@ -21,7 +21,13 @@ import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { trackServerEvent } from '@/server/analytics/track'
+import { awardOrderCountBonus } from '@/server/cashback/bonus'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import {
+  issueGiftCardsForItem,
+  readGiftCardProductIds,
+  readGiftCardRecipient,
+} from '@/server/payments/gift-card-issue'
 import { readGiftIntent, sendOrderGifts } from '@/server/payments/gift-vouchers'
 import { enqueueOrderInvoice, issueQueuedInvoice } from '@/server/payments/invoices'
 import {
@@ -29,12 +35,6 @@ import {
   buildChargeSettledEvents,
   recordSettlementEvents,
 } from '@/server/payments/settlement-events'
-import {
-  type RecurringProductBilling,
-  type SubscriptionAdmin,
-  createSubscriptionsForOrder,
-  planSubscriptions,
-} from '@/server/payments/subscription-create'
 import { sendVoucherEmail } from '@/server/payments/voucher-email'
 import { completeReferralForOrder } from '@/server/referrals/complete'
 import type { Json } from '@/types/database'
@@ -210,6 +210,8 @@ async function reportPurchase(
     const productIds = [...new Set(items.map((i) => i.product_id).filter((v): v is string => !!v))]
     const names = new Map<string, string>()
     if (productIds.length > 0) {
+      // No deleted_at filter, on purpose: a paid order is fulfilled even if the
+      // product was soft-deleted since checkout. See src/lib/soft-delete.ts.
       const { data: products } = await admin
         .from('products')
         .select('id, name_he')
@@ -422,24 +424,24 @@ export async function finalizeOrder(input: {
     // and sent whoever answered the page hunting a missing row instead of a
     // database that stopped answering. The dead-letter replay is identical
     // either way; only the diagnosis changes, and only it was wrong.
-    // The wallet column is `cashback_applied_agorot` post-059 and
-    // `cashback_applied_ils` on the hosted pre-059 schema; naming the wrong
-    // one is 42703 and fails the WHOLE select, aborting a finalize for a card
-    // that has already been charged. Same trap `resolvePaymentMoneySchema`
-    // already guards on `payments`, now guarded here too.
-    const orderGeneration = await resolveOrderGeneration(moneyColumnProbe(admin, 'orders'))
+    // `cashback_applied_agorot` answers on both schema generations since 224:
+    // it is the writable post-059 column there, and a GENERATED agorot twin of
+    // `cashback_applied_ils` on the hosted pre-059 schema. Before 224 naming
+    // it there was 42703 and failed the WHOLE select, aborting a finalize for
+    // a card that had already been charged, so this read went through a
+    // per-generation probe; the column's existence retired the probe.
     const orderRow = orFail(
       await admin
         .from('orders')
-        .select(`id, user_id, status, paid_at, ${orderCashbackSelect(orderGeneration)}`)
+        .select(`id, user_id, status, paid_at, ${orderCashbackSelect()}`)
         .eq('id', input.orderId)
         .maybeSingle(),
       'finalize.order_read_failed',
       { orderId: input.orderId },
     )
     // The dynamic select string defeats supabase-js's row inference; the four
-    // fixed fields are what the code below reads, and the generation-specific
-    // cashback column goes through readOrderCashbackAgorot, which knows both.
+    // fixed fields are what the code below reads, and the cashback column
+    // goes through readOrderCashbackAgorot.
     const order = orderRow as unknown as
       | (Record<string, unknown> & {
           id: string
@@ -458,10 +460,11 @@ export async function finalizeOrder(input: {
       }
     }
 
-    // `unit_price_agorot` is a post-059 name; the hosted project calls the
-    // same integer-agorot number `unit_price_ils_agorot` (a generated column),
-    // and the fragment aliases it back so the row shape below is identical on
-    // both generations.
+    // `unit_price_agorot` exists on both generations since 224 (a GENERATED
+    // twin of `unit_price_ils` on the hosted project), but `total_price_agorot`
+    // is still pre-059-only under `total_price_ils_agorot`, so the fragment
+    // keeps the probe and aliases that one back; the row shape below is
+    // identical on both generations either way.
     const itemGeneration = await resolveOrderItemGeneration(moneyColumnProbe(admin, 'order_items'))
     const items = orFail(
       await admin
@@ -527,10 +530,9 @@ export async function finalizeOrder(input: {
       }
     } else {
       // spendWallet speaks shekels (fn_wallet_transfer takes p_amount_ils);
-      // the stored number is agorot post-059 and shekels pre-059, and the
-      // helper normalises either to integer agorot before the one boundary
-      // conversion below.
-      walletApplied = agorotToIls(agorot(readOrderCashbackAgorot(orderGeneration, order)))
+      // the column is integer agorot on both generations since 224, and the
+      // one boundary conversion below is the only agorot -> shekel step.
+      walletApplied = agorotToIls(agorot(readOrderCashbackAgorot(order)))
     }
 
     await spendWallet(admin, order.id, order.user_id, walletApplied)
@@ -548,6 +550,8 @@ export async function finalizeOrder(input: {
       // and C7 below refuses with "product has no coupon_expiry_days" - telling
       // an admin to go set a field that is already set, on an order that is
       // stuck for an entirely different reason.
+      // No deleted_at filter: expiry terms of an already-paid coupon must be
+      // readable even after the product is soft-deleted.
       const products = orFail(
         await admin
           .from('products')
@@ -569,8 +573,30 @@ export async function finalizeOrder(input: {
     // the intent is clearer resolved next to the loop that consumes it.
     const rateColumn = await resolveVoucherRateColumn(moneyColumnProbe(admin as never, 'vouchers'))
 
+    // Which lines are gift cards (234). Resolved before the loop because the
+    // branch below must keep them OUT of executeSplitForItem: a gift-card line
+    // has no supplier, and the split insert would refuse it with a NOT NULL
+    // violation after the card was already charged. On a database without 234
+    // this is an empty set and the loop is exactly what it was.
+    const giftCardProductIds = await readGiftCardProductIds(admin, productIds)
+    const giftCardRecipient =
+      giftCardProductIds.size > 0
+        ? await readGiftCardRecipient(admin, order.id, order.user_id)
+        : null
+
     for (const item of items as OrderItemRow[]) {
-      if (item.product_type === 'coupon') {
+      if (item.product_id && giftCardProductIds.has(item.product_id)) {
+        // Minted like vouchers - pre-stamp, throwing, replay-capped per unit -
+        // and settled like a coupon line: everything charged on site is ours,
+        // the "supplier share" of a stored-value instrument is the liability
+        // the redemption RPC later converts, and no split row exists to write.
+        await issueGiftCardsForItem(admin, item, giftCardRecipient!, now)
+        await admin
+          .from('order_items')
+          .update({ settlement_status: 'split_executed', item_status: 'issued' })
+          .eq('id', item.id)
+          .in('settlement_status', ['pending', 'paid'])
+      } else if (item.product_type === 'coupon') {
         const info = (item.product_id ? productInfo.get(item.product_id) : undefined) ?? {
           couponExpiryDays: null,
           offerValidUntil: null,
@@ -600,6 +626,14 @@ export async function finalizeOrder(input: {
       0,
     )
     await creditCashback(admin, order.id, order.user_id, cashbackTotal)
+
+    // The order-count bonus (first purchase 10%, every fifth 5%). Directly
+    // after the item cashback on purpose: the RPC also mirrors that credit
+    // into cashback_ledger, and the wallet entry it links to must exist by
+    // the time it looks. Every rule lives in fn_cashback_order_bonus; like
+    // the referral call below, a failure is logged and does not fail the
+    // finalize: the card is already charged.
+    await awardOrderCountBonus(admin, order.id)
 
     // The referral bonus, if this buyer was referred and this order qualifies.
     //
@@ -635,6 +669,26 @@ export async function finalizeOrder(input: {
       })
     }
 
+    // The discount claim, re-affirmed for the payment that outlived its hold.
+    //
+    // The claim was taken at checkout (4c) and is normally still live here, in
+    // which case this is a no-op. But an order the sweep already released - it
+    // expired at 30 minutes, the stranded-payments cron verified the charge
+    // hours later - was charged WITH the discount in it, so the use is real:
+    // consume_order_discount revives the released redemption rows and puts the
+    // use back on `used_count`. Idempotent through `released_at`, so a
+    // replayed webhook re-adds nothing. Same class as the stock line above and
+    // equally forbidden from failing the finalize: the card is charged.
+    const { error: discountError } = await admin.rpc('consume_order_discount', {
+      p_order_id: order.id,
+    })
+    if (discountError) {
+      log.error('finalize.discount_consume_failed', {
+        orderId: order.id,
+        reason: discountError.message,
+      })
+    }
+
     // The authoritative purchase event, sent from the server at the moment the
     // order actually became paid.
     //
@@ -651,11 +705,52 @@ export async function finalizeOrder(input: {
 
     let savedTokenId: string | null = null
     if (input.token) {
-      // Kept as a single from().insert( expression: saved-cards.test.ts pins
-      // this file as the ONLY payment_tokens writer by matching that literal.
-      const { data: tokenRow, error: tokenInsertError } = await admin
-        .from('payment_tokens')
-        .insert({
+      // A shopper who buys again with "save my card" ticked re-tokenizes the
+      // same card, and a plain insert accumulated one picker row per purchase,
+      // all reading "ויזה המסתיימת ב-1234". Cardcom mints a fresh token string
+      // per tokenization, so the string cannot be the dedupe key; the physical
+      // card can: same profile, same last four, same brand, same expiry. On a
+      // match the ROW is refreshed with the newest token rather than added,
+      // which also retires the older token string Cardcom may have invalidated.
+      //
+      // Best-effort on the read: the card is already charged, so a failed
+      // dedupe lookup must not fail the finalize. It falls back to the insert,
+      // which is the pre-dedupe behavior, and the worst case is the duplicate
+      // row this exists to avoid.
+      let existingTokenRowId: string | null = null
+      if (order.user_id) {
+        const { data: existingToken, error: tokenReadError } = await admin
+          .from('payment_tokens')
+          .select('id')
+          .eq('profile_id', order.user_id)
+          .eq('last_4', input.token.last4)
+          .eq('card_brand', input.token.brand)
+          .eq('expiry_month', input.token.expiryMonth)
+          .eq('expiry_year', input.token.expiryYear)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (tokenReadError) {
+          log.warn('finalize.token_dedupe_read_failed', {
+            orderId: order.id,
+            reason: tokenReadError.message,
+          })
+        }
+        existingTokenRowId = existingToken?.id ?? null
+      }
+      if (existingTokenRowId) {
+        await admin
+          .from('payment_tokens')
+          .update({
+            cardcom_token: input.token.token,
+            cardcom_account_id: cardcomAccountId,
+          })
+          .eq('id', existingTokenRowId)
+        savedTokenId = existingTokenRowId
+      } else {
+        // Kept as a single from().insert( expression: saved-cards.test.ts pins
+        // this file as the ONLY payment_tokens writer by matching that literal.
+        const { data: tokenRow, error: tokenInsertError } = await admin.from('payment_tokens').insert({
           profile_id: order.user_id,
           cardcom_token: input.token.token,
           last_4: input.token.last4,
@@ -665,19 +760,18 @@ export async function finalizeOrder(input: {
           // A token is only chargeable on the terminal that minted it, so the
           // saved card is useless without knowing which account that was.
           cardcom_account_id: cardcomAccountId,
-        })
-        .select('id')
-        .maybeSingle()
-      if (tokenInsertError) {
-        // Not fatal to the order -- the charge is already verified -- but a
-        // recurring line below cannot become a subscription without this row,
-        // and the shopper asked for the card to be saved. Loud, not silent.
-        log.error('finalize.token_not_saved', {
-          orderId: order.id,
-          reason: tokenInsertError.message,
-        })
+        }).select('id').maybeSingle()
+        if (tokenInsertError) {
+          // Not fatal to the order -- the charge is already verified -- but a
+          // recurring line below cannot become a subscription without this row,
+          // and the shopper asked for the card to be saved. Loud, not silent.
+          log.error('finalize.token_not_saved', {
+            orderId: order.id,
+            reason: tokenInsertError.message,
+          })
+        }
+        savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
       }
-      savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
     }
 
     // THE SUBSCRIPTION IS BORN HERE, and only here. Renewal

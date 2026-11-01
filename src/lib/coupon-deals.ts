@@ -1,6 +1,6 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 
 /**
@@ -13,7 +13,7 @@ import { cacheLife, cacheTag } from 'next/cache'
  * got `200 OK` with a not-found body. Caching the read is what lets the page
  * await it before it answers.
  *
- * `createPublicClient()` rather than the cookie-bound `createClient()`, for the
+ * `createCatalogueReadClient()` rather than the cookie-bound `createClient()`, for the
  * same two reasons as `category-page.ts`: a cached scope cannot touch request
  * APIs, and a catalogue row must not depend on who is asking. The page it backs
  * shows the same deal to everybody.
@@ -32,7 +32,7 @@ export async function getCouponDeal(id: string) {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   return orFail(
     await supabase
       .from('coupon_deals')
@@ -64,7 +64,7 @@ export async function getActiveCouponDealIds(): Promise<string[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase.from('coupon_deals').select('id').eq('status', 'active').is('deleted_at', null),
     'coupon_deal.active_ids_failed',

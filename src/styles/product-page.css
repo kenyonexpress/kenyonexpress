@@ -260,6 +260,16 @@
   color: var(--color-price);
 }
 
+/* "N נרכשו השבוע" (components/storefront/BoughtThisWeek). A quiet line under
+   the stock one: it is a fact about other shoppers, not a state of this
+   product, so it does not take the stock line's weight or its colour. No
+   reserved height, for the reason given above. */
+.pdp-summary__proof {
+  margin-top: 0.25rem;
+  min-height: 0;
+  color: var(--pdp-muted);
+}
+
 .pdp-summary__dot {
   width: 8px;
   height: 8px;
@@ -433,9 +443,10 @@
 
 .pdp-summary__tags {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   margin: 10px 0 0;
   font-size: var(--pdp-body-size);
   line-height: var(--pdp-body-line);
@@ -502,9 +513,13 @@
 /* Recommendations: 25.004px/500 heading over a full-width hairline with a
    233px brand segment on the inline-start end, measured at y937-938. */
 .pdp-related {
-  /* Live opens the recommendations row on y940; the summary column above ends
-     well before that. Measured 2026-07-28. */
-  margin-top: -20px;
+  /* A positive gap, the same one the details band above opens with. This was
+     a negative margin, tuned on 2026-07-28 so the row opened on live's y940
+     while the details band was shorter. Measured 2026-10-13 on three products
+     at all three widths: the heading box started above the bottom of the band
+     every time (desktop: band bottom y925, heading top y905), and on desktop
+     it was painted across the delivery note. */
+  margin-top: 40px;
 }
 
 .pdp-related__title {

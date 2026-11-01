@@ -55,9 +55,9 @@ export const SUPPLIER_EDITABLE_FIELDS = [
   'logo_url',
 ] as const
 
-type SupplierEditableField = (typeof SUPPLIER_EDITABLE_FIELDS)[number]
+export type SupplierEditableField = (typeof SUPPLIER_EDITABLE_FIELDS)[number]
 
-type SupplierProfileFields = Record<SupplierEditableField, string | null>
+export type SupplierProfileFields = Record<SupplierEditableField, string | null>
 
 export type SupplierProfileParseResult =
   | { ok: true; data: SupplierProfileFields }

@@ -1,5 +1,10 @@
 # `migrations/pending/`
 
+## 2026-10-24: 293 and 300 added (C37 + C16)
+
+- `293_phase2_feature_flags.sql` - PENDING. Seeds Phase 2 feature flags (physical_products, courses_monthly, tzimmer_calendar, monthly_billing) all OFF. Extends 286's feature_flags table. Requires MCP apply_migration.
+- `300_c16_payment_refund_infrastructure.sql` - PENDING. Consolidated migration: payment_events (130), refunds (131), search_index_outbox (132), state guards on orders.status/payments.status (137). All with IF NOT EXISTS guards for idempotency. Requires MCP apply_migration.
+
 ## 2026-09-08: READ docs/MIGRATION-NUMBER-COLLISIONS.md BEFORE APPLYING ANYTHING
 
 `origin/main` has been numbering migrations from the same counter as this
@@ -78,6 +83,13 @@ campaign `כללי` is INACTIVE until the owner sets its rate. Applied through M
 `apply_migration` (`affiliate_campaigns_283`). **`189_affiliate_program.sql`
 is superseded and must not be applied**: it re-creates `affiliates`, which
 already exists.
+
+## 2026-10-19: 287 PENDING - cashback bonus per club tier (F11 extension)
+
+`287_club_tiers_add_cashback_bonus.sql` adds `cashback_bonus_percent numeric(5,2)`
+to `club_tiers` for per-tier cashback bonuses. Admin UI updated at `/admin/club-tiers`
+to display and edit the field. Account page displays the cashback bonus percentage
+and a progress bar toward the next tier. Awaiting rehearsal and approval.
 
 ## 2026-10-18: 282 APPLIED - club tiers (rc5 F11)
 
@@ -333,7 +345,7 @@ one integer column, and the `where` clause is its own check.
 
 ## 2026-09-04: 171 added — the shekel sign in a category name
 
-`171_category_name_shekel_order.sql` rewrites `categories.name_he` for the
+`187_category_name_shekel_order.sql` rewrites `categories.name_he` for the
 `under-99` department from `עד ₪99` to the digits-then-sign form the whole site
 now renders, wrapped in an LTR isolate. **Not applied.**
 
@@ -362,14 +374,14 @@ PRODUCTION table below. Every file in `migrations/applied/` now has a SHA-256
 line in `migrations/applied/CHECKSUMS.sha256`
 (verify with `cd migrations/applied && shasum -c CHECKSUMS.sha256`).
 
-### `170_composite_indexes_top_queries.sql` — PENDING, not approved
+### `186_composite_indexes_top_queries.sql` — PENDING, not approved
 
 Expand-only composite indexes for the ten hottest query patterns
 (ARCHITECTURE-PERFORMANCE §6.3 + measured plans; baselines in
 `docs/perf/indexes.md`). `CREATE INDEX IF NOT EXISTS` only, no drops, no
 data changes; each pattern matched to the live code path that issues it and
 checked non-duplicate against `pg_indexes`. Written by the parallel
-autopilot session on 04.09. Preflight: `preflight_170.sql`.
+autopilot session on 04.09. Preflight: `preflight_186.sql`.
 
 ### `169_analytics_server_event_names.sql` — PENDING, not approved
 
@@ -702,6 +714,39 @@ running. Order is the position in the apply sequence.
 | `143_revoke_unused_definer_execute.sql` | Revokes `EXECUTE` on 5 SECURITY DEFINER functions from `anon`/`authenticated` | **Medium.** Closes a live RLS bypass in `voucher_success_payload`. `supplier_app_context` was withdrawn from this file — the Expo till calls it | 19 | `src/__tests__/revoked-functions-have-no-callers.test.ts` green | `GRANT EXECUTE ON FUNCTION public.<fn> TO anon, authenticated;` (5 statements, listed in the file) |
 | 144 | `144_revoke_authenticated_dml.sql` | Revokes INSERT/UPDATE/DELETE from `authenticated` on the 8 RLS-on-zero-policy tables | **Low.** Defence in depth; RLS already blocks these, but RLS does not cover `TRUNCATE` | 20 | 122 (same 5 tables, policies first) | `GRANT INSERT, UPDATE, DELETE ON public.<t> TO authenticated;` (8 statements, listed in the file) |
 | 145 | `145_revoke_check_rate_limit_execute.sql` | Revokes `EXECUTE` on `check_rate_limit` from `anon`/`authenticated` | **HIGH IF MISORDERED.** See below | **21 — LAST** | ⛔ **CODE-FIRST: commit `d5c2739d4`** | `GRANT EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) TO anon, authenticated;` |
+| 184 | `184_orders_monthly_partitioning.sql` | Converts `orders` to monthly range partitions on `created_at`; PK becomes `(id, created_at)`, 16 referencing tables gain a trigger-filled twin column and composite FKs | **HIGH.** Structural conversion of the busiest financial table; apply only in a maintenance window, details in the file header | after 137 | pg_cron (installed) | in file header |
+| 189 | `189_passkeys_webauthn.sql` | Passkey (WebAuthn) credentials: `webauthn_credentials` table with user_id, public_key, counter, transports, device_type, backed_up, aaguid, friendly_name columns; RLS policies for select-own and delete-own (same as migration 178, which is already applied in production) | **IDEMPOTENT.** IF NOT EXISTS guards ensure this can safely run on systems that already have the table from an earlier migration or direct apply. No-op on production where 178 already created and applied this table | any | none | in file header |
+| 185 | `185_soft_delete_user_facing_remainder.sql` | `deleted_at` + partial index + RLS select filters on `categories`, `product_images`, `reviews`, `wishlists`; splits `wishlists_owner_all` into four per-command policies | **Low.** Additive column; policies only narrow client reads. Service-role call sites are gated by `src/lib/soft-delete.ts`, whose pending list is flipped to live after apply | any | none | in file header |
+| 169 | `169_audit_full_coverage.sql` | `audit_log` before/after/request_id columns, `entity_id` uuid→text, generic trigger v2 on every financial and user table | **✅ APPLIED 2026-09-04** via MCP as `audit_full_coverage_169`, on the explicit instruction of the /goal that requested it. Validated first against production inside a rolled-back DO block (snapshots, header capture, ip parsing all probed), then applied; 34 audit triggers verified after. The file stays here as the record, like 122-147 | any | none | in file header |
+| 170 | `170_reporting_tables.sql` | 4 denormalized reporting tables (`report_revenue_daily`, `report_orders_daily`, `report_top_products`, `report_cohort_retention`), nightly `pg_cron` rebuild at 01:30 UTC, 5 admin-only definer RPCs gated on `is_admin()` | **✅ APPLIED 2026-09-04** via MCP as `reporting_tables_170`, on the explicit instruction of the /goal that requested it. Validated first end-to-end inside a rolled-back transaction (full refresh over real orders), then applied; row counts, the cron job and the 42501 deny path for a non-admin were verified after. New tables only, no existing reader | any | none | in file header |
+| 171 | `171_search_fts.sql` | Hebrew FTS: `unaccent` extension, generated `search_vector` tsvector (config `simple`) + GIN index on `products` and `coupon_deals`, INVOKER `search_products` RPC (prefix tsquery, ts_rank, anon-callable) | **✅ APPLIED 2026-09-04** via MCP as `search_fts_171`, on the explicit instruction of the /goal that requested it. Validated first inside a rolled-back DO block (Hebrew word match, reversed-order prefix query, punctuation-only input, anon RLS path, GIN plan), then applied; 80 product + 8 deal vectors and both indexes verified after. Additive columns and new functions only | any | none | in file header |
+| 172 | `172_rls_zero_policy_tables.sql` | Explicit policies for the ten RLS-on-zero-policy tables: restrictive `deny_all_client_roles` on `rate_limits`/`user_rate_limits`/`search_index_outbox`, `<t>_admin_read` (`is_admin()`) on `payment_webhook_events`, `ai_usage`, `analytics_events` and the 4 report tables, + `SELECT` grant to `authenticated` on the report tables. Fixes the admin webhooks tab, which read `payment_webhook_events` through the request client and silently got zero rows | **✅ APPLIED 2026-09-04** via MCP as `rls_zero_policy_tables_172` (+ `_report_grants`), on the explicit instruction of the /goal that requested it. Verified after apply with the self-seeding three-persona harness `tests/sql/rls_three_personas.sql` run through MCP in a rolled-back transaction: anon/user/admin assertions all held, incl. cross-tenant denial between two users. Only delta: admins gain SELECT on 7 observational tables; the denies were already the default | any | none | in file header |
+| 178 | `178_webauthn_credentials.sql` | Passkey (WebAuthn) credentials: `webauthn_credentials` (one row per registered authenticator: base64url credential id as PK, COSE public key, signature counter, transports, device type, backup flag, friendly name; FK to `auth.users` because phone-only accounts have no lazy `profiles` row yet). RLS: select-own + delete-own for `authenticated`, no INSERT/UPDATE policy so writes happen only through the service role after `verifyRegistrationResponse`/`verifyAuthenticationResponse` prove the ceremony. Challenges are not stored: they travel in an HMAC-sealed httpOnly cookie (`src/lib/auth/passkeys/challenge.ts`) | **✅ APPLIED 2026-09-08** via MCP as `webauthn_credentials_178` (version `20260908210126`). Verified against production 2026-09-09: table present, RLS enabled, exactly the two policies (select-own, delete-own), no INSERT/UPDATE policy, 0 rows. Was low-risk by design: one new table, and callers tolerated absence via 42P01/PGRST205 (`isMissingPasskeyRelation`) until apply. The file stays here as the record, like 169-183 | any | none | in file header |
+| 180 | `180_analytics_server_event_names.sql` | `CREATE OR REPLACE` of `fn_ingest_analytics_events`, byte-identical to the deployed body except the name whitelist, which gains the four server names of `SERVER_EVENT_NAMES` (`begin_checkout`, `purchase`, `voucher_redeemed`, `order_refunded`). Until it applies, every server-side money event is silently discarded by the deployed eight-name list (verified against production 2026-09-07); PostHog receives them regardless through the fan-out in `src/server/analytics/track.ts` | **None.** Function replacement only; no table, grant, or policy changes. Unknown names are still skipped, so a rollback loses nothing already stored | any | none | in file header (re-run with the eight-name list) |
+| 179 | `179_push_subscriptions.sql` | Web push subscriptions: `push_subscriptions` (one row per browser that granted notification permission: unique https `endpoint`, browser-minted `p256dh`/`auth` keys as base64url text, optional user agent; FK to `auth.users`, same lazy-profiles reasoning as 178). RLS: select-own + delete-own for `authenticated`, no INSERT/UPDATE policy so rows are written only by the service role in `src/server/actions/push.ts` after the caller is authenticated and the subscription shape validated | **Low.** One new table; touches nothing existing. Callers tolerate absence: the subscribe/remove actions and `/account/notifications` answer "not available yet" on 42P01/PGRST205 (`isMissingPushRelation`) | any | none | in file header |
+| 181 | `181a_read_only_enum.sql` + `181b_admin_rbac_hardening.sql` | Admin RBAC hardening: `read_only` enum value on `user_role` (observer tier: sees every panel section through the service-role reads in `permissions.ts`, writes nothing); `is_support()` gains the name so read_only inherits support's whole SELECT surface DB-side; `enforce_profile_privilege_columns()` (the deployed 090 guard; 035's function was measured absent from production 2026-09-07) gains the admin-tier ladder: no self role change, admin-tier grants/revocations only by super_admin, and only with an aal2 (MFA-verified) JWT; RESTRICTIVE `profiles_super_admin_mfa` policy so an aal1 super_admin session updates no profiles row through the user client | **Low.** One permanent enum member, two function replacements on their deployed bodies, one restrictive policy. Behavioral edge: a super_admin editing their own profile through the user client needs an aal2 session once this applies; the rbac.ts gate forces enrol+verify at panel entry, so a super_admin's session is aal2 in practice. Until it applies, assigning `read_only` fails loudly at the enum (`invalid input value`), and MFA is enforced app-side only | any | none | in file header |
+| 177 | `177_cashback_ledger.sql` | Cashback ledger: `cashback_ledger` (append-only decision record: entry per item-cashback credit, order-count bonus, admin adjustment; integer agorot, signed; RLS own-read + admin-read, no client writes; UPDATE/DELETE blocked by trigger), `fn_cashback_order_bonus` (first purchase 10%, every fifth purchase 5% of the order total, per-user advisory lock, idempotent on `order:<id>:count_bonus`, pays through `fn_wallet_transfer` from `platform:cashback_reserve`), `fn_cashback_admin_adjust` (signed adjustment, re-checks `is_admin()`, idempotent, records `auth.uid()`). Numbered 177 because 174-176 are taken by files on `closeout/v1-final` | **Low.** All new objects; touches no existing table. Callers tolerate absence: finalize logs-and-continues on 42883, `/admin/cashback` shows a not-installed notice | after 046 (applied); attaches the 169 audit trigger only if present | none | in file header |
+| 182 | `182_coupon_qr_batches.sql` | Printed QR coupon batches: `coupon_qr_batches` (one print run per discount campaign) and `coupon_qr_codes` (one 8-digit Luhn-checked unit code each, unique, `redeemed_at` as the per-unit single-use gate). RLS: admin-read only on both, no client writes, no shopper read — a code is validated server-side by the cart, never listed. `redeemed_order_id` is a bare uuid, not an FK, because `orders` is headed for partitioning (184, renumbered from 148) | **✅ APPLIED 2026-09-07** via MCP as `coupon_qr_batches_182` (version `20260907163213`), on the explicit instruction of the /goal that requested it. Additive only: two new tables, no existing object touched. The file stays here as the record, like 169-172 | any | 096 (applied; FK to `discount_campaigns`) | `drop table if exists public.coupon_qr_codes; drop table if exists public.coupon_qr_batches;` |
+| 183 | `183_order_shipped_notification.sql` | Shipping notification: widens `notification_outbox_kind_check` with `order_shipped` and adds `tg_orders_notify_shipped`, an AFTER UPDATE OF status trigger that enqueues one customer mail on the transition into `fulfilled` (dedupe `order-shipped:<order_id>`). The renderer (`buildOrderShippedEmail`) is already in `src/lib/email/notifications.ts`, so the drain can render rows the moment this applies. After applying, re-measure the constraint and move `order_shipped` into `CHECK_ACCEPTS` in `src/lib/email/outbox-kinds.test.ts` | **Low.** One constraint widened (additive), one new trigger; the trigger body is EXCEPTION-guarded like its 102 sibling, so a failed enqueue warns and never fails the status UPDATE | any | 095, 102, 114 (all applied) | in file header |
+| 192 | `192_seed_seo_redirects.sql` | Seeds `seo_redirects` with the legacy WordPress map: 33 active rows (19 x 301, 14 x 410), generated by `scripts/build-legacy-redirects.mjs`. Data only, no DDL; absent rows are deactivated, never deleted, so the hit counter survives | **✅ APPLIED 2026-09-09** via MCP as `seed_seo_redirects_192`, on the explicit instruction of the /goal that named 192-201. Dry-run first in a rolled-back transaction (33 active after seed); table held 0 rows before. The file stays here as the record, like 169-183 | any | 095 (applied; the table) | re-run generator, or `update public.seo_redirects set is_active = false;` |
+| 193 | `193_price_history.sql` | `price_history`: append-only daily record of what each product cost (integer agorot), UPDATE/DELETE refused by trigger for every role, public SELECT, one-day backfill from the live catalogue | **✅ APPLIED 2026-09-09** via MCP as `price_history_193`, same /goal. Dry-run rolled back first: 80 backfill observations, append-only triggers and grants verified | any | none | in file header |
+| 194 | `194_discount_claim_caps.sql` | Makes `max_uses`/`max_uses_per_user` real: `coupons.max_uses_per_user` (default 1), `coupon_redemptions`, `discount_redemptions.released_at`, and `claim_order_discount`/`release_order_discount` — check and claim under FOR UPDATE, idempotent per (code, order), service-role only | **✅ APPLIED 2026-09-09** via MCP as `discount_claim_caps_194`, same /goal. Dry-run rolled back first, both functions probed against a real order id (empty code NULL, unknown code NULL, release 0). All three counter tables held 0 rows | any | 096 (applied) | in file header |
+| 195 | `195_stock_waitlist.sql` | `stock_waitlist`: who asked to be told when a sold-out product returns. One live row per email per product, deny-all RLS, definer `join_stock_waitlist` (service-role only) that never reveals whether the row existed | **✅ APPLIED 2026-09-09** via MCP as `stock_waitlist_195`, same /goal. Dry-run rolled back first: two joins with case/whitespace variants of one email produced exactly one lowercased row | any | none | `drop function if exists public.join_stock_waitlist(uuid, text, uuid, uuid); drop table if exists public.stock_waitlist;` |
+| 196 | `196_shipped_notification_carries_tracking.sql` | Replaces `tg_orders_notify_shipped` so the shipped mail's payload carries a `shipments` jsonb array (carrier + tracking per line that has a number; NULL when none). Guard, dedupe key and firing condition byte-identical to production | **✅ APPLIED 2026-09-09** via MCP as `shipped_notification_carries_tracking_196`, same /goal. Live body read with `pg_get_functiondef` and diffed first; the replaced trigger was fired on a real paid order in a rolled-back probe and the payload carried the tracking number. Zero outbox residue | any | 183 (applied; the trigger) | restore the 183 body from `pg_get_functiondef` |
+| 197 | `197_shipping_zones_and_pickup.sql` | `shipping_zones` seeded free-everywhere (5 zones, all 0 agorot, matching the sitewide free-delivery banner) + `pickup_points`, deliberately empty. Public SELECT, no client writes. NOT wired into checkout | **✅ APPLIED 2026-09-09** via MCP as `shipping_zones_and_pickup_197`, same /goal. Dry-run rolled back first; the file refuses to apply if any zone carries a charge | any | none | `drop table if exists public.pickup_points; drop table if exists public.shipping_zones;` |
+| 198 | `198_in_app_notifications.sql` | The bell: `notifications` (own-read, mark-read via a `read_at`-only column grant) + `notification_preferences` (own-read/write per kind x channel). REPLICA IDENTITY FULL + membership in `supabase_realtime`, without which the subscription reports SUBSCRIBED and receives nothing | **✅ APPLIED 2026-09-09** via MCP as `in_app_notifications_198`, same /goal. Dry-run rolled back first: `read_at` proven the only updatable column for `authenticated`, publication membership asserted | any | none | in file header |
+| 199 | `199_review_replies_and_reports.sql` | Supplier replies (3 columns on `reviews`, membership proved via `products.supplier_id` -> `supplier_members`) + `review_reports` (insert-own, no client read). The load-bearing line is the REVOKE of the dormant table-wide UPDATE grant the new policy would otherwise wake | **✅ APPLIED 2026-09-09** via MCP as `review_replies_and_reports_199`, same /goal. Dry-run rolled back first: after revoke+grant, `authenticated` can update exactly the 3 reply columns and the table-wide grant is gone. `reviews` held 0 rows | any | 154 (applied) | in file header |
+| 200 | `200_wishlist_alert_kinds.sql` | Widens `notification_outbox_kind_check` with `price_drop` and `back_in_stock` (14 -> 16 kinds). Restates the constraint in full behind a guard that refuses if the live constraint carries a name the file does not restate — the failure 183 nearly had | **✅ APPLIED 2026-09-09** via MCP as `wishlist_alert_kinds_200`, same /goal. Dry-run rolled back first; the guard found the live constraint carrying exactly the 14 known names | after any other file restating this constraint (none) | 193, 195 (applied; the data behind the alerts) | re-add the constraint with the 14-name list |
+| 201 | `201_scheduled_price_changes.sql` | `scheduled_price_changes`: flash deals as rows (integer agorot, not percentages), one PENDING change per product per moment by partial unique index, cancelled rather than deleted, deny-all RLS. Applied by `/api/cron/price-schedule`, which also writes the `price_history` row (`source='change'`) | **✅ APPLIED 2026-09-09** via MCP as `scheduled_price_changes_201`, same /goal. Dry-run rolled back first: duplicate pending change refused, cancelled row frees the slot | any | 193 (applied) | `drop table if exists public.scheduled_price_changes;` |
+| 210 | `210_media_ingest_queue.sql` | Media ingest ledger (ARCHITECTURE-MEDIA-R2): `media_ingest_queue`, one row per source image the platform should host itself (WXR attachments whose WordPress origin is gone, plus the 49 third-party demo URLs in `products.images`). Content-addressed `storage_path` embeds the sha256 of the original bytes (the 06-media-sync scheme); `source_url` unique as the identity of the waiting item. Ingested rows also get a `media_assets` row so existing URL-join readers see them. RLS on with zero policies and privileges revoked outright (the 122/172 pattern) — the advisor INFO on this is the design, not an omission | **✅ APPLIED 2026-09-09** via MCP as `media_ingest_queue_210` (version `20260909093018`). One new table, no existing object touched; written only by the ingest script through the service role. The file stays here as the record, like 169-183 | any | 049 (applied; `media_assets`) | in file header |
+| 211 | `211_whatsapp_selfservice.sql` | WhatsApp self-service on top of 173: widens the `whatsapp_inbound_messages` intent CHECK with `order_status`/`refund_request` (constraint name verified against production), adds `support_tickets.category` (default `general`, backfills `refund_request` from the `בקשת זיכוי` subject prefix the webhook writes meanwhile), and `fn_wa_orders_for_phone` — definer, service-role-only, returns ref/status/total/date of the phone's 3 latest orders for the webhook's status reply | **Low.** The CHECK widens (no existing row can fail it), the column is additive with a default, and the function is new with EXECUTE revoked from PUBLIC/anon/authenticated. Until applied, the webhook already degrades: audit rows fall back to intent `message`, status questions file a ticket | after 173 (applied: its five tables and both functions verified live in production 2026-09-09) | 173 | in file header |
+| 217 | `217_coupon_qr_redemption.sql` | The claim wiring 182 promised: `expires_at`/`expired_at` on `coupon_qr_codes`, partial index on the sweep's working set, `redeem_coupon_qr` (atomic single-use claim under FOR UPDATE, campaign caps delegated to `claim_order_discount`, idempotent per (code, order)) and `expire_coupon_qr_codes` (nightly stamp, no money). Both functions service_role only | **✅ APPLIED 2026-09-09** via MCP as `coupon_qr_redemption_217`, on the explicit instruction of the /goal that requested the coupon QR feature. Dry-run first in a rolled-back transaction with a seven-step probe over real inserts: first redeem ok, replay idempotent, second order refused `redeemed`, campaign cap refusal leaves the unit untouched, per-code expiry refused, sweep stamped 1, client roles cannot EXECUTE. Post-apply: 2 columns, 2 functions, grants service_role only, `coupon_qr_codes` held 0 rows | any | 182, 194 (both applied) | `drop function if exists public.redeem_coupon_qr(text, uuid, uuid, integer); drop function if exists public.expire_coupon_qr_codes(); alter table public.coupon_qr_codes drop column if exists expired_at, drop column if exists expires_at;` |
+| 224 | `224_post059_price_cashback_twins.sql` | The two post-059 names the payment path selects, added to the hosted pre-059 lineage as GENERATED STORED agorot twins: `orders.cashback_applied_agorot` (from `cashback_applied_ils`) and `order_items.unit_price_agorot` (from `unit_price_ils`), same `round(<ils> * 100)::bigint` shape as the 138/147 twins. Additive only: writers keep writing the ils sources and the generation probes (`orders.total_agorot`, `order_items.platform_bp`) still resolve `ils`, so no write path changes. Guarded per column in its own DO block against information_schema both ways (post-059 databases skip it; reruns are no-ops) | **✅ APPLIED 2026-09-10** via MCP as `post059_price_cashback_twins_224`, on the explicit instruction of the /goal that requested the landmine fix through MCP (same protocol as 217/223). Verified post-apply against every row: 0 mismatches between each twin and `round(<ils>*100)` (4 orders, 3 order_items), and a bare select of both names — 42703 before — answers. Lets `orderCashbackSelect`/`readOrderCashbackAgorot` go generation-free and `orderItemPriceSelect('ils')` name `unit_price_agorot` directly (only `total_price_agorot` still needs its alias) | any | 138/147 pattern (both applied); columns `cashback_applied_ils`, `unit_price_ils` NOT NULL, verified live | `alter table public.orders drop column if exists cashback_applied_agorot; alter table public.order_items drop column if exists unit_price_agorot;` (safe: generated, nothing writes them; readers revert with the code change) |
+| 227 | `227_discount_claim_wiring.sql` | The wiring 194 waited for: replay-first `claim_order_discount` (a retried order answers ok, not `exhausted` — measured against production in a rolled-back DO block), re-claim of a released row under the same limit checks, `release_expired_order_discounts()` (pending/cancelled orders past `expires_at` hand back both `used_count` counters and un-redeem their QR units; runs from `/api/cron/stock`) and `consume_order_discount(uuid)` (a stranded payment that outlived the sweep puts the use back at finalize, idempotent via `released_at`). Also loosens `discount_redemptions_amount_positive` from `> 0` to `>= 0`: the QR till route defaults `amount_agorot` to 0, so every till redemption without an explicit amount died on the CHECK inside `claim_order_discount` | **✅ APPLIED 2026-09-10** via MCP as `discount_claim_wiring_227`, on the explicit instruction of the /goal that requested stock/coupon enforcement through MCP (the 217 protocol). Proven first in a rolled-back DO block over production: claim ok, replay ok (was `exhausted`), second order `exhausted` on max_uses=1, sweep released 1 and the counter fell, consume revived 1 and its replay 0, zero-amount campaign claim ok. Called from `beginCheckout` 4c, `finalizeOrder`, both admin cancel paths and the stock cron | after 194, 217 (both applied) | 194, 217 | restore the 194 `claim_order_discount` body from `pg_get_functiondef`; `drop function if exists public.release_expired_order_discounts(); drop function if exists public.consume_order_discount(uuid);` re-add the `> 0` CHECK |
+| 223 | `223_restock_on_refund.sql` | The missing fourth verb of the 117 reservation lifecycle: `stock_reservations.restocked_at` + `restock_order_stock()` (definer, service_role only). `release_order_stock` only frees UNCONSUMED holds, so a paid-then-refunded order left the shelf permanently one sale short; this stamps the consumed rows and increments `products.stock_quantity` back in one statement, idempotent per reservation, untracked products skipped. Numbered 223 because 218-222 are taken by pending files on `audit/final-audit` | **✅ APPLIED 2026-09-09** via MCP as `restock_on_refund_223`, on the explicit instruction of the /goal that requested the dropshipping supplier-sync stock lifecycle through MCP (same protocol as 217). Dry-run first in a rolled-back transaction over real rows: consumed hold of 2 took the level 10 -> 12 and returned 1, replay returned 0 and left 12, untracked product stamped with no level change; rollback then verified (function and column absent). Post-apply: EXECUTE is postgres+service_role only, 0 rows stamped. Called by `refund.ts` after the paid -> refunded CAS | after 117 (applied) | 117 | `drop function if exists public.restock_order_stock(uuid); alter table public.stock_reservations drop column if exists restocked_at;` |
+| 212 | `212_rbac_truncate_and_search_path.sql` | RBAC hardening leftovers from the 2026-09-09 full-table RLS audit (`docs/RLS-AUDIT-2026-09-09.md`): revokes TRUNCATE from `anon`/`authenticated` on all public tables plus the default privileges for future tables (RLS never gates TRUNCATE — the bootstrap `GRANT ALL` left 72 tables truncatable by any signed-in session, past every policy), and pins `search_path = public` on the three advisor-flagged functions (`set_updated_at`, `fn_cashback_ledger_block_mutation`, `fn_il_phone_digits`) | **✅ APPLIED 2026-09-09** via MCP as `212_rbac_truncate_and_search_path` (version `20260909115250`), dry-run first in a rolled-back transaction. Post-apply measurement: 0 client TRUNCATE grants, 0 unpinned functions, advisor 0011 clean. No client path truncates (grep: zero), so no behavioural change | any | none | in file header |
+| 215 | `215_cashback_expiry.sql` | Cashback expiry: unspent cashback lapses 12 months after it was earned. `fn_cashback_expire(p_limit)` sweeps per user under the 177 advisory lock — expirable = GREATEST(0, reserve-sourced credits older than the cutoff minus every wallet debit), capped at the live balance, moved back to `platform:cashback_reserve` through `fn_wallet_transfer` (reason `cashback_expiry`) and recorded as a negative `expiry` row in `cashback_ledger`, idempotent per UTC day. Also: `wallet_entries` gains the 149/177 append-only trigger, and the ledger CHECKs learn the `expiry` type (negative-only, reason required) | **✅ APPLIED 2026-09-09** via MCP as `cashback_expiry_215`, on the /goal that requested the cashback engine with expiry rules through MCP. Rehearsed twice in rolled-back transactions first: clean whole-file apply, then a behavioral proof (3000 of 5000 agorot swept with 2000 spent, same-day replay no-op, UPDATE/DELETE on `wallet_entries` refused, positive `expiry` ledger row refused). Called nightly by `/api/cron/expire-cashback` | after 177 (applied) | 177, 139, 146 | in file header |
+| 173 | `173_whatsapp_flow.sql` | WhatsApp Business flow: `whatsapp_contacts` (consent record, opt-in/opt-out), `whatsapp_outbox` (order-status queue drained by `/api/cron/whatsapp`), `whatsapp_inbound_messages` (Twilio replay protection + audit), `support_tickets` + `support_ticket_messages` (first ticket store; RLS: own-read + staff read/update), `fn_il_phone_digits`, consent-gated `fn_enqueue_whatsapp`, trigger `tg_orders_whatsapp_status` on `orders` (paid/fulfilled/cancelled/refunded) | **Low.** All new tables and functions; the only touch on an existing table is the AFTER UPDATE trigger on `orders`, which enqueues at most one row per (order, kind) and only for phones that opted in, so with zero opted-in contacts it is a no-op. Code paths tolerate the tables not existing (webhook 500s to Twilio's retry, cron reports the read error) | any | none | in file header |
 
 ## 138-141 add GENERATED columns, and that is what makes step 2 possible
 
@@ -829,180 +874,37 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
-## `157_audit_ip_retention.sql`, added 2026-09-02
+## `185_soft_delete_user_facing_remainder.sql` (was 149), added 2026-09-04
 
-IP aging on the append-only audit trail, AFTER 149. The exception is carved
-into 149's trigger as narrowly as it can be written: UPDATE passes only when
-the sole change is ip_address -> NULL on a row older than 365 days; DELETE
-stays refused. fn_audit_retention_sweep() (definer, EXECUTE service-role
-only) is the single caller, driven monthly by /api/cron/retention, which
-answers ok+pending until this applies.
+Soft delete for the four user-facing tables that still lack it. Measured
+against production 2026-09-04 over MCP: `products`, `product_variants`,
+`suppliers`, `user_addresses`, `vendors` and `coupon_deals` already carry
+`deleted_at` with RLS filters; `categories`, `product_images`, `reviews` and
+`wishlists` have no such column at all. This file adds `deleted_at
+timestamptz`, the house partial index, and rewrites the client-facing SELECT
+policies so a deleted row disappears for shoppers while admin keeps it for
+restore. It also closes a live gap: `product_images` were readable for a
+soft-deleted product, because the old policy only checked
+`products.status = 'active'`.
 
-**Dry run against production, rolled back** (149 recreated first inside the
-txn): ordinary UPDATE and DELETE refused 42501; sweep aged the seeded old
-row, left the young row intact; second sweep aged 0.
+**The code side ships first and is safe either way.** Service-role readers
+bypass RLS, so their filter lives in `src/lib/soft-delete.ts`, which keeps a
+live list (filters now) and a pending list (no-op until this file is
+applied — filtering on a missing column is a 42703 that kills the whole
+query). After apply: regenerate types, and `src/lib/soft-delete.test.ts`
+fails on purpose until the four names move to the live list.
 
-## `156_analytics_indexes.sql`, added 2026-09-02
+## `184_orders_monthly_partitioning.sql` (was 148), added 2026-09-03
 
-Two partial indexes for the admin analytics windows: orders(paid_at DESC)
-where paid and not deleted (production has only the OPPOSITE half,
-idx_orders_pending_expiry), and vouchers(redeemed_at DESC) where redeemed
-(the existing redeemed index leads on supplier_id, useless for admin-wide
-window scans).
-
-**Dry run against production, rolled back:** both created, pg_indexes
-count=2 inside the transaction.
-
-## `155_shipment_tracking.sql`, added 2026-09-02
-
-Physical fulfillment's two missing columns -- order_items.carrier +
-tracking_number (the state machine itself already lives in item_status /
-shipped_at / delivered_at, per line) -- and 'order_shipped' added to the
-outbox kind check. **Must run after 150** (the file refuses otherwise: both
-rebuild the same constraint, and running first would drop account_deleted).
-Transitions stay in code (audited server action, portal §5.2); production
-has no item_status trigger by design.
-
-**Dry run against production, rolled back:** columns added, a real physical
-line moved pending→shipped with carrier+tracking, order_shipped accepted,
-a bogus kind still 23514.
-
-## `154_reviews_wishlist.sql`, added 2026-09-02
-
-Verified-purchase reviews and the wishlist the masthead heart points at. The
-purchase verification IS the INSERT policy: a review row exists only when its
-order_item belongs to a paid-or-later order of the inserting user and sells
-the named product; UNIQUE(order_item_id) is the once-per-purchase barrier.
-Moderation is a status column driven by the service role (no user UPDATE
-policy at all). Wishlists are owner-only both ways. Until applied, every
-reader degrades to "no reviews / empty wishlist" (PGRST205) and the submit
-actions answer in Hebrew that the feature is not open yet.
-
-**Dry run against production, rolled back:** verified insert as a real buyer
-passed; duplicate slot, unverified item, and a foreign user claiming the same
-purchase all refused; the pending row invisible to anon. ok=t problems=[none].
-
-## `153_ai_usage.sql`, added 2026-09-02
-
-The AI cost ledger: one row per agent call through `src/server/ai/client.ts`
-with tokens, micro-USD cost (integers, same reason money is agorot), outcome
-and latency. The runtime works before this applies and logs
-`ai.usage_not_recorded` at warn. RLS on, zero policies.
-
-**Dry run against production, rolled back:** insert accepted, negative token
-count refused 23514.
-
-## `152_payout_machinery.sql`, added 2026-09-02
-
-The FIFTH instance of the pattern: `admin/payouts.ts` calls four payout
-functions and the supplier page reads `payout_statements`, and production has
-none of it -- not the tables, not the functions, not the supplier payout-terms
-columns. Only the enum exists. Every payout action has failed at runtime since
-the module shipped.
-
-A faithful port of the payout sections of 027 + 051 + 079, stitched in
-dependency order, ADAPTED where 079 was written for the post-059 schema the
-hosted database never got: the generate reads `total_price_ils`,
-`platform_percent`, `commission_agorot` and `supplier_immediate_agorot` -- the
-numbers settlement actually books -- instead of `platform_bp` and
-`supplier_payout_agorot`, which exist nowhere in production. The legacy
-coupon_codes section is deliberately not ported (different shape, zero rows to
-pay). mark_paid's dispute/bank reads became dynamic-if-table-exists, because
-supplier_disputes and supplier_bank_accounts do not exist and 027's refusal
-would have made mark_paid permanently uncallable -- the disease this file
-cures.
-
-**Dry run against production, rolled back:** generate created a statement,
-totalled zero, rolled it over per C8 (cancelled + rolled_over + lines
-deleted); approve/paid/cancel each refused the rolled-over statement with their
-own exact errors. The dry run itself caught a composition bug (a 3-arg grant
-before the 4-arg definition).
-
-## `151_analytics_ingest.sql`, added 2026-09-02
-
-`/api/a` validates consented client events and calls
-`fn_ingest_analytics_events`. That function did not exist and neither did any
-events table: every batch ever sent returned "function not found" and vanished
--- a caller without its function, the fourth instance of the closeout's
-recurring pattern.
-
-The table plus the definer function, written to the CALLER's payload exactly,
-so applying this turns the existing pipeline on without touching app code.
-Unknown event names are skipped rather than failing the batch; event_id dedups
-replays; the IP is accepted and not stored; RLS on with zero policies so only
-the definer path writes. Adds `whatsapp_click` to the accepted names -- the
-client emits it from the PDP share button as of the same commit, and like every
-other event it goes nowhere until this applies.
-
-**Dry run against production, rolled back:** 3-event batch -> 2 stored + 1
-unknown skipped; replayed event_id -> 0 new rows; non-array -> 22023.
-
-## `150_account_deletion.sql`, added 2026-09-02
-
-The deletion the privacy policy promises, with no code behind the promise until
-now. `fn_anonymize_user` (SECURITY DEFINER, EXECUTE for service_role only)
-anonymizes the profile in place -- orders keep their FK and their statutory
-7-year retention -- deletes the personal satellites (addresses, saved cards,
-push tokens, carts, recent searches), and writes the erasure to audit_log.
-Owner columns verified against production: three tables key on `user_id`, two
-on `profile_id`. Plus the `account_deleted` outbox kind for the goodbye email.
-
-**Dry run against production, rolled back, on a real profile:** email hashed to
-`deleted+…@anonymized.invalid`, name replaced, satellites 0, orders preserved,
-idempotent rerun OK, null uid refused 22004.
-
-The server action works before this is applied: it tries the RPC, and on
-PGRST202 falls back to the same steps through the service client, deriving the
-same email hash byte-for-byte (verified: node and Postgres agree on
-`deleted+9f89c84a559f5736@…` for the zero uuid).
-
-## `149_audit_log_append_only.sql`, added 2026-09-02
-
-Production has NO triggers on `audit_log`, and RLS does not bind service_role,
-so the application's own key can UPDATE or DELETE any audit row. An audit trail
-the audited code can edit is a log, not an audit trail.
-
-One trigger, BEFORE UPDATE OR DELETE, raising 42501 for every role including
-service_role -- which is the point, because no policy can restrain that role.
-Redaction under a legal order stays possible as a deliberate human act: drop the
-trigger, redact, re-create it, leaving that sequence in the database logs.
-
-**Dry run against production, rolled back:** UPDATE refused 42501, DELETE
-refused 42501, INSERT unaffected.
-
-(The APPLY-ORDER row for 137 claimed "audit-log immutability triggers"; the 137
-file contains none. That row was wrong; this file is the real thing.)
-
-## `148_refund_destination.sql`, added 2026-09-02
-
-`refunds` records the notice, the ground, the fee and the 14-day deadline, and
-says nothing about WHERE the money went. `refundOrder` has exactly one path,
-`provider.refundByTransactionId`, back to the card, so a wallet credit is not a
-second option -- it is a thing the code cannot express. That matters for a
-voucher already redeemed or expired: the value left at the counter, so pulling
-the card money back returns value that was consumed, and a goodwill wallet
-credit is the correct instrument.
-
-Adds `public.refund_destination` (`original_method`, `wallet`) and
-`refunds.destination NOT NULL DEFAULT 'original_method'`. The default states a
-fact rather than a guess: every refund written before this column went back to
-the card, because that was the only path.
-
-Plus `refunds_wallet_has_no_fee`: a wallet refund may carry no cancellation fee.
-The fee is a deduction from money returned to a payment instrument, and a
-goodwill credit that quietly withheld 5% would be a worse product than refusing.
-
-**Dry run against production, rolled back:**
-
-```
-card_with_fee=OK   wallet_with_fee=23514_refused   wallet_no_fee=OK
-default=['original_method'::refund_destination]
-```
-
-**No code ships with it.** `recordRefund` does not send `destination`, because a
-write naming a column that does not exist fails 42703 and would take every
-refund record with it. The wallet path in `refundOrder` follows in a separate
-commit once this is applied.
+Found on disk unlisted on 2026-09-04 and inventoried then; written by a
+parallel session. Converts `orders` to a table partitioned by range on
+`created_at`, one partition per UTC month, provisioned twelve months ahead by
+pg_cron. The primary key becomes `(id, created_at)`; each of the sixteen
+referencing tables gains a trigger-filled `created_at` twin and a composite
+FK preserving its ON DELETE semantics and constraint name. Global invoice
+uniqueness moves to an `orders_invoice_numbers` registry table. Read the file
+header in full before considering apply: it is a structural conversion of the
+busiest financial table.
 
 ## `147_money_agorot_remaining_twins.sql`, added 2026-09-01
 
@@ -1060,9 +962,22 @@ effect, not by trusting this list. The version string is from
 | `143_revoke_unused_definer_execute.sql` | `20260821041759` | `revoke_orphan_security_definer_grants_125` | all 5 target functions have zero anon/authenticated grants |
 | `144_revoke_authenticated_dml.sql` | `20260831140841` | `126_revoke_authenticated_dml` | all 8 target tables have zero anon/authenticated INSERT/UPDATE/DELETE |
 | `145_revoke_check_rate_limit_execute.sql` | `20260831184356` | `127_revoke_check_rate_limit_execute` | `check_rate_limit` has zero anon/authenticated EXECUTE |
-| `166_voucher_transition_guard.sql` | `20260903232445` | `voucher_transition_guard_166` | `tg_vouchers_status_guard` trigger + `fn_vouchers_status_guard` body match the file (compared 2026-09-04) |
-| `167_order_items_money_constraints.sql` | `20260903232455` | `order_items_money_constraints_167` | all 8 `order_items_*_nonneg` constraints + `order_items_money_conservation` exist, expressions match |
-| `168_wallet_ledger_client_readonly.sql` | `20260903232504` | `wallet_ledger_client_readonly_168` | the six write policies are gone; only the two SELECT policies remain, RLS enabled on both tables |
+| `148_refund_destination.sql` | `20260902182227` | `148_refund_destination` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `149_audit_log_append_only.sql` | `20260902182235` | `149_audit_log_append_only` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `150_account_deletion.sql` | `20260902182251` | `150_account_deletion` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `151_analytics_ingest.sql` | `20260902182310` | `151_analytics_ingest` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `153_ai_usage.sql` | `20260902182432` | `153_ai_usage` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `154_reviews_wishlist.sql` | `20260902182447` | `154_reviews_wishlist` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `155_shipment_tracking.sql` | `20260902182500` | `155_shipment_tracking` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `156_analytics_indexes.sql` | `20260902182505` | `156_analytics_indexes` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `157_audit_ip_retention.sql` | `20260902182514` | `157_audit_ip_retention` | in `applied/`, recorded here 2026-09-09 when the ratchet found the row missing |
+| `181a_read_only_enum.sql` + `181b_admin_rbac_hardening.sql` | `20260908203538` + `20260908203558` | `read_only_enum_181a` + `admin_rbac_hardening_181b` | verified 2026-09-09: `read_only` in `user_role`, `is_support()` body carries it, `enforce_profile_privilege_columns()` carries the admin-tier ladder, trigger attached, `profiles_super_admin_mfa` policy live |
+| `210_media_ingest_queue.sql` | `20260909093018` | `media_ingest_queue_210` | table live with RLS on, zero policies, client grants revoked (the file's documented design) |
+| `212_rbac_truncate_and_search_path.sql` | `20260909115250` | `212_rbac_truncate_and_search_path` | verified 2026-09-09 post-apply: 0 client TRUNCATE grants in public, all 3 target functions have pinned search_path |
+| `215_cashback_expiry.sql` | `20260909132729` | `cashback_expiry_215` | verified 2026-09-09 post-apply: live `fn_cashback_expire()` returned swept 0 / errors 0 (no credit is 12 months old yet); the full behavioral proof ran pre-apply in a rolled-back transaction |
+| `235_product_live_and_rating.sql` | `20261014205145` | `product_live_and_rating_235` | verified 2026-10-15 post-apply: trigger `products_broadcast_live` enabled, `anon` EXECUTE on `product_rating_summary(uuid)` true, on `products_broadcast_live()` false |
+| `240_perf_fk_indexes_and_cart_uniqueness.sql` | `20261014205117` | `perf_fk_indexes_and_cart_uniqueness_240` | verified 2026-10-15 post-apply: all ten index names in `pg_indexes`, `carts_profile_id_uidx` unique and partial |
+| `241_rls_initplan_policies.sql` | `20261014205130` | `rls_initplan_policies_241` | verified 2026-10-15 post-apply: six policies, `profiles_super_admin_mfa` RESTRICTIVE, every qual in the InitPlan form |
 
 **`124_categories_sort_order.sql` is a different case.** `categories.sort_order`
 exists in production, so the migration must not be run again, but there is **no
@@ -1174,15 +1089,33 @@ site. The two have to change together.
 - `305_add_gift_scheduled_at_column.sql` - F59 additive `orders.gift_scheduled_at timestamptz` column read by the scheduled-gifts cron. Timestamp, no money.
 - `306_suppliers_open_weekends.sql` - F63 additive nullable `suppliers.open_weekends boolean` read by the weekend filter chip. Boolean, no money.
 - `310_fraud_detection_tables.sql` - F66 `fraud_alerts` and `fraud_ip_signup_log` tables plus additive nullable `orders.device_fingerprint text`, admin-only RLS. No money. The copy that sat in `supabase/migrations/` was removed so the number means one thing.
-- `164_club_tiers.sql` - C11 `compute_tier(user_id)`: club tier from trailing-12-month paid spend, integer agorot. Self-contained and idempotent: re-creates `club_tiers` and its seed exactly as the applied `282_club_tiers.sql`, so it is safe whether or not 282 ran. SECURITY INVOKER, so a customer computes only their own tier. Number 164 was unused; 165 stays cancelled.
-- `311_pg_cron_push_expiry_reminders.sql` - C14 daily 06:00 UTC pg_cron job `push-expiry-reminders` that calls `/api/push/send` for the T-7 and T-1 voucher-expiry notices. Needs pg_cron and pg_net (161) and the `app.settings.base_url` / `app.settings.cron_secret` database settings, as 291 does.
-- `312_payment_production_flag.sql` - G104 seeds the `payment_production` flag in `feature_flags` as `false`: checkout creates no live charge. Boolean, no money.
-- `313_partner_redeem.sql` - G107 `vouchers.partner_pin` (8 digits), `vouchers_redemption_events` audit table and the advisory-locked `redeem_voucher_locked`. No money.
-- `314_wa_otp_enabled_flag.sql` - G111 seeds the `wa_otp_enabled` flag in `feature_flags` as `false`: the WhatsApp sign-in code routes answer 404. Boolean, no money.
-- `315_products_supplier_transfer_days.sql` - C97 adds nullable `products.supplier_transfer_days` (integer 0-90). No money.
-- `316_notification_consents_view.sql` - read view over notification consents. No money.
-- `317_user_passkeys_phone_verifications.sql` - C100 `user_passkeys` view and `user_phone_verifications` table. No money.
-- `318_club_tier_benefits.sql` - C102 `club_tier_benefits` (cashback_percent smallint, early_access_hours integer, gift_value_agorot bigint), one row per club tier, RLS read-active, writes via service role. Integer agorot only.
-- `319_affiliate_links_product.sql` - C103 `affiliate_links.product_id` plus a unique index (affiliate_id, product_id): one link per affiliate per product. No money.
-- `320_products_opening_hours.sql` - C104 `products.opening_hours` jsonb (sun..sat, each `{open, from, to}`) for the open-on-weekend chip (fri or sat open). No money.
-- `321_card_verify_enabled_flag.sql` - C91 seeds the `card_verify_enabled` flag in `feature_flags` as `false`: supplier applications skip the 1 ILS card step. Boolean, no money.
+
+### Rows added 2026-10-30 for files that had none
+
+- `164_club_tiers.sql` - compute_tier(user_id) - a customer's club tier from trailing-12-month spend. Pending, not applied.
+- `190_whatsapp_otp.sql` - WhatsApp OTP verification via Twilio. Pending, not applied.
+- `193_affiliate_campaigns.sql` - Affiliate campaigns, click and conversion tracking tables. Number 193 is also spent by applied files. Pending, not applied.
+- `195_push_subscriptions.sql` - Web push subscription storage. Pending, not applied.
+- `196_push_notifications_tracking.sql` - Web push delivery and click tracking. Pending, not applied.
+- `236_orders_shipping_method.sql` - Where the shopper's shipping choice lands on the order. Pending, not applied.
+- `237_user_ban_and_store_settings.sql` - Two things the admin panel had no place to write. Pending, not applied.
+- `238_search_events_daily.sql` - A day axis for search analytics. Pending, not applied.
+- `239_push_deliveries_sms_log_opt_outs.sql` - The three tables the notification stack writes to and production did not have. Pending, not applied.
+- `242_job_dlq.sql` - The dead-letter table for the general job queue. Pending, not applied.
+- `243_club_tiers.sql` - Customer club thresholds as an operator-editable table (closeout L10). Pending, not applied.
+- `243_product_full_address.sql` - `products.full_address` column for the complete street address. Pending, not applied.
+- `244_abandoned_cart_second_reminder.sql` - the second abandoned-cart reminder. Pending, not applied.
+- `244_product_is_physical_shipping.sql` - `products.is_physical_shipping` boolean. Pending, not applied.
+- `245_supplier_onboarding.sql` - Applying to be a supplier, as a thing separate from being one. Pending, not applied.
+- `305_rename_gift_send_at_to_gift_scheduled_at.sql` - Rename gift_send_at to gift_scheduled_at for clarity. Pending, not applied.
+- `311_pg_cron_push_expiry_reminders.sql` - pg_cron job for voucher-expiry reminders (C14). Pending, not applied.
+- `312_otp_attempts_wa_otp_flag.sql` - otp_attempts audit table + wa_otp_enabled flag (C90, rc5 F15). Pending, not applied.
+- `313_card_verify_enabled_flag.sql` - card_verify_enabled flag (C91, F07). Pending, not applied.
+- `314_voucher_transfer.sql` - voucher transfer between customers (G105). Pending, not applied.
+- `171_category_name_shekel_order.sql` - The shekel sign in a category name renders on the wrong side. Applied; lives in `migrations/applied/`.
+- `226_fraud_controls.sql` - Two server-only tables behind the checkout fraud gate (fraud_flags, fraud_review_queue). Applied; lives in `migrations/applied/`.
+- `228_invoice_sequences.sql` - Platform-owned sequential document numbering per terminal and series. Applied; lives in `migrations/applied/`.
+- `231_bell_fanout.sql` - The writer 198 never had: outbox rows fan out into the bell. Applied; lives in `migrations/applied/`.
+- `232_reviews_admin_moderation_only.sql` - Reviews are collected, not published: owner-plus-admin access only. Applied; lives in `migrations/applied/`.
+- `233_wishlist_alerts.sql` - The two small tables that let the wishlist alerts of 200 actually run. Applied; lives in `migrations/applied/`.
+- `234_gift_cards.sql` - Gift cards as a stored-value instrument, additive only. Applied; lives in `migrations/applied/`.

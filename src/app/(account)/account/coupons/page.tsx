@@ -1,4 +1,5 @@
 import CouponListSkeleton from '@/components/account/CouponListSkeleton'
+import TransferCouponForm from '@/components/account/TransferCouponForm'
 import {
   COUPON_TONE_CHIP,
   couponMoneyView,
@@ -7,6 +8,7 @@ import {
   formatCouponCode,
   formatCouponDate,
 } from '@/lib/vouchers/coupon-view'
+import { isTransferable } from '@/lib/vouchers/transfer'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -84,6 +86,7 @@ async function CouponsContent() {
                 <Link className="account-btn" href={`/coupon/${voucher.id}`}>
                   {status.presentable ? 'הצגת הקופון ו-QR' : 'פרטי הקופון'}
                 </Link>
+                {isTransferable(voucher) && <TransferCouponForm voucherId={voucher.id} />}
               </div>
             </div>
           )

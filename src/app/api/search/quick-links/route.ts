@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -71,7 +72,7 @@ async function handleGET(): Promise<NextResponse> {
 
   return NextResponse.json(
     { popular, recent: recent.map((row) => row.term) },
-    { headers: { 'Cache-Control': 'private, no-store' } },
+    { headers: { 'Cache-Control': CacheControl.private } },
   )
 }
 

@@ -34,7 +34,7 @@ export interface LiveStock {
   threshold: number | null
 }
 
-const UNTRACKED_STOCK: LiveStock = { available: null, initial: null, threshold: null }
+export const UNTRACKED_STOCK: LiveStock = { available: null, initial: null, threshold: null }
 
 export async function readLiveStock(
   productId: string,
@@ -53,6 +53,7 @@ export async function readLiveStock(
         .from('products')
         .select('stock_initial, low_stock_threshold')
         .eq('id', productId)
+        .is('deleted_at', null)
         .maybeSingle(),
     ])
 

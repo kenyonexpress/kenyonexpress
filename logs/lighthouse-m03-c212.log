@@ -1,0 +1,6 @@
+m03-c212 /category/hot-deals mobile default, fresh next start :3841, 3 runs
+#1: score 82 FCP 1.8s LCP 4.6s TBT 50ms CLS 0.014
+#2: score 90 FCP 1.8s LCP 3.5s TBT 40ms CLS 0.029
+#3: score 80 FCP 2.4s LCP 4.8s TBT 20ms CLS 0.014
+scores: 82 / 90 / 80 (median 82)
+category_products_failed x10 (suppliers.open_weekends does not exist, migration 306 unapplied) -> grid empty/partial, not a valid G23 sign-off

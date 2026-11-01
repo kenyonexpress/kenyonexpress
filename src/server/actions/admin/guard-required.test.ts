@@ -117,7 +117,10 @@ describe('the read-only staff role cannot write', () => {
   })
 
   it('does reach the panel, because reading is the whole point of the role', () => {
-    const fn = roles.slice(roles.indexOf('export function isPanelRole'))
-    expect(fn.slice(0, 200)).toContain("'support'")
+    // isPanelRole reaches 'support' through isSupportRole rather than naming it.
+    const panel = roles.slice(roles.indexOf('export function isPanelRole'))
+    expect(panel.slice(0, 200)).toContain('isSupportRole(role)')
+    const support = roles.slice(roles.indexOf('export function isSupportRole'))
+    expect(support.slice(0, 200)).toContain("'support'")
   })
 })

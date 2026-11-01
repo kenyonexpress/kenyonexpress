@@ -1,3 +1,4 @@
+import RecentlyViewedRail from '@/components/storefront/RecentlyViewedRail'
 import DealChips from '@/components/catalog/DealChips'
 import BenefitBar from '@/components/home/BenefitBar'
 import CitiesRow from '@/components/home/CitiesRow'
@@ -111,6 +112,10 @@ export default function HomePage() {
         </Suspense>
       </div>
       <DealsOfTheDay />
+      {/* Below the grid on purpose. It renders nothing on the server and
+          nothing for a browser with no history, which is every run of the
+          comparison gate, and when it does appear only the footer moves. */}
+      <RecentlyViewedRail placement="home" />
     </>
   )
 }

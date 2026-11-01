@@ -59,6 +59,13 @@ refs/
 # WordPress import run artifacts (raw payloads, normalized rows, reports, logs)
 wp_import/
 
+# Media ingest local fallback (scripts/media-ingest): the bytes R2 would hold,
+# stored on disk while R2 is not enabled on the Cloudflare account. Not
+# committed -- the repo rule is no binaries, the media_ingest_queue table in
+# production records where every object lives, and the daily Desktop tar backs
+# the files up. Enabling R2 and re-running the ingest re-homes them.
+public/images/cdn/
+
 # DR schema dumps: real data, rotated by scripts/backup-schema.sh. Never committed.
 backups/
 .env*

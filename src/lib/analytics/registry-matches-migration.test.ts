@@ -13,10 +13,10 @@ import { describe, expect, it } from 'vitest'
  * disappears, and the only symptom is a dashboard that is quietly missing a
  * funnel step.
  *
- * That is not hypothetical. Migration 151 shipped the whitelist with the eight
- * CLIENT names only, and all four SERVER names have been discarded ever since,
- * while `trackServerEvent` has been emitting them since 29f74812e. Read off the
- * deployed function body on 2026-09-06, the live list is:
+ * That is not hypothetical. The deployed whitelist carries the eight CLIENT
+ * names only, so all four SERVER names are discarded on arrival. Read off the
+ * deployed function body on 2026-09-07 (MCP, preflight block 2 in the file
+ * below), the live list is:
  *
  *   page_view, view_product, view_category, add_to_cart,
  *   remove_from_cart, checkout_step, web_vital, whatsapp_click
@@ -32,14 +32,28 @@ import { describe, expect, it } from 'vitest'
  * ninth client event or a fifth server event and does not widen 169, this goes
  * red at the moment the name is added rather than silently after it deploys.
  *
- * When 169 is applied, move this to read `migrations/applied/` and it keeps
- * working unchanged. The invariant is the same either way.
+ * What was measured before applying, and what makes the whole thing worth
+ * pinning: production held 4 orders, 2 of them paid, and `analytics_events`
+ * held ZERO `purchase` rows. Only `page_view` and `web_vital` had ever landed.
+ *
+ * This test still does not assert the live database -- it cannot. What it pins
+ * is the thing that is in this repo's control: **the migration must cover
+ * every name the registry can emit.** If someone adds a ninth client event or
+ * a fifth server event and does not widen the whitelist, this goes red at the
+ * moment the name is added rather than silently after it deploys. That is the
+ * same invariant it always had; only the directory changed.
+ *
+ * TWO FILES CARRY THIS MIGRATION AND THAT IS NOT A MISTAKE TO FIX HERE. `169`
+ * and `180` are byte-identical SQL, written by two sessions that could not see
+ * each other. One `CREATE OR REPLACE` applied both. This reads 180 because
+ * that is the number it read before, and changing which one it points at would
+ * be churn with no invariant behind it.
  */
 
 const MIGRATION = 'migrations/applied/169_analytics_server_event_names.sql'
 
 /**
- * The quoted names inside the whitelist of the `CREATE OR REPLACE` in 169.
+ * The quoted names inside the whitelist of the `CREATE OR REPLACE` in 180.
  *
  * Parsed from the `NOT IN (...)` list rather than from the whole file, so a
  * name that happens to appear in a comment cannot make this pass.
@@ -51,7 +65,7 @@ function migrationWhitelist(): string[] {
   return [...list.matchAll(/'([a-z_]+)'/g)].map((m) => m[1] as string)
 }
 
-describe('the analytics registry and the pending ingest migration', () => {
+describe('the analytics registry and the applied ingest migration', () => {
   it('parses a real whitelist out of the migration, not an empty match', () => {
     // Without this the whole file passes vacuously if the regex stops matching.
     const names = migrationWhitelist()

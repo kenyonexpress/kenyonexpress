@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import CardOfferDeadline from '@/components/category/CardOfferDeadline'
 import ProductLocation from '@/components/product-card/ProductLocation'
 import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
@@ -37,7 +38,7 @@ import Link from 'next/link'
 const THUMB_MAX_PX = 186
 const THUMB_SIZES = `(max-width: 497px) calc(50vw - 63px), ${THUMB_MAX_PX}px`
 
-type GalleryAsset = {
+export type GalleryAsset = {
   alt: string | null
   blurDataURL: string | null
 }
@@ -51,9 +52,12 @@ export type CategoryProduct = {
   images: unknown
   stock_quantity?: number | null
   categories?: { name_he: string; slug: string }[]
+  /** Product's own city. */
+  city?: string | null
   /** Normalised supplier join. Present once the query selects it. */
   supplier?: { city?: string | null } | null
-  city?: string | null
+  /** ISO timestamp the offer lapses at; drives the deadline countdown. */
+  offer_valid_until?: string | null
   latitude?: number | null
   longitude?: number | null
   /** Set by sortByDistance when the customer asked for "near me". */
@@ -137,6 +141,9 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
               <span className="category-card__badge">
                 -<span className="percentage">{pct}%</span>
               </span>
+            )}
+            {product.offer_valid_until && (
+              <CardOfferDeadline validUntilIso={product.offer_valid_until} />
             )}
             {thumb ? (
               // width/height stay the 186 square the raw <img> declared: they are

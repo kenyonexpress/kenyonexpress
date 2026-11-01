@@ -27,6 +27,18 @@ vi.mock('@/components/cart/CartProvider', () => ({
   useCart: () => ({ addToCart, isPending: false }),
 }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
+// The tag line now mounts the wishlist heart (a server action behind it) and
+// the summary subscribes to its live topic; neither has a request scope or a
+// socket here, and neither is what this file is about.
+vi.mock('@/server/actions/reviews', () => ({
+  getWishlistSaved: async () => false,
+  toggleWishlist: async () => ({ ok: true, saved: true }),
+}))
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => {
+    throw new Error('no socket in this suite')
+  },
+}))
 
 import ProductInfo from './ProductInfo'
 

@@ -126,6 +126,9 @@ export default async function GrowthDashboard() {
         </div>
         <Link href="/admin/discounts" className="inline-block text-sm underline">
           לניהול הקמפיינים
+        </Link>{' '}
+        <Link href="/admin/flash-deals" className="inline-block text-sm underline">
+          לשינויי מחיר מתוזמנים
         </Link>
       </section>
 

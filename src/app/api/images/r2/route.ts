@@ -1,3 +1,4 @@
+import { ImmutableAsset } from '@/lib/cache/http'
 /**
  * Cloudflare R2 Image Resizing proxy route.
  *
@@ -67,7 +68,7 @@ async function handleGET(request: NextRequest) {
 
     // Stream the image response with appropriate caching headers
     const contentType = response.headers.get('content-type') || 'image/webp'
-    const cacheControl = 'public, max-age=31536000, immutable'
+    const cacheControl = ImmutableAsset
 
     return new NextResponse(response.body, {
       status: 200,
@@ -106,7 +107,7 @@ async function handleHEAD(request: NextRequest) {
       status: response.status,
       headers: {
         'Content-Type': response.headers.get('content-type') || 'image/webp',
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': ImmutableAsset,
       },
     })
   } catch (_error) {

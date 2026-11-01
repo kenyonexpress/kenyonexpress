@@ -47,7 +47,16 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
     is_active: c.is_active,
   }))
 
-  const parentOptions = active.map((c) => ({ id: c.id, name_he: c.name_he }))
+  // `slug` and `parent_id` ride along because the form's parent dropdown is
+  // filtered by `parentChoiceError`, which needs the shape of the tree and not
+  // just a list of names. `id` and `name_he` was everything the previous
+  // filter, id inequality, could have used.
+  const parentOptions = active.map((c) => ({
+    id: c.id,
+    slug: c.slug,
+    name_he: c.name_he,
+    parent_id: c.parent_id,
+  }))
 
   return (
     <CategoriesTable

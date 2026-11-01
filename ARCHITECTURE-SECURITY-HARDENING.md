@@ -596,3 +596,65 @@ physically in a shop. Controls:
 Items 1, 2 and 3 are engineering work. Items 5 and 6 are configuration and are
 the cheapest risk reduction available: both are a settings change, and both
 currently mean the deployed artefact is not guaranteed to be the reviewed one.
+
+---
+
+## 11. Re-measured 2026-09-17: the six pillars, what stood and what was added
+
+Measured on branch `autopilot` before writing, then built. Everything in this
+section is pinned by a test, and each test is a scan of `src/` rather than a
+check of the files somebody remembered.
+
+| Pillar | Stood already | Added |
+|---|---|---|
+| Rate limiting (Upstash) | `lib/rate-limit/limiter.ts`: Upstash sliding window, Postgres `check_rate_limit` fallback, open-and-loud last; 40 named policies; every cookie-authenticated mutating route already limited | `lib/rate-limit/route-coverage.test.ts`: every route file exporting `POST/PUT/PATCH/DELETE` calls a limiter or is listed with the secret/signature guard that replaces one, and the guard regex must still match the source |
+| CSRF / SameSite | Server Actions carry Next's Origin check; every cookie written is `SameSite=Lax`; `/api/a` had its own Origin check | **`lib/security/same-origin.ts`**, wired into `src/proxy.ts` before the session refresh: a mutating call to `/api/*` whose `Sec-Fetch-Site`, `Origin` or `Referer` names another site is a 403 `cross_site_request`. No path list: server-to-server callers send none of those headers and pass as `no-browser-context`. `lib/security/cookie-attributes.test.ts` walks every `.set(` on a cookie jar and requires `sameSite` plus `httpOnly` (the consent cookie is the one listed exception, with its reason) |
+| CSP / XSS | Strict headers on every route; `frame-ancestors` path-dependent for the Cardcom frame; `jsonLdScript` escapes `<` | **Violation reporting**: `sentrySecurityEndpoint(dsn)` derives Sentry's security endpoint from the DSN and `next.config.ts` emits `report-uri`, `report-to` and `Reporting-Endpoints` when a DSN is present at build. `lib/security/inline-html.test.ts` lists every `dangerouslySetInnerHTML` in `src/` and allows two producers only, and bans `.innerHTML =`, `insertAdjacentHTML` and `document.write` outright |
+| Parameterized queries | PostgREST values travel as URL parameters; `sanitizeOrTerm` / `likeContains` existed and the admin `.or()` sites were pinned | `lib/db/parameterized-queries.test.ts` over all of `src/`: every `${}` inside an `.or()` template is a sanitiser output or a guarded trusted producer (server clock, JWT subject, a two-constant map); no LIKE pattern is built by interpolation; every `.rpc()` name is a literal or a typed literal-union wrapper; no `sql.raw` / `.unsafe`. Two LIKE sites were fixed on the way (admin coupon codes, phone-suffix lookup) plus the admin products search |
+| GDPR: export, delete, consent | `/api/account/export` (RLS-scoped, masked card columns, throttled); self-service deletion with anonymisation cascade and an `audit_log` proof of erasure; consent banner writing `ke_consent` | **Consent withdrawal** on `/account/privacy` (`components/account/ConsentSettings.tsx`): reads the banner's cookie, states the decision in Hebrew, and offers only the decision not yet made, through the same server action the banner uses. **Export is now recorded** in `audit_log` (`data_export` / `created`, with the sections that could not be read), the same table the deletion cascade writes to, so both data-subject rights leave a dated row |
+| PCI via Cardcom | `checkout/pci-scope.test.ts`: no card input in checkout, no PAN posted by the adapter, sandboxed frame, 3DS on the hosted page | Two assertions added: the export selects only masked `payment_tokens` columns and never a token, and the log scrubber redacts every card-shaped key (`cardcom_token`, `card_number`, `cvv`) while leaving `last_4` |
+
+### 11.1 The nonce, decided rather than deferred
+
+§7.3 and §10 item 1 called the missing nonce "until that lands". It cannot
+land as described. Next applies a nonce during server-side rendering of the
+request that carries it, so a page has to be **dynamically rendered** to get
+one (Next's own CSP guide, "Forcing dynamic rendering"). This site runs
+`cacheComponents: true` and prerenders the storefront: the home page, every
+category and every product are served from the static cache with their inline
+scripts baked in at build time. A nonce in the header would not be in those
+scripts, and a `strict-dynamic` policy would block the page's own hydration.
+Making every route dynamic to fix that is the performance regression the
+cache exists to prevent.
+
+What changed instead is that the gap is **observable**: with a DSN configured,
+every CSP violation is a Sentry event with a `blocked-uri` and a
+`script-sample`. And the set of inline scripts that would need a nonce on the
+day the storefront moves off the static cache is already enumerated by
+`inline-html.test.ts`: `jsonLdScript(...)` (data blocks, not executed) and
+`CONSENT_PREPAINT_SCRIPT` (one constant with no request data in it).
+
+### 11.2 Where the second CSRF layer sits, and why there is no exemption list
+
+`isCrossSiteApiMutation` runs in the proxy immediately after the request id
+is minted and before the legacy-redirect lookup and the Supabase refresh, so a
+rejected request costs one header read and no network. It has no allowlist of
+paths. The routes that take server-to-server traffic (`/api/payments/cardcom/
+webhook`, `/api/webhooks/*`, `/api/cron/*`, `/api/search/index-*`, `/api/alerts/
+uptimerobot`, the till app under `/api/supplier/*` with a bearer) never send
+`Sec-Fetch-Site`, `Origin` or `Referer`, so they fall through to
+`no-browser-context` and pass on their own. A path list would be a second copy
+of the route tree, and it would be stale the first time a route moved.
+
+`same-site` is treated as foreign on purpose. This site has no sibling
+subdomain that should be posting to it.
+
+### 11.3 Open, still
+
+- §10 item 2 (default privileges on dashboard-created tables) and item 4
+  (`audit_log` append-only by trigger) are unchanged: both need a privileged
+  connection or a migration applied to production, and neither was in this
+  goal's scope.
+- `Reporting-Endpoints` depends on `NEXT_PUBLIC_SENTRY_DSN` (or `SENTRY_DSN`)
+  being present when `next build` runs. Vercel injects it; a laptop build
+  emits the policy without the reporting directives, which the tests cover.

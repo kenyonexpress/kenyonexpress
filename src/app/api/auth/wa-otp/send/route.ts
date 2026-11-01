@@ -1,6 +1,5 @@
 import { toE164Israeli } from '@/lib/auth/phone-otp'
 import { sendEmail } from '@/lib/email/resend'
-import { getSupabaseFlags } from '@/lib/flags/supabase-flags'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { sendSmsOtp } from '@/lib/sms/send-otp-sms'
@@ -8,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { sendWhatsappOtp } from '@/lib/whatsapp/meta-cloud'
 import { WA_OTP_TTL_MS, hashOtp, newOtpCode } from '@/server/auth/wa-otp'
+import { recordOtpAttempt, waOtpEnabled } from '@/server/auth/wa-otp-gate'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -22,7 +22,8 @@ import { type NextRequest, NextResponse } from 'next/server'
 const GENERIC = { ok: true, message: 'אם המספר רשום אצלנו, שלחנו קוד כניסה בוואטסאפ או במייל.' }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  if (!(await getSupabaseFlags()).wa_otp_enabled) {
+  // Dark until Meta business verification (flag wa_otp_enabled, default off).
+  if (!(await waOtpEnabled())) {
     return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 })
   }
   const body = (await request.json().catch(() => null)) as { phone?: unknown } | null
@@ -31,9 +32,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const ip = await getClientIp()
   if (
+    // 3 per 15 min per phone (C90); literals so the rate-limit inventory can read them.
     !(await checkRateLimit(`wa-otp-send:${phone}`, 3, 900)) ||
     !(await checkRateLimit(`wa-otp-send-ip:${ip}`, 20, 3600))
   ) {
+    await recordOtpAttempt({
+      phone,
+      kind: 'send',
+      channel: 'whatsapp',
+      outcome: 'rate_limited',
+      ip,
+    })
     return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
   }
 
@@ -71,7 +80,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   }
 
   const sent = await sendWhatsappOtp(phone, code)
-  if (sent.ok) return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
+  if (sent.ok) {
+    await recordOtpAttempt({
+      phone,
+      userId: profile.id,
+      kind: 'send',
+      channel: 'whatsapp',
+      outcome: 'sent',
+      ip,
+    })
+    return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
+  }
   if (!sent.skipped) log.warn('wa_otp.send_failed', { reason: sent.reason })
 
   // WhatsApp did not deliver. Only an unconfigured or template-rejecting Meta
@@ -95,12 +114,25 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       html: `<div dir="rtl"><p>קוד הכניסה שלך:</p><p style="font-size:24px;letter-spacing:4px"><b>${code}</b></p><p>הקוד תקף ל-10 דקות.</p></div>`,
       text: `קוד הכניסה שלך: ${code} (תקף ל-10 דקות)`,
     })
-    if (mail.ok) {
-      await setChannel(admin, phone, code, 'email')
-      return NextResponse.json({ ...GENERIC, channel: 'email' })
-    }
-    log.warn('wa_otp.email_fallback_failed', { reason: mail.reason })
+    if (!mail.ok) log.warn('wa_otp.email_fallback_failed', { reason: mail.reason })
+    await recordOtpAttempt({
+      phone,
+      userId: profile.id,
+      kind: 'send',
+      channel: 'email',
+      outcome: 'fallback_email',
+      ip,
+    })
+    return NextResponse.json({ ...GENERIC, channel: 'email' })
   }
+  await recordOtpAttempt({
+    phone,
+    userId: profile.id,
+    kind: 'send',
+    channel: 'whatsapp',
+    outcome: 'send_failed',
+    ip,
+  })
   return NextResponse.json({ ...GENERIC, channel: 'whatsapp' })
 }
 

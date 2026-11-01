@@ -13,6 +13,20 @@
 > was built under another name. Verify against `docs/DATA-MODEL.md` before
 > writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
 
+> **As built (2026-09-17).** The design below chose Serwist; the shipped
+> worker is hand-written and dependency-free, and the two differ on purpose.
+> Read these files, not the sketches further down:
+>
+> | Concern | Where | What it does |
+> |---|---|---|
+> | Service worker | `public/sw.js` | cache-first for `/_next/static`, `/icons`, and a bounded (80) image cache; network-first for documents with last-seen browse page, then `/offline`, as fallbacks; bypasses non-GET, cross-origin, Range, `/api`, `/checkout`, `/cart`, `/account`, `/supplier`, `/admin`, `/scan`. Push + notification click with the target confined to a same-origin path. |
+> | Registration | `src/components/pwa/ServiceWorkerRegistrar.tsx` | production only, after `load`. |
+> | Manifest | `src/app/manifest.ts` | typed metadata route; `start_url` is a bare `/` so the cached document is the one served, not `?utm_source=pwa` as proposed in section 2. |
+> | Install prompt | `src/components/pwa/InstallPrompt.tsx` + `src/lib/pwa/install-surface.ts` | Chrome/Android off a captured `beforeinstallprompt`; iOS (every browser, and an iPad in desktop mode) gets share-sheet instructions because WebKit fires no event. Both gated on a real interaction, both share one dismissal key, both reserve their space via `data-pwa-prompt`. |
+> | Offline page | `src/app/offline/page.tsx` | static server component, retry is a plain link, `noindex`. |
+> | iOS metadata | `src/app/layout.tsx` | `apple-touch-icon`, `appleWebApp`, `theme-color` from `SITE.brand.primary`. |
+> | Tests | `src/components/pwa/sw-runtime.test.ts` executes the worker against a fake CacheStorage; `manifest.test.ts` pins the bypass list in the source; `install-prompt.test.tsx`, `install-surface.test.ts`, `offline/page.test.tsx`; `e2e/pwa.spec.ts` asks the server for every URL an installer needs. |
+
 KenyonExpress Progressive Web App architecture (binding).
 
 Status: BINDING for `arch/pwa` (2026-07-30)

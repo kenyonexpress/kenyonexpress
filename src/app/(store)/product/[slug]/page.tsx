@@ -3,6 +3,7 @@ import ViewTracker from '@/components/analytics/ViewTracker'
 import LocationPin from '@/components/product/LocationPin'
 import PurchaseCountWrapper from '@/components/product/PurchaseCountWrapper'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
+import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductGalleryMobile from '@/components/storefront/ProductGalleryMobile'
 import ProductInfo from '@/components/storefront/ProductInfo'
@@ -12,6 +13,8 @@ import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockNotificationWrapper from '@/components/storefront/StockNotificationWrapper'
 import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import { getCategoryIndex } from '@/lib/category-page'
+import { categoryAncestors } from '@/lib/category-tree'
 import {
   resolveStorefrontProductType,
   storefrontProductTypeLabel,
@@ -142,7 +145,16 @@ export default async function ProductPage({ params }: Props) {
   const detail = await loadProductBySlug(slug)
   if (!detail) notFound()
 
-  const { product, images, supplier, variants, galleryAssets, couponOffer, recurringOffer } = detail
+  const {
+    product,
+    images,
+    supplier,
+    variants,
+    galleryAssets,
+    couponOffer,
+    recurringOffer,
+    rating,
+  } = detail
 
   const category = Array.isArray(product.categories)
     ? null
@@ -192,10 +204,20 @@ export default async function ProductPage({ params }: Props) {
     // No rating: the storefront has no reviews UI, and an AggregateRating with
     // no visible reviews behind it is a structured-data policy violation.
   })
+  /*
+   * The full trail, root first. This built `בית > category > product`, one hop,
+   * so a product in a nested category dropped every level in between from both
+   * the visible breadcrumb and the BreadcrumbList. One cached read, and
+   * `categoryAncestors` returns [] for a root category, which is the old shape.
+   */
+  const categoryTrail = category
+    ? [...categoryAncestors(await getCategoryIndex(), category.id), category]
+    : []
+
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
       { name: 'בית', path: '/' },
-      ...(category ? [{ name: category.name_he, path: `/category/${category.slug}` }] : []),
+      ...categoryTrail.map((c) => ({ name: c.name_he, path: `/category/${c.slug}` })),
       { name: product.name_he, path: `/product/${product.slug}` },
     ],
     siteUrl,
@@ -245,12 +267,14 @@ export default async function ProductPage({ params }: Props) {
             the columns block below it on y250. */}
         <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
           <Link href="/">בית</Link>
-          {category && (
-            <>
+          {/* The same `categoryTrail` the BreadcrumbList above is built from,
+              so the two cannot disagree about how deep the catalogue is. */}
+          {categoryTrail.map((crumb) => (
+            <span key={crumb.slug}>
               <span className="pdp-breadcrumb__sep">/</span>
-              <Link href={`/category/${category.slug}`}>{category.name_he}</Link>
-            </>
-          )}
+              <Link href={`/category/${crumb.slug}`}>{crumb.name_he}</Link>
+            </span>
+          ))}
           <span className="pdp-breadcrumb__sep">/</span>
           <span>{product.name_he}</span>
         </nav>
@@ -306,6 +330,7 @@ export default async function ProductPage({ params }: Props) {
             isCoupon={isCoupon}
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
+            rating={rating}
           />
           <GiftButton productId={product.id} isCoupon={isCoupon} />
           <StockNotificationWrapper
@@ -315,9 +340,15 @@ export default async function ProductPage({ params }: Props) {
           />
         </div>
 
-        {/* Coupon-only: how and by when the voucher may be redeemed. */}
+        {/* Coupon-only: how and by when the voucher may be redeemed. The QR
+            block hands the deal to a phone and says what the two deadlines
+            mean; the terms block under it prints them. */}
         {couponOffer && (
           <div className="pdp-coupon">
+            <CouponQrExpiry
+              offer={couponOffer}
+              productUrl={`${siteUrl.replace(/\/+$/, '')}/product/${encodeURIComponent(product.slug)}`}
+            />
             <CouponTerms
               offer={couponOffer}
               terms={product.coupon_terms_he}

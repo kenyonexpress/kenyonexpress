@@ -1,4 +1,5 @@
 import { type Agorot, agorot } from '@/lib/money'
+import type { ShippingMethodId } from '@/lib/shipping/methods'
 
 export type CartStorageItem = {
   product_id: string
@@ -126,6 +127,27 @@ export type AppliedCoupon = {
   label: string
   /** Integer agorot, like every other money field on this view. */
   discount: Agorot
+  /**
+   * Per-code breakdown when several campaign codes stack, in application
+   * order. Absent for a single code. Checkout claims each entry against its
+   * own campaign row, so the amounts here are what claim_order_discount is
+   * asked to hold, and their sum is `discount`.
+   */
+  stack?: { code: string; discountAgorot: number }[]
+}
+
+/**
+ * The shipping method the shopper has picked, as the cart renders it.
+ *
+ * Only ever produced by the server from the registry in
+ * `lib/shipping/methods.ts`. The browser holds the method id in a cookie and
+ * nothing else; the label and the cost are re-resolved on every render.
+ */
+export type CartShipping = {
+  method: ShippingMethodId
+  label: string
+  /** Integer agorot added to the on-site charge. Zero for every method today. */
+  cost: Agorot
 }
 
 export type CartView = {
@@ -141,7 +163,16 @@ export type CartView = {
   coupon: AppliedCoupon | null
   /** Agorot off the on-site charge. Zero without a valid coupon. */
   discount: Agorot
-  /** What the card is actually charged: subtotal - discount, never below zero. */
+  /**
+   * Null when nothing in the cart needs shipping: a coupon is redeemed at the
+   * business and a selector on a coupon-only cart asks a question with no
+   * answer. Present whenever at least one line is physical.
+   */
+  shipping: CartShipping | null
+  /**
+   * What the card is actually charged: subtotal - discount + shipping cost,
+   * never below zero.
+   */
   total: Agorot
 }
 
@@ -157,6 +188,7 @@ export const EMPTY_CART: CartView = {
   balance_due_at_business: ZERO,
   coupon: null,
   discount: ZERO,
+  shipping: null,
   total: ZERO,
 }
 

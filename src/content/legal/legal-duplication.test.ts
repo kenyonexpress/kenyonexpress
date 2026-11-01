@@ -31,10 +31,10 @@ import { describe, expect, it } from 'vitest'
 
 const CANONICAL = [
   'src/app/(legal)/accessibility/page.tsx',
+  'src/app/(legal)/cookie-policy/page.tsx',
   'src/app/(legal)/privacy/page.tsx',
   'src/app/(legal)/returns/page.tsx',
   'src/app/(legal)/terms/page.tsx',
-  'src/app/(legal)/cookie-policy/page.tsx',
 ]
 
 /** Redirect stubs only: each 308s onto the canonical path of the same document. */
@@ -71,6 +71,9 @@ function legalPages(): string[] {
       // A pattern that silently under-matches is worse here than no pattern.
       .filter((file) => /terms|privacy|accessib|cookie|returns|legal\//.test(file))
       .filter((file) => !file.includes('/checkout/'))
+      // The account's privacy page is a self-service control panel (export,
+      // consent switch, deletion) that LINKS to the documents; it is not one.
+      .filter((file) => !file.startsWith('src/app/(account)/'))
       .sort()
   )
 }

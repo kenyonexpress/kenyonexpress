@@ -1,9 +1,10 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
 import { canSeeMoney } from '@/lib/admin/permissions'
+import { adminProductSearchFilter } from '@/lib/admin/product-search'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
-import { Plus } from 'lucide-react'
+import { FileUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'מוצרים' }
@@ -20,6 +21,9 @@ const STATUS_FILTERS = [
 
 const adminBtn =
   'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover'
+
+const adminBtnGhost =
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50'
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -57,7 +61,8 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     .range(from, to)
 
   if (status) query = query.eq('status', status)
-  if (q) query = query.ilike('name_he', `%${q}%`)
+  const searchFilter = adminProductSearchFilter(q)
+  if (searchFilter) query = query.or(searchFilter)
 
   const [{ data: products, count }, { data: categories }] = await Promise.all([
     query,
@@ -128,7 +133,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           <input
             name="q"
             defaultValue={q}
-            placeholder="חיפוש בשרת..."
+            placeholder="חיפוש לפי שם או מק״ט..."
             className="rounded-lg border border-black/10 bg-surface px-3 py-1.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
           <button

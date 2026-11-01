@@ -6,6 +6,7 @@ import {
 } from '@/lib/commerce/order-money-columns'
 import { log } from '@/lib/observability/log'
 import { referralFingerprint } from '@/lib/referrals/fingerprint'
+import { payReferralIfReady } from '@/server/referrals/pay'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -93,7 +94,12 @@ export async function completeReferralForOrder(
       return
     }
 
-    const outcome = result as { ok?: boolean; reason?: string; status?: string } | null
+    const outcome = result as {
+      ok?: boolean
+      reason?: string
+      status?: string
+      referral_id?: string
+    } | null
     // `no_referral` and `program_inactive` are the ordinary answers for almost
     // every order on this site, so they are info and not warnings. A log level
     // that fires on every purchase is a log level nobody reads.
@@ -102,6 +108,15 @@ export async function completeReferralForOrder(
       ok: outcome?.ok === true,
       reason: outcome?.reason ?? null,
     })
+
+    // `ready_to_pay` is an instruction, not a status. It used to be logged and
+    // dropped, which left a clean referral sitting at `pending` in the review
+    // queue waiting for a human -- exactly what `require_manual_approval=false`
+    // says should not be needed. The other outcomes are all terminal here:
+    // `held_for_review` is a deliberate stop, and the rest moved nothing.
+    if (outcome?.reason === 'ready_to_pay' && typeof outcome.referral_id === 'string') {
+      await payReferralIfReady(admin, outcome.referral_id)
+    }
   } catch (error) {
     log.warn('referrals.complete_threw', {
       orderId: input.orderId,

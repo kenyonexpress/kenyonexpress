@@ -14,6 +14,7 @@ import {
   isLapsedButUnswept,
 } from '@/lib/admin/voucher-view'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { likeContains } from '@/lib/utils/search-escape'
 import { AlertTriangle, CalendarX, QrCode, ScanLine, Ticket } from 'lucide-react'
 import Link from 'next/link'
 import { z } from 'zod'
@@ -85,7 +86,7 @@ export default async function AdminVouchersPage(props: {
     .range(from, to)
 
   if (params.status) query = query.eq('status', params.status)
-  if (params.q) query = query.ilike('code', `%${params.q}%`)
+  if (params.q) query = query.ilike('code', likeContains(params.q))
 
   const { data, count } = await query
   const rows = (data ?? []) as unknown as VoucherRow[]

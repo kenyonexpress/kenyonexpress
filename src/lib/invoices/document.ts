@@ -104,7 +104,7 @@ export function documentTypeForOrder(
  */
 export const DEFAULT_VAT_PERCENT = VAT_RATE_BP / 100
 
-interface InvoiceCustomer {
+export interface InvoiceCustomer {
   name: string | null
   email: string | null
   phone: string | null
@@ -117,7 +117,7 @@ export interface InvoiceLineInput {
   totalAgorot: number
 }
 
-interface InvoiceDocumentLine {
+export interface InvoiceDocumentLine {
   description: string
   quantity: number
   /** VAT-inclusive price of one unit, integer agorot. */

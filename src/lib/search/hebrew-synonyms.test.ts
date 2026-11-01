@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CROSS_LANGUAGE_GROUPS,
   HEBREW_PREFIXES,
   SYNONYM_GROUPS,
   buildSynonyms,
@@ -100,6 +101,46 @@ describe('buildSynonyms', () => {
       // Its own prefixed spellings are not synonyms of each other's group
       // partners, because it has none.
       expect(values).toEqual([])
+    }
+  })
+})
+
+describe('cross-language bridges', () => {
+  const synonyms = buildSynonyms()
+
+  it('takes a shopper typing in English, Russian or Arabic to the Hebrew term', () => {
+    expect(at(synonyms, 'spa')).toContain('ספא')
+    expect(at(synonyms, 'массаж')).toContain('עיסוי')
+    expect(at(synonyms, 'مطعم')).toContain('מסעדה')
+  })
+
+  it('is symmetric across scripts, like every other group', () => {
+    expect(at(synonyms, 'ספא')).toContain('spa')
+    expect(at(synonyms, 'מסעדה')).toContain('restaurant')
+    expect(at(synonyms, 'restaurant')).toContain('مطعم')
+  })
+
+  it('never attaches a Hebrew prefix to a foreign spelling', () => {
+    // "הspa" is not a spelling anyone types; the prefix rule is Hebrew-only.
+    expect(withHebrewPrefixes('spa')).toEqual(['spa'])
+    expect(withHebrewPrefixes('массаж')).toEqual(['массаж'])
+    expect(Object.keys(synonyms).some((key) => /^[א-ת][A-Za-z]/.test(key))).toBe(false)
+    expect(at(synonyms, 'ספא')).not.toContain('הspa')
+  })
+
+  it('still resolves the prefixed Hebrew spelling to the foreign term', () => {
+    // The Hebrew side keeps its prefixes: לספא -> spa, because the group is
+    // one group and not a Hebrew group with a foreign appendix.
+    expect(at(synonyms, 'לספא')).toContain('spa')
+  })
+
+  it('anchors every bridge on a Hebrew term', () => {
+    // A bridge with no Hebrew word joins nothing to the catalogue.
+    for (const group of CROSS_LANGUAGE_GROUPS) {
+      expect(
+        group.some((term) => /[א-ת]/.test(term)),
+        group.join(', '),
+      ).toBe(true)
     }
   })
 })

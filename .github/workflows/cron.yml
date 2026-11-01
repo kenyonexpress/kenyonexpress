@@ -1,12 +1,15 @@
 # The twenty-one scheduled jobs, run from Actions.
 #
-# `vercel.json` deliberately has no `crons` key: Hobby registers two jobs at
-# daily granularity and silently ignores the rest, so four of the ten - three on
-# the money path plus the only sender of voucher email - were believed scheduled
-# and were not. docs/CRON-EXTERNAL.md is the full account and names cron-job.org
-# as the intended scheduler. It is the better one, and it needs a person to
-# create ten jobs in a browser, which had not happened; this file needs one
-# repository secret and nothing else, so the jobs start running before that.
+# `vercel.json` declares the same jobs under its `crons` key (restored
+# 2026-09-10 by explicit goal; the inventory test keeps it byte-identical to
+# scripts/cron-jobs.json). That declaration only takes effect on a deploy from
+# this repo on a plan that covers it: Hobby registers two jobs at daily
+# granularity and silently ignores the rest, which is how three money-path
+# jobs plus the only sender of voucher email were once believed scheduled and
+# were not. docs/CRON-EXTERNAL.md is the full account. THIS file is the
+# scheduler that is actually live; the day Vercel crons (or cron-job.org)
+# take over, flip CRON_SCHEDULER_ENABLED off first - two schedulers call
+# every job twice.
 #
 # WHAT THIS SCHEDULER IS WORSE AT, stated here rather than discovered later:
 # GitHub's cron is best effort. Runs are delayed under load, routinely by five
@@ -38,7 +41,7 @@ name: Scheduled jobs
 
 on:
   schedule:
-    # These seven are the distinct expressions in scripts/cron-jobs.json, which
+    # These eighteen are the distinct expressions in scripts/cron-jobs.json, which
     # maps each one to the jobs due on it. A run knows which schedule fired it
     # (`github.event.schedule`), so one workflow covers all ten jobs.
     - cron: '*/5 * * * *'
@@ -54,6 +57,11 @@ on:
     - cron: '*/30 * * * *'
     - cron: '20 1 * * *'
     - cron: '0 6 * * 1'
+    - cron: '20 2 * * *'
+    - cron: '45 4 * * *'
+    - cron: '0 5 * * 5'
+    - cron: '0 3 * * *'
+    - cron: '30 */6 * * *'
   workflow_dispatch:
     inputs:
       job:

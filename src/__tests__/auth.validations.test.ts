@@ -1,4 +1,6 @@
 import {
+  changePasswordSchema,
+  emailOtpVerifySchema,
   loginSchema,
   magicLinkSchema,
   newPasswordSchema,
@@ -165,5 +167,73 @@ describe('newPasswordSchema', () => {
       confirm_password: 'NoDigitHere',
     })
     expect(result.success).toBe(false)
+  })
+})
+
+describe('emailOtpVerifySchema', () => {
+  it('accepts a six-digit code and lower-cases the address it rides with', () => {
+    const result = emailOtpVerifySchema.safeParse({ email: 'User@Example.com', token: ' 123456 ' })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.email).toBe('user@example.com')
+      expect(result.data.token).toBe('123456')
+    }
+  })
+
+  it('rejects a code with anything but digits', () => {
+    for (const token of ['12345a', '123-456', '', '12 34 56']) {
+      expect(emailOtpVerifySchema.safeParse({ email: 'u@example.com', token }).success).toBe(false)
+    }
+  })
+
+  it('rejects a missing or malformed address', () => {
+    expect(emailOtpVerifySchema.safeParse({ email: '', token: '123456' }).success).toBe(false)
+    expect(emailOtpVerifySchema.safeParse({ email: 'nope', token: '123456' }).success).toBe(false)
+  })
+})
+
+describe('changePasswordSchema', () => {
+  const valid = {
+    current_password: 'OldSecret1',
+    password: 'NewSecret2',
+    confirm_password: 'NewSecret2',
+  }
+
+  it('accepts a matching pair with a digit and eight characters', () => {
+    expect(changePasswordSchema.safeParse(valid).success).toBe(true)
+  })
+
+  it('holds the new password to the signup rule', () => {
+    expect(
+      changePasswordSchema.safeParse({ ...valid, password: 'short1', confirm_password: 'short1' })
+        .success,
+    ).toBe(false)
+    expect(
+      changePasswordSchema.safeParse({
+        ...valid,
+        password: 'nodigitsss',
+        confirm_password: 'nodigitsss',
+      }).success,
+    ).toBe(false)
+  })
+
+  it('rejects a confirmation that differs', () => {
+    const result = changePasswordSchema.safeParse({ ...valid, confirm_password: 'NewSecret3' })
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.error.issues[0]?.path).toEqual(['confirm_password'])
+  })
+
+  it('rejects a new password identical to the current one', () => {
+    const result = changePasswordSchema.safeParse({
+      current_password: 'SameSecret1',
+      password: 'SameSecret1',
+      confirm_password: 'SameSecret1',
+    })
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.error.issues[0]?.path).toEqual(['password'])
+  })
+
+  it('requires the current password', () => {
+    expect(changePasswordSchema.safeParse({ ...valid, current_password: '' }).success).toBe(false)
   })
 })

@@ -1,3 +1,7 @@
+import { computeOpsKpis, formatBp } from '@/lib/analytics/ops-kpis'
+import { parseIls } from '@/lib/money'
+import { shekelsRounded } from '@/lib/money-format'
+import { Ticket, QrCode, Banknote } from 'lucide-react'
 import StatsCard from '@/components/admin/StatsCard'
 import BarSeries, { type BarPoint } from '@/components/admin/analytics/BarSeries'
 import FunnelBars from '@/components/admin/analytics/FunnelBars'
@@ -17,7 +21,7 @@ import {
   shekelsFromIls as sharedShekelsFromIls,
   shekelsFromIlsRounded as sharedShekelsFromIlsRounded,
 } from '@/lib/money-format'
-import { loadFunnel, loadRateCounts, loadSalesLines } from '@/server/analytics/queries'
+import { loadFunnel, loadOpsKpis, loadRateCounts, loadSalesLines } from '@/server/analytics/queries'
 import { Coins, Receipt, RotateCcw, ShoppingCart, TicketCheck, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
@@ -88,10 +92,11 @@ export default async function AnalyticsPage({
   const { period: rawPeriod } = await searchParams
   const period = resolvePeriod(rawPeriod)
 
-  const [{ lines, truncated }, funnel, rateCounts] = await Promise.all([
+  const [{ lines, truncated }, funnel, rateCounts, ops] = await Promise.all([
     loadSalesLines(period.days),
     loadFunnel(period.days),
     loadRateCounts(period.days),
+    loadOpsKpis(period.days),
   ])
 
   const buckets = bucketSales(lines, period.value)
@@ -107,6 +112,16 @@ export default async function AnalyticsPage({
   })
   const typeSplit = splitByProductType(lines)
   const takeRates = takeRateByPlatformPercent(lines)
+  // GMV arrives in shekels from the order-time snapshot columns; the KPI
+  // module works in agorot like the rest of the money path.
+  const opsKpis = ops.available
+    ? computeOpsKpis({
+        vouchers: ops.vouchers,
+        refunds: ops.refunds,
+        paidOrders: totals.orders,
+        gmvAgorot: parseIls(totals.gmvIls.toFixed(2)),
+      })
+    : null
 
   const points: BarPoint[] = buckets.map((bucket) => ({
     key: bucket.key,
@@ -196,6 +211,56 @@ export default async function AnalyticsPage({
           variant="admin"
         />
       </div>
+
+      {ops.available && opsKpis ? (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatsCard
+              label="אחוז מימוש שוברים"
+              value={formatBp(opsKpis.redemptionRateBp)}
+              icon={QrCode}
+              variant="admin"
+            />
+            <StatsCard
+              label="שוברים: מומשו / הונפקו"
+              value={`${integer(opsKpis.vouchers.redeemed)} / ${integer(opsKpis.vouchers.issued)}`}
+              icon={QrCode}
+              variant="admin"
+            />
+            <StatsCard
+              label="החזרים שהושלמו"
+              value={`${integer(opsKpis.refunds.completed)} (${formatBp(opsKpis.refundRateBp)} מההזמנות)`}
+              icon={RotateCcw}
+              variant="admin"
+            />
+            <StatsCard
+              label="הוחזר מהמחזור"
+              value={`${shekelsRounded(opsKpis.refunds.grantedAgorot)} (${formatBp(opsKpis.refundShareOfGmvBp)})`}
+              icon={RotateCcw}
+              variant="admin"
+            />
+          </div>
+          {/* Not tied to the period above: what is outstanding right now. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <StatsCard
+              label="שוברים פעילים כעת"
+              value={integer(ops.standing.activeVouchers)}
+              icon={Ticket}
+              variant="admin"
+            />
+            <StatsCard
+              label="תשלומים לספקים שממתינים"
+              value={`${shekelsRounded(ops.standing.payoutsDueAgorot)} (${integer(ops.standing.payoutsDue)} דפי חשבון)`}
+              icon={Banknote}
+              variant="admin"
+            />
+          </div>
+        </>
+      ) : (
+        <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          מדדי המימוש וההחזרים לא נטענו: {ops.available ? '' : ops.reason}
+        </p>
+      )}
 
       <BarSeries
         title="מכירות לאורך זמן"

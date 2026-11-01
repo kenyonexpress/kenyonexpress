@@ -1,0 +1,8 @@
+M08-c266 Lighthouse mobile (performance), 2026-10-29: NO SCORES - production build fails at HEAD 21c9bc44e.
+Attempts: pnpm build, then a copy-on-write clone of the working tree (main tree untouched).
+Blockers found (all in HEAD, none in forbidden files; not fixed - out of scope for a log-only item):
+ 1. Ambiguous route: src/app/c/[code] vs src/app/(store)/c/[slug] ("/c/[*]" matches multiple routes).
+ 2. src/lib/storage/r2-service.ts, invoices/pdf.ts, orders/receipt-pdf.ts import @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, @pdf-lib/fontkit, but package.json no longer lists them (M09-c265 removal contradicts M04-c265 re-declare).
+ 3. Turbopack: 21 errors after 1+2 were worked around: duplicate decls (api/payments/verify-card/route.ts VERIFICATION_AMOUNT_AGOROT; (auth)/signup/SignupForm.tsx handleSubmit) and missing exports (rateLimitHeaders x12, tooManyRequests x3, resolveVoucherOrigin x2, parseCity, pushOutboxRow, PRIMARY_KEY) = bad auto-merge drift.
+Only server up is next dev :3000 (ke-autopilot-v2 clone, v16.3.3, stale vs main): dev-mode Lighthouse is not comparable, not sampled.
+Last valid sample (c265): / 88/83, /product sample 86/87.

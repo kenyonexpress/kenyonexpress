@@ -3,6 +3,11 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
+import {
+  triggerOrderDeliveredNotification,
+  triggerOrderShippedNotification,
+} from '@/lib/push/trigger-notifications'
 import { type ShippingVerb, planTransition } from '@/lib/shipping/transitions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
@@ -15,14 +20,15 @@ import { revalidatePath } from 'next/cache'
  * lib/shipping/transitions.ts; the UPDATE re-checks the from-state in its
  * WHERE so two admins racing on the same line cannot double-fire.
  *
- * carrier/tracking_number ship in pending/155. Until it applies those columns
- * do not exist (42703), so the write retries without them and the caller is
- * told the tracking was not stored -- the status transition itself must not
- * be held hostage by a pending migration.
+ * carrier/tracking_number arrived with 155, since applied. The 42703 retry
+ * below predates that and stays: on a database without the columns the write
+ * retries without them and the caller is told the tracking was not stored --
+ * the status transition itself must not be held hostage by a schema gap.
  *
- * No email yet, deliberately: 'order_shipped' enters
- * notification_outbox_kind_check in 155, and enqueueing before that 23514s
- * (see src/lib/email/outbox-kinds.test.ts, the three-way agreement).
+ * No email from here, deliberately: `tg_orders_notify_shipped` (183, payload
+ * widened by 196) enqueues 'order_shipped' when the ORDER reaches fulfilled,
+ * with the tracking numbers of every line. Enqueueing from this per-line
+ * action too would mail the customer twice for the same shipment.
  */
 
 const UNDEFINED_COLUMN = '42703'
@@ -41,7 +47,7 @@ async function runMarkItem(
   const admin = createAdminClient()
   const { data: item, error: readError } = await admin
     .from('order_items')
-    .select('id, item_status, product_type, order_id, orders!inner(status)')
+    .select('id, item_status, product_type, order_id, orders!inner(status, user_id)')
     .eq('id', itemId)
     .maybeSingle()
   if (readError || !item) return { ok: false, error: 'השורה לא נמצאה.' }
@@ -100,6 +106,22 @@ async function runMarkItem(
     entityId: itemId,
     changes: { item_status: { from: item.item_status, to: verdict.nextStatus }, ...tracking },
   })
+
+  // Trigger push notifications for order status changes
+  const orderData = item.orders as unknown as { user_id: string }
+  if (verdict.nextStatus === 'shipped') {
+    triggerOrderShippedNotification(orderData.user_id, item.order_id).catch((err) => {
+      log.error('shipping.shipped_push_failed', {
+        reason: err instanceof Error ? err.message : 'unknown',
+      })
+    })
+  } else if (verdict.nextStatus === 'delivered') {
+    triggerOrderDeliveredNotification(orderData.user_id, item.order_id).catch((err) => {
+      log.error('shipping.delivered_push_failed', {
+        reason: err instanceof Error ? err.message : 'unknown',
+      })
+    })
+  }
 
   revalidatePath(`/admin/orders/${item.order_id}`)
   return {

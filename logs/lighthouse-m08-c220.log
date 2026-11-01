@@ -1,0 +1,10 @@
+# M08-c220 Lighthouse mobile sample 2026-10-26 (localhost:3000 next-server, default mobile simulate, 2 runs/page, scripts/_lh-runs.mjs)
+# load avg at start: 14.42 8.63 6.11
+c220-home #1: {"run":1,"score":50,"FCP":"1.1 s","LCP":"4.9 s","SI":"4.1 s","TBT":"4,260 ms","CLS":"0.001","TTFB":"Root document took 380 ms","blocking":"130 ms","unusedJS":"536 KiB","legacyJS":"-"}
+c220-home #2: {"run":2,"score":46,"FCP":"1.2 s","LCP":"5.1 s","SI":"6.3 s","TBT":"2,740 ms","CLS":"0","TTFB":"Root document took 2,800 ms","blocking":"170 ms","unusedJS":"537 KiB","legacyJS":"-"}
+
+c220-home scores: 50 / 46  (median 50)
+c220-product #1: {"run":1,"score":65,"FCP":"1.1 s","LCP":"5.3 s","SI":"1.1 s","TBT":"590 ms","CLS":"0","TTFB":"Root document took 240 ms","blocking":"150 ms","unusedJS":"704 KiB","legacyJS":"-"}
+c220-product #2: {"run":2,"score":66,"FCP":"1.5 s","LCP":"7.2 s","SI":"2.0 s","TBT":"400 ms","CLS":"0.001","TTFB":"Root document took 140 ms","blocking":"760 ms","unusedJS":"704 KiB","legacyJS":"-"}
+
+c220-product scores: 65 / 66  (median 66)

@@ -67,6 +67,7 @@ describe('the cache policy document matches the code', () => {
     expect(measured.cached).toEqual([
       'app/sitemap.ts',
       'components/CopyrightYear.tsx',
+      'components/storefront/CouponQrExpiry.tsx',
       'lib/category-page.ts',
       'lib/city-page.ts',
       'lib/coupon-deals.ts',
@@ -75,7 +76,6 @@ describe('the cache policy document matches the code', () => {
       'lib/product-seo.ts',
       'lib/related-products.ts',
       'lib/supplier-storefront.ts',
-      'server/queries/reviews.ts',
     ])
     for (const module of measured.cached) {
       expect(DOC, `${module} caches and the document does not list it`).toContain(module)
@@ -83,7 +83,7 @@ describe('the cache policy document matches the code', () => {
   })
 
   it('agrees on the lifetime counts', () => {
-    expect(measured.lives).toEqual({ hours: 22, days: 1 })
+    expect(measured.lives).toEqual({ hours: 22, days: 1, max: 1 })
     expect(DOC).toContain("cacheLife('hours')        22")
     expect(DOC).toContain("cacheLife('days')          1")
   })

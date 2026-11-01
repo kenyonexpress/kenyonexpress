@@ -5,6 +5,9 @@ import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
+import { triggerFlashDealMatchNotification } from '@/lib/push/trigger-notifications'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -94,14 +97,62 @@ async function runUpsertCouponDeal(
 
   const { id, ...fields } = parsed.data
 
+  // Track if deal is being activated for push notifications
+  const wasActivated = fields.status === 'active' && id
+  let dealTitle = ''
+
   if (id) {
+    // Get previous status to detect activation
+    const { data: existing } = await supabase
+      .from('coupon_deals')
+      .select('status, title_he')
+      .eq('id', id)
+      .maybeSingle()
+
+    const isNewActivation = wasActivated && existing?.status !== 'active'
+
     const { error } = await supabase.from('coupon_deals').update(fields).eq('id', id)
     if (error) return { error: error.message }
+
+    if (isNewActivation) {
+      dealTitle = existing?.title_he || fields.title_he
+    }
   } else {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('coupon_deals')
       .insert({ ...fields, created_by: user!.id })
+      .select('id')
+      .single()
     if (error) return { error: error.message }
+
+    if (fields.status === 'active') {
+      dealTitle = fields.title_he
+    }
+  }
+
+  // Send push notifications to users who have wishlisted items matching this deal
+  // For now, send to all users with push subscriptions when deal goes active
+  if (dealTitle) {
+    const admin = createAdminClient()
+    const { data: subscriptions } = await admin
+      .from('push_subscriptions')
+      .select('user_id')
+      .limit(1000)
+
+    const userIds = new Set<string>()
+    for (const sub of subscriptions || []) {
+      if (sub.user_id) {
+        userIds.add(sub.user_id)
+      }
+    }
+
+    for (const userId of userIds) {
+      triggerFlashDealMatchNotification(userId, dealTitle, 'deals').catch((err) => {
+        log.error('coupon_deals.flash_push_failed', {
+          reason: err instanceof Error ? err.message : 'unknown',
+        })
+      })
+    }
   }
 
   // The storefront's read of this row is `use cache` (lib/coupon-deals.ts), so

@@ -53,7 +53,11 @@ interface VariantDraft {
 }
 
 interface Props {
-  product?: Product
+  product?: Product & {
+    is_physical_shipping?: boolean
+    city?: string | null
+    full_address?: string | null
+  }
   variants?: ProductVariant[]
   categories: Pick<Category, 'id' | 'name_he'>[]
   suppliers?: SupplierOption[]
@@ -141,6 +145,9 @@ export default function ProductForm({
     product?.discount_percent != null ? String(product.discount_percent) : '',
   )
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
+  const [isPhysicalShipping] = useState(Boolean(product?.is_physical_shipping))
+  const [city, setCity] = useState(product?.city ?? '')
+  const [fullAddress, setFullAddress] = useState(product?.full_address ?? '')
 
   const error = state && 'error' in state ? state.error : null
 
@@ -267,6 +274,13 @@ export default function ProductForm({
       {product && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="images" value={JSON.stringify(images)} />
       <input type="hidden" name="variants" value={variantsJson} />
+      <input
+        type="hidden"
+        name="is_physical_shipping"
+        value={isPhysicalShipping ? 'true' : 'false'}
+      />
+      <input type="hidden" name="city" value={isPhysicalShipping ? '' : city} />
+      <input type="hidden" name="full_address" value={fullAddress} />
 
       {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}
 

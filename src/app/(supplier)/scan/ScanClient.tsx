@@ -2,7 +2,17 @@
 
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { formatAgorot, formatCouponCode, formatCouponDate } from '@/lib/vouchers/coupon-view'
-import { parseScanInput } from '@/lib/vouchers/scan-input'
+import {
+  type DrainResult,
+  type QueuedScan,
+  drainPayload,
+  enqueue,
+  newIdempotencyKey,
+  readQueue,
+  removeSettled,
+  writeQueue,
+} from '@/lib/vouchers/offline-queue'
+import { parseScanInput, pickScanFormats } from '@/lib/vouchers/scan-input'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
@@ -67,15 +77,8 @@ type RedeemResponse = {
 type BarcodeDetectorLike = {
   detect(source: CanvasImageSource): Promise<Array<{ rawValue: string }>>
 }
-type BarcodeDetectorCtor = new (opts?: { formats?: string[] }) => BarcodeDetectorLike
-
-/** `crypto.randomUUID` where it exists, and a time-plus-random string where it
- * does not. A till browser without it is old, not hostile: the key only has to
- * be unique among this user's recent scans for the database to tell them apart.
- */
-function newIdempotencyKey(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
-  return `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+type BarcodeDetectorCtor = (new (opts?: { formats?: string[] }) => BarcodeDetectorLike) & {
+  getSupportedFormats?: () => Promise<string[]>
 }
 
 export default function ScanClient({ supplierName }: { supplierName: string }) {
@@ -108,6 +111,10 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
    */
   const [redeemKey, setRedeemKey] = useState<string | null>(null)
 
+  const [queue, setQueue] = useState<QueuedScan[]>([])
+  const [draining, setDraining] = useState(false)
+  const [drainSummary, setDrainSummary] = useState<string | null>(null)
+
   const [cameraOn, setCameraOn] = useState(false)
   const cameraSupported = typeof window !== 'undefined' && 'BarcodeDetector' in window
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -123,6 +130,61 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   }, [])
 
   useEffect(() => () => stopCamera(), [stopCamera])
+
+  // Read once on mount rather than during render: `localStorage` is not
+  // available while the component is being server-rendered, and reading it in
+  // the body would make the first client render disagree with the server's.
+  useEffect(() => {
+    setQueue(readQueue())
+  }, [])
+
+  const drain = useCallback(async () => {
+    const pending = readQueue()
+    if (pending.length === 0 || draining) return
+    setDraining(true)
+    try {
+      const res = await fetch('/api/supplier/vouchers/redeem-batch', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(drainPayload(pending)),
+      })
+      if (!res.ok) {
+        // The server declined to look, or never answered. NOTHING is removed:
+        // only a verdict about the voucher settles a queued scan.
+        setDrainSummary('הסנכרון נכשל. הסריקות נשמרו וננסה שוב.')
+        return
+      }
+      const body = (await res.json()) as { results?: DrainResult[] }
+      const results = body.results ?? []
+      const left = removeSettled(pending, results)
+      writeQueue(left)
+      setQueue(left)
+
+      const redeemed = results.filter((r) => r.outcome === 'success').length
+      const refused = results.filter(
+        (r) => r.outcome !== 'success' && r.outcome !== 'error' && r.outcome !== 'rate_limited',
+      ).length
+      setDrainSummary(
+        refused > 0
+          ? `סונכרנו ${redeemed} מימושים. ${refused} סריקות נדחו, בדקו מולן.`
+          : `סונכרנו ${redeemed} מימושים.`,
+      )
+    } catch {
+      setDrainSummary('אין חיבור. הסריקות שמורות במכשיר.')
+    } finally {
+      setDraining(false)
+    }
+  }, [draining])
+
+  // The browser's own signal, plus a manual button: `online` fires on a
+  // reconnect the cashier never noticed, and the button covers the case where
+  // the browser thinks it is online and the shop's router disagrees.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onOnline = () => void drain()
+    window.addEventListener('online', onOnline)
+    return () => window.removeEventListener('online', onOnline)
+  }, [drain])
 
   /** Verify against the platform, then move to confirm. Nothing is spent here. */
   const verify = useCallback(
@@ -154,7 +216,26 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         setLookup(body)
         setStage('confirm')
       } catch {
-        setError('שגיאת רשת, נסה שוב')
+        // OFFLINE. The lookup is how this till learns what a voucher IS, so
+        // without it there is nothing to confirm - the scan is recorded and
+        // settled later, and the copy is explicit that nothing has been
+        // approved. Losing it instead, which is what this branch used to do,
+        // is the failure that costs a business real redemptions.
+        const key = newIdempotencyKey()
+        const next = enqueue(readQueue(), {
+          idempotencyKey: key,
+          code,
+          qrPayload: token,
+          scanMethod,
+          scannedAt: new Date().toISOString(),
+        })
+        const stored = writeQueue(next)
+        setQueue(next)
+        setError(
+          stored
+            ? 'אין חיבור. הסריקה נשמרה במכשיר ותישלח כשהחיבור יחזור. שימו לב: עדיין לא בדקנו את השובר.'
+            : 'אין חיבור, ולא ניתן לשמור את הסריקה במכשיר. רשמו את הקוד ידנית.',
+        )
       } finally {
         setChecking(false)
       }
@@ -188,7 +269,9 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       })
       streamRef.current = stream
       setCameraOn(true)
-      const detector = new Detector({ formats: ['qr_code'] })
+      // Asked per device: constructing with an unsupported format throws.
+      const supported = await Detector.getSupportedFormats?.().catch(() => null)
+      const detector = new Detector({ formats: pickScanFormats(supported) })
       const video = videoRef.current
       if (!video) return
       video.srcObject = stream
@@ -255,7 +338,23 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       setResult(body)
       setStage('result')
     } catch {
-      setError('שגיאת רשת, נסה שוב')
+      // The connection dropped between the lookup and the redeem. The SAME key
+      // goes into the queue, so if the request actually reached the server the
+      // drain will report `already_redeemed` rather than burning a second one.
+      const next = enqueue(readQueue(), {
+        idempotencyKey,
+        code: pendingCode,
+        qrPayload: pendingToken,
+        scanMethod: method,
+        scannedAt: new Date().toISOString(),
+      })
+      const stored = writeQueue(next)
+      setQueue(next)
+      setError(
+        stored
+          ? 'אין חיבור. המימוש נשמר במכשיר ויישלח כשהחיבור יחזור.'
+          : 'אין חיבור, ולא ניתן לשמור את המימוש במכשיר. רשמו את הקוד ידנית.',
+      )
     } finally {
       setSubmitting(false)
     }
@@ -398,6 +497,35 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
 
   return (
     <div className="space-y-4">
+      {/* The pending count, on the till's own screen and not behind a menu.
+          A queue nobody can see is a queue nobody drains, and these are
+          redemptions the business has not been paid for yet. */}
+      {queue.length > 0 && (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-900">
+            <bdi>{queue.length}</bdi> סריקות ממתינות לשליחה
+          </p>
+          <p className="mt-1 text-xs text-amber-900">
+            הן נשמרו במכשיר כשלא היה חיבור. <strong>עדיין לא נבדקו מול המערכת</strong>, שובר שיתברר
+            כלא תקף יופיע כאן כנדחה אחרי הסנכרון.
+          </p>
+          <button
+            type="button"
+            onClick={() => void drain()}
+            disabled={draining}
+            className="mt-3 min-h-11 w-full rounded-xl bg-amber-600 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {draining ? 'מסנכרן...' : 'סנכרון עכשיו'}
+          </button>
+        </div>
+      )}
+
+      {drainSummary && (
+        <output className="block rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-800">
+          {drainSummary}
+        </output>
+      )}
+
       {cameraSupported && (
         <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           {cameraOn ? (

@@ -1,3 +1,4 @@
+import { scrubEventUser } from '@/lib/observability/sentry-user'
 import { isClientDisconnect, shouldReportToSentry } from '@/lib/observability/sentry-filter'
 import * as Sentry from '@sentry/nextjs'
 
@@ -48,6 +49,8 @@ Sentry.init({
 
     if (event.request?.headers) event.request.headers = {}
     if (event.request?.cookies) event.request.cookies = {}
+    // The id and nothing else, however a call site set the user (R41).
+    event.user = scrubEventUser(event.user)
     if (event.request?.url) {
       event.request.url = event.request.url.replace(/\/redeem\/[^/?#]+/, '/redeem/[redacted]')
     }

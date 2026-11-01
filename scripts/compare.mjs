@@ -6,21 +6,34 @@ import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 import { parseCompareArgs } from './compare-args.mjs'
 import { loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
+import { defaultBaselineFor, recaptureHint } from './parity-baseline.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
-// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
+// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout|account|supplier]
 //                                 [--live=<url>] [--mine=<url>]
-// home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
+// home     : live = LIVE_HOME below                  mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
 // coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
 // account  : live WP /my-account/ vs local /account (set COMPARE_STORAGE_STATE for an authed session)
+// supplier : live Next.js baseline vs local /supplier (requires --baseline flag)
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
 // page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
 
+// `--name=value` AND `--name value`, because the second form used to be found
+// by nothing and fall silently to its default. That is not a cosmetic parser
+// gap: `--live-png refs/ke_live_1440.png` did not substitute the capture, it
+// left LIVE_PNG null, navigated to the live host instead, and refused with exit
+// 5 -- a refusal blaming the reference for a space in the calling shell.
 const argOf = (name, dflt) => {
-  const hit = process.argv.find((a) => a.startsWith(`--${name}=`))
-  return hit ? hit.slice(name.length + 3) : dflt
+  const eq = process.argv.find((a) => a.startsWith(`--${name}=`))
+  if (eq) return eq.slice(name.length + 3)
+  const flag = process.argv.indexOf(`--${name}`)
+  if (flag !== -1) {
+    const next = process.argv[flag + 1]
+    if (next && !next.startsWith('--')) return next
+  }
+  return dflt
 }
 const page = argOf('page', 'home')
 // F43: the flags the goal queue uses (`--widths=`, `--baseline=`, `--live-url=`)
@@ -32,6 +45,16 @@ const ARGS = parseCompareArgs(process.argv.slice(2))
 // been measured. Height stays 2600: the diff is banded down the page and the
 // bands must line up run to run for the numbers to be comparable.
 const VIEW = { width: ARGS.width, height: 2600 }
+
+// A BARE RUN HAS A REFERENCE (KEN-8): the page's frozen Electro capture from
+// scripts/parity-baseline.mjs. An explicit `--live=<url>` still navigates, and
+// `--baseline=` / `--live-png=` still win. cart and checkout have no default
+// capture and keep refusing until one is made. `{width}` expands to this run's.
+const LIVE_PNG =
+  defaultBaselineFor(page, {
+    live: argOf('live', null),
+    livePng: ARGS.baseline?.path ?? argOf('live-png', null),
+  })?.replaceAll('{width}', String(VIEW.width)) ?? null
 
 // `--widths=380,768,1440` is one run per width, in order, each a child with the
 // same arguments and a singular `--width=`. The parent exits with the first
@@ -171,6 +194,36 @@ const ctx = await b.newContext({
   ...(STORAGE_STATE && existsSync(STORAGE_STATE) ? { storageState: STORAGE_STATE } : {}),
 })
 
+// A FIRST VISIT'S CONSENT BANNER IS NOT A DESIGN DIFFERENCE.
+//
+// Measured 22.09.2026: an unhandled first visit to `mine` renders the
+// analytics consent prompt (`src/components/analytics/ConsentBanner.tsx`)
+// over the top of whatever card sits in its way -- at 380px it landed
+// squarely on a deals-grid price and cart button. The frozen reference has
+// no equivalent element in the same crop, so every run before this one
+// scored that overlap as a real layout defect. It is a real element, just
+// not the one this gate exists to catch: a returning visitor, or the
+// reference captured past its own equivalent prompt, would not show it
+// either. `e2e/home.spec.ts` and `scripts/_lcp-probe.mjs` already carry a
+// consented cookie for the same reason; this brings compare.mjs in line
+// with both rather than inventing a third way to do it.
+//
+// The value is hardcoded, not imported from `src/lib/analytics/consent.ts`:
+// this script runs as plain Node ESM with no path aliasing and no TS loader,
+// and every other script here that needs this cookie (`_lcp-probe.mjs`)
+// already hardcodes it rather than add one. KEEP THE VERSION NUMBER IN SYNC
+// WITH `CONSENT_WORDING_VERSION` THERE -- a stale version here silently
+// starts failing this exact check again, the same way an unbumped version
+// there re-asks every real visitor.
+await ctx.addCookies([
+  {
+    name: 'ke_consent',
+    value: encodeURIComponent('granted.2'),
+    domain: new URL(LOCAL).hostname,
+    path: '/',
+  },
+])
+
 let liveUrl = argOf('live', null)
 // `--live-url=` is the goal queue's name for the SERVER UNDER TEST, i.e. our
 // build, while `--live=` above is the gate's name for the REFERENCE. Opposite
@@ -181,6 +234,9 @@ if (ARGS.underTest)
   console.log(
     `--live-url=${ARGS.underTest} is the page under test (ours); the reference is unchanged`,
   )
+
+// A frozen capture is the reference: nothing navigates to a live host for it.
+if (LIVE_PNG) liveUrl ??= `file://${resolve(LIVE_PNG)}`
 
 if (page === 'home') {
   liveUrl ??= REFERENCE('ke_live_home.html', LIVE_HOME)
@@ -264,9 +320,33 @@ if (page === 'home') {
   // local add-to-cart is blocked by the stock Supabase demo key.
   liveUrl ??= REFERENCE('ke_live_cart.html', LIVE_CART)
   mineUrl ??= `${LOCAL}/cart`
+} else if (page === 'account') {
+  // Account page has no default reference (new Next.js functionality).
+  // Must be measured with explicit --baseline (e.g., Wayback Machine snapshot).
+  // The liveUrl comes from the baseline file, mineUrl is the page under test.
+  if (!ARGS.baseline) {
+    console.error(
+      'compare: --page=account requires --baseline (no default reference exists).\nExample: --baseline=wayback_account_380.png --live-url=http://localhost:3311/account',
+    )
+    process.exit(2)
+  }
+  liveUrl ??= `file://${ARGS.baseline.path}`
+  mineUrl ??= `${LOCAL}/account`
+} else if (page === 'supplier') {
+  // Supplier page has no WordPress reference (feature didn't exist in WooCommerce).
+  // Must be measured with explicit --baseline (e.g., Next.js baseline).
+  // The liveUrl comes from the baseline file, mineUrl is the page under test.
+  if (!ARGS.baseline) {
+    console.error(
+      'compare: --page=supplier requires --baseline (no default reference exists).\nExample: --baseline=nextjs_supplier_380.png --live-url=http://localhost:3311/supplier',
+    )
+    process.exit(2)
+  }
+  liveUrl ??= `file://${ARGS.baseline.path}`
+  mineUrl ??= `${LOCAL}/supplier`
 } else {
   console.error(
-    `unknown --page=${page} (use home, product, category, products, search, cart or checkout)`,
+    `unknown --page=${page} (use home, product, category, products, search, cart, checkout, account or supplier)`,
   )
   process.exit(2)
 }
@@ -462,7 +542,14 @@ const shoot = async (url, out, side = null) => {
     })
   await p.evaluate(() => document.fonts?.ready).catch(() => {})
 
-  const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+  const external = side === 'live'
+
+  // IS THE LEFT-HAND SIDE STILL THE REFERENCE? See enforceReference above. The
+  // page is already loaded here, so the check costs no extra navigation.
+  if (external) {
+    await enforceReference(url, await p.evaluate(READ_REFERENCE_MARKERS))
+  }
+
   // Local pages proxy remote product images through /_next/image on first
   // request, which is slower than the 2s this used to allow: cards were being
   // screenshotted mid-load and their broken-image glyphs scored as layout
@@ -475,7 +562,40 @@ const shoot = async (url, out, side = null) => {
   // local screenshot that has no counterpart on live and does not exist in a
   // production build. It is dev tooling, not the page under comparison.
   if (!external) {
-    await p.addStyleTag({ content: 'nextjs-portal { display: none !important; }' })
+    // THE LOCAL-ENVIRONMENT RIBBON IS NOT PART OF THE PAGE UNDER COMPARISON.
+    //
+    // Same rule as <nextjs-portal> above, and it cost far more. `next start` on
+    // a laptop is NODE_ENV=production with no VERCEL_ENV, so
+    // EnvironmentBanner renders its 36px amber ribbon on the very server this
+    // gate measures. It is correct there -- it exists to stop a real card being
+    // typed into a sandbox -- and it renders nothing in production, so the
+    // reference has no counterpart to it and never will.
+    //
+    // What it does to the number is not 36px worth. It sits ABOVE everything in
+    // flow, so it shifts the entire page down relative to the capture, and a
+    // band diff compares row y against row y: every band below the header is
+    // then scoring our content against live's content one ribbon-height out of
+    // register. Measured 2026-09-18, --page=home --width=1440, one build and
+    // one server, hiding this element the only change: 21.31% -> see
+    // docs/UI-PARITY-REPORT.md for the row.
+    //
+    // ALSO HIDDEN, SAME REASON, SINCE 22.09.2026: `[data-bottom-tab-bar]`
+    // (`BottomTabBarView`) and `[data-testid="whatsapp-float"]`
+    // (`WhatsAppFloatSheet`). Both are `position: fixed`, and a full-page
+    // screenshot cannot represent a fixed element honestly at all -- it
+    // belongs at every scroll position, and a single flattened capture can
+    // only paint it at one, which lands wherever the first viewport height
+    // happens to end. Measured: with the element visible, it painted directly
+    // on top of a deals-grid card's price and cart button at 380px, and
+    // scored as a content mismatch against whatever the reference happens to
+    // show in that same band. Neither element is dev tooling and both are
+    // real, correct UI for an actual visitor scrolling the real page; the
+    // artifact is specific to flattening a fixed element into one static
+    // image, the same category of problem the ribbon above already is.
+    await p.addStyleTag({
+      content:
+        'nextjs-portal, [data-environment-banner], [data-bottom-tab-bar], [data-testid="whatsapp-float"] { display: none !important; }',
+    })
     await p.waitForTimeout(200)
     // Refuse to score an error page. Twice now a percentage has been recorded
     // in STATE against a page that never rendered -- once a blank product page,
@@ -972,12 +1092,32 @@ const heroStability = { live: null, mine: null }
 const COUNTED_GRIDS = new Set(['category', 'products', 'search', 'product'])
 const pendingImages = { live: 0, mine: 0 }
 
+// ASK BEFORE SEEDING, NOT AFTER. `seedCart('live')` drives an add-to-cart
+// against whatever the live host is, and the live host is our own production
+// deployment now. Refusing at shot time would already have sent a WooCommerce
+// add-to-cart GET at the real site and paid for two cart seedings first. This
+// probe answers identity only -- the archive-renders-unstyled half needs a
+// settled page, and it gets one in shoot().
+// A FROZEN CAPTURE MEANS NO LIVE NAVIGATION, HERE TOO. `--baseline` was wired
+// into the frozen block below, which the home page reaches first; cart and
+// checkout reached this probe and `seedCart('live')` before it, and with the
+// domain unresolvable (registrar NS, 25.09) both died on the goto and the gate
+// never got to the capture it was handed. The capture IS the live side, so the
+// identity probe has nothing to classify and the live seed has nothing to seed.
+if ((page === 'checkout' || page === 'cart') && isExternal(liveUrl) && !LIVE_PNG) {
+  const probe = await ctx.newPage()
+  await probe.goto(liveUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
+  const markers = await probe.evaluate(READ_REFERENCE_MARKERS)
+  await probe.close()
+  await enforceReference(liveUrl, markers)
+}
+
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
   // waiting out its full timeout on a page that answers in under a second
   // cold, and the order costs nothing to get right.
   await seedCart('mine')
-  await seedCart('live')
+  if (!LIVE_PNG) await seedCart('live')
 }
 
 // TWO AGENTS RUNNING THIS SCRIPT IN ONE WORKING DIRECTORY OVERWRITE EACH
@@ -999,6 +1139,37 @@ if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
 // The shots are per-process from here, so a concurrent run cannot reach them.
 // The stable names are still written afterwards, because every other tool and
 // every note in STATE.md refers to them.
+/**
+ * Width and height of a PNG, read through the browser that is already open.
+ *
+ * No image library is added for this. diff-bands.mjs decodes its two PNGs the
+ * same way -- a data: URL into an <img> in headless chromium -- so the size
+ * this reports is by construction the size that will be scored, rather than a
+ * second decoder's opinion of the same file.
+ *
+ * @param {string} file
+ * @returns {Promise<{width: number, height: number}>}
+ */
+const probeCaptureWidth = async (file) => {
+  const dataUrl = `data:image/png;base64,${readFileSync(resolve(file)).toString('base64')}`
+  const p = await ctx.newPage()
+  try {
+    await p.goto('about:blank')
+    return await p.evaluate(
+      (src) =>
+        new Promise((res, rej) => {
+          const img = new Image()
+          img.onload = () => res({ width: img.naturalWidth, height: img.naturalHeight })
+          img.onerror = () => rej(new Error('not a decodable image'))
+          img.src = src
+        }),
+      dataUrl,
+    )
+  } finally {
+    await p.close()
+  }
+}
+
 const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 
 // A RUN THAT CANNOT SHOOT IS A RESULT, AND IT GETS RECORDED LIKE ONE.
@@ -1010,12 +1181,21 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  if (ARGS.baseline) {
-    // A frozen reference, by request. No archive shot, no load shortfall to
-    // report, and the ledger row says so (COMPARE_NOTES below).
-    copyFileSync(ARGS.baseline.path, runShot('live'))
+  if (LIVE_PNG) {
+    // A frozen reference, by request or by default. No archive shot, no load
+    // shortfall to report, and the ledger row says so (COMPARE_NOTES below).
+    if (!existsSync(LIVE_PNG)) {
+      console.error(`REFUSING to measure: --live-png=${LIVE_PNG} does not exist.`)
+      const hint = recaptureHint(LIVE_PNG)
+      if (hint)
+        console.error(`refs/ is not tracked, so a fresh checkout has no capture. Make one: ${hint}`)
+      appendParityFailure({ page, width: VIEW.width, reason: 'frozen capture not found' })
+      await b.close()
+      process.exit(5)
+    }
+    copyFileSync(LIVE_PNG, runShot('live'))
     console.log(
-      `${runShot('live')} copied from ${ARGS.baseline.path} (frozen baseline, not a fresh shot of the archive)`,
+      `${runShot('live')} copied from ${LIVE_PNG} (frozen baseline, not a fresh shot of the archive)`,
     )
   } else {
     await shoot(liveUrl, runShot('live'), 'live')
@@ -1033,7 +1213,17 @@ try {
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
 // percentage nobody can act on.
-if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
+// With a frozen capture nothing reads the live cart, so `cartEmptiness.live`
+// stays undefined and `undefined !== false` refused every frozen cart run with
+// a message calling the unread side "filled". The state of a capture cannot be
+// checked here; it is named in the notes column instead, and the reader pairs
+// the file with the seed on purpose.
+if (page === 'cart' && LIVE_PNG) {
+  console.log(
+    `cart: frozen capture, live cart state not checked; local cart is ${cartEmptiness.mine ? 'EMPTY' : 'filled'}.`,
+  )
+}
+if (page === 'cart' && !LIVE_PNG && cartEmptiness.live !== cartEmptiness.mine) {
   const describe = (v) => (v ? 'empty' : 'filled')
   console.error(
     `REFUSING to measure: live cart is ${describe(cartEmptiness.live)} and the local cart is ${describe(cartEmptiness.mine)}.`,
@@ -1069,8 +1259,20 @@ if (
   process.exit(3)
 }
 
+// With a frozen capture nothing reads the live grid, so `gridCounts.live`
+// stays null and `null !== 4` refused every frozen product run as "live shows
+// null product cards" -- the same defect the cart guard above already names,
+// and this one wrote no ledger row on the way out. A capture's grid cannot be
+// counted here; the notes column names the file, and the reader pairs it with
+// the slug on purpose.
+if (COUNTED_GRIDS.has(page) && LIVE_PNG) {
+  console.log(
+    `${page}: frozen capture, live grid not counted; the local page shows ${gridCounts.mine} product card(s).`,
+  )
+}
 if (
   COUNTED_GRIDS.has(page) &&
+  !LIVE_PNG &&
   gridCounts.live !== gridCounts.mine &&
   process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
 ) {
@@ -1212,6 +1414,11 @@ await new Promise((resolvePromise, reject) => {
       // narrower of the two images, which is not the same thing when the live
       // page and ours differ in width.
       COMPARE_WIDTH: String(VIEW.width),
+      // A number measured against a frozen capture must say so in the report.
+      // Read a month from now, a bare percentage in UI-PARITY-REPORT.md is
+      // indistinguishable from one taken against the real site, and the two
+      // mean different things.
+      ...(LIVE_PNG ? { COMPARE_NOTES: `live side: frozen capture \`${LIVE_PNG}\`` } : {}),
       // Read the per-process shots, not the shared names. Without this the
       // isolation above buys nothing: the diff would still be taken across
       // whatever refs/live.png happens to hold by the time the child starts.

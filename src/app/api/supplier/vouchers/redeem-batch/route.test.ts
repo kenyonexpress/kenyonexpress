@@ -8,17 +8,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * per-item ceiling is checked before anything burns, and order is preserved.
  */
 
-const { identityScopedClient, checkRateLimit, verifyVoucherQrPayload, canVerifyVoucherQr, rpc } =
+const { identityScopedClient, rateLimit, verifyVoucherQrPayload, canVerifyVoucherQr, rpc } =
   vi.hoisted(() => ({
     identityScopedClient: vi.fn(),
-    checkRateLimit: vi.fn(),
+    rateLimit: vi.fn(),
     verifyVoucherQrPayload: vi.fn(),
     canVerifyVoucherQr: vi.fn(),
     rpc: vi.fn(),
   }))
 
+/** `rateLimitHeaders` stays real, so a mocked 429 cannot fake its headers. */
 vi.mock('@/lib/supabase/bearer', () => ({ identityScopedClient }))
-vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit }))
+vi.mock('@/lib/rate-limit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
+  rateLimit,
+}))
 vi.mock('@/server/domain/vouchers/qr', () => ({
   verifyVoucherQrPayload,
   canVerifyVoucherQr,
@@ -38,6 +42,18 @@ function request(body: unknown): NextRequest {
   })
 }
 
+/** What the limiter hands back. */
+function decision(allowed: boolean) {
+  return {
+    allowed,
+    limit: 40,
+    windowSeconds: 3600,
+    remaining: allowed ? 39 : 0,
+    resetAtMs: Date.now() + 3_600_000,
+    backend: 'upstash' as const,
+  }
+}
+
 function item(key: string, code: string = CODE_A) {
   return { code, idempotency_key: key }
 }
@@ -45,7 +61,7 @@ function item(key: string, code: string = CODE_A) {
 describe('redeem-batch route', () => {
   beforeEach(() => {
     identityScopedClient.mockReset()
-    checkRateLimit.mockReset()
+    rateLimit.mockReset()
     verifyVoucherQrPayload.mockReset()
     canVerifyVoucherQr.mockReset()
     canVerifyVoucherQr.mockReturnValue(true)
@@ -54,7 +70,7 @@ describe('redeem-batch route', () => {
       client: { rpc },
       identity: { user: { id: 'member-1' } },
     })
-    checkRateLimit.mockResolvedValue(true)
+    rateLimit.mockResolvedValue(decision(true))
     rpc.mockResolvedValue({
       data: { outcome: 'success', replayed: false, code: CODE_A },
       error: null,
@@ -66,13 +82,13 @@ describe('redeem-batch route', () => {
       identityScopedClient.mockResolvedValue(null)
       const response = await POST(request({ items: [item('key-0001')] }))
       expect(response.status).toBe(401)
-      expect(checkRateLimit).not.toHaveBeenCalled()
+      expect(rateLimit).not.toHaveBeenCalled()
       expect(rpc).not.toHaveBeenCalled()
     })
 
     it('answers 429 when the drain allowance is spent', async () => {
-      checkRateLimit.mockImplementation((key: string) =>
-        Promise.resolve(!key.startsWith('voucher-redeem-batch:')),
+      rateLimit.mockImplementation((name: string) =>
+        Promise.resolve(decision(name !== 'voucher-redeem-batch')),
       )
       const response = await POST(request({ items: [item('key-0001')] }))
       expect(response.status).toBe(429)
@@ -97,8 +113,8 @@ describe('redeem-batch route', () => {
       // The per-item ceiling shares `voucher-redeem:<user>` with the
       // single-scan route. When it refuses, the batch must be untouched, not
       // half-burned: the queue keeps every item and nothing is settled.
-      checkRateLimit.mockImplementation((key: string) =>
-        Promise.resolve(!key.startsWith('voucher-redeem:')),
+      rateLimit.mockImplementation((name: string) =>
+        Promise.resolve(decision(name !== 'voucher-redeem')),
       )
       const response = await POST(request({ items: [item('key-0001'), item('key-0002', CODE_B)] }))
       expect(response.status).toBe(429)

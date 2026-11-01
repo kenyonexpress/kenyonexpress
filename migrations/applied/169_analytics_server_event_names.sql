@@ -15,7 +15,31 @@
 -- ROLLBACK: re-run the CREATE OR REPLACE FUNCTION block from
 -- migrations/applied/151_analytics_ingest.sql (the eight-name list).
 --
--- NOT APPLIED. `migrations/pending/` is unapplied by definition.
+-- APPLIED to production 2026-09-08 through MCP `apply_migration` as
+-- `analytics_server_event_names_169`. This file and `180_analytics_server_
+-- event_names.sql` are byte-identical SQL written by two sessions that could
+-- not see each other; the single CREATE OR REPLACE applied both, and both
+-- moved here together rather than one being deleted.
+--
+-- WHAT WAS MEASURED FIRST, because "the site is not deployed" was the reason
+-- this waited and that reason turned out to be false. Production serves this
+-- application (STATE.md 08.09). The deployed function body was read off
+-- pg_get_functiondef: whitelist of exactly the eight client names, nothing
+-- else, so every server event ever emitted was skipped. And the harm was
+-- counted, not assumed: `orders` held 4 rows, 2 of them paid, while
+-- `analytics_events` held ZERO `purchase` rows -- only `page_view` (12) and
+-- `web_vital` (16) had ever landed, spanning 02.09 to 06.09.
+--
+-- WHY IT WAS SAFE TO WIDEN. The only new failure mode is an INSERT that now
+-- runs where it used to be skipped, and `trackServerEvent` cannot propagate
+-- it: rule 2 at the head of src/server/analytics/track.ts is enforced by a
+-- try/catch AND by an explicit `if (error)` on the PostgREST result, which is
+-- the shape that used to swallow refusals silently.
+--
+-- PROVED AFTER APPLYING, with a rolled-back DO block so production kept no
+-- probe rows: five events in, `returned=4`, rows written were begin_checkout,
+-- order_refunded, purchase, voucher_redeemed, and a made-up name was still
+-- skipped. The block then raised, and `residue = 0`.
 
 CREATE OR REPLACE FUNCTION public.fn_ingest_analytics_events(
   p_events jsonb,

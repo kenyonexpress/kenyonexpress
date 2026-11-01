@@ -70,7 +70,7 @@ function fbq(): Fbq | null {
 }
 
 /** The banner's decision, read from the cookie it writes. Denied unless granted. */
-function trackingAllowed(): boolean {
+export function trackingAllowed(): boolean {
   if (typeof document === 'undefined') return false
   const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
   return isTrackingAllowed(match ? decodeURIComponent(match[1] ?? '') : null)

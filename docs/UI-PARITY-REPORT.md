@@ -463,95 +463,14 @@ the tree had uncommitted changes when it was measured.
 | 2026-10-28 20:18 | home | 380 | 43.32% | **FAIL** | `fb24966e7-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-28 20:20 | home | 768 | 44.73% | **FAIL** | `fb24966e7-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-10-28 20:21 | home | 1440 | 39.85% | **FAIL** | `fb24966e7-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-29 19:40 | product | 380 | 54.22% | **FAIL** | `1b374efe7-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-29 19:42 | product | 768 | 41.81% | **FAIL** | `1b374efe7-dirty` | ref 98 failed to load (76 stylesheet, 21 script, 1 xhr) |
-| 2026-10-29 19:43 | product | 1440 | 26.23% | **FAIL** | `1b374efe7-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-29 19:49 | category | 380 | n/a | **UNMEASURED** | `8dd017c88-dirty` | screenshot failed: page.addStyleTag: Execution context was destroyed, most likely because of a navigation |
-| 2026-10-29 19:51 | category | 380 | n/a | **UNMEASURED** | `8dd017c88-dirty` | screenshot failed: page.addStyleTag: Execution context was destroyed, most likely because of a navigation |
-| 2026-10-29 19:52 | category | 380 | 19.44% | **FAIL** | `8dd017c88-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-29 19:54 | category | 768 | 12.90% | **FAIL** | `8dd017c88-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-29 19:56 | category | 1440 | 11.36% | **FAIL** | `8dd017c88-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-29 19:58 | category | 380 | 19.44% | **FAIL** | `8dd017c88-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-29 20:00 | category | 768 | 12.90% | **FAIL** | `8dd017c88-dirty` | ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
-| 2026-10-29 20:02 | category | 1440 | 11.36% | **FAIL** | `8dd017c88-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-30 02:03 | home | 380 | 43.32% | **FAIL** | `dbcf3cb77-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-30 02:05 | home | 380 | 43.32% | **FAIL** | `dbcf3cb77-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 02:13 | home | 768 | 44.73% | **FAIL** | `dbcf3cb77-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 02:15 | home | 1440 | 39.85% | **FAIL** | `dbcf3cb77-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:36 | home | 1440 | 5.80% | PASS | `3fd976838-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-30 10:38 | home | 1440 | 6.23% | PASS | `3fd976838-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-30 10:40 | home | 1440 | 5.80% | PASS | `3fd976838-dirty` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-30 10:42 | home | 380 | 12.83% | **FAIL** | `3fd976838-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:43 | home | 768 | 13.80% | **FAIL** | `3fd976838-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:45 | home | 1440 | 5.80% | PASS | `3fd976838-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:47 | home | 380 | 12.83% | **FAIL** | `3fd976838-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:49 | home | 768 | 13.80% | **FAIL** | `3fd976838-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:52 | home | 380 | 43.32% | **FAIL** | `3fd976838-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:55 | home | 380 | 43.32% | **FAIL** | `3fd976838-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 10:59 | home | 380 | 43.32% | **FAIL** | `3fd976838-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 11:08 | home | 380 | 43.32% | **FAIL** | `3fd976838-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 12:21 | product | 380 | 33.84% | **FAIL** | `734e8664d-dirty` | baseline electro-product-fresh_380.png (frozen PNG, 2026-10-01T02:02:18.904Z), not a fresh archive shot |
-| 2026-10-30 12:23 | product | 768 | 29.92% | **FAIL** | `734e8664d-dirty` | baseline electro-product-fresh_768.png (frozen PNG, 2026-10-01T02:02:19.634Z), not a fresh archive shot |
-| 2026-10-30 12:25 | product | 1440 | 20.95% | **FAIL** | `734e8664d-dirty` | baseline electro-product-fresh_1440.png (frozen PNG, 2026-10-01T02:02:20.461Z), not a fresh archive shot |
-| 2026-10-30 12:26 | product | 1440 | 20.95% | **FAIL** | `734e8664d-dirty` | baseline electro-product-fresh_1440.png (frozen PNG, 2026-10-01T02:02:20.461Z), not a fresh archive shot |
-| 2026-10-30 12:28 | product | 380 | 33.84% | **FAIL** | `734e8664d-dirty` | baseline electro-product-fresh_380.png (frozen PNG, 2026-10-01T02:02:18.904Z), not a fresh archive shot |
-| 2026-10-30 12:30 | product | 768 | 29.92% | **FAIL** | `734e8664d-dirty` | baseline electro-product-fresh_768.png (frozen PNG, 2026-10-01T02:02:19.634Z), not a fresh archive shot |
-| 2026-10-30 17:59 | home | 380 | 43.32% | **FAIL** | `df11a8922-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-30 18:02 | home | 380 | 43.32% | **FAIL** | `df11a8922-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-30 18:05 | home | 768 | 44.73% | **FAIL** | `df11a8922-dirty` | WORSE than the 29% best known for home/768 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 18:08 | home | 1440 | 40.28% | **FAIL** | `df11a8922-dirty` | WORSE than the 8.29% best known for home/1440 (tolerance 0.5); ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-10-30 23:21 | category | 380 | 19.31% | **FAIL** | `8adc01e0b-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-30 23:22 | category | 768 | 16.82% | **FAIL** | `8adc01e0b-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-30 23:24 | category | 1440 | 5.68% | PASS | `8adc01e0b-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-30 23:26 | category | 380 | 19.31% | **FAIL** | `8adc01e0b-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-30 23:28 | category | 768 | 16.85% | **FAIL** | `8adc01e0b-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-30 23:30 | category | 1440 | 5.68% | PASS | `8adc01e0b-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 10:41 | category | 380 | 19.31% | **FAIL** | `52e803f89-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 10:43 | category | 768 | 16.85% | **FAIL** | `52e803f89-dirty` | ref 48 failed to load (31 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 10:45 | category | 1440 | 5.68% | PASS | `52e803f89-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 10:47 | category | 380 | 19.31% | **FAIL** | `52e803f89-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 10:49 | category | 768 | 16.85% | **FAIL** | `52e803f89-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 10:50 | category | 1440 | 5.68% | PASS | `52e803f89-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 12:47 | product | 380 | 46.25% | **FAIL** | `597b44c15-dirty` | ref 117 failed to load (80 stylesheet, 36 script, 1 xhr) |
-| 2026-10-31 12:49 | product | 768 | 41.72% | **FAIL** | `597b44c15-dirty` | ref 117 failed to load (80 stylesheet, 36 script, 1 xhr) |
-| 2026-10-31 12:51 | product | 1440 | 24.57% | **FAIL** | `597b44c15-dirty` | ref 117 failed to load (80 stylesheet, 36 script, 1 xhr) |
-| 2026-10-31 12:53 | product | 380 | 46.25% | **FAIL** | `597b44c15-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-31 12:54 | product | 768 | 41.72% | **FAIL** | `597b44c15-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-31 12:56 | product | 1440 | 24.57% | **FAIL** | `597b44c15-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-31 16:31 | home | 380 | 43.32% | **FAIL** | `50e1a4bac-dirty` | WORSE than the 30.26% best known for home/380 (tolerance 0.5); ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-10-31 16:52 | category | 380 | 19.35% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 16:54 | category | 768 | 16.85% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 16:56 | category | 1440 | 5.68% | PASS | `50e1a4bac-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 16:58 | category | 380 | 19.31% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 17:00 | category | 768 | 16.82% | **FAIL** | `50e1a4bac-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 17:02 | category | 1440 | 5.68% | PASS | `50e1a4bac-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-10-31 19:10 | category | 380 | 19.31% | **FAIL** | `f4f5d2729-dirty` | ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
-| 2026-10-31 19:12 | category | 768 | 16.82% | **FAIL** | `f4f5d2729-dirty` | ref 68 failed to load (35 font, 30 script, 2 stylesheet, 1 xhr) |
-| 2026-10-31 19:14 | category | 1440 | 5.68% | PASS | `f4f5d2729-dirty` | ref 62 failed to load (30 script, 29 font, 2 stylesheet, 1 xhr) |
-| 2026-10-31 19:48 | product | 380 | 46.25% | **FAIL** | `ccb945f07-dirty` | ref 117 failed to load (80 stylesheet, 36 script, 1 xhr) |
-| 2026-10-31 19:50 | product | 768 | 41.72% | **FAIL** | `ccb945f07-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-31 19:52 | product | 1440 | 24.57% | **FAIL** | `ccb945f07-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-31 19:54 | product | 380 | 46.25% | **FAIL** | `ccb945f07-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-31 19:55 | product | 768 | 41.72% | **FAIL** | `ccb945f07-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-10-31 19:57 | product | 1440 | 24.57% | **FAIL** | `ccb945f07-dirty` | ref 59 failed to load (40 stylesheet, 18 script, 1 xhr) |
-| 2026-11-01 09:33 | home | 380 | 12.84% | **FAIL** | `ce93e3160-dirty` | ref 141 failed to load (101 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-11-01 09:35 | home | 768 | 13.80% | **FAIL** | `ce93e3160-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 09:36 | home | 1440 | 5.80% | PASS | `ce93e3160-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 09:38 | home | 380 | 12.83% | **FAIL** | `ce93e3160-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 09:40 | home | 768 | 13.80% | **FAIL** | `ce93e3160-dirty` | ref 92 failed to load (57 script, 33 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 09:42 | home | 1440 | 5.80% | PASS | `ce93e3160-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:22 | home | 380 | 12.83% | **FAIL** | `094f15813-dirty` | ref 148 failed to load (108 script, 37 font, 2 stylesheet, 1 xhr) |
-| 2026-11-01 13:24 | home | 768 | 13.80% | **FAIL** | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:26 | home | 1440 | 6.09% | PASS | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:28 | home | 380 | 12.83% | **FAIL** | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:30 | home | 768 | 13.80% | **FAIL** | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:32 | home | 1440 | 5.80% | PASS | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:34 | home | 380 | 12.83% | **FAIL** | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:36 | home | 768 | 13.80% | **FAIL** | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 13:38 | home | 1440 | 5.80% | PASS | `094f15813-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
-| 2026-11-01 14:34 | category | 380 | 19.31% | **FAIL** | `c942bfb20-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-11-01 14:36 | category | 768 | 16.82% | **FAIL** | `c942bfb20-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-11-01 14:38 | category | 1440 | 5.68% | PASS | `c942bfb20-dirty` | ref 46 failed to load (29 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-11-01 14:40 | category | 380 | 19.31% | **FAIL** | `c942bfb20-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-11-01 14:42 | category | 768 | 16.82% | **FAIL** | `c942bfb20-dirty` | ref 52 failed to load (35 font, 15 script, 1 stylesheet, 1 xhr) |
-| 2026-11-01 14:44 | category | 1440 | 5.68% | PASS | `c942bfb20-dirty` | ref 62 failed to load (30 script, 29 font, 2 stylesheet, 1 xhr) |
+| 2026-10-30 21:23 | product | 380 | n/a | **UNMEASURED** | `6353c162b-dirty` | frozen capture not found |
+| 2026-10-30 21:24 | product | 380 | 5.21% | PASS | `6353c162b-dirty` | ref everything loaded; overall 33.61% (reference blank 20.99%, ours blank 7.42%) |
+| 2026-10-30 21:25 | product | 768 | 4.23% | PASS | `6353c162b-dirty` | ref everything loaded; overall 27.66% (reference blank 16.44%, ours blank 6.99%) |
+| 2026-10-30 21:27 | product | 1440 | 2.14% | PASS | `6353c162b-dirty` | ref everything loaded; overall 17.28% (reference blank 9.29%, ours blank 5.85%) |
+| 2026-10-30 21:29 | product | 380 | 5.21% | PASS | `6353c162b-dirty` | ref everything loaded; overall 33.61% (reference blank 20.99%, ours blank 7.42%) |
+| 2026-10-30 21:30 | product | 768 | 4.23% | PASS | `6353c162b-dirty` | ref everything loaded; overall 27.66% (reference blank 16.44%, ours blank 6.99%) |
+| 2026-10-30 21:32 | product | 1440 | 2.14% | PASS | `6353c162b-dirty` | ref everything loaded; overall 17.28% (reference blank 9.29%, ours blank 5.85%) |
+| 2026-10-31 10:38 | category | 380 | n/a | **UNMEASURED** | `242816162` | frozen capture not found |
+| 2026-10-31 10:38 | category | 768 | n/a | **UNMEASURED** | `242816162-dirty` | frozen capture not found |
+| 2026-10-31 10:38 | category | 1440 | n/a | **UNMEASURED** | `242816162-dirty` | frozen capture not found |
+| 2026-11-01 04:10 | home | 1440 | 7.78% | PASS | `4b11880e7` | ref everything loaded; overall 28.89% (reference blank 13.03%, ours blank 8.08%) |

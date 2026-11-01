@@ -1,0 +1,2661 @@
+{
+  "total": {
+    "lines": { "total": 12877, "covered": 8942, "skipped": 0, "pct": 69.44 },
+    "statements": { "total": 14933, "covered": 10140, "skipped": 0, "pct": 67.9 },
+    "functions": { "total": 2701, "covered": 1887, "skipped": 0, "pct": 69.86 },
+    "branches": { "total": 11748, "covered": 7287, "skipped": 0, "pct": 62.02 },
+    "branchesTrue": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/assets.ts": {
+    "lines": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/catalogue-cache.ts": {
+    "lines": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/catalogue-read.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/category-page.ts": {
+    "lines": { "total": 114, "covered": 38, "skipped": 0, "pct": 33.33 },
+    "functions": { "total": 21, "covered": 8, "skipped": 0, "pct": 38.09 },
+    "statements": { "total": 121, "covered": 38, "skipped": 0, "pct": 31.4 },
+    "branches": { "total": 82, "covered": 22, "skipped": 0, "pct": 26.82 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/category-tokens.ts": {
+    "lines": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/compromised-keys.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/contact-address.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "branches": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/coupon-deals.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 2, "skipped": 0, "pct": 66.66 },
+    "statements": { "total": 12, "covered": 11, "skipped": 0, "pct": 91.66 },
+    "branches": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/deployed-runtime.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/electro-hero-tokens.ts": {
+    "lines": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/env-probe.ts": {
+    "lines": { "total": 42, "covered": 33, "skipped": 0, "pct": 78.57 },
+    "functions": { "total": 8, "covered": 4, "skipped": 0, "pct": 50 },
+    "statements": { "total": 45, "covered": 34, "skipped": 0, "pct": 75.55 },
+    "branches": { "total": 33, "covered": 28, "skipped": 0, "pct": 84.84 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/env.ts": {
+    "lines": { "total": 29, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 36, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 24, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/hero-singlefile-data.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/idempotency.ts": {
+    "lines": { "total": 39, "covered": 20, "skipped": 0, "pct": 51.28 },
+    "functions": { "total": 9, "covered": 5, "skipped": 0, "pct": 55.55 },
+    "statements": { "total": 39, "covered": 20, "skipped": 0, "pct": 51.28 },
+    "branches": { "total": 31, "covered": 15, "skipped": 0, "pct": 48.38 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/ke-live-deals-data.ts": {
+    "lines": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/ke-live-hero-data.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/ke-live-revslider-slides.ts": {
+    "lines": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/ledger.ts": {
+    "lines": { "total": 28, "covered": 15, "skipped": 0, "pct": 53.57 },
+    "functions": { "total": 8, "covered": 4, "skipped": 0, "pct": 50 },
+    "statements": { "total": 30, "covered": 16, "skipped": 0, "pct": 53.33 },
+    "branches": { "total": 40, "covered": 7, "skipped": 0, "pct": 17.5 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/money-format.ts": {
+    "lines": { "total": 32, "covered": 30, "skipped": 0, "pct": 93.75 },
+    "functions": { "total": 13, "covered": 10, "skipped": 0, "pct": 76.92 },
+    "statements": { "total": 34, "covered": 31, "skipped": 0, "pct": 91.17 },
+    "branches": { "total": 24, "covered": 16, "skipped": 0, "pct": 66.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/money.ts": {
+    "lines": { "total": 36, "covered": 36, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 36, "covered": 36, "skipped": 0, "pct": 100 },
+    "branches": { "total": 21, "covered": 21, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/product-detail.ts": {
+    "lines": { "total": 40, "covered": 17, "skipped": 0, "pct": 42.5 },
+    "functions": { "total": 11, "covered": 2, "skipped": 0, "pct": 18.18 },
+    "statements": { "total": 47, "covered": 18, "skipped": 0, "pct": 38.29 },
+    "branches": { "total": 43, "covered": 5, "skipped": 0, "pct": 11.62 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/product-seo.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/regions.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/related-products.ts": {
+    "lines": { "total": 17, "covered": 13, "skipped": 0, "pct": 76.47 },
+    "functions": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 },
+    "statements": { "total": 20, "covered": 13, "skipped": 0, "pct": 65 },
+    "branches": { "total": 16, "covered": 6, "skipped": 0, "pct": 37.5 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/revslider-authored.ts": {
+    "lines": { "total": 35, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 44, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 42, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search-server.ts": {
+    "lines": { "total": 50, "covered": 47, "skipped": 0, "pct": 94 },
+    "functions": { "total": 10, "covered": 8, "skipped": 0, "pct": 80 },
+    "statements": { "total": 62, "covered": 57, "skipped": 0, "pct": 91.93 },
+    "branches": { "total": 57, "covered": 42, "skipped": 0, "pct": 73.68 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search.ts": {
+    "lines": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 9, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/site-url.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/soft-delete.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 6, "covered": 5, "skipped": 0, "pct": 83.33 },
+    "branches": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supplier-contact.ts": {
+    "lines": { "total": 16, "covered": 14, "skipped": 0, "pct": 87.5 },
+    "functions": { "total": 3, "covered": 2, "skipped": 0, "pct": 66.66 },
+    "statements": { "total": 18, "covered": 15, "skipped": 0, "pct": 83.33 },
+    "branches": { "total": 25, "covered": 21, "skipped": 0, "pct": 84 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supplier-storefront.ts": {
+    "lines": { "total": 33, "covered": 29, "skipped": 0, "pct": 87.87 },
+    "functions": { "total": 6, "covered": 4, "skipped": 0, "pct": 66.66 },
+    "statements": { "total": 37, "covered": 30, "skipped": 0, "pct": 81.08 },
+    "branches": { "total": 23, "covered": 14, "skipped": 0, "pct": 60.86 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/utils.ts": {
+    "lines": { "total": 3, "covered": 2, "skipped": 0, "pct": 66.66 },
+    "functions": { "total": 3, "covered": 2, "skipped": 0, "pct": 66.66 },
+    "statements": { "total": 3, "covered": 2, "skipped": 0, "pct": 66.66 },
+    "branches": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/waze.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/whatsapp.ts": {
+    "lines": { "total": 42, "covered": 42, "skipped": 0, "pct": 100 },
+    "functions": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "statements": { "total": 49, "covered": 48, "skipped": 0, "pct": 97.95 },
+    "branches": { "total": 47, "covered": 41, "skipped": 0, "pct": 87.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/a11y/contrast.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/account/delete-account.ts": {
+    "lines": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/account/deletion-confirm.ts": {
+    "lines": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/account/deletion.ts": {
+    "lines": { "total": 42, "covered": 32, "skipped": 0, "pct": 76.19 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 42, "covered": 32, "skipped": 0, "pct": 76.19 },
+    "branches": { "total": 16, "covered": 11, "skipped": 0, "pct": 68.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/account/format.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "branches": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/action-result.ts": {
+    "lines": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/audit-diff.ts": {
+    "lines": { "total": 30, "covered": 30, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 38, "covered": 37, "skipped": 0, "pct": 97.36 },
+    "branches": { "total": 54, "covered": 52, "skipped": 0, "pct": 96.29 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/audit.ts": {
+    "lines": { "total": 13, "covered": 10, "skipped": 0, "pct": 76.92 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 10, "skipped": 0, "pct": 76.92 },
+    "branches": { "total": 17, "covered": 15, "skipped": 0, "pct": 88.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/bulk-price.ts": {
+    "lines": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 12, "skipped": 0, "pct": 92.3 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/feature-flags.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "branches": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/labels.ts": {
+    "lines": { "total": 16, "covered": 14, "skipped": 0, "pct": 87.5 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 17, "covered": 14, "skipped": 0, "pct": 82.35 },
+    "branches": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/list-params.ts": {
+    "lines": { "total": 12, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 13, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/mfa-gate.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/nav.ts": {
+    "lines": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 13, "skipped": 0, "pct": 92.85 },
+    "branches": { "total": 14, "covered": 12, "skipped": 0, "pct": 85.71 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/page-params.ts": {
+    "lines": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/payment-reconciliation.ts": {
+    "lines": { "total": 28, "covered": 28, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 34, "covered": 31, "skipped": 0, "pct": 91.17 },
+    "branches": { "total": 30, "covered": 25, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/payouts.ts": {
+    "lines": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/permissions.ts": {
+    "lines": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 },
+    "branches": { "total": 12, "covered": 11, "skipped": 0, "pct": 91.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/product-fields.ts": {
+    "lines": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/product-form-schema.ts": {
+    "lines": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "branches": { "total": 32, "covered": 32, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/product-variants.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/rbac.ts": {
+    "lines": { "total": 41, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 44, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 35, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/role-change.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/roles.ts": {
+    "lines": { "total": 6, "covered": 4, "skipped": 0, "pct": 66.66 },
+    "functions": { "total": 4, "covered": 2, "skipped": 0, "pct": 50 },
+    "statements": { "total": 6, "covered": 4, "skipped": 0, "pct": 66.66 },
+    "branches": { "total": 9, "covered": 4, "skipped": 0, "pct": 44.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/supplier-form.ts": {
+    "lines": { "total": 40, "covered": 39, "skipped": 0, "pct": 97.5 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 43, "covered": 42, "skipped": 0, "pct": 97.67 },
+    "branches": { "total": 44, "covered": 41, "skipped": 0, "pct": 93.18 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/supplier-onboarding.ts": {
+    "lines": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/uploader-policy.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/user-ban.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "branches": { "total": 16, "covered": 15, "skipped": 0, "pct": 93.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/vendor-form.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 7, "skipped": 0, "pct": 87.5 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/voucher-view.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 33, "covered": 32, "skipped": 0, "pct": 96.96 },
+    "branches": { "total": 25, "covered": 23, "skipped": 0, "pct": 92 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/import/parseProductsCsv.ts": {
+    "lines": { "total": 154, "covered": 149, "skipped": 0, "pct": 96.75 },
+    "functions": { "total": 24, "covered": 22, "skipped": 0, "pct": 91.66 },
+    "statements": { "total": 180, "covered": 171, "skipped": 0, "pct": 95 },
+    "branches": { "total": 120, "covered": 90, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/product-import/import-rows.ts": {
+    "lines": { "total": 91, "covered": 91, "skipped": 0, "pct": 100 },
+    "functions": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "statements": { "total": 104, "covered": 103, "skipped": 0, "pct": 99.03 },
+    "branches": { "total": 114, "covered": 105, "skipped": 0, "pct": 92.1 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/product-import/parse-csv.ts": {
+    "lines": { "total": 81, "covered": 81, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 87, "covered": 86, "skipped": 0, "pct": 98.85 },
+    "branches": { "total": 59, "covered": 57, "skipped": 0, "pct": 96.61 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/admin/product-import/parse-xlsx.ts": {
+    "lines": { "total": 146, "covered": 141, "skipped": 0, "pct": 96.57 },
+    "functions": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "statements": { "total": 161, "covered": 153, "skipped": 0, "pct": 95.03 },
+    "branches": { "total": 105, "covered": 79, "skipped": 0, "pct": 75.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/alerts/uptimerobot.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 28, "covered": 28, "skipped": 0, "pct": 100 },
+    "branches": { "total": 29, "covered": 27, "skipped": 0, "pct": 93.1 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/aggregate.ts": {
+    "lines": { "total": 96, "covered": 96, "skipped": 0, "pct": 100 },
+    "functions": { "total": 23, "covered": 23, "skipped": 0, "pct": 100 },
+    "statements": { "total": 98, "covered": 98, "skipped": 0, "pct": 100 },
+    "branches": { "total": 55, "covered": 48, "skipped": 0, "pct": 87.27 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/attribution.ts": {
+    "lines": { "total": 33, "covered": 27, "skipped": 0, "pct": 81.81 },
+    "functions": { "total": 5, "covered": 3, "skipped": 0, "pct": 60 },
+    "statements": { "total": 39, "covered": 30, "skipped": 0, "pct": 76.92 },
+    "branches": { "total": 24, "covered": 17, "skipped": 0, "pct": 70.83 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/cashback-tier.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/checkout-variant.ts": {
+    "lines": { "total": 18, "covered": 17, "skipped": 0, "pct": 94.44 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 21, "covered": 18, "skipped": 0, "pct": 85.71 },
+    "branches": { "total": 10, "covered": 7, "skipped": 0, "pct": 70 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/cohorts.ts": {
+    "lines": { "total": 71, "covered": 71, "skipped": 0, "pct": 100 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 77, "covered": 76, "skipped": 0, "pct": 98.7 },
+    "branches": { "total": 38, "covered": 33, "skipped": 0, "pct": 86.84 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/commerce-client.ts": {
+    "lines": { "total": 24, "covered": 20, "skipped": 0, "pct": 83.33 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 27, "covered": 20, "skipped": 0, "pct": 74.07 },
+    "branches": { "total": 32, "covered": 21, "skipped": 0, "pct": 65.62 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/consent.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "branches": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/ecommerce.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 15, "covered": 14, "skipped": 0, "pct": 93.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/events.ts": {
+    "lines": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/experiment-events.ts": {
+    "lines": { "total": 43, "covered": 43, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 54, "covered": 53, "skipped": 0, "pct": 98.14 },
+    "branches": { "total": 34, "covered": 31, "skipped": 0, "pct": 91.17 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/experiment-stats.ts": {
+    "lines": { "total": 63, "covered": 63, "skipped": 0, "pct": 100 },
+    "functions": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "statements": { "total": 73, "covered": 72, "skipped": 0, "pct": 98.63 },
+    "branches": { "total": 49, "covered": 48, "skipped": 0, "pct": 97.95 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/experiments.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/feature-flags.ts": {
+    "lines": { "total": 24, "covered": 23, "skipped": 0, "pct": 95.83 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 28, "covered": 26, "skipped": 0, "pct": 92.85 },
+    "branches": { "total": 18, "covered": 17, "skipped": 0, "pct": 94.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/posthog-funnel.ts": {
+    "lines": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/queue.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "statements": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "branches": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/replay-optin.ts": {
+    "lines": { "total": 19, "covered": 18, "skipped": 0, "pct": 94.73 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 21, "covered": 18, "skipped": 0, "pct": 85.71 },
+    "branches": { "total": 14, "covered": 11, "skipped": 0, "pct": 78.57 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/revenue-fact.ts": {
+    "lines": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 28, "covered": 28, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/server-events.ts": {
+    "lines": { "total": 47, "covered": 34, "skipped": 0, "pct": 72.34 },
+    "functions": { "total": 6, "covered": 5, "skipped": 0, "pct": 83.33 },
+    "statements": { "total": 53, "covered": 39, "skipped": 0, "pct": 73.58 },
+    "branches": { "total": 57, "covered": 32, "skipped": 0, "pct": 56.14 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/session.ts": {
+    "lines": { "total": 16, "covered": 15, "skipped": 0, "pct": 93.75 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 17, "skipped": 0, "pct": 85 },
+    "branches": { "total": 18, "covered": 15, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/third-party.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/analytics/tracker.ts": {
+    "lines": { "total": 52, "covered": 15, "skipped": 0, "pct": 28.84 },
+    "functions": { "total": 18, "covered": 6, "skipped": 0, "pct": 33.33 },
+    "statements": { "total": 67, "covered": 17, "skipped": 0, "pct": 25.37 },
+    "branches": { "total": 52, "covered": 10, "skipped": 0, "pct": 19.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/api/envelope.ts": {
+    "lines": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 19, "covered": 18, "skipped": 0, "pct": 94.73 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/api/errors.ts": {
+    "lines": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/api/index.ts": {
+    "lines": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/api/schemas.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/app/deep-links.ts": {
+    "lines": { "total": 19, "covered": 18, "skipped": 0, "pct": 94.73 },
+    "functions": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 },
+    "statements": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 },
+    "branches": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/login-redirect.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/mfa.ts": {
+    "lines": { "total": 6, "covered": 3, "skipped": 0, "pct": 50 },
+    "functions": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 },
+    "statements": { "total": 7, "covered": 3, "skipped": 0, "pct": 42.85 },
+    "branches": { "total": 8, "covered": 4, "skipped": 0, "pct": 50 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/password-reset.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/phone-merge.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/phone-otp.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/safe-next.ts": {
+    "lines": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/passkeys/challenge.ts": {
+    "lines": { "total": 25, "covered": 23, "skipped": 0, "pct": 92 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 30, "covered": 27, "skipped": 0, "pct": 90 },
+    "branches": { "total": 22, "covered": 21, "skipped": 0, "pct": 95.45 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/passkeys/config.ts": {
+    "lines": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/auth/passkeys/store.ts": {
+    "lines": { "total": 5, "covered": 4, "skipped": 0, "pct": 80 },
+    "functions": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 },
+    "statements": { "total": 7, "covered": 6, "skipped": 0, "pct": 85.71 },
+    "branches": { "total": 11, "covered": 10, "skipped": 0, "pct": 90.9 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cache/http.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "branches": { "total": 18, "covered": 17, "skipped": 0, "pct": 94.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cache/redis.ts": {
+    "lines": { "total": 45, "covered": 11, "skipped": 0, "pct": 24.44 },
+    "functions": { "total": 12, "covered": 5, "skipped": 0, "pct": 41.66 },
+    "statements": { "total": 55, "covered": 14, "skipped": 0, "pct": 25.45 },
+    "branches": { "total": 34, "covered": 4, "skipped": 0, "pct": 11.76 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/coupon-cookie.ts": {
+    "lines": { "total": 11, "covered": 5, "skipped": 0, "pct": 45.45 },
+    "functions": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 },
+    "statements": { "total": 13, "covered": 6, "skipped": 0, "pct": 46.15 },
+    "branches": { "total": 4, "covered": 1, "skipped": 0, "pct": 25 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/coupon.ts": {
+    "lines": { "total": 33, "covered": 33, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 43, "covered": 43, "skipped": 0, "pct": 100 },
+    "branches": { "total": 48, "covered": 45, "skipped": 0, "pct": 93.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/format.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "branches": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/guest-session-cookie.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/guest-session.ts": {
+    "lines": { "total": 13, "covered": 3, "skipped": 0, "pct": 23.07 },
+    "functions": { "total": 3, "covered": 1, "skipped": 0, "pct": 33.33 },
+    "statements": { "total": 15, "covered": 4, "skipped": 0, "pct": 26.66 },
+    "branches": { "total": 10, "covered": 1, "skipped": 0, "pct": 10 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/load-products.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 10, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/pricing.ts": {
+    "lines": { "total": 80, "covered": 79, "skipped": 0, "pct": 98.75 },
+    "functions": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "statements": { "total": 102, "covered": 100, "skipped": 0, "pct": 98.03 },
+    "branches": { "total": 112, "covered": 106, "skipped": 0, "pct": 94.64 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/session-cache.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/shipping-cookie.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/snapshot.ts": {
+    "lines": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/store.ts": {
+    "lines": { "total": 104, "covered": 92, "skipped": 0, "pct": 88.46 },
+    "functions": { "total": 31, "covered": 30, "skipped": 0, "pct": 96.77 },
+    "statements": { "total": 111, "covered": 99, "skipped": 0, "pct": 89.18 },
+    "branches": { "total": 58, "covered": 53, "skipped": 0, "pct": 91.37 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cart/types.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cashback/engine.ts": {
+    "lines": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cashback/expiry.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cashback/rules.ts": {
+    "lines": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cashback/settlement.ts": {
+    "lines": { "total": 33, "covered": 33, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 38, "covered": 37, "skipped": 0, "pct": 97.36 },
+    "branches": { "total": 24, "covered": 22, "skipped": 0, "pct": 91.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/cashback/tracker.ts": {
+    "lines": { "total": 41, "covered": 41, "skipped": 0, "pct": 100 },
+    "functions": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "statements": { "total": 44, "covered": 44, "skipped": 0, "pct": 100 },
+    "branches": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/electro-content.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 4, "skipped": 0, "pct": 50 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/israeli-postal-code.ts": {
+    "lines": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 19, "covered": 18, "skipped": 0, "pct": 94.73 },
+    "branches": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/postal-autofill.ts": {
+    "lines": { "total": 44, "covered": 44, "skipped": 0, "pct": 100 },
+    "functions": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "statements": { "total": 59, "covered": 58, "skipped": 0, "pct": 98.3 },
+    "branches": { "total": 54, "covered": 51, "skipped": 0, "pct": 94.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/split.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/state-machine.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 3, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/steps.ts": {
+    "lines": { "total": 47, "covered": 47, "skipped": 0, "pct": 100 },
+    "functions": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "statements": { "total": 64, "covered": 64, "skipped": 0, "pct": 100 },
+    "branches": { "total": 50, "covered": 46, "skipped": 0, "pct": 92 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/validate-cart.ts": {
+    "lines": { "total": 9, "covered": 8, "skipped": 0, "pct": 88.88 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 11, "covered": 10, "skipped": 0, "pct": 90.9 },
+    "branches": { "total": 6, "covered": 5, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/checkout/wallet-input.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/commission.ts": {
+    "lines": { "total": 45, "covered": 45, "skipped": 0, "pct": 100 },
+    "functions": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "statements": { "total": 53, "covered": 53, "skipped": 0, "pct": 100 },
+    "branches": { "total": 42, "covered": 42, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/coupon-expiry.ts": {
+    "lines": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "branches": { "total": 23, "covered": 22, "skipped": 0, "pct": 95.65 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/coupon-offer.ts": {
+    "lines": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "branches": { "total": 26, "covered": 21, "skipped": 0, "pct": 80.76 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/gift-card.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 7, "skipped": 0, "pct": 87.5 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/implausible-discount.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/money.ts": {
+    "lines": { "total": 42, "covered": 42, "skipped": 0, "pct": 100 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 42, "covered": 42, "skipped": 0, "pct": 100 },
+    "branches": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/order-money-columns.ts": {
+    "lines": { "total": 47, "covered": 47, "skipped": 0, "pct": 100 },
+    "functions": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "statements": { "total": 51, "covered": 50, "skipped": 0, "pct": 98.03 },
+    "branches": { "total": 33, "covered": 32, "skipped": 0, "pct": 96.96 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/product-money.ts": {
+    "lines": { "total": 108, "covered": 106, "skipped": 0, "pct": 98.14 },
+    "functions": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "statements": { "total": 118, "covered": 116, "skipped": 0, "pct": 98.3 },
+    "branches": { "total": 155, "covered": 146, "skipped": 0, "pct": 94.19 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/product-type.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/recurring-schema-error.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "branches": { "total": 13, "covered": 12, "skipped": 0, "pct": 92.3 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/recurring.ts": {
+    "lines": { "total": 89, "covered": 86, "skipped": 0, "pct": 96.62 },
+    "functions": { "total": 21, "covered": 20, "skipped": 0, "pct": 95.23 },
+    "statements": { "total": 103, "covered": 100, "skipped": 0, "pct": 97.08 },
+    "branches": { "total": 106, "covered": 100, "skipped": 0, "pct": 94.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/stock-live.ts": {
+    "lines": { "total": 12, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 13, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/stock-scarcity.ts": {
+    "lines": { "total": 23, "covered": 22, "skipped": 0, "pct": 95.65 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 30, "covered": 28, "skipped": 0, "pct": 93.33 },
+    "branches": { "total": 36, "covered": 34, "skipped": 0, "pct": 94.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/commerce/whatsapp-schema-error.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/contracts/webhooks.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/coupons/generator.ts": {
+    "lines": { "total": 32, "covered": 32, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 37, "covered": 35, "skipped": 0, "pct": 94.59 },
+    "branches": { "total": 23, "covered": 20, "skipped": 0, "pct": 86.95 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/coupons/qr-batch-input.ts": {
+    "lines": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/coupons/qr-batch-view.ts": {
+    "lines": { "total": 23, "covered": 23, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 26, "covered": 25, "skipped": 0, "pct": 96.15 },
+    "branches": { "total": 19, "covered": 18, "skipped": 0, "pct": 94.73 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/coupons/qr-pdf.ts": {
+    "lines": { "total": 40, "covered": 40, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 43, "covered": 43, "skipped": 0, "pct": 100 },
+    "branches": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/coupons/unit-codes.ts": {
+    "lines": { "total": 38, "covered": 38, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 46, "covered": 46, "skipped": 0, "pct": 100 },
+    "branches": { "total": 26, "covered": 26, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/db/enum-declarations.ts": {
+    "lines": { "total": 51, "covered": 50, "skipped": 0, "pct": 98.03 },
+    "functions": { "total": 5, "covered": 4, "skipped": 0, "pct": 80 },
+    "statements": { "total": 55, "covered": 54, "skipped": 0, "pct": 98.18 },
+    "branches": { "total": 14, "covered": 12, "skipped": 0, "pct": 85.71 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/admin-alerts.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/bidi.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/magic-link.ts": {
+    "lines": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/notifications.ts": {
+    "lines": { "total": 247, "covered": 246, "skipped": 0, "pct": 99.59 },
+    "functions": { "total": 44, "covered": 44, "skipped": 0, "pct": 100 },
+    "statements": { "total": 266, "covered": 258, "skipped": 0, "pct": 96.99 },
+    "branches": { "total": 257, "covered": 208, "skipped": 0, "pct": 80.93 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/outbox-retry.ts": {
+    "lines": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 31, "covered": 31, "skipped": 0, "pct": 100 },
+    "branches": { "total": 14, "covered": 13, "skipped": 0, "pct": 92.85 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/resend.ts": {
+    "lines": { "total": 22, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 25, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/voucher-email.ts": {
+    "lines": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 },
+    "branches": { "total": 30, "covered": 26, "skipped": 0, "pct": 86.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/templates/cashback-credited.ts": {
+    "lines": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/templates/coupon-delivery.ts": {
+    "lines": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/templates/index.ts": {
+    "lines": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/email/templates/order-confirmation.ts": {
+    "lines": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/feeds/catalogue.ts": {
+    "lines": { "total": 27, "covered": 8, "skipped": 0, "pct": 29.62 },
+    "functions": { "total": 7, "covered": 1, "skipped": 0, "pct": 14.28 },
+    "statements": { "total": 32, "covered": 8, "skipped": 0, "pct": 25 },
+    "branches": { "total": 45, "covered": 3, "skipped": 0, "pct": 6.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/feeds/merchant.ts": {
+    "lines": { "total": 24, "covered": 24, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 24, "covered": 24, "skipped": 0, "pct": 100 },
+    "branches": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/feeds/rss.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 14, "covered": 12, "skipped": 0, "pct": 85.71 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/feeds/xml.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/fraud/coupon-stacking.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/fraud/review-queue.ts": {
+    "lines": { "total": 19, "covered": 17, "skipped": 0, "pct": 89.47 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 18, "skipped": 0, "pct": 90 },
+    "branches": { "total": 18, "covered": 13, "skipped": 0, "pct": 72.22 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/fraud/velocity.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 22, "covered": 20, "skipped": 0, "pct": 90.9 },
+    "branches": { "total": 23, "covered": 20, "skipped": 0, "pct": 86.95 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/geo/cities.ts": {
+    "lines": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 26, "covered": 25, "skipped": 0, "pct": 96.15 },
+    "branches": { "total": 14, "covered": 13, "skipped": 0, "pct": 92.85 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/geo/distance.ts": {
+    "lines": { "total": 51, "covered": 51, "skipped": 0, "pct": 100 },
+    "functions": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "statements": { "total": 64, "covered": 62, "skipped": 0, "pct": 96.87 },
+    "branches": { "total": 74, "covered": 72, "skipped": 0, "pct": 97.29 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/gift-cards/code.ts": {
+    "lines": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/gifts/claim-token.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/growth/client.ts": {
+    "lines": { "total": 24, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 17, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 25, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/growth/discount.ts": {
+    "lines": { "total": 34, "covered": 34, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 44, "covered": 44, "skipped": 0, "pct": 100 },
+    "branches": { "total": 52, "covered": 50, "skipped": 0, "pct": 96.15 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/growth/resend.ts": {
+    "lines": { "total": 24, "covered": 24, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 5, "skipped": 0, "pct": 71.42 },
+    "statements": { "total": 28, "covered": 26, "skipped": 0, "pct": 92.85 },
+    "branches": { "total": 27, "covered": 25, "skipped": 0, "pct": 92.59 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/growth/stacking.ts": {
+    "lines": { "total": 29, "covered": 29, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 30, "covered": 30, "skipped": 0, "pct": 100 },
+    "branches": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/health/checks.ts": {
+    "lines": { "total": 73, "covered": 56, "skipped": 0, "pct": 76.71 },
+    "functions": { "total": 23, "covered": 20, "skipped": 0, "pct": 86.95 },
+    "statements": { "total": 79, "covered": 61, "skipped": 0, "pct": 77.21 },
+    "branches": { "total": 84, "covered": 45, "skipped": 0, "pct": 53.57 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/health/ready.ts": {
+    "lines": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 },
+    "functions": { "total": 4, "covered": 3, "skipped": 0, "pct": 75 },
+    "statements": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 },
+    "branches": { "total": 4, "covered": 2, "skipped": 0, "pct": 50 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/homepage/cms.ts": {
+    "lines": { "total": 27, "covered": 26, "skipped": 0, "pct": 96.29 },
+    "functions": { "total": 7, "covered": 6, "skipped": 0, "pct": 85.71 },
+    "statements": { "total": 31, "covered": 30, "skipped": 0, "pct": 96.77 },
+    "branches": { "total": 39, "covered": 28, "skipped": 0, "pct": 71.79 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/images/alt-text.ts": {
+    "lines": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/images/client-compress.ts": {
+    "lines": { "total": 36, "covered": 19, "skipped": 0, "pct": 52.77 },
+    "functions": { "total": 6, "covered": 4, "skipped": 0, "pct": 66.66 },
+    "statements": { "total": 43, "covered": 23, "skipped": 0, "pct": 53.48 },
+    "branches": { "total": 30, "covered": 22, "skipped": 0, "pct": 73.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/images/process.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 25, "covered": 23, "skipped": 0, "pct": 92 },
+    "branches": { "total": 6, "covered": 3, "skipped": 0, "pct": 50 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/images/remote-hosts.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 25, "covered": 24, "skipped": 0, "pct": 96 },
+    "branches": { "total": 18, "covered": 17, "skipped": 0, "pct": 94.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/images/validate.ts": {
+    "lines": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 },
+    "branches": { "total": 16, "covered": 15, "skipped": 0, "pct": 93.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/invoices/document.ts": {
+    "lines": { "total": 46, "covered": 42, "skipped": 0, "pct": 91.3 },
+    "functions": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "statements": { "total": 50, "covered": 46, "skipped": 0, "pct": 92 },
+    "branches": { "total": 52, "covered": 46, "skipped": 0, "pct": 88.46 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/invoices/issuer.ts": {
+    "lines": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 32, "covered": 31, "skipped": 0, "pct": 96.87 },
+    "branches": { "total": 31, "covered": 30, "skipped": 0, "pct": 96.77 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/invoices/pdf.ts": {
+    "lines": { "total": 155, "covered": 154, "skipped": 0, "pct": 99.35 },
+    "functions": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "statements": { "total": 168, "covered": 166, "skipped": 0, "pct": 98.8 },
+    "branches": { "total": 59, "covered": 54, "skipped": 0, "pct": 91.52 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/jobs/contracts.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/jobs/dlq.ts": {
+    "lines": { "total": 53, "covered": 49, "skipped": 0, "pct": 92.45 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 56, "covered": 51, "skipped": 0, "pct": 91.07 },
+    "branches": { "total": 33, "covered": 28, "skipped": 0, "pct": 84.84 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/jobs/index.ts": {
+    "lines": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/jobs/queue.ts": {
+    "lines": { "total": 21, "covered": 21, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 23, "covered": 23, "skipped": 0, "pct": 100 },
+    "branches": { "total": 19, "covered": 17, "skipped": 0, "pct": 89.47 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/jobs/runner.ts": {
+    "lines": { "total": 32, "covered": 31, "skipped": 0, "pct": 96.87 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 35, "covered": 34, "skipped": 0, "pct": 97.14 },
+    "branches": { "total": 14, "covered": 10, "skipped": 0, "pct": 71.42 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/notifications/preference-store.ts": {
+    "lines": { "total": 8, "covered": 5, "skipped": 0, "pct": 62.5 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 10, "covered": 6, "skipped": 0, "pct": 60 },
+    "branches": { "total": 12, "covered": 4, "skipped": 0, "pct": 33.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/notifications/preferences.ts": {
+    "lines": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/notifications/qstash.ts": {
+    "lines": { "total": 53, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 10, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 62, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 67, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/notifications/redis-queue.ts": {
+    "lines": { "total": 73, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 17, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 94, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 79, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/action-context.ts": {
+    "lines": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "branches": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/alert.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 24, "covered": 24, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/axiom.ts": {
+    "lines": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "branches": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/debug-error-gate.ts": {
+    "lines": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/index.ts": {
+    "lines": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/log.ts": {
+    "lines": { "total": 26, "covered": 26, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 32, "covered": 31, "skipped": 0, "pct": 96.87 },
+    "branches": { "total": 26, "covered": 23, "skipped": 0, "pct": 88.46 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/posthog.ts": {
+    "lines": { "total": 43, "covered": 37, "skipped": 0, "pct": 86.04 },
+    "functions": { "total": 9, "covered": 7, "skipped": 0, "pct": 77.77 },
+    "statements": { "total": 48, "covered": 38, "skipped": 0, "pct": 79.16 },
+    "branches": { "total": 36, "covered": 27, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/request-context.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/request-id.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/request-store.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/scrub.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "branches": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/sentry-user.ts": {
+    "lines": { "total": 40, "covered": 40, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 54, "covered": 52, "skipped": 0, "pct": 96.29 },
+    "branches": { "total": 37, "covered": 35, "skipped": 0, "pct": 94.59 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/sentry.ts": {
+    "lines": { "total": 19, "covered": 4, "skipped": 0, "pct": 21.05 },
+    "functions": { "total": 5, "covered": 2, "skipped": 0, "pct": 40 },
+    "statements": { "total": 23, "covered": 6, "skipped": 0, "pct": 26.08 },
+    "branches": { "total": 32, "covered": 4, "skipped": 0, "pct": 12.5 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/telegram.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 21, "covered": 21, "skipped": 0, "pct": 100 },
+    "branches": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/observability/with-request-log.ts": {
+    "lines": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 5, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/og/product-card.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/orders/receipt-pdf.ts": {
+    "lines": { "total": 147, "covered": 141, "skipped": 0, "pct": 95.91 },
+    "functions": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "statements": { "total": 156, "covered": 149, "skipped": 0, "pct": 95.51 },
+    "branches": { "total": 53, "covered": 45, "skipped": 0, "pct": 84.9 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/accounts.ts": {
+    "lines": { "total": 61, "covered": 61, "skipped": 0, "pct": 100 },
+    "functions": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "statements": { "total": 73, "covered": 71, "skipped": 0, "pct": 97.26 },
+    "branches": { "total": 87, "covered": 83, "skipped": 0, "pct": 95.4 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/cardcom.ts": {
+    "lines": { "total": 111, "covered": 102, "skipped": 0, "pct": 91.89 },
+    "functions": { "total": 22, "covered": 16, "skipped": 0, "pct": 72.72 },
+    "statements": { "total": 124, "covered": 109, "skipped": 0, "pct": 87.9 },
+    "branches": { "total": 166, "covered": 125, "skipped": 0, "pct": 75.3 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/env.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/index.ts": {
+    "lines": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/mock-cardcom.ts": {
+    "lines": { "total": 58, "covered": 1, "skipped": 0, "pct": 1.72 },
+    "functions": { "total": 13, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 60, "covered": 1, "skipped": 0, "pct": 1.66 },
+    "branches": { "total": 22, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/payment-money-columns.ts": {
+    "lines": { "total": 33, "covered": 33, "skipped": 0, "pct": 100 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 37, "covered": 37, "skipped": 0, "pct": 100 },
+    "branches": { "total": 21, "covered": 20, "skipped": 0, "pct": 95.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/terminal-reconciliation.ts": {
+    "lines": { "total": 42, "covered": 41, "skipped": 0, "pct": 97.61 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 53, "covered": 50, "skipped": 0, "pct": 94.33 },
+    "branches": { "total": 31, "covered": 28, "skipped": 0, "pct": 90.32 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/threeds.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 21, "covered": 20, "skipped": 0, "pct": 95.23 },
+    "branches": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/token-expiry.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 8, "skipped": 0, "pct": 88.88 },
+    "branches": { "total": 15, "covered": 14, "skipped": 0, "pct": 93.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/payments/types.ts": {
+    "lines": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/pricing/flash-deals.ts": {
+    "lines": { "total": 47, "covered": 44, "skipped": 0, "pct": 93.61 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 57, "covered": 50, "skipped": 0, "pct": 87.71 },
+    "branches": { "total": 60, "covered": 49, "skipped": 0, "pct": 81.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/pricing/price-snapshot.ts": {
+    "lines": { "total": 26, "covered": 24, "skipped": 0, "pct": 92.3 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 28, "covered": 25, "skipped": 0, "pct": 89.28 },
+    "branches": { "total": 19, "covered": 15, "skipped": 0, "pct": 78.94 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/product-live/live-event.ts": {
+    "lines": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 34, "covered": 34, "skipped": 0, "pct": 100 },
+    "branches": { "total": 54, "covered": 51, "skipped": 0, "pct": 94.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/product-live/use-product-live.ts": {
+    "lines": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/push/dispatch.ts": {
+    "lines": { "total": 38, "covered": 38, "skipped": 0, "pct": 100 },
+    "functions": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "statements": { "total": 55, "covered": 51, "skipped": 0, "pct": 92.72 },
+    "branches": { "total": 49, "covered": 39, "skipped": 0, "pct": 79.59 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/push/expo.ts": {
+    "lines": { "total": 47, "covered": 46, "skipped": 0, "pct": 97.87 },
+    "functions": { "total": 8, "covered": 7, "skipped": 0, "pct": 87.5 },
+    "statements": { "total": 56, "covered": 54, "skipped": 0, "pct": 96.42 },
+    "branches": { "total": 42, "covered": 37, "skipped": 0, "pct": 88.09 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/push/store.ts": {
+    "lines": { "total": 5, "covered": 4, "skipped": 0, "pct": 80 },
+    "functions": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 },
+    "statements": { "total": 7, "covered": 6, "skipped": 0, "pct": 85.71 },
+    "branches": { "total": 11, "covered": 10, "skipped": 0, "pct": 90.9 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/push/templates.ts": {
+    "lines": { "total": 53, "covered": 51, "skipped": 0, "pct": 96.22 },
+    "functions": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "statements": { "total": 61, "covered": 59, "skipped": 0, "pct": 96.72 },
+    "branches": { "total": 72, "covered": 60, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/push/vapid.ts": {
+    "lines": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/push/web-leg.ts": {
+    "lines": { "total": 33, "covered": 31, "skipped": 0, "pct": 93.93 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 40, "covered": 38, "skipped": 0, "pct": 95 },
+    "branches": { "total": 42, "covered": 33, "skipped": 0, "pct": 78.57 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/push/web-push.ts": {
+    "lines": { "total": 28, "covered": 16, "skipped": 0, "pct": 57.14 },
+    "functions": { "total": 5, "covered": 4, "skipped": 0, "pct": 80 },
+    "statements": { "total": 34, "covered": 21, "skipped": 0, "pct": 61.76 },
+    "branches": { "total": 47, "covered": 37, "skipped": 0, "pct": 78.72 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/pwa/install-surface.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 16, "covered": 15, "skipped": 0, "pct": 93.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/edge-shield.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/graduated.ts": {
+    "lines": { "total": 47, "covered": 47, "skipped": 0, "pct": 100 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 49, "covered": 48, "skipped": 0, "pct": 97.95 },
+    "branches": { "total": 31, "covered": 25, "skipped": 0, "pct": 80.64 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/headers.ts": {
+    "lines": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/index.ts": {
+    "lines": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/limiter.ts": {
+    "lines": { "total": 32, "covered": 32, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 34, "covered": 34, "skipped": 0, "pct": 100 },
+    "branches": { "total": 22, "covered": 20, "skipped": 0, "pct": 90.9 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/policies.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/sliding-window.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/rate-limit/upstash.ts": {
+    "lines": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 6, "skipped": 0, "pct": 85.71 },
+    "statements": { "total": 30, "covered": 29, "skipped": 0, "pct": 96.66 },
+    "branches": { "total": 26, "covered": 22, "skipped": 0, "pct": 84.61 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/referrals/code.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/referrals/cookie.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/referrals/fingerprint.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/reports/csv.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 21, "covered": 21, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/resilience/kill-switches.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/reviews/reviews.ts": {
+    "lines": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/category-scope.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/drift.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 20, "covered": 16, "skipped": 0, "pct": 80 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/facet-links.ts": {
+    "lines": { "total": 64, "covered": 63, "skipped": 0, "pct": 98.43 },
+    "functions": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "statements": { "total": 79, "covered": 78, "skipped": 0, "pct": 98.73 },
+    "branches": { "total": 66, "covered": 63, "skipped": 0, "pct": 95.45 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/faceted-server.ts": {
+    "lines": { "total": 51, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 10, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 64, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 44, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/faceted.ts": {
+    "lines": { "total": 89, "covered": 89, "skipped": 0, "pct": 100 },
+    "functions": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "statements": { "total": 118, "covered": 107, "skipped": 0, "pct": 90.67 },
+    "branches": { "total": 127, "covered": 103, "skipped": 0, "pct": 81.1 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/golden-queries.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/hebrew-synonyms.ts": {
+    "lines": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 35, "covered": 34, "skipped": 0, "pct": 97.14 },
+    "branches": { "total": 15, "covered": 13, "skipped": 0, "pct": 86.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/indexer.ts": {
+    "lines": { "total": 27, "covered": 26, "skipped": 0, "pct": 96.29 },
+    "functions": { "total": 4, "covered": 3, "skipped": 0, "pct": 75 },
+    "statements": { "total": 31, "covered": 29, "skipped": 0, "pct": 93.54 },
+    "branches": { "total": 29, "covered": 26, "skipped": 0, "pct": 89.65 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/meili-settings.ts": {
+    "lines": { "total": 59, "covered": 59, "skipped": 0, "pct": 100 },
+    "functions": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "statements": { "total": 69, "covered": 69, "skipped": 0, "pct": 100 },
+    "branches": { "total": 113, "covered": 110, "skipped": 0, "pct": 97.34 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/meilisearch.ts": {
+    "lines": { "total": 81, "covered": 76, "skipped": 0, "pct": 93.82 },
+    "functions": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "statements": { "total": 100, "covered": 89, "skipped": 0, "pct": 89 },
+    "branches": { "total": 62, "covered": 39, "skipped": 0, "pct": 62.9 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/outbox-drain.ts": {
+    "lines": { "total": 24, "covered": 22, "skipped": 0, "pct": 91.66 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 25, "covered": 23, "skipped": 0, "pct": 92 },
+    "branches": { "total": 17, "covered": 13, "skipped": 0, "pct": 76.47 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/pipeline-contracts.ts": {
+    "lines": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "branches": { "total": 13, "covered": 12, "skipped": 0, "pct": 92.3 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/qstash.ts": {
+    "lines": { "total": 41, "covered": 39, "skipped": 0, "pct": 95.12 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 52, "covered": 46, "skipped": 0, "pct": 88.46 },
+    "branches": { "total": 38, "covered": 33, "skipped": 0, "pct": 86.84 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/query-locale.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 3, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/search/record.ts": {
+    "lines": { "total": 9, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 11, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/security/constant-time.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/security/frame-policy.ts": {
+    "lines": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 32, "covered": 32, "skipped": 0, "pct": 100 },
+    "branches": { "total": 23, "covered": 23, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/security/same-origin.ts": {
+    "lines": { "total": 31, "covered": 31, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 38, "covered": 38, "skipped": 0, "pct": 100 },
+    "branches": { "total": 32, "covered": 32, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/seo/json-ld.ts": {
+    "lines": { "total": 44, "covered": 43, "skipped": 0, "pct": 97.72 },
+    "functions": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "statements": { "total": 52, "covered": 51, "skipped": 0, "pct": 98.07 },
+    "branches": { "total": 51, "covered": 39, "skipped": 0, "pct": 76.47 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/seo/lastmod.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "branches": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/seo/normalize-path.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "branches": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/seo/redirects.ts": {
+    "lines": { "total": 31, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 36, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 20, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/share/message.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 11, "skipped": 0, "pct": 91.66 },
+    "branches": { "total": 12, "covered": 11, "skipped": 0, "pct": 91.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/shipping/carriers.ts": {
+    "lines": { "total": 22, "covered": 18, "skipped": 0, "pct": 81.81 },
+    "functions": { "total": 12, "covered": 8, "skipped": 0, "pct": 66.66 },
+    "statements": { "total": 26, "covered": 22, "skipped": 0, "pct": 84.61 },
+    "branches": { "total": 8, "covered": 7, "skipped": 0, "pct": 87.5 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/shipping/methods.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 },
+    "branches": { "total": 6, "covered": 5, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/shipping/transitions.ts": {
+    "lines": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/opt-out.ts": {
+    "lines": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/otp.ts": {
+    "lines": { "total": 74, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 15, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 80, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 63, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/outbox.ts": {
+    "lines": { "total": 17, "covered": 15, "skipped": 0, "pct": 88.23 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 22, "covered": 20, "skipped": 0, "pct": 90.9 },
+    "branches": { "total": 18, "covered": 14, "skipped": 0, "pct": 77.77 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/receipt.ts": {
+    "lines": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 32, "covered": 30, "skipped": 0, "pct": 93.75 },
+    "branches": { "total": 49, "covered": 46, "skipped": 0, "pct": 93.87 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/segments.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "branches": { "total": 16, "covered": 15, "skipped": 0, "pct": 93.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/send.ts": {
+    "lines": { "total": 32, "covered": 30, "skipped": 0, "pct": 93.75 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 38, "covered": 35, "skipped": 0, "pct": 92.1 },
+    "branches": { "total": 42, "covered": 33, "skipped": 0, "pct": 78.57 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/templates.ts": {
+    "lines": { "total": 47, "covered": 44, "skipped": 0, "pct": 93.61 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 53, "covered": 49, "skipped": 0, "pct": 92.45 },
+    "branches": { "total": 67, "covered": 56, "skipped": 0, "pct": 83.58 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/sms/twilio.ts": {
+    "lines": { "total": 31, "covered": 31, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 5, "skipped": 0, "pct": 71.42 },
+    "statements": { "total": 38, "covered": 36, "skipped": 0, "pct": 94.73 },
+    "branches": { "total": 34, "covered": 31, "skipped": 0, "pct": 91.17 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/storage/r2-buckets.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "branches": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/storage/r2-service.ts": {
+    "lines": { "total": 34, "covered": 29, "skipped": 0, "pct": 85.29 },
+    "functions": { "total": 9, "covered": 7, "skipped": 0, "pct": 77.77 },
+    "statements": { "total": 35, "covered": 30, "skipped": 0, "pct": 85.71 },
+    "branches": { "total": 29, "covered": 25, "skipped": 0, "pct": 86.2 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/storage/r2.ts": {
+    "lines": { "total": 40, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 11, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 40, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/storage/upload.ts": {
+    "lines": { "total": 20, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 23, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 12, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/admin-key.ts": {
+    "lines": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 22, "covered": 21, "skipped": 0, "pct": 95.45 },
+    "branches": { "total": 20, "covered": 18, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/admin.ts": {
+    "lines": { "total": 9, "covered": 4, "skipped": 0, "pct": 44.44 },
+    "functions": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 },
+    "statements": { "total": 12, "covered": 5, "skipped": 0, "pct": 41.66 },
+    "branches": { "total": 10, "covered": 5, "skipped": 0, "pct": 50 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/anon-key.ts": {
+    "lines": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/anon.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/bearer.ts": {
+    "lines": { "total": 19, "covered": 14, "skipped": 0, "pct": 73.68 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 23, "covered": 18, "skipped": 0, "pct": 78.26 },
+    "branches": { "total": 16, "covered": 12, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/client.ts": {
+    "lines": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/optional-columns.ts": {
+    "lines": { "total": 54, "covered": 52, "skipped": 0, "pct": 96.29 },
+    "functions": { "total": 18, "covered": 16, "skipped": 0, "pct": 88.88 },
+    "statements": { "total": 61, "covered": 58, "skipped": 0, "pct": 95.08 },
+    "branches": { "total": 48, "covered": 37, "skipped": 0, "pct": 77.08 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/pending-jobs.ts": {
+    "lines": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/pending-outbox.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/pending-reports.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 13, "skipped": 0, "pct": 92.85 },
+    "branches": { "total": 24, "covered": 18, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/pending-restock.ts": {
+    "lines": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/pending-schema.ts": {
+    "lines": { "total": 10, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 13, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 20, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/pending-search.ts": {
+    "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 12, "skipped": 0, "pct": 92.3 },
+    "branches": { "total": 19, "covered": 13, "skipped": 0, "pct": 68.42 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/public.ts": {
+    "lines": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/query-log-fetch.ts": {
+    "lines": { "total": 30, "covered": 30, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 33, "covered": 33, "skipped": 0, "pct": 100 },
+    "branches": { "total": 31, "covered": 26, "skipped": 0, "pct": 83.87 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/read-replica.ts": {
+    "lines": { "total": 17, "covered": 12, "skipped": 0, "pct": 70.58 },
+    "functions": { "total": 4, "covered": 3, "skipped": 0, "pct": 75 },
+    "statements": { "total": 22, "covered": 17, "skipped": 0, "pct": 77.27 },
+    "branches": { "total": 17, "covered": 15, "skipped": 0, "pct": 88.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/request-id-fetch.ts": {
+    "lines": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "branches": { "total": 9, "covered": 8, "skipped": 0, "pct": 88.88 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/rls-report-fetch.ts": {
+    "lines": { "total": 30, "covered": 29, "skipped": 0, "pct": 96.66 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 36, "covered": 34, "skipped": 0, "pct": 94.44 },
+    "branches": { "total": 37, "covered": 30, "skipped": 0, "pct": 81.08 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/server.ts": {
+    "lines": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supabase/timeout-fetch.ts": {
+    "lines": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "branches": { "total": 16, "covered": 15, "skipped": 0, "pct": 93.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supplier/dashboard.ts": {
+    "lines": { "total": 49, "covered": 49, "skipped": 0, "pct": 100 },
+    "functions": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "statements": { "total": 54, "covered": 52, "skipped": 0, "pct": 96.29 },
+    "branches": { "total": 20, "covered": 16, "skipped": 0, "pct": 80 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supplier/orders.ts": {
+    "lines": { "total": 50, "covered": 50, "skipped": 0, "pct": 100 },
+    "functions": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "statements": { "total": 61, "covered": 58, "skipped": 0, "pct": 95.08 },
+    "branches": { "total": 35, "covered": 32, "skipped": 0, "pct": 91.42 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supplier/products.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 28, "covered": 28, "skipped": 0, "pct": 100 },
+    "branches": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supplier/rbac.ts": {
+    "lines": { "total": 33, "covered": 33, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 43, "covered": 42, "skipped": 0, "pct": 97.67 },
+    "branches": { "total": 33, "covered": 28, "skipped": 0, "pct": 84.84 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/supplier/roles.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "branches": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/utils/rate-limit.ts": {
+    "lines": { "total": 16, "covered": 14, "skipped": 0, "pct": 87.5 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 17, "covered": 14, "skipped": 0, "pct": 82.35 },
+    "branches": { "total": 13, "covered": 8, "skipped": 0, "pct": 61.53 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/utils/search-escape.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "branches": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/utils/slugify.ts": {
+    "lines": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 2, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/validations/account.ts": {
+    "lines": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/validations/auth.ts": {
+    "lines": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "functions": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "statements": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/validations/cart.ts": {
+    "lines": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/validations/checkout.ts": {
+    "lines": { "total": 34, "covered": 19, "skipped": 0, "pct": 55.88 },
+    "functions": { "total": 7, "covered": 2, "skipped": 0, "pct": 28.57 },
+    "statements": { "total": 36, "covered": 19, "skipped": 0, "pct": 52.77 },
+    "branches": { "total": 18, "covered": 5, "skipped": 0, "pct": 27.77 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/vouchers/coupon-view.ts": {
+    "lines": { "total": 36, "covered": 36, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 45, "covered": 44, "skipped": 0, "pct": 97.77 },
+    "branches": { "total": 31, "covered": 29, "skipped": 0, "pct": 93.54 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/vouchers/offline-scan.ts": {
+    "lines": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/vouchers/qr-image.ts": {
+    "lines": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 16, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 17, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/vouchers/scan-input.ts": {
+    "lines": { "total": 23, "covered": 23, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 26, "covered": 26, "skipped": 0, "pct": 100 },
+    "branches": { "total": 21, "covered": 20, "skipped": 0, "pct": 95.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wallet/config.ts": {
+    "lines": { "total": 24, "covered": 23, "skipped": 0, "pct": 95.83 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 27, "covered": 26, "skipped": 0, "pct": 96.29 },
+    "branches": { "total": 28, "covered": 28, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wallet/google-wallet.ts": {
+    "lines": { "total": 36, "covered": 36, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 42, "covered": 41, "skipped": 0, "pct": 97.61 },
+    "branches": { "total": 22, "covered": 19, "skipped": 0, "pct": 86.36 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wallet/notify.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wallet/pass-images.ts": {
+    "lines": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 17, "skipped": 0, "pct": 94.44 },
+    "branches": { "total": 4, "covered": 3, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wallet/pass-model.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 24, "covered": 23, "skipped": 0, "pct": 95.83 },
+    "branches": { "total": 20, "covered": 14, "skipped": 0, "pct": 70 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wallet/pkpass.ts": {
+    "lines": { "total": 23, "covered": 22, "skipped": 0, "pct": 95.65 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 23, "covered": 22, "skipped": 0, "pct": 95.65 },
+    "branches": { "total": 4, "covered": 3, "skipped": 0, "pct": 75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wallet/zip.ts": {
+    "lines": { "total": 85, "covered": 84, "skipped": 0, "pct": 98.82 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 90, "covered": 89, "skipped": 0, "pct": 98.88 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/whatsapp/outbox.ts": {
+    "lines": { "total": 40, "covered": 38, "skipped": 0, "pct": 95 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 52, "covered": 45, "skipped": 0, "pct": 86.53 },
+    "branches": { "total": 60, "covered": 44, "skipped": 0, "pct": 73.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/whatsapp/twilio.ts": {
+    "lines": { "total": 21, "covered": 21, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 4, "skipped": 0, "pct": 80 },
+    "statements": { "total": 27, "covered": 26, "skipped": 0, "pct": 96.29 },
+    "branches": { "total": 19, "covered": 18, "skipped": 0, "pct": 94.73 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wishlist/alerts.ts": {
+    "lines": { "total": 26, "covered": 25, "skipped": 0, "pct": 96.15 },
+    "functions": { "total": 7, "covered": 6, "skipped": 0, "pct": 85.71 },
+    "statements": { "total": 32, "covered": 30, "skipped": 0, "pct": 93.75 },
+    "branches": { "total": 33, "covered": 30, "skipped": 0, "pct": 90.9 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wishlist/unsubscribe-token.ts": {
+    "lines": { "total": 35, "covered": 35, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 45, "covered": 41, "skipped": 0, "pct": 91.11 },
+    "branches": { "total": 36, "covered": 31, "skipped": 0, "pct": 86.11 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/workers/async-offload.ts": {
+    "lines": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 26, "covered": 26, "skipped": 0, "pct": 100 },
+    "branches": { "total": 24, "covered": 19, "skipped": 0, "pct": 79.16 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/workers/task-contracts.ts": {
+    "lines": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/workers/task-signature.ts": {
+    "lines": { "total": 31, "covered": 31, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 42, "covered": 41, "skipped": 0, "pct": 97.61 },
+    "branches": { "total": 34, "covered": 33, "skipped": 0, "pct": 97.05 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/lib/wp/wxr.ts": {
+    "lines": { "total": 83, "covered": 82, "skipped": 0, "pct": 98.79 },
+    "functions": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 },
+    "statements": { "total": 103, "covered": 96, "skipped": 0, "pct": 93.2 },
+    "branches": { "total": 72, "covered": 50, "skipped": 0, "pct": 69.44 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/account.ts": {
+    "lines": { "total": 114, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 24, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 135, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 88, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/auth.ts": {
+    "lines": { "total": 179, "covered": 39, "skipped": 0, "pct": 21.78 },
+    "functions": { "total": 40, "covered": 7, "skipped": 0, "pct": 17.5 },
+    "statements": { "total": 231, "covered": 49, "skipped": 0, "pct": 21.21 },
+    "branches": { "total": 140, "covered": 27, "skipped": 0, "pct": 19.28 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/cart.ts": {
+    "lines": { "total": 285, "covered": 89, "skipped": 0, "pct": 31.22 },
+    "functions": { "total": 76, "covered": 28, "skipped": 0, "pct": 36.84 },
+    "statements": { "total": 345, "covered": 101, "skipped": 0, "pct": 29.27 },
+    "branches": { "total": 219, "covered": 53, "skipped": 0, "pct": 24.2 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/consent.ts": {
+    "lines": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 16, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/contact.ts": {
+    "lines": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 21, "covered": 20, "skipped": 0, "pct": 95.23 },
+    "branches": { "total": 14, "covered": 11, "skipped": 0, "pct": 78.57 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/gift-cards.ts": {
+    "lines": { "total": 38, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 42, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 30, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/gifts.ts": {
+    "lines": { "total": 38, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 44, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 36, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/mfa.ts": {
+    "lines": { "total": 38, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 45, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 38, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/newsletter.ts": {
+    "lines": { "total": 43, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 11, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 51, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 33, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/notifications.ts": {
+    "lines": { "total": 33, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 39, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 26, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/orders.ts": {
+    "lines": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 11, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/passkeys.ts": {
+    "lines": { "total": 132, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 22, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 158, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 117, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/privacy.ts": {
+    "lines": { "total": 15, "covered": 14, "skipped": 0, "pct": 93.33 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 17, "skipped": 0, "pct": 94.44 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/push.ts": {
+    "lines": { "total": 42, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 53, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 40, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/referrals.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/reviews.ts": {
+    "lines": { "total": 66, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 15, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 81, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 65, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/subscriptions.ts": {
+    "lines": { "total": 29, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 32, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 20, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/supplier-lead.ts": {
+    "lines": { "total": 25, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 26, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 44, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/wishlist-alerts.ts": {
+    "lines": { "total": 21, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 26, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/affiliates.ts": {
+    "lines": { "total": 21, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 25, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 10, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/approvals.ts": {
+    "lines": { "total": 32, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 40, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 16, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/cashback.ts": {
+    "lines": { "total": 39, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 45, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 30, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/categories.ts": {
+    "lines": { "total": 56, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 12, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 65, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 36, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/coupon-deals.ts": {
+    "lines": { "total": 36, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 42, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 46, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/coupon-qr.ts": {
+    "lines": { "total": 26, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 31, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 18, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/dead-letters.ts": {
+    "lines": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 17, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/discounts.ts": {
+    "lines": { "total": 52, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 11, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 56, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 75, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/fraud.ts": {
+    "lines": { "total": 55, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 9, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 60, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 47, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/images.ts": {
+    "lines": { "total": 50, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 60, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 38, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/orders.ts": {
+    "lines": { "total": 80, "covered": 34, "skipped": 0, "pct": 42.5 },
+    "functions": { "total": 9, "covered": 3, "skipped": 0, "pct": 33.33 },
+    "statements": { "total": 90, "covered": 36, "skipped": 0, "pct": 40 },
+    "branches": { "total": 54, "covered": 20, "skipped": 0, "pct": 37.03 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/payments.ts": {
+    "lines": { "total": 18, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 22, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 10, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/payouts.ts": {
+    "lines": { "total": 73, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 16, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 85, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 56, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/popular-searches.ts": {
+    "lines": { "total": 25, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 30, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 27, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/product-import.ts": {
+    "lines": { "total": 130, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 18, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 150, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 135, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/products.ts": {
+    "lines": { "total": 192, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 35, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 222, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 219, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/quick-search.ts": {
+    "lines": { "total": 29, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 35, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 24, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/referrals.ts": {
+    "lines": { "total": 23, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 30, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 14, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/reports.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 5, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/reviews.ts": {
+    "lines": { "total": 15, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 17, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 11, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/shipping.ts": {
+    "lines": { "total": 25, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 31, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 29, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/suppliers.ts": {
+    "lines": { "total": 66, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 16, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 78, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 26, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/upload.ts": {
+    "lines": { "total": 13, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 15, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/users.ts": {
+    "lines": { "total": 58, "covered": 29, "skipped": 0, "pct": 50 },
+    "functions": { "total": 8, "covered": 5, "skipped": 0, "pct": 62.5 },
+    "statements": { "total": 68, "covered": 34, "skipped": 0, "pct": 50 },
+    "branches": { "total": 44, "covered": 23, "skipped": 0, "pct": 52.27 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/vendors.ts": {
+    "lines": { "total": 52, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 12, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 62, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 46, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/admin/vouchers.ts": {
+    "lines": { "total": 43, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 8, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 55, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 34, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/payments/checkout.ts": {
+    "lines": { "total": 304, "covered": 185, "skipped": 0, "pct": 60.85 },
+    "functions": { "total": 31, "covered": 18, "skipped": 0, "pct": 58.06 },
+    "statements": { "total": 325, "covered": 193, "skipped": 0, "pct": 59.38 },
+    "branches": { "total": 307, "covered": 142, "skipped": 0, "pct": 46.25 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/actions/payments/refund.ts": {
+    "lines": { "total": 91, "covered": 77, "skipped": 0, "pct": 84.61 },
+    "functions": { "total": 10, "covered": 10, "skipped": 0, "pct": 100 },
+    "statements": { "total": 98, "covered": 81, "skipped": 0, "pct": 82.65 },
+    "branches": { "total": 84, "covered": 56, "skipped": 0, "pct": 66.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/ai/client.ts": {
+    "lines": { "total": 34, "covered": 20, "skipped": 0, "pct": 58.82 },
+    "functions": { "total": 7, "covered": 4, "skipped": 0, "pct": 57.14 },
+    "statements": { "total": 36, "covered": 21, "skipped": 0, "pct": 58.33 },
+    "branches": { "total": 26, "covered": 14, "skipped": 0, "pct": 53.84 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/analytics/cashback-tier.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/analytics/cohorts.ts": {
+    "lines": { "total": 18, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 20, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 19, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/analytics/queries.ts": {
+    "lines": { "total": 30, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 32, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 45, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/analytics/revenue-facts.ts": {
+    "lines": { "total": 23, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 27, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 17, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/analytics/track.ts": {
+    "lines": { "total": 45, "covered": 27, "skipped": 0, "pct": 60 },
+    "functions": { "total": 6, "covered": 3, "skipped": 0, "pct": 50 },
+    "statements": { "total": 49, "covered": 28, "skipped": 0, "pct": 57.14 },
+    "branches": { "total": 39, "covered": 28, "skipped": 0, "pct": 71.79 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/auth/magic-link-send.ts": {
+    "lines": { "total": 17, "covered": 16, "skipped": 0, "pct": 94.11 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 17, "skipped": 0, "pct": 94.44 },
+    "branches": { "total": 19, "covered": 16, "skipped": 0, "pct": 84.21 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/cashback/bonus.ts": {
+    "lines": { "total": 9, "covered": 5, "skipped": 0, "pct": 55.55 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 5, "skipped": 0, "pct": 55.55 },
+    "branches": { "total": 8, "covered": 4, "skipped": 0, "pct": 50 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/cashback/settlement.ts": {
+    "lines": { "total": 88, "covered": 75, "skipped": 0, "pct": 85.22 },
+    "functions": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "statements": { "total": 108, "covered": 83, "skipped": 0, "pct": 76.85 },
+    "branches": { "total": 74, "covered": 43, "skipped": 0, "pct": 58.1 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/orders/order-transitions.ts": {
+    "lines": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 5, "skipped": 0, "pct": 83.33 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/orders/refund.ts": {
+    "lines": { "total": 56, "covered": 55, "skipped": 0, "pct": 98.21 },
+    "functions": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "statements": { "total": 67, "covered": 66, "skipped": 0, "pct": 98.5 },
+    "branches": { "total": 57, "covered": 55, "skipped": 0, "pct": 96.49 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/orders/settlement.ts": {
+    "lines": { "total": 56, "covered": 54, "skipped": 0, "pct": 96.42 },
+    "functions": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "statements": { "total": 64, "covered": 62, "skipped": 0, "pct": 96.87 },
+    "branches": { "total": 42, "covered": 40, "skipped": 0, "pct": 95.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/orders/state-machine.ts": {
+    "lines": { "total": 23, "covered": 23, "skipped": 0, "pct": 100 },
+    "functions": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "statements": { "total": 34, "covered": 34, "skipped": 0, "pct": 100 },
+    "branches": { "total": 19, "covered": 19, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/orders/status-transitions.ts": {
+    "lines": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "branches": { "total": 6, "covered": 4, "skipped": 0, "pct": 66.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/reports/report-exports.ts": {
+    "lines": { "total": 24, "covered": 24, "skipped": 0, "pct": 100 },
+    "functions": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "statements": { "total": 24, "covered": 24, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/reports/settlement-report.ts": {
+    "lines": { "total": 83, "covered": 83, "skipped": 0, "pct": 100 },
+    "functions": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "statements": { "total": 98, "covered": 96, "skipped": 0, "pct": 97.95 },
+    "branches": { "total": 65, "covered": 60, "skipped": 0, "pct": 92.3 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/vouchers/code.ts": {
+    "lines": { "total": 30, "covered": 30, "skipped": 0, "pct": 100 },
+    "functions": { "total": 7, "covered": 7, "skipped": 0, "pct": 100 },
+    "statements": { "total": 35, "covered": 34, "skipped": 0, "pct": 97.14 },
+    "branches": { "total": 9, "covered": 8, "skipped": 0, "pct": 88.88 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/vouchers/issue.ts": {
+    "lines": { "total": 33, "covered": 31, "skipped": 0, "pct": 93.93 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 36, "covered": 34, "skipped": 0, "pct": 94.44 },
+    "branches": { "total": 23, "covered": 21, "skipped": 0, "pct": 91.3 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/vouchers/mark-order-item-redeemed.ts": {
+    "lines": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 11, "covered": 10, "skipped": 0, "pct": 90.9 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/vouchers/qr.ts": {
+    "lines": { "total": 43, "covered": 42, "skipped": 0, "pct": 97.67 },
+    "functions": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "statements": { "total": 57, "covered": 50, "skipped": 0, "pct": 87.71 },
+    "branches": { "total": 50, "covered": 44, "skipped": 0, "pct": 88 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/vouchers/redemption.ts": {
+    "lines": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 25, "covered": 25, "skipped": 0, "pct": 100 },
+    "branches": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/vouchers/scan-context.ts": {
+    "lines": { "total": 9, "covered": 5, "skipped": 0, "pct": 55.55 },
+    "functions": { "total": 2, "covered": 1, "skipped": 0, "pct": 50 },
+    "statements": { "total": 9, "covered": 5, "skipped": 0, "pct": 55.55 },
+    "branches": { "total": 15, "covered": 13, "skipped": 0, "pct": 86.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/domain/vouchers/state-machine.ts": {
+    "lines": { "total": 28, "covered": 28, "skipped": 0, "pct": 100 },
+    "functions": { "total": 9, "covered": 9, "skipped": 0, "pct": 100 },
+    "statements": { "total": 37, "covered": 37, "skipped": 0, "pct": 100 },
+    "branches": { "total": 22, "covered": 21, "skipped": 0, "pct": 95.45 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/finalize.ts": {
+    "lines": { "total": 154, "covered": 110, "skipped": 0, "pct": 71.42 },
+    "functions": { "total": 19, "covered": 15, "skipped": 0, "pct": 78.94 },
+    "statements": { "total": 170, "covered": 120, "skipped": 0, "pct": 70.58 },
+    "branches": { "total": 159, "covered": 84, "skipped": 0, "pct": 52.83 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/gift-card-issue.ts": {
+    "lines": { "total": 50, "covered": 35, "skipped": 0, "pct": 70 },
+    "functions": { "total": 8, "covered": 7, "skipped": 0, "pct": 87.5 },
+    "statements": { "total": 57, "covered": 40, "skipped": 0, "pct": 70.17 },
+    "branches": { "total": 47, "covered": 25, "skipped": 0, "pct": 53.19 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/gift-vouchers.ts": {
+    "lines": { "total": 38, "covered": 31, "skipped": 0, "pct": 81.57 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 44, "covered": 36, "skipped": 0, "pct": 81.81 },
+    "branches": { "total": 38, "covered": 25, "skipped": 0, "pct": 65.78 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/invoices.ts": {
+    "lines": { "total": 185, "covered": 137, "skipped": 0, "pct": 74.05 },
+    "functions": { "total": 27, "covered": 23, "skipped": 0, "pct": 85.18 },
+    "statements": { "total": 210, "covered": 148, "skipped": 0, "pct": 70.47 },
+    "branches": { "total": 187, "covered": 103, "skipped": 0, "pct": 55.08 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/payment-events.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "branches": { "total": 31, "covered": 30, "skipped": 0, "pct": 96.77 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/refund-record.ts": {
+    "lines": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "branches": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/refund-wallet.ts": {
+    "lines": { "total": 15, "covered": 15, "skipped": 0, "pct": 100 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 18, "covered": 18, "skipped": 0, "pct": 100 },
+    "branches": { "total": 16, "covered": 15, "skipped": 0, "pct": 93.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/settlement-events.ts": {
+    "lines": { "total": 19, "covered": 14, "skipped": 0, "pct": 73.68 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "statements": { "total": 23, "covered": 16, "skipped": 0, "pct": 69.56 },
+    "branches": { "total": 32, "covered": 22, "skipped": 0, "pct": 68.75 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/subscription-create.ts": {
+    "lines": { "total": 28, "covered": 27, "skipped": 0, "pct": 96.42 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 37, "covered": 34, "skipped": 0, "pct": 91.89 },
+    "branches": { "total": 28, "covered": 23, "skipped": 0, "pct": 82.14 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/voucher-email.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100 },
+    "statements": { "total": 27, "covered": 27, "skipped": 0, "pct": 100 },
+    "branches": { "total": 26, "covered": 22, "skipped": 0, "pct": 84.61 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/payments/webhook-dlq.ts": {
+    "lines": { "total": 17, "covered": 17, "skipped": 0, "pct": 100 },
+    "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100 },
+    "statements": { "total": 20, "covered": 19, "skipped": 0, "pct": 95 },
+    "branches": { "total": 17, "covered": 15, "skipped": 0, "pct": 88.23 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/account.ts": {
+    "lines": { "total": 23, "covered": 2, "skipped": 0, "pct": 8.69 },
+    "functions": { "total": 10, "covered": 1, "skipped": 0, "pct": 10 },
+    "statements": { "total": 29, "covered": 2, "skipped": 0, "pct": 6.89 },
+    "branches": { "total": 17, "covered": 2, "skipped": 0, "pct": 11.76 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/admin-reports.ts": {
+    "lines": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "functions": { "total": 11, "covered": 11, "skipped": 0, "pct": 100 },
+    "statements": { "total": 22, "covered": 22, "skipped": 0, "pct": 100 },
+    "branches": { "total": 19, "covered": 17, "skipped": 0, "pct": 89.47 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/cashback.ts": {
+    "lines": { "total": 9, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 12, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 9, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/notifications.ts": {
+    "lines": { "total": 27, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 7, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 33, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 29, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/orders.ts": {
+    "lines": { "total": 58, "covered": 51, "skipped": 0, "pct": 87.93 },
+    "functions": { "total": 18, "covered": 11, "skipped": 0, "pct": 61.11 },
+    "statements": { "total": 69, "covered": 56, "skipped": 0, "pct": 81.15 },
+    "branches": { "total": 72, "covered": 37, "skipped": 0, "pct": 51.38 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/referrals.ts": {
+    "lines": { "total": 37, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 5, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 40, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 26, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/reports.ts": {
+    "lines": { "total": 18, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 4, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 18, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 18, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/reviews.ts": {
+    "lines": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "functions": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "statements": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 },
+    "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/subscriptions.ts": {
+    "lines": { "total": 20, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 23, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 24, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/supplier.ts": {
+    "lines": { "total": 38, "covered": 4, "skipped": 0, "pct": 10.52 },
+    "functions": { "total": 9, "covered": 2, "skipped": 0, "pct": 22.22 },
+    "statements": { "total": 40, "covered": 5, "skipped": 0, "pct": 12.5 },
+    "branches": { "total": 66, "covered": 3, "skipped": 0, "pct": 4.54 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/user-bans.ts": {
+    "lines": { "total": 11, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 13, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 10, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/vouchers.ts": {
+    "lines": { "total": 26, "covered": 21, "skipped": 0, "pct": 80.76 },
+    "functions": { "total": 5, "covered": 4, "skipped": 0, "pct": 80 },
+    "statements": { "total": 34, "covered": 24, "skipped": 0, "pct": 70.58 },
+    "branches": { "total": 33, "covered": 16, "skipped": 0, "pct": 48.48 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/queries/wishlist.ts": {
+    "lines": { "total": 16, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 3, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 21, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 16, "covered": 0, "skipped": 0, "pct": 0 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/referrals/claim.ts": {
+    "lines": { "total": 20, "covered": 20, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 21, "covered": 21, "skipped": 0, "pct": 100 },
+    "branches": { "total": 21, "covered": 15, "skipped": 0, "pct": 71.42 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/referrals/complete.ts": {
+    "lines": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "functions": { "total": 1, "covered": 1, "skipped": 0, "pct": 100 },
+    "statements": { "total": 14, "covered": 14, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 9, "skipped": 0, "pct": 90 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/referrals/program.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 13, "covered": 13, "skipped": 0, "pct": 100 },
+    "branches": { "total": 10, "covered": 8, "skipped": 0, "pct": 80 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/search/outbox-drain.ts": {
+    "lines": { "total": 29, "covered": 29, "skipped": 0, "pct": 100 },
+    "functions": { "total": 6, "covered": 6, "skipped": 0, "pct": 100 },
+    "statements": { "total": 33, "covered": 33, "skipped": 0, "pct": 100 },
+    "branches": { "total": 15, "covered": 13, "skipped": 0, "pct": 86.66 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/whatsapp/inbound.ts": {
+    "lines": { "total": 12, "covered": 12, "skipped": 0, "pct": 100 },
+    "functions": { "total": 2, "covered": 2, "skipped": 0, "pct": 100 },
+    "statements": { "total": 16, "covered": 16, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/whatsapp/messages.ts": {
+    "lines": { "total": 36, "covered": 36, "skipped": 0, "pct": 100 },
+    "functions": { "total": 8, "covered": 8, "skipped": 0, "pct": 100 },
+    "statements": { "total": 38, "covered": 38, "skipped": 0, "pct": 100 },
+    "branches": { "total": 31, "covered": 30, "skipped": 0, "pct": 96.77 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/whatsapp/twilio.ts": {
+    "lines": { "total": 32, "covered": 31, "skipped": 0, "pct": 96.87 },
+    "functions": { "total": 6, "covered": 4, "skipped": 0, "pct": 66.66 },
+    "statements": { "total": 37, "covered": 34, "skipped": 0, "pct": 91.89 },
+    "branches": { "total": 23, "covered": 20, "skipped": 0, "pct": 86.95 }
+  },
+  "/Users/ofir/kenyonexpress-autopilot/src/server/wishlist/unsubscribe.ts": {
+    "lines": { "total": 9, "covered": 0, "skipped": 0, "pct": 0 },
+    "functions": { "total": 1, "covered": 0, "skipped": 0, "pct": 0 },
+    "statements": { "total": 10, "covered": 0, "skipped": 0, "pct": 0 },
+    "branches": { "total": 6, "covered": 0, "skipped": 0, "pct": 0 }
+  }
+}

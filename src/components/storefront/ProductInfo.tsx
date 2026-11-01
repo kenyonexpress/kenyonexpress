@@ -3,16 +3,20 @@
 import { useCart } from '@/components/cart/CartProvider'
 import { EcAddToCart } from '@/components/icons/electro-icons'
 import ProductLocation from '@/components/product-card/ProductLocation'
+import WishlistButton from '@/components/product/WishlistButton'
 import CopyLinkButton from '@/components/shared/CopyLinkButton'
 import NativeShareButton from '@/components/shared/NativeShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import ProductQuestionLink from '@/components/storefront/ProductQuestionLink'
+import RatingStars, { type RatingSummary } from '@/components/storefront/RatingStars'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
+import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -49,6 +53,8 @@ interface Props {
    * page - out of the cache.
    */
   scarcitySlot?: ReactNode
+  /** The live "bought this week" line, streamed in by the page like the scarcity one. */
+  proofSlot?: ReactNode
   /**
    * Purchase count display with realtime updates. Passed as a node to avoid
    * dragging the page out of cache with a live read.
@@ -76,6 +82,12 @@ interface Props {
    * columns, so the page quotes exactly what the renewal worker will charge.
    */
   recurringOffer?: RecurringOffer | null
+  /**
+   * Average and count over APPROVED reviews, read through
+   * `product_rating_summary` (235). Null until the function exists or the
+   * first review is approved; the slot then carries the identifiers instead.
+   */
+  rating?: RatingSummary | null
 }
 
 /**
@@ -102,10 +114,11 @@ export default function ProductInfo({
   name,
   nameEn,
   basePrice,
-  oldPrice,
+  oldPrice: cachedOldPrice,
   baseStock,
   productUrl = '',
   scarcitySlot = null,
+  proofSlot = null,
   purchaseCountSlot = null,
   sku,
   categoryName,
@@ -115,8 +128,23 @@ export default function ProductInfo({
   isCoupon,
   couponOffer,
   recurringOffer = null,
+  rating = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
+
+  // The cached values, corrected by the product's own broadcast topic (235)
+  // while the page is open. Until the first message arrives this IS the
+  // cache, so nothing below can tell the two apart -- which is the point:
+  // one price, one shelf level, whichever is freshest.
+  const live = useProductLive(productId, {
+    stock: baseStock,
+    price: basePrice,
+    oldPrice: cachedOldPrice,
+  })
+  const oldPrice = live.oldPrice
+  // Withdrawn since the page was cached: inactive or soft-deleted. The cart
+  // would refuse the line anyway; the button must not offer it.
+  const withdrawn = !live.onSale
 
   // Resolved once here rather than inside CityTag, because the href needs the
   // slug and the tag needs the canonical name, and resolving twice invites the
@@ -130,7 +158,8 @@ export default function ProductInfo({
   const [added, setAdded] = useState(false)
 
   const variant = variants.find((v) => v.id === selected) ?? null
-  const price = variant != null ? (variant.price ?? basePrice + variant.price_modifier) : basePrice
+  const price =
+    variant != null ? (variant.price ?? live.price + variant.price_modifier) : live.price
   // The CACHED level, deliberately. This component renders inside the product
   // page's hour-long cache, and reading live availability here would make the
   // whole page uncacheable - `next build` refuses it outright under
@@ -140,7 +169,7 @@ export default function ProductInfo({
   // Suspense-wrapped. That split is also the right one on its own terms: the
   // price and the buy button should paint immediately, and "only 3 left" is
   // the one line worth waiting a beat for.
-  const stock = variant?.stock_quantity ?? baseStock
+  const stock = variant?.stock_quantity ?? live.stock
   const outOfStock = stock === 0
   const effectiveSku = variant?.sku ?? sku
   const needsVariant = variants.length > 0 && !selected
@@ -168,6 +197,7 @@ export default function ProductInfo({
   // this number and the one that rejects the write cannot drift.
   const maxQty = productQuantityCeiling(stock)
   const blocked =
+    withdrawn ||
     outOfStock ||
     needsVariant ||
     couponUnsellable ||
@@ -201,7 +231,7 @@ export default function ProductInfo({
 
   const buyLabel = outOfStock
     ? 'אזל מהמלאי'
-    : couponUnsellable || priceUnsellable
+    : withdrawn || couponUnsellable || priceUnsellable
       ? 'לא זמין לרכישה'
       : recurringOffer
         ? 'הצטרף למנוי'
@@ -229,6 +259,7 @@ export default function ProductInfo({
       <h1 className="pdp-summary__title">{name}</h1>
 
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
+        <RatingStars rating={rating} />
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>
@@ -240,12 +271,18 @@ export default function ProductInfo({
 
       <hr className="pdp-summary__rule" />
 
-      <p className="pdp-summary__stock">
+      <p className="pdp-summary__stock" data-live={live.live ? 'true' : undefined}>
         <span
-          className={`pdp-summary__dot${outOfStock ? '' : ' pdp-summary__dot--in'}`}
+          className={`pdp-summary__dot${outOfStock || withdrawn ? '' : ' pdp-summary__dot--in'}`}
           aria-hidden="true"
         />
-        {outOfStock ? (isCoupon ? 'הדיל נסגר' : 'אזל מהמלאי') : 'במלאי, מוכן למשלוח'}
+        {withdrawn
+          ? 'המוצר אינו זמין עוד'
+          : outOfStock
+            ? isCoupon
+              ? 'הדיל נסגר'
+              : 'אזל מהמלאי'
+            : 'במלאי, מוכן למשלוח'}
       </p>
 
       {/*
@@ -261,6 +298,7 @@ export default function ProductInfo({
         catalogue.
       */}
       {!outOfStock && scarcitySlot}
+      {!outOfStock && proofSlot}
 
       {/* Social proof: how many people purchased this product recently */}
       {purchaseCountSlot}
@@ -329,7 +367,7 @@ export default function ProductInfo({
                   // is the same drift `productQuantityCeiling` exists to stop,
                   // one state update further along.
                   setQty((current) =>
-                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? baseStock)),
+                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? live.stock)),
                   )
                 }}
                 disabled={v.stock_quantity === 0}
@@ -401,6 +439,7 @@ export default function ProductInfo({
             and this line used to send a friend "₪200" for a deal the page
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex items-center gap-4">
+          <WishlistButton productId={productId} variant="inline" />
           <WhatsAppShareButton
             productId={productId}
             message={[
@@ -417,6 +456,7 @@ export default function ProductInfo({
           <NativeShareButton title={name} url={productUrl} />
           <CopyLinkButton url={productUrl} />
         </span>
+        <ProductQuestionLink productName={name} productId={productId} />
       </div>
     </div>
   )

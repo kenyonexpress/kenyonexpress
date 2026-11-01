@@ -387,8 +387,18 @@
 .cart-sidebar {
   background: transparent;
   padding: 0 15px;
-  position: sticky;
-  top: 1rem;
+}
+
+/* The totals AND the checkout button live in this wrapper. Sticky used to sit
+   on the inner <aside> alone, so once the page scrolled the aside slid down
+   over the button that follows it and the coupon summary intercepted the
+   click. Stick the whole column, and only where it is a column. */
+/* 62rem is the grid's 992px two-column breakpoint. */
+@media (min-width: 62rem) {
+  .cart-page__side {
+    position: sticky;
+    top: 1rem;
+  }
 }
 
 .cart-sidebar__title {
@@ -768,6 +778,80 @@
 .cart-sidebar__row--discount {
   color: var(--color-sale-badge);
   font-weight: var(--weight-bold);
+}
+
+/* Shipping method radiogroup, between the summary rows and the coupon field.
+   Colours are the sidebar's own (#333e48 ink, #657888 muted, #eee rule), so
+   nothing new is introduced for the raw-hex gate to count. */
+.cart-shipping {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  min-inline-size: 0;
+}
+
+.cart-shipping__legend {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #333e48;
+  margin-bottom: 0.625rem;
+  padding: 0;
+}
+
+.cart-shipping__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cart-shipping__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333e48;
+}
+
+.cart-shipping__option[data-checked] {
+  border-color: #333e48;
+}
+
+.cart-shipping:disabled .cart-shipping__option {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.cart-shipping__input {
+  margin: 0.2rem 0 0;
+  flex: 0 0 auto;
+  accent-color: #333e48;
+}
+
+.cart-shipping__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.cart-shipping__label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.cart-shipping__description {
+  font-size: 0.8125rem;
+  color: #657888;
+}
+
+.cart-shipping__cost {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  flex: 0 0 auto;
 }
 
 /* ===========================================================================

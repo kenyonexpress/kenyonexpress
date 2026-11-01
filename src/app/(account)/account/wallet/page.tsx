@@ -18,6 +18,9 @@ export default async function WalletPage() {
         <p className="wallet-balance__note">
           הארנק משמש לתשלום חלקי או מלא באתר. אין משיכה למזומן ואין העברה למשתמש אחר.
         </p>
+        <p className="wallet-balance__note">
+          קיבלתם גיפט קארד? <Link href="/gift-card">לטעינת הקוד לארנק</Link>
+        </p>
       </div>
 
       <section className="account-card">

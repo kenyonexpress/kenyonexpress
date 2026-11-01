@@ -1,3 +1,4 @@
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import type { CustomerSegmentType, UserSegmentInfo } from '@/lib/rfm-analysis'
 import { CAMPAIGN_DESCRIPTIONS, SEGMENT_LABELS } from '@/lib/rfm-analysis'
@@ -100,7 +101,10 @@ async function handleGET(_req: NextRequest): Promise<Response> {
   }
 }
 
-export const GET = withRequestLog('campaigns-hooks', handleGET)
+export const GET = withCacheControl(
+  CacheControl.private,
+  withRequestLog('campaigns-hooks', handleGET),
+)
 
 async function handlePOST(req: NextRequest): Promise<Response> {
   try {

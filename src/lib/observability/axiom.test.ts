@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { isAxiomEnabled, shipAxiomEvent } from './axiom'
+import { isAxiomEnabled, revenueDataset, shipAxiomEvent } from './axiom'
 
 /**
  * The Axiom leg (marathon step 14). Same contract as every other outbound
@@ -43,6 +43,22 @@ describe('axiom shipping', () => {
     expect(body).toHaveLength(1)
     expect(body[0]).toMatchObject({ event: 'cron.ran', level: 'info' })
     expect(body[0]?._time).toBeTypeOf('string')
+  })
+
+  it('ships to an overriding dataset when one is given', async () => {
+    await shipAxiomEvent({ event: 'revenue.purchase' }, { dataset: 'kenyon-revenue' })
+    const [url] = fetchMock.mock.calls[0] as [string]
+    expect(url).toBe('https://api.axiom.co/v1/datasets/kenyon-revenue/ingest')
+  })
+
+  it('resolves the revenue dataset from its own variable, then the log dataset', () => {
+    vi.stubEnv('AXIOM_REVENUE_DATASET', '')
+    expect(revenueDataset()).toBe('kenyon-logs')
+    vi.stubEnv('AXIOM_REVENUE_DATASET', 'kenyon-revenue')
+    expect(revenueDataset()).toBe('kenyon-revenue')
+    vi.stubEnv('AXIOM_DATASET', '')
+    vi.stubEnv('AXIOM_REVENUE_DATASET', '')
+    expect(revenueDataset()).toBeNull()
   })
 
   it('swallows a network failure completely', async () => {

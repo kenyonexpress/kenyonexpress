@@ -6,10 +6,16 @@ import { z } from 'zod'
 // adding one later is an SDK change with no migration.
 
 export const ATTRIBUTION_COOKIE = 'ke_attr'
-const ATTRIBUTION_WINDOW_DAYS = 30
+export const ATTRIBUTION_WINDOW_DAYS = 30
 export const ATTRIBUTION_MAX_AGE_SECONDS = 60 * 60 * 24 * ATTRIBUTION_WINDOW_DAYS
 
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
+export const UTM_KEYS = [
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_content',
+  'utm_term',
+] as const
 
 export type UtmKey = (typeof UTM_KEYS)[number]
 

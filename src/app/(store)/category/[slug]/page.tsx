@@ -9,6 +9,7 @@ import CategoryHeroBanner from '@/components/category/CategoryHeroBanner'
 import type { CategoryProduct } from '@/components/category/CategoryProductCard'
 import {
   CATEGORY_PAGE_SIZE,
+  CATEGORY_SKELETON_CARDS,
   type CollectionRule,
   type ProductTypeFilter,
   categoryMetaDescription,
@@ -43,13 +44,6 @@ function parsePrice(raw: string | string[] | undefined): number | undefined {
   if (typeof raw !== 'string') return undefined
   const n = Number.parseFloat(raw)
   return Number.isFinite(n) && n >= 0 ? n : undefined
-}
-
-/* Live WooCommerce result-count wording */
-function resultCountText(total: number, from: number, to: number): string {
-  if (total === 1) return 'מציג תוצאה יחידה'
-  if (to - from + 1 >= total) return `מציגים את כל ⁦${total}⁩ התוצאות`
-  return `מציג ${from}–${to} מתוך ${total} תוצאות`
 }
 
 /**
@@ -212,7 +206,7 @@ async function ResultGrid({
     )
   }
 
-  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+  const { totalPages, currentPage } = pageWindow(total, args.page)
 
   return (
     <>
@@ -226,9 +220,6 @@ async function ResultGrid({
         params={linkParams}
         usePagination={usePagination}
       />
-      <p className="category-page__count category-page__count--bottom">
-        {resultCountText(total, from, to)}
-      </p>
     </>
   )
 }
@@ -273,7 +264,7 @@ function CategoryPageFallback() {
         <div className="category-control-bar" aria-hidden="true" />
         <div className="category-page__body">
           <div className="category-page__main">
-            <CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />
+            <CategoryGridSkeleton count={CATEGORY_SKELETON_CARDS} />
           </div>
           <div className="category-sidebar" aria-hidden="true" />
         </div>
@@ -398,7 +389,7 @@ async function CategoryPageBody({
       <script
         type="application/ld+json"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListLd) }}
       />
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
@@ -438,6 +429,8 @@ async function CategoryPageBody({
             suppliers={suppliers}
             tags={tags}
             categoryId={category.id}
+            categorySlug={category.slug}
+            categoryName={category.name_he}
           />
         </div>
       </div>

@@ -1,8 +1,9 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
-import { requireSection } from '@/lib/admin/rbac'
+import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { parentChoiceError } from '@/lib/category-tree'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
@@ -28,20 +29,16 @@ const schema = z.object({
 
 export type CategoryFormState = { error: string } | { success: string } | null
 
-async function requireCatalogWriter() {
-  try {
-    return await requireSection('catalog', 'write')
-  } catch {
-    return null
-  }
-}
-
 async function runUpsertCategory(
   _: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
@@ -62,6 +59,43 @@ async function runUpsertCategory(
   } = await supabase.auth.getUser()
 
   const { id, ...fields } = parsed.data
+
+  /**
+   * THE GUARD THAT WAS ONLY EVER MARKUP.
+   *
+   * Until this ran, `parent_id` was validated as "a UUID" and nothing else. The
+   * form's `<select>` filters the row's own id out of the options, and that
+   * filter is client-side rendering: it shapes a dropdown, it does not inspect
+   * a POST, and it has never had anything to say about the option that is the
+   * real hazard, one of the row's own DESCENDANTS, which is a different id and
+   * therefore passes the filter untouched.
+   *
+   * What a cycle costs here, measured against `CategoryTree.tsx`: `buildTree`
+   * puts a node whose `parent_id` is present in the map under that parent, and
+   * pushes to `roots` only when the parent is absent. Every row in a cycle has
+   * a parent that is present, so NOTHING in the cycle reaches `roots` and the
+   * rows disappear from `/admin/categories` entirely. Not greyed out, not
+   * erroring: absent, from the one screen that could put them back. The same
+   * cycle would also be an unbounded walk for `categoryAncestors`, which is why
+   * that function carries its own limit as well; this stops it being written.
+   *
+   * Read on every write rather than cached: twelve rows on the admin's own save
+   * path, and a stale tree here would approve exactly the move it exists to
+   * refuse. `deleted_at is null` so a soft-deleted row cannot be chosen as a
+   * parent, and inactive rows ARE included, because deactivating a category
+   * does not stop it being part of a cycle.
+   */
+  if (fields.parent_id) {
+    const { data: tree, error: treeError } = await supabase
+      .from('categories')
+      .select('id, slug, name_he, parent_id')
+      .is('deleted_at', null)
+    if (treeError) return { error: treeError.message }
+
+    const problem = parentChoiceError(tree ?? [], id ?? null, fields.parent_id)
+    if (problem) return { error: problem }
+  }
+
   const { data: before } = id
     ? await supabase
         .from('categories')
@@ -73,9 +107,29 @@ async function runUpsertCategory(
   if (id) {
     const { error } = await supabase.from('categories').update(fields).eq('id', id)
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'updated',
+      entityType: 'categories',
+      entityId: id,
+      changes: { ...fields },
+    })
   } else {
-    const { error } = await supabase.from('categories').insert({ ...fields, created_by: user!.id })
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({ ...fields, created_by: user!.id })
+      .select('id')
+      .single()
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'created',
+      entityType: 'categories',
+      entityId: data.id,
+      changes: { ...fields },
+    })
   }
 
   await writeAuditLog({
@@ -93,8 +147,12 @@ async function runUpsertCategory(
 }
 
 async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase
@@ -109,7 +167,6 @@ async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
     action: 'deleted',
     entityType: 'categories',
     entityId: id,
-    changes: { old: { id }, new: { id, deleted: true } },
   })
 
   revalidatePath('/admin/categories')
@@ -118,8 +175,12 @@ async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
 }
 
 async function runDeleteCategory(id: string): Promise<{ error?: string }> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase.from('categories').delete().eq('id', id)
@@ -131,7 +192,7 @@ async function runDeleteCategory(id: string): Promise<{ error?: string }> {
     action: 'deleted',
     entityType: 'categories',
     entityId: id,
-    changes: { old: { id }, new: null },
+    metadata: { hard_delete: true },
   })
 
   revalidatePath('/admin/categories')
@@ -143,8 +204,12 @@ async function runUpdateCategorySortOrder(
   id: string,
   sort_order: number,
 ): Promise<{ error?: string }> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase.from('categories').update({ sort_order }).eq('id', id)
@@ -156,7 +221,7 @@ async function runUpdateCategorySortOrder(
     action: 'updated',
     entityType: 'categories',
     entityId: id,
-    changes: { old: { id }, new: { id, sort_order } },
+    changes: { sort_order },
   })
 
   revalidatePath('/admin/categories')

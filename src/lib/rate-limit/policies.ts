@@ -86,11 +86,77 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'card-verification payment page creation, per user',
   },
+  'email-verify': { limit: 20, windowSeconds: 3600, reason: 'mail OTP code guessing, per IP' },
+  'email-verify-address': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'mail OTP code guessing, per address, so proxies cannot buy one account more tries',
+  },
+  'passkey-register': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'WebAuthn enrolment ceremonies; a real person adds one key, not eleven',
+  },
+  'mfa-enrol': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'TOTP factor creation, per user; one authenticator, not a pile of abandoned factors',
+  },
+  'mfa-verify': {
+    limit: 10,
+    windowSeconds: 900,
+    reason: 'six digits are brute forceable; per-user bound is what actually protects the account',
+  },
+  'mfa-verify-ip': {
+    limit: 30,
+    windowSeconds: 900,
+    reason: 'the same guesses spread across accounts from one address',
+  },
+  'passkey-login': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'challenge issuance, per IP; cheap but each one sets a cookie',
+  },
+  'passkey-login-finish': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'assertion verification plus admin calls; one per real login',
+  },
+  'push-subscribe': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason:
+      'service-role upserts to push_subscriptions; a browser re-posts one per page load at most',
+  },
+  'verify-card-callback': {
+    limit: 60,
+    windowSeconds: 3600,
+    reason: 'card-verification return page, per IP; unauthenticated, so bounded before the lookup',
+  },
   'offline-sync': { limit: 120, windowSeconds: 600, reason: 'offline queue replay, per IP' },
   'update-password': { limit: 10, windowSeconds: 3600, reason: 'session-bound password change' },
+  'change-password': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'current-password re-proof from inside the account, keyed on the user id',
+  },
 
   // -- Commerce. Higher, because a real shopper trips these by shopping.
   cart_write: { limit: 120, windowSeconds: 3600, reason: 'cart mutation, user or IP' },
+  coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
+  gift_card_check: { limit: 20, windowSeconds: 3600, reason: 'gift card balance by code, per IP' },
+  gift_card_redeem: {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'gift card redemption attempts, per user',
+  },
+  'supplier-apply': { limit: 5, windowSeconds: 3600, reason: 'supplier applications, per user' },
+  'supplier-doc-upload': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'presigned R2 PUT minting for onboarding documents, per user',
+  },
+  'voucher-transfer': { limit: 10, windowSeconds: 3600, reason: 'voucher transfers, per user' },
   coupon: { limit: 10, windowSeconds: 3600, reason: 'coupon code guessing' },
   begin_checkout: {
     limit: 10,
@@ -104,6 +170,11 @@ export const RATE_LIMIT_POLICIES = {
   // that user's own row - the limit bounds a held-down button, not an attacker.
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
+  'wishlist-merge': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'guest list merge on sign-in, per user',
+  },
 
   // Keyed on the user, never on IP, and deliberately generous rather than tight:
   // this is a STATUTORY notice under Consumer Protection Law 14ה, and a limit
@@ -117,16 +188,24 @@ export const RATE_LIMIT_POLICIES = {
   // rc5 F12. Keyed on the user: both act only on the caller's own affiliate row.
   'affiliate-join': { limit: 5, windowSeconds: 3600, reason: 'affiliate application, per user' },
   'affiliate-link': { limit: 30, windowSeconds: 3600, reason: 'affiliate link creation, per user' },
-  // rc5 F14. A browser re-subscribes when its keys rotate; 20 an hour is ample.
-  'push-subscribe': { limit: 20, windowSeconds: 3600, reason: 'browser push subscribe, per user' },
   // rc5 F15. Sign-in factors: per phone and per IP for sending, per phone for
   // guessing, per IP for passkey assertions.
-  // G111: otp_attempts, 3 sends per 15 minutes per phone (replaces 5/hour).
-  'wa-otp-send': { limit: 3, windowSeconds: 900, reason: 'otp_attempts: 3 per 15min, per phone' },
+  'wa-otp-send': {
+    limit: 3,
+    windowSeconds: 900,
+    reason: 'WhatsApp code send, per phone (C90: 3/15min)',
+  },
   'wa-otp-send-ip': { limit: 20, windowSeconds: 3600, reason: 'WhatsApp code send, per IP' },
   'wa-otp-verify': { limit: 10, windowSeconds: 3600, reason: 'WhatsApp code guesses, per phone' },
-  'passkey-register': { limit: 20, windowSeconds: 3600, reason: 'passkey enrolment, per user' },
   'passkey-auth': { limit: 30, windowSeconds: 600, reason: 'passkey sign-in, per IP' },
+  // rc5+ WhatsApp OTP (parallel to wa-otp-* for different auth flow)
+  'whatsapp-otp': { limit: 5, windowSeconds: 3600, reason: 'WhatsApp OTP send, per IP' },
+  'whatsapp-otp-number': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'WhatsApp OTP send to one number, per phone',
+  },
+  'whatsapp-verify': { limit: 20, windowSeconds: 3600, reason: 'WhatsApp OTP verify, per IP' },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.
@@ -144,6 +223,12 @@ export const RATE_LIMIT_POLICIES = {
   // -- Read paths. Large, because they are cheap and a human browsing hits them.
   search: { limit: 120, windowSeconds: 300, reason: 'search queries hit Meilisearch' },
   'search-suggest': { limit: 300, windowSeconds: 300, reason: 'typeahead fires per keystroke' },
+  'search-facets': { limit: 60, windowSeconds: 300, reason: 'faceted search, filters + counts' },
+  'catalogue-listing': {
+    limit: 240,
+    windowSeconds: 300,
+    reason: 'listing pages appended by the infinite grid, one per scroll',
+  },
   'search-click': { limit: 600, windowSeconds: 300, reason: 'search result clicks, per IP' },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
@@ -152,8 +237,9 @@ export const RATE_LIMIT_POLICIES = {
   'supplier-lead': { limit: 2, windowSeconds: 86400, reason: 'supplier lead mail (F64: 2/24h)' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
 
-  // Admin voucher console. Keyed on the staff user, never on IP: the panel sits
-  // behind a session and a shared office NAT would otherwise share one bucket.
+  // -- Admin voucher tools. Keyed on the staff user; generous because a busy
+  // support shift is legitimate traffic, bounded because both reach the
+  // voucher tables with admin credentials.
   'admin-voucher-lookup': {
     limit: 60,
     windowSeconds: 3600,
@@ -163,6 +249,19 @@ export const RATE_LIMIT_POLICIES = {
     limit: 30,
     windowSeconds: 3600,
     reason: 'admin manual voucher burn, per staff user',
+  },
+
+  // -- Privacy self-service. Keyed on the user: both act only on the caller's
+  // own account, so the limit bounds retries and stolen-session abuse.
+  'account-delete': {
+    limit: 3,
+    windowSeconds: 3600,
+    reason: 'destructive cascade over a dozen tables; a person needs exactly one',
+  },
+  'data-export': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'the export reads a dozen tables per call; a loop here is a cheap DB load',
   },
 
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
@@ -204,6 +303,26 @@ export const RATE_LIMIT_POLICIES = {
     limit: 20,
     windowSeconds: 3600,
     reason: 'phone milestone completion, per user',
+  },
+  'postal-lookup': {
+    limit: 30,
+    windowSeconds: 600,
+    reason: 'postal-code lookups relayed to Israel Post, per IP',
+  },
+  'checkout-velocity-ip': {
+    limit: 30,
+    windowSeconds: 86400,
+    reason: 'new orders from one address in a day; carding rotates cards, not addresses',
+  },
+  'checkout-velocity-email': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders on one email in a day; a stolen-card run batches on one login',
+  },
+  'checkout-velocity-phone': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders naming one delivery phone in a day, across accounts',
   },
 } as const satisfies Record<string, RateLimitPolicy>
 

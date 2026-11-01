@@ -6,6 +6,7 @@ import type { ServerEventName } from '@/lib/analytics/events'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { POSTHOG_ID_COOKIE, isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { syncCashbackTierPersonProperty } from '@/server/analytics/cashback-tier'
 import { cookies } from 'next/headers'
 
 // Server-side analytics writes. Three rules hold everywhere in this file:
@@ -100,26 +101,29 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // Fired before the awaited RPC rather than after it, because `trackEvent`
     // returns synchronously and a slow or failing database round trip must not
     // decide whether the funnel event was sent.
+    const distinctId = serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
+      anonymousId,
+      userId: input.userId,
+    })
     if (isPostHogEnabled()) {
-      trackEvent(input.eventName, postHogProps(input), {
-        distinctId: serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
-          anonymousId,
-          userId: input.userId,
-        }),
-      })
+      trackEvent(input.eventName, postHogProps(input), { distinctId })
     }
 
+    // `analytics_events.session_id` is NOT NULL and a server event often has no
+    // session to name. The fallback is per EVENT, `server:` prefixed;
+    // `anonymous_id` stays honestly null.
+    const eventId = crypto.randomUUID()
     const admin = createAdminClient()
     const { data: accepted, error } = await admin.rpc('fn_ingest_analytics_events', {
       p_events: [
         {
-          event_id: crypto.randomUUID(),
+          event_id: eventId,
           event_name: input.eventName,
           occurred_at: new Date().toISOString(),
           source: 'server',
           source_app: 'shop',
           anonymous_id: anonymousId,
-          session_id: anonymousId ?? crypto.randomUUID(),
+          session_id: anonymousId ?? `server:${eventId}`,
           path: input.path ?? null,
           utm: attribution?.last ?? null,
           props: input.props,
@@ -150,13 +154,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // then returns the number it kept. One event in, zero back, means this one
     // was discarded at the door.
     //
-    // MEASURED against production on 2026-09-06 by reading the deployed
-    // function body: the live whitelist is page_view, view_product,
-    // view_category, add_to_cart, remove_from_cart, checkout_step, web_vital
-    // and whatsapp_click. `begin_checkout`, `purchase`, `voucher_redeemed` and
-    // `order_refunded` are on none of it, so EVERY server-side money event this
-    // file emits is currently going nowhere, and has been since migration 151
-    // narrowed the list.
+    // 180 IS APPLIED AND THIS GUARD IS NO LONGER ABOUT THESE FOUR NAMES.
     //
     // `migrations/applied/169` adds the four names and is the actual fix; it
     // needs approval before it touches production. This does not fix the loss.
@@ -170,6 +168,14 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
         detail:
           'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/applied/169.',
       })
+    }
+
+    // Every trackServerEvent call is a wallet-relevant money moment, so the
+    // person's cashback_tier is refreshed here, AFTER the funnel event went
+    // out and the first-party write settled. Best effort inside its own
+    // module; a failure costs a stale cohort label, nothing else.
+    if (input.userId) {
+      await syncCashbackTierPersonProperty(input.userId, distinctId)
     }
   } catch (error) {
     log.error('analytics.track_failed', { eventName: input.eventName, err: error })

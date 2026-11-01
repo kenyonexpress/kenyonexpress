@@ -6,6 +6,7 @@ import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   type AuthState,
+  checkAuthFallback,
   sendMagicLink,
   sendPhoneOtp,
   signInWithEmail,
@@ -138,9 +139,17 @@ export default function LoginModal({
   phoneEnabled = false,
 }: LoginModalProps) {
   const [activeTab, setActiveTab] = useState('email')
+  const [showFallbackMessage, setShowFallbackMessage] = useState(false)
 
   const [emailState, emailAction, emailPending] = useActionState<AuthState, FormData>(
-    signInWithEmail,
+    async (prevState: AuthState, formData: FormData) => {
+      // Store email for fallback tracking
+      const email = formData.get('email')
+      if (email && typeof email === 'string') {
+        localStorage.setItem('login_attempt_email', email)
+      }
+      return signInWithEmail(prevState, formData)
+    },
     null,
   )
   const [googleState, googleAction, googlePending] = useActionState<AuthState, FormData>(
@@ -152,6 +161,35 @@ export default function LoginModal({
     null,
   )
 
+  // Check if user should be shown email fallback after failed attempts
+  useEffect(() => {
+    async function checkFallback() {
+      try {
+        const recentEmail =
+          typeof window !== 'undefined' ? localStorage.getItem('login_attempt_email') : null
+
+        if (recentEmail) {
+          const result = await checkAuthFallback({ email: recentEmail })
+          if (result.shouldFallback) {
+            setShowFallbackMessage(true)
+            setActiveTab('magic') // Auto-switch to email magic link tab
+
+            // Automatically send email OTP on fallback
+            const formData = new FormData()
+            formData.append('email', recentEmail)
+            if (next) formData.append('next', next)
+
+            // Trigger magic link send
+            magicAction(formData)
+          }
+        }
+      } catch {
+        // Silently fail - fallback check is best-effort
+      }
+    }
+    checkFallback()
+  }, [magicAction, next])
+
   const topError =
     getError(googleState) ??
     (callbackError === 'auth_callback_error' ? 'הכניסה נכשלה — נסו שוב' : null)
@@ -159,6 +197,12 @@ export default function LoginModal({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       <h2 className="text-xl font-semibold mb-6 text-center">כניסה לחשבון</h2>
+
+      {showFallbackMessage && (
+        <div className="mb-4 text-sm text-orange-700 bg-orange-50 rounded-lg px-3 py-2 border border-orange-200">
+          זוהו ניסיונות כניסה כושלים. אנחנו ממליצים להשתמש בקישור כניסה במייל.
+        </div>
+      )}
 
       {magic && !getSuccess(magicState) && (
         <div className="mb-4 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">

@@ -26,6 +26,42 @@ test.describe('product page', () => {
     await expect(page.getByRole('button', { name: 'שתפו בוואטסאפ' })).toBeVisible()
   })
 
+  test('offers the wishlist heart and a share-or-copy button beside the channels', async ({
+    page,
+  }) => {
+    await openFirstProduct(page)
+    await expect(
+      page.getByRole('button', { name: /הוסף לרשימת המשאלות|הסר מרשימת המשאלות/ }).first(),
+    ).toBeVisible()
+    // Chromium on a desktop has no navigator.share, so the button offers a
+    // copy; on a device with a share sheet it offers that instead.
+    await expect(page.getByRole('button', { name: /העתקת קישור|^שיתוף$/ })).toBeVisible()
+  })
+
+  test('the gallery frame takes the keyboard and zooms in place', async ({ page }) => {
+    await openFirstProduct(page)
+    const frame = page.getByRole('region', { name: /תמונות המוצר/ })
+    test.skip((await frame.count()) === 0, 'product has no images')
+
+    await frame.focus()
+    await page.keyboard.press('Enter')
+    await expect(frame).toHaveAttribute('data-zoomed', 'true')
+    // The frame's own box does not grow: the zoom is clipped inside it.
+    const before = await frame.boundingBox()
+    await page.keyboard.press('Escape')
+    await expect(frame).not.toHaveAttribute('data-zoomed', 'true')
+    const after = await frame.boundingBox()
+    expect(before?.width).toBe(after?.width)
+    expect(before?.height).toBe(after?.height)
+
+    const thumbs = page.getByRole('button', { name: /^תמונה \d+$/ })
+    if ((await thumbs.count()) > 1) {
+      await frame.focus()
+      await page.keyboard.press('ArrowLeft')
+      await expect(thumbs.nth(1)).toHaveAttribute('aria-current', 'true')
+    }
+  })
+
   test('renders right-to-left with a Hebrew document title', async ({ page }) => {
     await openFirstProduct(page)
 
@@ -80,6 +116,35 @@ test.describe('product page', () => {
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
+
+  /**
+   * The recommendations heading starts below the details band.
+   *
+   * `.pdp-related` carried `margin-top: -20px`, tuned to a reference that no
+   * longer exists. Measured 2026-10-13 on three products: the heading box began
+   * 20px above the bottom of `.pdp-details` at 380, 768 and 1440, and at 1440
+   * it was painted across the delivery note. No pixel gate saw it, because the
+   * graded band skips pixels where the reference is blank.
+   */
+  for (const width of [380, 768, 1440]) {
+    test(`recommendations heading does not overlap the details band at ${width}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 1000 })
+      await openFirstProduct(page)
+      const title = page.locator('.pdp-related__title')
+      // A product with no related rows renders no section, and then there is
+      // nothing to overlap.
+      test.skip((await title.count()) === 0, 'this product has no related products')
+
+      const edges = await page.evaluate(() => {
+        const details = document.querySelector('.pdp-details')?.getBoundingClientRect()
+        const heading = document.querySelector('.pdp-related__title')?.getBoundingClientRect()
+        return { detailsBottom: details?.bottom ?? 0, headingTop: heading?.top ?? 0 }
+      })
+      expect(edges.headingTop).toBeGreaterThanOrEqual(edges.detailsBottom)
+    })
+  }
 
   /**
    * The related-products cards must not order more pixels than their box has.

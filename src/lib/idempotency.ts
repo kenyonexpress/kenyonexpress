@@ -71,7 +71,7 @@ export function hashResponse(value: unknown): string {
 
 // --- DB dedupe (service-role) ----------------------------------------------
 
-type ClaimResult = 'claimed' | 'exists'
+export type ClaimResult = 'claimed' | 'exists'
 
 /**
  * Try to claim (scope, key). Returns 'claimed' if this caller inserted the row

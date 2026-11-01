@@ -84,17 +84,45 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient })
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { getUser: () => getUser() } }),
 }))
-vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: async () => true }))
+vi.mock('@/lib/utils/rate-limit', () => ({
+  checkRateLimit: async () => true,
+  getClientIp: async () => '203.0.113.9',
+}))
+// The velocity check rides the real fraud module; only the limiter underneath
+// is stubbed, and to "allowed" so these tests keep exercising the flow past it.
+vi.mock('@/lib/rate-limit/limiter', () => ({
+  rateLimit: async () => ({
+    allowed: true,
+    limit: 1,
+    windowSeconds: 1,
+    remaining: 1,
+    resetAtMs: null,
+    backend: 'upstash',
+  }),
+}))
+// One controllable provider instance, so the saved-card tests can steer the
+// charge outcome and assert what the hosted-page fallback asked for.
+const provider = vi.hoisted(() => ({
+  chargeWithToken: vi.fn(),
+  createLowProfile: vi.fn(),
+  verifyLowProfile: vi.fn(),
+}))
 vi.mock('@/lib/payments', () => ({
-  loadCardcomEnv: () => ({ checkoutEnabled: true, terminalNumber: '1000' }),
+  loadCardcomEnv: () => ({
+    checkoutEnabled: true,
+    terminalNumber: '1000',
+    appUrl: 'https://ke.example',
+    webhookSecret: 'test-webhook-secret',
+  }),
   getCardcomAccounts: () => [],
-  getPaymentProvider: () => ({ createLowProfile: vi.fn(), verifyLowProfile: vi.fn() }),
+  getPaymentProvider: () => provider,
 }))
 vi.mock('@/lib/payments/accounts', () => ({
   selectAccountForSuppliers: () => ({ id: 'platform', terminalNumber: '1000' }),
 }))
 vi.mock('@/lib/observability/sentry', () => ({ capturePaymentError: vi.fn() }))
-vi.mock('@/server/payments/finalize', () => ({ finalizeOrder: vi.fn() }))
+const finalizeOrderMock = vi.hoisted(() => vi.fn())
+vi.mock('@/server/payments/finalize', () => ({ finalizeOrder: finalizeOrderMock }))
 vi.mock('@/server/analytics/track', () => ({
   linkAnalyticsIdentity: vi.fn(),
   stampOrderAttribution: vi.fn(),
@@ -117,9 +145,10 @@ vi.mock('@/lib/payments/payment-money-columns', () => ({
 }))
 
 const getCart = vi.fn()
+const resolveDiscount = vi.fn()
 vi.mock('@/server/actions/cart', () => ({
   getCart: () => getCart(),
-  resolveCheckoutDiscountAgorot: async () => ({ discountAgorot: 0 }),
+  resolveCheckoutDiscountAgorot: () => resolveDiscount(),
 }))
 
 const { beginCheckout, reconcileOrderReturn } = await import('./checkout')
@@ -191,7 +220,23 @@ beforeEach(() => {
   calls.length = 0
   queues.clear()
   getCart.mockResolvedValue(cartWithOnePhysicalLine())
+  resolveDiscount.mockResolvedValue({ code: null, discountAgorot: 0 })
+  provider.chargeWithToken.mockReset()
+  provider.createLowProfile.mockReset()
+  provider.verifyLowProfile.mockReset()
+  finalizeOrderMock.mockReset()
 })
+
+/** Everything up to and including the stock reservation, so 5b is reached. */
+function queueThroughReservation(): void {
+  queue('user_addresses.select', { data: { id: ADDRESS_ID, user_id: USER_ID }, error: null })
+  queue('payments.select', { data: null, error: null })
+  queue('products.select', { data: [PRODUCT_ROW], error: null })
+  queue('suppliers.select', { data: [{ id: SUPPLIER_ID, name: 'בית עסק' }], error: null })
+  queue('orders.insert', { data: { id: ORDER_ID }, error: null })
+  queue('order_items.insert', { data: null, error: null })
+  queue('rpc:reserve_order_stock.rpc', { data: [], error: null })
+}
 
 /** Did anything get written? The reads under test all run before the order. */
 function wrote(table: string): boolean {
@@ -286,17 +331,6 @@ describe('beginCheckout: a read that failed is not an answer', () => {
     expect(wrote('order_items')).toBe(false)
   })
 
-  /** Everything up to and including the stock reservation, so 5b is reached. */
-  function queueThroughReservation(): void {
-    queue('user_addresses.select', { data: { id: ADDRESS_ID, user_id: USER_ID }, error: null })
-    queue('payments.select', { data: null, error: null })
-    queue('products.select', { data: [PRODUCT_ROW], error: null })
-    queue('suppliers.select', { data: [{ id: SUPPLIER_ID, name: 'בית עסק' }], error: null })
-    queue('orders.insert', { data: { id: ORDER_ID }, error: null })
-    queue('order_items.insert', { data: null, error: null })
-    queue('rpc:reserve_order_stock.rpc', { data: [], error: null })
-  }
-
   it('does not tell the shopper their saved card does not exist when it could not be read', async () => {
     queueThroughReservation()
     queue('payment_tokens.select', READ_FAILED)
@@ -337,6 +371,213 @@ describe('beginCheckout: a read that failed is not an answer', () => {
     expect(items).toBeDefined()
     const rows = items?.payload as { supplier_id: string; supplier_name: string | null }[]
     expect(rows[0]).toMatchObject({ supplier_id: SUPPLIER_ID, supplier_name: null })
+  })
+})
+
+describe('beginCheckout: the saved-card charge and its 3DS fallback', () => {
+  const TOKEN_ID = '77777777-7777-4777-8777-777777777777'
+
+  function queueTokenRow(): void {
+    queue('payment_tokens.select', {
+      data: {
+        id: TOKEN_ID,
+        profile_id: USER_ID,
+        cardcom_token: 'tok-1',
+        cardcom_account_id: null,
+        expiry_month: 12,
+        expiry_year: 2099,
+      },
+      error: null,
+    })
+  }
+
+  function journalled(): string[] {
+    return calls
+      .filter((c) => c.table === 'payment_events' && c.op === 'insert')
+      .map((c) => (c.payload as { event_type: string }).event_type)
+  }
+
+  it('journals the charge and ties the payment row to the card it rode on', async () => {
+    queueThroughReservation()
+    queueTokenRow()
+    queue('payments.insert', { data: { id: 'pay-tok' }, error: null })
+    provider.chargeWithToken.mockResolvedValue({
+      success: true,
+      transactionId: 'txn-9',
+      failureCode: null,
+      failureMessage: null,
+      raw: {},
+    })
+    finalizeOrderMock.mockResolvedValue({ ok: true, orderId: ORDER_ID })
+
+    const result = await beginCheckout(input({ token_id: TOKEN_ID }))
+
+    expect(result).toMatchObject({ ok: true, data: { kind: 'paid', order_id: ORDER_ID } })
+    // payments.token_id: the FK 026 created and nothing ever wrote.
+    const paymentInsert = calls.find((c) => c.table === 'payments' && c.op === 'insert')
+    expect(paymentInsert?.payload).toMatchObject({ token_id: TOKEN_ID })
+    // The one charge path with no webhook must leave its own journal trail.
+    expect(journalled()).toEqual(['token_charge_requested', 'token_charge_succeeded'])
+  })
+
+  it('reports an ordinary decline as a decline, with no hosted-page detour', async () => {
+    queueThroughReservation()
+    queueTokenRow()
+    queue('payments.insert', { data: { id: 'pay-tok' }, error: null })
+    provider.chargeWithToken.mockResolvedValue({
+      success: false,
+      transactionId: null,
+      failureCode: '33',
+      failureMessage: 'אין כיסוי',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input({ token_id: TOKEN_ID }))
+
+    expect(result).toMatchObject({ ok: false, code: 'PAYMENT_PROVIDER_ERROR', error: 'אין כיסוי' })
+    expect(provider.createLowProfile).not.toHaveBeenCalled()
+    expect(journalled()).toEqual(['token_charge_requested', 'token_charge_declined'])
+  })
+
+  it('falls back to the hosted page when the issuer demands a 3DS challenge', async () => {
+    queueThroughReservation()
+    queueTokenRow()
+    queue(
+      'payments.insert',
+      { data: { id: 'pay-tok' }, error: null },
+      { data: { id: 'pay-lp' }, error: null },
+    )
+    provider.chargeWithToken.mockResolvedValue({
+      success: false,
+      transactionId: null,
+      failureCode: '9993',
+      failureMessage: 'ThreeDSecure challenge required',
+      raw: {},
+    })
+    provider.createLowProfile.mockResolvedValue({
+      lowProfileId: 'lp-77',
+      redirectUrl: 'https://pay.example/lp-77',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input({ token_id: TOKEN_ID, save_card: false }))
+
+    // The shopper gets the page that can show the challenge, not a decline.
+    expect(result).toMatchObject({
+      ok: true,
+      data: { kind: 'redirect', order_id: ORDER_ID, redirect_url: 'https://pay.example/lp-77' },
+    })
+    // Two payment rows, distinct idempotency keys: the column is UNIQUE and
+    // the declined token charge is already holding `lp:`.
+    const keys = calls
+      .filter((c) => c.table === 'payments' && c.op === 'insert')
+      .map((c) => (c.payload as { idempotency_key: string }).idempotency_key)
+    expect(keys).toEqual([`lp:${CLIENT_REF}`, `lp3ds:${CLIENT_REF}`])
+    // The token is re-minted even though save_card was off: the old one
+    // demands a challenge on every server-to-server charge.
+    expect(provider.createLowProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ saveToken: true }),
+    )
+    expect(journalled()).toEqual(['token_charge_requested', 'token_charge_declined'])
+  })
+})
+
+describe('beginCheckout: the discount claim spends the code before the charge', () => {
+  /** rpc payload of the one claim call, or undefined if none was made. */
+  function claimCall(name: string) {
+    return calls.find((c) => c.table === `rpc:${name}`)
+  }
+
+  it('refuses the checkout when the claim answers exhausted, and unwinds the order it took', async () => {
+    queueThroughReservation()
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 500 })
+    queue('rpc:claim_order_discount.rpc', { data: 'exhausted', error: null })
+
+    const result = await beginCheckout(input())
+
+    // The single-use guarantee: the shopper is told before any charge, in
+    // Hebrew, and never reaches the payment provider.
+    expect(result).toMatchObject({ ok: false, code: 'COUPON_INVALID' })
+    expect(result.ok === false && result.error).toBe('קוד ההנחה מוצה')
+    expect(calls.some((c) => c.table === 'payments' && c.op === 'insert')).toBe(false)
+    // Same unwind as a stock shortfall: order closed, reservation handed back.
+    const orderUpdate = calls.find((c) => c.table === 'orders' && c.op === 'update')
+    expect(orderUpdate?.payload).toMatchObject({ status: 'cancelled' })
+    expect(claimCall('release_order_stock')).toBeDefined()
+  })
+
+  it('fails closed, not open, when the claim rpc itself dies', async () => {
+    queueThroughReservation()
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 500 })
+    queue('rpc:claim_order_discount.rpc', READ_FAILED)
+
+    const result = await beginCheckout(input())
+
+    // A claim system that fails open is a claim system that does nothing on
+    // the day it matters - same stance as the reservation above it.
+    expect(result).toMatchObject({ ok: false, code: 'INTERNAL' })
+    expect(result.ok === false && result.error).toContain('נסו שוב')
+    expect(calls.some((c) => c.table === 'payments' && c.op === 'insert')).toBe(false)
+    expect(claimCall('release_order_stock')).toBeDefined()
+  })
+
+  it('claims once, for this order and this amount, and goes on to the hosted page', async () => {
+    queueThroughReservation()
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 500 })
+    queue('rpc:claim_order_discount.rpc', { data: null, error: null })
+    queue('payments.insert', { data: { id: 'pay-lp' }, error: null })
+    provider.createLowProfile.mockResolvedValue({
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://pay.example/lp-1',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: true, data: { kind: 'redirect', order_id: ORDER_ID } })
+    expect(claimCall('claim_order_discount')?.payload).toMatchObject({
+      p_code: 'SAVE10',
+      p_order_id: ORDER_ID,
+      p_user_id: USER_ID,
+      p_amount_agorot: 500,
+    })
+    // The claim rode the checkout, not the finalize: it happened before the
+    // provider was asked for a page.
+    expect(claimCall('redeem_coupon_qr')).toBeUndefined()
+  })
+
+  it('routes a printed QR unit code through redeem_coupon_qr and honours its refusal', async () => {
+    queueThroughReservation()
+    // '00000000' is Luhn-valid, so it is a unit code and not a campaign code.
+    resolveDiscount.mockResolvedValue({ code: '00000000', discountAgorot: 500 })
+    queue('rpc:redeem_coupon_qr.rpc', { data: { ok: false, reason: 'redeemed' }, error: null })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: false, code: 'COUPON_INVALID' })
+    expect(result.ok === false && result.error).toBe('קוד ההנחה כבר מומש')
+    expect(claimCall('claim_order_discount')).toBeUndefined()
+    expect(claimCall('redeem_coupon_qr')?.payload).toMatchObject({
+      p_code: '00000000',
+      p_order_id: ORDER_ID,
+      p_amount_agorot: 500,
+    })
+  })
+
+  it('does not touch the claim layer when no code is applied', async () => {
+    queueThroughReservation()
+    queue('payments.insert', { data: { id: 'pay-lp' }, error: null })
+    provider.createLowProfile.mockResolvedValue({
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://pay.example/lp-1',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: true })
+    expect(claimCall('claim_order_discount')).toBeUndefined()
+    expect(claimCall('redeem_coupon_qr')).toBeUndefined()
   })
 })
 

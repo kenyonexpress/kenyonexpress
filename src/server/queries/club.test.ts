@@ -49,6 +49,7 @@ describe('getMyTier', () => {
       spendAgorot: 83_500,
       nextTierNameHe: 'זהב',
       toNextAgorot: 116_500,
+      cashbackBonusPercent: 0,
     })
   })
 
@@ -60,6 +61,7 @@ describe('getMyTier', () => {
       spendAgorot: 0,
       nextTierNameHe: 'כסף',
       toNextAgorot: 50_000,
+      cashbackBonusPercent: 0,
     })
   })
 })

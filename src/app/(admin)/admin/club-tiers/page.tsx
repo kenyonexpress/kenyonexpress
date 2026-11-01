@@ -25,7 +25,9 @@ export default async function ClubTiersPage({ searchParams }: Props) {
   // All tiers, inactive included: the public policy shows only active ones.
   const { data, error } = await createAdminClient()
     .from('club_tiers' as never)
-    .select('id, key, name_he, min_spend_agorot, benefits_json, active, sort_order')
+    .select(
+      'id, key, name_he, min_spend_agorot, benefits_json, cashback_bonus_percent, active, sort_order',
+    )
     .order('sort_order', { ascending: true })
   const tiers = (data ?? []) as ClubTierRow[]
   const { data: benefitData, error: benefitError } = await createAdminClient()
@@ -67,7 +69,7 @@ export default async function ClubTiersPage({ searchParams }: Props) {
           <p className="text-xs text-muted" dir="ltr">
             {t.key}
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-4">
             <label className="flex flex-col gap-1 text-sm">
               שם הדרגה
               <input
@@ -85,6 +87,19 @@ export default async function ClubTiersPage({ searchParams }: Props) {
                 defaultValue={agorotToIls(agorot(Number(t.min_spend_agorot))).toFixed(2)}
                 inputMode="decimal"
                 required
+                className="rounded-md border border-border px-2 py-1"
+                dir="ltr"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              בונוס קשבק (%)
+              <input
+                name="cashback_bonus_percent"
+                type="number"
+                step="0.01"
+                min={0}
+                max={100}
+                defaultValue={t.cashback_bonus_percent ?? 0}
                 className="rounded-md border border-border px-2 py-1"
                 dir="ltr"
               />

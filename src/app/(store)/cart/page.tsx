@@ -1,4 +1,5 @@
 import CartPageView from '@/components/cart/CartPageView'
+import TrustBar from '@/components/storefront/TrustBar'
 import type { Metadata } from 'next'
 // cart-page.css is imported by the root layout. See the note there.
 
@@ -17,5 +18,10 @@ export const metadata: Metadata = {
  * prerendered.
  */
 export default function CartPage() {
-  return <CartPageView />
+  return (
+    <>
+      <CartPageView />
+      <TrustBar />
+    </>
+  )
 }

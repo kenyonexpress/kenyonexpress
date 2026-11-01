@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BRANDS_INDEX_SETTINGS,
+  CATEGORIES_INDEX_SETTINGS,
   FILTERABLE_ATTRIBUTES,
+  HEBREW_ATTRIBUTE_PATTERNS,
   INDEX_SETTINGS,
+  LOCALIZED_ATTRIBUTES,
   RANKING_RULES,
   SEARCHABLE_ATTRIBUTES,
   SORTABLE_ATTRIBUTES,
   TYPO_TOLERANCE,
+  brandDocumentId,
+  toBrandDocuments,
+  toCategoryDocuments,
   toProductDocument,
 } from './meili-settings'
 

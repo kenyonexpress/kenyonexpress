@@ -1,3 +1,4 @@
+import { MobileProductCache } from '@/lib/cache/http'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { limitByIp } from '@/lib/rate-limit/route-guard'
 import { createPublicClient } from '@/lib/supabase/public'
@@ -30,7 +31,7 @@ async function handleGET(_request: NextRequest, { params }: { params: Promise<{ 
   }
 
   return NextResponse.json(data, {
-    headers: { 'cache-control': 'public, max-age=3600' },
+    headers: { 'cache-control': MobileProductCache },
   })
 }
 

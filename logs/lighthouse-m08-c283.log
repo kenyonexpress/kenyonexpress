@@ -1,0 +1,1 @@
+M08-c283 2026-10-30T10:21:16Z: Lighthouse mobile (simulate throttling, localhost:3000 next-server v16.3.3, NO .next/BUILD_ID so likely dev server, unminified): / perf 64 (FCP 1.7s LCP 7.6s TBT 440ms CLS 0.001); /product/barbecue perf 65 (FCP 1.2s LCP 10.4s TBT 400ms CLS 0.001). Below G23 target 95; localhost scores are modelled/noisy (see scripts/lighthouse-smoke.mjs header).

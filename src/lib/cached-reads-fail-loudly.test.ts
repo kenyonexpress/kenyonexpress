@@ -75,6 +75,7 @@ function makeBuilder() {
 }
 
 vi.mock('@/lib/supabase/anon', () => ({ createPublicClient: () => makeBuilder() }))
+vi.mock('@/lib/supabase/read-replica', () => ({ createCatalogueReadClient: () => makeBuilder() }))
 // product-detail's supplier read goes through the admin client and deliberately
 // does NOT throw (a missing supplier degrades one block, it does not 404 the
 // page). It is never reached in these tests, which all fail on the read before.

@@ -4,7 +4,7 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { newestTimestamp } from '@/lib/seo/lastmod'
 import { siteUrl } from '@/lib/site-url'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import type { MetadataRoute } from 'next'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -19,7 +19,7 @@ import { cacheLife, cacheTag } from 'next/cache'
  * paid for. The redeem page also sets robots noindex of its own, so it is
  * refused twice.
  *
- * Reads go through `createPublicClient` (anon), not the service-role admin
+ * Reads go through `createCatalogueReadClient` (anon, replica when configured), not the service-role admin
  * client. Locally the demo secret key makes admin fail silently and the
  * sitemap collapsed to the three static URLs ([15]/[27]). Anon is the same
  * catalogue the storefront already caches, and only columns that are already
@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl()
   const now = new Date()
 
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   // All three reads go through `orFail`, and that is the whole point of the
   // expire window described above. Discarding the `error` here inverted the

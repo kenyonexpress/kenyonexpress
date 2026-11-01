@@ -60,6 +60,7 @@ export const SORT_TO_ORDERBY: Record<string, string> = {
   newest: 'date',
   price_asc: 'price',
   price_desc: 'price-desc',
+  discount_desc: 'discount',
   name: 'menu_order',
   menu_order: 'menu_order',
   popularity: 'popularity',
@@ -70,6 +71,7 @@ export const ORDERBY_TO_SORT: Record<string, string> = {
   date: 'newest',
   price: 'price_asc',
   'price-desc': 'price_desc',
+  discount: 'discount_desc',
   menu_order: 'menu_order',
   popularity: 'popularity',
   rating: 'rating',
@@ -79,6 +81,7 @@ export type SortValue =
   | 'newest'
   | 'price_asc'
   | 'price_desc'
+  | 'discount_desc'
   | 'name'
   | 'menu_order'
   | 'popularity'
@@ -88,6 +91,7 @@ const VALID_SORTS = new Set<string>([
   'newest',
   'price_asc',
   'price_desc',
+  'discount_desc',
   'name',
   'menu_order',
   'popularity',

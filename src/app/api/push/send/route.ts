@@ -1,4 +1,5 @@
 import { GET as drainNotifications } from '@/app/api/cron/notifications/route'
+import { CacheControl, withCacheControl } from '@/lib/cache/http'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches, cronSecretMatches } from '@/lib/security/constant-time'
@@ -45,5 +46,5 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   )
 }
 
-export const GET = withRequestLog('/api/push/send', handle)
+export const GET = withCacheControl(CacheControl.private, withRequestLog('/api/push/send', handle))
 export const POST = withRequestLog('/api/push/send', handle)

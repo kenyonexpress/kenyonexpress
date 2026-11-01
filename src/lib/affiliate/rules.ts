@@ -10,7 +10,7 @@ export const AFFILIATE_COOKIE_MAX_AGE_S = 30 * 24 * 60 * 60
  * from an uppercase alphabet (lib/referrals/code.ts), so a 12-character
  * lowercase `af...` code can never be read as the other kind.
  */
-const LINK_CODE_RE = /^af[a-z0-9]{10}$/
+export const LINK_CODE_RE = /^af[a-z0-9]{10}$/
 
 export function newLinkCode(random: (n: number) => Uint8Array): string {
   const alphabet = 'abcdefghijkmnpqrstuvwxyz23456789'
@@ -21,7 +21,7 @@ export function newLinkCode(random: (n: number) => Uint8Array): string {
 }
 
 /** Commission is never paid before the statutory cancellation window closes. */
-const SETTLEMENT_HOLD_DAYS = 14
+export const SETTLEMENT_HOLD_DAYS = 14
 
 export function isLinkCode(value: unknown): value is string {
   return typeof value === 'string' && LINK_CODE_RE.test(value)

@@ -138,6 +138,8 @@ async function ResultGrid({
 
   const itemsWithAssets = items.map((item) => ({ ...(item as CategoryProduct), assets }))
 
+  // The first page is rendered here, on the server, and the numbered links
+  // are handed to the grid as its fallback. See InfiniteProductGrid.
   return (
     <ShopGridWithInfiniteScroll
       initialItems={itemsWithAssets}

@@ -1,11 +1,12 @@
+import { recordAuthAttempt } from '@/lib/auth/auth-fallback'
 import { toE164Israeli } from '@/lib/auth/phone-otp'
-import { getSupabaseFlags } from '@/lib/flags/supabase-flags'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { mintSessionFor } from '@/server/auth/mint-session'
 import { WA_OTP_MAX_ATTEMPTS, otpMatches } from '@/server/auth/wa-otp'
+import { recordOtpAttempt, waOtpEnabled } from '@/server/auth/wa-otp-gate'
 import { markMilestoneVerified } from '@/server/verification/user-milestones'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -17,7 +18,7 @@ import { type NextRequest, NextResponse } from 'next/server'
  * C65: Also marks phone verification milestone as verified when successful.
  */
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  if (!(await getSupabaseFlags()).wa_otp_enabled) {
+  if (!(await waOtpEnabled())) {
     return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 })
   }
   const body = (await request.json().catch(() => null)) as {
@@ -56,6 +57,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     attempts: number
   } | null
   if (!row || row.attempts >= WA_OTP_MAX_ATTEMPTS) {
+    await recordOtpAttempt({ phone, kind: 'verify', channel: 'whatsapp', outcome: 'expired' })
     return NextResponse.json({ ok: false, error: 'expired' }, { status: 400 })
   }
 
@@ -64,6 +66,19 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       .from('auth_wa_otps' as never)
       .update({ attempts: row.attempts + 1 } as never)
       .eq('id', row.id)
+    await recordAuthAttempt({
+      userId: row.user_id,
+      phone,
+      attemptType: 'whatsapp_otp',
+      success: false,
+    })
+    await recordOtpAttempt({
+      phone,
+      userId: row.user_id,
+      kind: 'verify',
+      channel: 'whatsapp',
+      outcome: 'wrong_code',
+    })
     return NextResponse.json({ ok: false, error: 'wrong_code' }, { status: 400 })
   }
 
@@ -83,6 +98,12 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const session = await mintSessionFor(row.user_id)
   if (!session.ok) {
+    await recordAuthAttempt({
+      userId: row.user_id,
+      phone,
+      attemptType: 'whatsapp_otp',
+      success: false,
+    })
     return NextResponse.json(
       { ok: false, error: session.reason === 'no_email' ? 'no_email' : 'session_failed' },
       { status: session.reason === 'no_email' ? 409 : 500 },
@@ -97,21 +118,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     verified_via: 'sign_in',
   })
 
-  // C100: evidence log of the proven phone. Best effort; the table and the
-  // channel column arrive with migration 317.
-  const { data: chan, error: chanError } = await admin
-    .from('auth_wa_otps' as never)
-    .select('channel')
-    .eq('id', row.id)
-    .maybeSingle()
-  // A failed read falls back to the default channel: the log row is best effort.
-  const channel = chanError
-    ? 'whatsapp'
-    : ((chan as { channel?: string } | null)?.channel ?? 'whatsapp')
-  await admin
-    .from('user_phone_verifications' as never)
-    .insert({ user_id: row.user_id, phone_e164: phone, channel, purpose: 'sign_in' } as never)
-
+  await recordOtpAttempt({
+    phone,
+    userId: row.user_id,
+    kind: 'verify',
+    channel: 'whatsapp',
+    outcome: 'ok',
+  })
   return NextResponse.json({ ok: true })
 }
 

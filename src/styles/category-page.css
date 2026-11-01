@@ -14,6 +14,8 @@
   --cat-line: #dddddd;
   --cat-switcher: #495057;
   --cat-surface: #ffffff;
+  --cat-surface-hover: #f5f5f5;
+  --cat-thumb: #f7f7f7;
   --cat-brand: #fed700;
   --cat-brand-hover: #fedd26;
 
@@ -573,8 +575,20 @@
 }
 
 .category-card__header {
+  /* The containing block of the wishlist heart below. */
+  position: relative;
   display: flex;
   flex-direction: column;
+}
+
+/* The heart (components/wishlist/WishlistHeart) sits on the image's top
+   corner. The image is the last thing in the header and has a fixed height,
+   so the corner is measured up from the header's bottom edge. The discount
+   badge and the offer deadline hold the two bottom corners. */
+.category-card__heart {
+  top: auto;
+  bottom: calc(var(--cat-thumb-max) - 2.75rem);
+  inset-inline-start: 0;
 }
 
 /* Measured: 11.998px / 12.5979px, h 12.6, link #768b9e, margin-bottom 11.998px */
@@ -703,6 +717,36 @@
   padding: 2px 10px;
   border-radius: 4px;
   line-height: 2;
+}
+
+/* The comparison toggle (components/compare/CompareToggle): the image's
+   other top corner, measured the same way as the heart. */
+.category-card__compare {
+  top: auto;
+  bottom: calc(var(--cat-thumb-max) - 2.75rem);
+  inset-inline-end: 0;
+}
+
+/* The offer's deadline, in its last week (components/category/CardOfferDeadline).
+   Over the image like the discount badge, at the opposite corner, so a line
+   that only exists after mount moves nothing. */
+.category-card__deadline {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 0 0.6em;
+  border-radius: 0.25em;
+  background-color: var(--cat-surface);
+  color: var(--cat-badge);
+  font-size: var(--cat-eyebrow-size);
+  font-weight: 700;
+  line-height: 2;
+}
+
+.category-card__deadline[data-urgency="today"] {
+  background-color: var(--cat-badge);
+  color: var(--cat-surface);
 }
 
 /* Footer: measured .price-add-to-cart = 186x36 with 7px below it. Price sits
@@ -1104,6 +1148,28 @@
   margin-top: 2em;
   padding: 0;
   list-style: none;
+}
+
+/* The infinite grid's button: the same action as scrolling to the end, for a
+   keyboard and for a failed request. Sits in the pagination's own box. */
+.category-load-more {
+  padding: 0.5em 1.25em;
+  border: thin solid var(--cat-line);
+  border-radius: 2em;
+  background: transparent;
+  color: var(--cat-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.category-load-more:hover:not(:disabled) {
+  color: var(--cat-link);
+  border-color: var(--cat-link);
+}
+
+.category-load-more:disabled {
+  color: var(--cat-muted);
+  cursor: progress;
 }
 
 .category-pagination a,
