@@ -1,7 +1,11 @@
-RESUME FROM: M10-c331
+RESUME FROM: M11-c331
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:03:29+07:00
+- item: M10-c331
+- BLOCKED: Supabase MCP unauthenticated; cannot list or apply migrations
 
 ### 2026-11-01T11:02:43+07:00
 - item: M09-c331
@@ -98,10 +102,6 @@ RESUME FROM: M10-c331
 ### 2026-11-01T10:03:03+07:00
 - item: M04-c330
 - RESULT: DONE
-
-### 2026-11-01T10:02:08+07:00
-- item: M03-c330
-- BLOCKED: no category reference — live host serves our own build, compare.mjs refuses (exit 5)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

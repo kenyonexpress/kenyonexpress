@@ -30653,3 +30653,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T10:00:55+07:00
 - item: M02-c330
 - BLOCKED: gate-not-met product 26.82/21.68/11.95**.
+
+## Archived 2026-11-01T11:03:29+07:00 after M10-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:02:08+07:00
+- item: M03-c330
+- BLOCKED: no category reference — live host serves our own build, compare.mjs refuses (exit 5)
