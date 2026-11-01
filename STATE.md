@@ -1,7 +1,11 @@
-RESUME FROM: M07-c335
+RESUME FROM: M08-c335
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:05:46+07:00
+- item: M07-c335
+- RESULT: DONE
 
 ### 2026-11-01T14:04:40+07:00
 - item: M06-c335
@@ -98,10 +102,6 @@ RESUME FROM: M07-c335
 ### 2026-11-01T13:08:36+07:00
 - item: M02-c334
 - BLOCKED: gate not met: official reference refused (live host is our own build), fallback Electro reference measures 36.58 / 29.82 / 20.52% against the 11% gate
-
-### 2026-11-01T12:52:54+07:00
-- item: M01-c334
-- BLOCKED: compare.mjs refuses — live reference is our own build, no diff % obtainable
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

@@ -31073,3 +31073,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T12:49:55+07:00
 - item: M18-c333
 - RESULT: DONE
+
+## Archived 2026-11-01T14:05:46+07:00 after M07-c335 (3 lines from STATE.md)
+
+### 2026-11-01T12:52:54+07:00
+- item: M01-c334
+- BLOCKED: compare.mjs refuses — live reference is our own build, no diff % obtainable
