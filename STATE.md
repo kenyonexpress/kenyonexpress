@@ -1,7 +1,11 @@
-RESUME FROM: C133
+RESUME FROM: C134
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T04:29:04+07:00
+- item: C133
+- RESULT: DONE
 
 ### 2026-11-02T04:01:11+07:00
 - item: C132
@@ -98,10 +102,6 @@ RESUME FROM: C133
 ### 2026-11-02T01:56:00+07:00
 - item: M17-c345
 - BLOCKED: prod homepage still serves `dir="ltr"` Hebrew hero promo; fix in HEAD not deployed
-
-### 2026-11-02T01:54:12+07:00
-- item: M16-c345
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
