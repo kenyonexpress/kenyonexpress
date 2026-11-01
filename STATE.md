@@ -1,7 +1,11 @@
-RESUME FROM: M04-c332
+RESUME FROM: M05-c332
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:32:42+07:00
+- item: M04-c332
+- RESULT: DONE
 
 ### 2026-11-01T11:31:38+07:00
 - item: M03-c332
@@ -98,10 +102,6 @@ RESUME FROM: M04-c332
 ### 2026-11-01T10:21:37+07:00
 - item: M16-c330
 - RESULT: DONE
-
-### 2026-11-01T10:20:34+07:00
-- item: M15-c330
-- BLOCKED: console error on / (React #418 hydration mismatch); no source repo in workdir to fix
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
