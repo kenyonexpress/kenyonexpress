@@ -30209,3 +30209,45 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T05:59:58+07:00
 - item: M03-c326
 - BLOCKED: no valid category reference (kenyonexpress.co.il now serves our own build; compare.mjs refuses)
+
+## Archived 2026-11-01T07:10:08+07:00 after M09-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:03:57+07:00
+- item: M04-c326
+- RESULT: DONE
+
+## Archived 2026-11-01T07:10:49+07:00 after M10-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:06:11+07:00
+- item: M05-c326
+- RESULT: DONE
+
+## Archived 2026-11-01T07:11:47+07:00 after M11-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:10:27+07:00
+- item: M06-c326
+- RESULT: DONE
+
+## Archived 2026-11-01T07:12:32+07:00 after M12-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:11:06+07:00
+- item: M07-c326
+- RESULT: DONE
+
+## Archived 2026-11-01T07:13:21+07:00 after M13-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:11:29+07:00
+- item: M07-c326
+- RESULT: DONE
+
+## Archived 2026-11-01T07:13:43+07:00 after M13-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:14:11+07:00
+- item: M08-c326
+- RESULT: DONE
+
+## Archived 2026-11-01T07:14:43+07:00 after M14-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:15:52+07:00
+- item: M09-c326
+- RESULT: DONE
