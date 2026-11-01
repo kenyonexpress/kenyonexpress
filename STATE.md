@@ -1,7 +1,11 @@
-RESUME FROM: M08-c345
+RESUME FROM: M09-c345
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T01:39:14+07:00
+- item: M08-c345
+- RESULT: DONE
 
 ### 2026-11-02T01:36:16+07:00
 - item: M07-c345
@@ -98,10 +102,6 @@ RESUME FROM: M08-c345
 ### 2026-11-01T23:51:25+07:00
 - item: C126
 - BLOCKED: **. The live database is behind the repo's migrations, and I didn't apply them. Two commits are pushed to `closeout/v1-final`: `150168b93` and `f81312771`.
-
-### 2026-11-01T23:07:50+07:00
-- item: C125
-- BLOCKED: gates fail: grep=346 hits, numeric money columns remain, snapshot test skipped not passing
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

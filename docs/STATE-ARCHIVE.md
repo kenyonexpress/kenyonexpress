@@ -30186,3 +30186,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T23:02:34+07:00
 - item: C124
 - BLOCKED: supabase-cli-hang
+
+## Archived 2026-11-02T01:39:14+07:00 after M08-c345 (3 lines from STATE.md)
+
+### 2026-11-01T23:07:50+07:00
+- item: C125
+- BLOCKED: gates fail: grep=346 hits, numeric money columns remain, snapshot test skipped not passing
