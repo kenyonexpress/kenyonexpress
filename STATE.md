@@ -1,7 +1,23 @@
-RESUME FROM: M04-c340
+RESUME FROM: M07-c340
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:01:33+07:00
+- item: M06-c340
+- RESULT: DONE
+
+### 2026-11-01T18:59:52+07:00
+- item: M05-c340
+- RESULT: DONE
+
+### 2026-11-01T18:57:59+07:00
+- item: M04-c340
+- RESULT: DONE
+
+### 2026-11-01T18:57:38+07:00
+- item: M04-c340
+- RESULT: DONE
 
 ### 2026-11-01T18:56:55+07:00
 - item: M03-c340
@@ -86,22 +102,6 @@ RESUME FROM: M04-c340
 ### 2026-11-01T18:00:41+07:00
 - item: M02-c339
 - BLOCKED: no valid reference (live host is our own build) and product-card count mismatch 12 vs 4; forced 380/768/1440 = 36.58/29.82/20.51%, all over the 11% gate
-
-### 2026-11-01T17:43:47+07:00
-- item: M01-c339
-- BLOCKED: gate-fail
-
-### 2026-11-01T17:27:50+07:00
-- item: M18-c338
-- RESULT: DONE
-
-### 2026-11-01T17:26:44+07:00
-- item: M17-c338
-- BLOCKED: locked-component M17-c338
-
-### 2026-11-01T17:25:35+07:00
-- item: M16-c338
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
