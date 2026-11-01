@@ -120,22 +120,6 @@ export function isPostHogEnabled(): boolean {
 }
 
 /**
- * With no SDK there is no client object to construct, so init only warms the
- * distinct id (creating and persisting it in the browser before the first
- * event). Idempotent, synchronous, no network. Kept as the explicit entry
- * point so call sites read the same as initSentry and so a future move to a
- * real SDK changes this file only.
- */
-export function initPostHog(): void {
-  if (!KEY) return
-  try {
-    distinctId()
-  } catch {
-    // Best effort by definition.
-  }
-}
-
-/**
  * Property values are restricted to scalars on purpose: it makes accidentally
  * attaching a whole order, profile or request object a type error instead of a
  * PII leak discovered in the PostHog UI.

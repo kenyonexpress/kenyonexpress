@@ -154,31 +154,3 @@ export function isSmsConfigured(): boolean {
     process.env.TWILIO_PHONE_NUMBER
   )
 }
-
-/**
- * Schedule a broadcast to be sent at a specific time
- */
-export async function scheduleBroadcast(broadcastId: string, scheduledAt: Date): Promise<void> {
-  const db = createAdminClient()
-
-  const { error } = await db
-    .from('sms_broadcasts')
-    .update({
-      status: 'scheduled',
-      scheduled_at: scheduledAt.toISOString(),
-    })
-    .eq('id', broadcastId)
-
-  if (error) {
-    log.error('sms.broadcast.schedule_failed', {
-      broadcastId,
-      error: error.message,
-    })
-    throw error
-  }
-
-  log.info('sms.broadcast.scheduled', {
-    broadcastId,
-    scheduledAt: scheduledAt.toISOString(),
-  })
-}
