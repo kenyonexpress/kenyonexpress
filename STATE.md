@@ -1,7 +1,11 @@
-RESUME FROM: M07-c343
+RESUME FROM: M08-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T00:03:27+07:00
+- item: M07-c343
+- RESULT: DONE
 
 ### 2026-11-02T00:02:01+07:00
 - item: C129
@@ -97,10 +101,6 @@ RESUME FROM: M07-c343
 
 ### 2026-11-01T21:10:05+07:00
 - item: M13-c342
-- RESULT: DONE
-
-### 2026-11-01T21:09:15+07:00
-- item: M12-c342
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
