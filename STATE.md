@@ -3,6 +3,10 @@ RESUME FROM: M16-c336
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T14:58:06+07:00
+- item: M16-c336
+- RESULT: DONE
+
 ### 2026-11-01T14:57:25+07:00
 - item: M15-c336
 - BLOCKED: console errors on / and /product (prerender-Suspense error on /product, image-dimension warnings on /, /api/cart failure, plus Supabase invalid-key errors)
@@ -98,10 +102,6 @@ RESUME FROM: M16-c336
 ### 2026-11-01T14:10:19+07:00
 - item: M10-c335
 - BLOCKED: Supabase MCP unauthenticated; cannot verify or apply pending migrations
-
-### 2026-11-01T14:09:23+07:00
-- item: M09-c335
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
