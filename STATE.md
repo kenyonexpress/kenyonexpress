@@ -1,7 +1,11 @@
-RESUME FROM: M03-c331
+RESUME FROM: M04-c331
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T10:51:05+07:00
+- item: M03-c331
+- BLOCKED: reference-gone
 
 ### 2026-11-01T10:49:57+07:00
 - item: M02-c331
@@ -98,10 +102,6 @@ RESUME FROM: M03-c331
 ### 2026-11-01T09:06:37+07:00
 - item: M15-c329
 - BLOCKED: console errors remain on /product (avif image 400s, Suspense prerender error); Supabase "Invalid API key" errors on both pages are DONE-DEFERRED
-
-### 2026-11-01T09:05:24+07:00
-- item: M14-c329
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
