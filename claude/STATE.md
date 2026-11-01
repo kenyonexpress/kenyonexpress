@@ -1,4 +1,4 @@
-המשך מ: M04-c327 DONE (2026-11-01): pnpm type-check exit 0, 1 drift fixed (CONSENT_GRANTED_EVENT re-exported from ThirdPartyTags); no forbidden files touched
+המשך מ: M07-c327 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
 המשך מ: M06-c326 DONE (2026-11-01): pnpm build exit 0, pnpm test 627 files/7165 tests pass; no drift to fix, no source changes; no forbidden files touched
 המשך מ: M05-c326 DONE (2026-11-01): pnpm test 7164 pass, 1 drift fixed (MEILISEARCH_ENABLED exempted in operational-flags.test.ts); no forbidden files touched
 המשך מ: C118 DONE (2026-11-01): scripts/state/state-log.mjs + state-log-lib.mjs + test restored from b6423f65f, vitest include re-added, 23/23 tests pass, see docs/C118-statelog.md; no forbidden files touched
@@ -210,3 +210,4 @@
 המשך מ: C115 DONE (2026-11-01): MEILISEARCH_ENABLED=false added to Vercel production; /api/ready meilisearch optional (not_configured when disabled/unset, degraded when unreachable, never 503); search skips Meili when disabled and falls back to Postgres ILIKE (name_he/description_he/city); docs/C115-search.md; tsc clean, health+search tests pass; no forbidden files touched
 המשך מ: M04-c326 DONE (2026-11-01): pnpm type-check clean (tsc --noEmit, 0 errors); committed drifted claude_STATE.md + docs/M-CYCLE-STATUS.md; no forbidden files touched
 המשך מ: M17-c326 BLOCKED locked-component (2026-11-01): RTL probe at 380/768/1440 on / and /product/bar-drink: dir=rtl lang=he, no horizontal overflow, no physical text-align:left; /product clean; / has 11 Hebrew hero <p> with dir="ltr" (standard_line/promo_small/promo_large) at src/components/home/HeroSlider.tsx:555-628 (locked, not in v7 ref); no files edited besides this line
+המשך מ: M05-c327 DONE (2026-11-01): pnpm test 627 files passed, 2 skipped; 7165 tests passed, 28 skipped; no failures; committed generated drift claude_STATE.md + docs/M-CYCLE-STATUS.md + docs/rtl-violations.md; no code changes; no forbidden files touched
