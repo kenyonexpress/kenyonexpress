@@ -31421,3 +31421,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T15:34:15+07:00
 - item: M02-c337
 - BLOCKED: gate-fail product 380=36.58% 768=29.82% 1440=20.52% (gate <11%)
+
+## Archived 2026-11-01T17:18:15+07:00 after M10-c338 (3 lines from STATE.md)
+
+### 2026-11-01T15:35:27+07:00
+- item: M03-c337
+- BLOCKED: category reference unavailable (live host is our own build, no Electro v7 category capture)
