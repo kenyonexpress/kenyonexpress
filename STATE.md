@@ -1,7 +1,11 @@
-RESUME FROM: M15-c334
+RESUME FROM: M16-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T13:24:12+07:00
+- item: M15-c334
+- BLOCKED: console errors present on / and /product/[slug] (Suspense error, /api/cart failure, image warnings; Supabase-key items would be DONE-DEFERRED)
 
 ### 2026-11-01T13:22:48+07:00
 - item: M14-c334
@@ -97,10 +101,6 @@ RESUME FROM: M15-c334
 
 ### 2026-11-01T12:40:46+07:00
 - item: M09-c333
-- RESULT: DONE
-
-### 2026-11-01T12:39:36+07:00
-- item: M08-c333
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
