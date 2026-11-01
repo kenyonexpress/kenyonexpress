@@ -1,7 +1,11 @@
-RESUME FROM: M14-c343
+RESUME FROM: M15-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T00:15:53+07:00
+- item: M14-c343
+- RESULT: DONE
 
 ### 2026-11-02T00:15:08+07:00
 - item: M13-c343
@@ -98,10 +102,6 @@ RESUME FROM: M14-c343
 ### 2026-11-01T21:32:56+07:00
 - item: M02-c343
 - BLOCKED: no product reference exists, since kenyonexpress.co.il serves our own build, so the compare.mjs gate cannot produce a number
-
-### 2026-11-01T21:31:33+07:00
-- item: M01-c343
-- BLOCKED: gate-fail
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
