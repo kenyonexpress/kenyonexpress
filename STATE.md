@@ -1,7 +1,11 @@
-RESUME FROM: C122
+RESUME FROM: C123
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T22:53:45+07:00
+- item: C122
+- BLOCKED: locked-component (header/topbar/hero bands) + gate not met
 
 ### 2026-11-01T22:34:21+07:00
 - item: C130
@@ -96,10 +100,6 @@ RESUME FROM: C122
 - RESULT: DONE
 
 ### 2026-11-01T21:00:02+07:00
-- item: M05-c342
-- RESULT: DONE
-
-### 2026-11-01T20:59:37+07:00
 - item: M05-c342
 - RESULT: DONE
 
