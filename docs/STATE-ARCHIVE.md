@@ -30845,3 +30845,21 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T11:09:16+07:00
 - item: M16-c331
 - RESULT: DONE
+
+## Archived 2026-11-01T12:36:00+07:00 after M06-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:12:30+07:00
+- item: M17-c331
+- BLOCKED: compare.mjs gate fails on home (bands up to ~67% vs 11% limit); pre-existing, not caused by this verification-only item
+
+## Archived 2026-11-01T12:36:59+07:00 after M07-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:13:30+07:00
+- item: M18-c331
+- RESULT: DONE
+
+## Archived 2026-11-01T12:39:36+07:00 after M08-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:29:20+07:00
+- item: M01-c332
+- BLOCKED: gate-fail
