@@ -1,7 +1,11 @@
-RESUME FROM: M08-c327
+RESUME FROM: M09-c327
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T07:09:03+07:00
+- item: M08-c327
+- RESULT: DONE
 
 ### 2026-11-01T07:04:46+07:00
 - item: M07-c327
@@ -98,10 +102,6 @@ RESUME FROM: M08-c327
 ### 2026-11-01T06:03:57+07:00
 - item: M04-c326
 - RESULT: DONE
-
-### 2026-11-01T05:59:58+07:00
-- item: M03-c326
-- BLOCKED: no valid category reference (kenyonexpress.co.il now serves our own build; compare.mjs refuses)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

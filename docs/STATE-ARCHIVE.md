@@ -30203,3 +30203,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T05:58:54+07:00
 - item: M02-c326
 - BLOCKED: gate not passed — product page diff 36.58% / 29.82% / 20.52% at 380 / 768 / 1440 against the Electro reference file, with the card-count mismatch forced. The live site can no longer serve as a reference.
+
+## Archived 2026-11-01T07:09:03+07:00 after M08-c327 (3 lines from STATE.md)
+
+### 2026-11-01T05:59:58+07:00
+- item: M03-c326
+- BLOCKED: no valid category reference (kenyonexpress.co.il now serves our own build; compare.mjs refuses)
