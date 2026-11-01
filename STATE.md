@@ -1,7 +1,11 @@
-RESUME FROM: M03-c342
+RESUME FROM: M04-c342
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T20:56:27+07:00
+- item: M03-c342
+- BLOCKED: no-reference
 
 ### 2026-11-01T20:54:46+07:00
 - item: M02-c342
@@ -98,10 +102,6 @@ RESUME FROM: M03-c342
 ### 2026-11-01T19:17:18+07:00
 - item: M16-c340
 - RESULT: DONE
-
-### 2026-11-01T19:16:12+07:00
-- item: M15-c340
-- BLOCKED: console-errors
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
