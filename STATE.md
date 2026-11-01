@@ -1,7 +1,31 @@
-RESUME FROM: M09-c337
+RESUME FROM: M15-c337
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T16:22:18+07:00
+- item: M14-c337
+- RESULT: DONE
+
+### 2026-11-01T16:21:34+07:00
+- item: M13-c337
+- RESULT: DONE
+
+### 2026-11-01T16:20:15+07:00
+- item: M12-c337
+- RESULT: DONE
+
+### 2026-11-01T16:19:07+07:00
+- item: M11-c337
+- BLOCKED: sitemap-stale
+
+### 2026-11-01T16:18:08+07:00
+- item: M10-c337
+- BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot list or apply migrations
+
+### 2026-11-01T16:17:21+07:00
+- item: M09-c337
+- RESULT: DONE
 
 ### 2026-11-01T16:16:14+07:00
 - item: M08-c337
@@ -78,30 +102,6 @@ RESUME FROM: M09-c337
 ### 2026-11-01T14:49:51+07:00
 - item: M09-c336
 - RESULT: DONE
-
-### 2026-11-01T14:47:59+07:00
-- item: M08-c336
-- RESULT: DONE
-
-### 2026-11-01T14:44:51+07:00
-- item: M07-c336
-- RESULT: DONE
-
-### 2026-11-01T14:43:44+07:00
-- item: M06-c336
-- RESULT: DONE
-
-### 2026-11-01T14:42:26+07:00
-- item: M05-c336
-- RESULT: DONE
-
-### 2026-11-01T14:40:34+07:00
-- item: M04-c336
-- RESULT: DONE
-
-### 2026-11-01T14:39:11+07:00
-- item: M03-c336
-- BLOCKED: M03-c336 — no valid compare reference (kenyonexpress.co.il now serves our own build; no Electro category ref)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

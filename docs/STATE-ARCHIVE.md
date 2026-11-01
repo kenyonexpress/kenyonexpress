@@ -31307,3 +31307,39 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:38:05+07:00
 - item: M02-c336
 - BLOCKED: compare.mjs live reference is our own build (self-comparison refused); no Electro-reference mode exists to produce a number
+
+## Archived 2026-11-01T16:17:21+07:00 after M09-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:39:11+07:00
+- item: M03-c336
+- BLOCKED: M03-c336 — no valid compare reference (kenyonexpress.co.il now serves our own build; no Electro category ref)
+
+## Archived 2026-11-01T16:18:08+07:00 after M10-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:40:34+07:00
+- item: M04-c336
+- RESULT: DONE
+
+## Archived 2026-11-01T16:19:07+07:00 after M11-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:42:26+07:00
+- item: M05-c336
+- RESULT: DONE
+
+## Archived 2026-11-01T16:20:15+07:00 after M12-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:43:44+07:00
+- item: M06-c336
+- RESULT: DONE
+
+## Archived 2026-11-01T16:21:34+07:00 after M13-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:44:51+07:00
+- item: M07-c336
+- RESULT: DONE
+
+## Archived 2026-11-01T16:22:18+07:00 after M14-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:47:59+07:00
+- item: M08-c336
+- RESULT: DONE
