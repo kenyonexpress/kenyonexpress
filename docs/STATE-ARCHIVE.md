@@ -30317,3 +30317,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T06:57:24+07:00
 - item: M02-c327
 - BLOCKED: gate fails — /product diff 36.58% / 29.82% / 20.52% at 380 / 768 / 1440 (target <11%)
+
+## Archived 2026-11-01T08:05:19+07:00 after M08-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:58:28+07:00
+- item: M03-c327
+- BLOCKED: no valid category reference — live host is our own build and refs/ has no Electro v7 category capture
