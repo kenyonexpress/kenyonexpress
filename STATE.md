@@ -1,7 +1,11 @@
-RESUME FROM: M17-c336
+RESUME FROM: M18-c336
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:59:41+07:00
+- item: M17-c336
+- RESULT: DONE
 
 ### 2026-11-01T14:58:27+07:00
 - item: M16-c336
@@ -98,10 +102,6 @@ RESUME FROM: M17-c336
 ### 2026-11-01T14:12:18+07:00
 - item: M12-c335
 - RESULT: DONE
-
-### 2026-11-01T14:11:17+07:00
-- item: M11-c335
-- BLOCKED: sitemap-stale
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
