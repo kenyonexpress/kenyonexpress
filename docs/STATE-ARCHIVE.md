@@ -30216,3 +30216,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T00:02:01+07:00
 - item: C129
 - BLOCKED: M05 test (17 failing, migration-gate tests plus push/backup/proxy); C128 still BLOCKED
+
+## Archived 2026-11-02T01:47:18+07:00 after M13-c345 (3 lines from STATE.md)
+
+### 2026-11-02T00:03:27+07:00
+- item: M07-c343
+- RESULT: DONE
