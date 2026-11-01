@@ -31919,3 +31919,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T20:10:47+07:00
 - item: M10-c341
 - BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot verify or apply migrations/pending (72 files)
+
+## Archived 2026-11-01T21:15:31+07:00 after M17-c342 (3 lines from STATE.md)
+
+### 2026-11-01T20:12:16+07:00
+- item: M11-c341
+- RESULT: DONE
