@@ -30198,3 +30198,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T23:51:25+07:00
 - item: C126
 - BLOCKED: **. The live database is behind the repo's migrations, and I didn't apply them. Two commits are pushed to `closeout/v1-final`: `150168b93` and `f81312771`.
+
+## Archived 2026-11-02T01:43:57+07:00 after M10-c345 (3 lines from STATE.md)
+
+### 2026-11-01T23:52:39+07:00
+- item: C127
+- RESULT: DONE
