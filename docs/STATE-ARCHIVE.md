@@ -30396,3 +30396,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T01:56:00+07:00
 - item: M17-c345
 - BLOCKED: prod homepage still serves `dir="ltr"` Hebrew hero promo; fix in HEAD not deployed
+
+## Archived 2026-11-02T05:20:20+07:00 after C135 (3 lines from STATE.md)
+
+### 2026-11-02T01:56:43+07:00
+- item: M18-c345
+- RESULT: DONE
