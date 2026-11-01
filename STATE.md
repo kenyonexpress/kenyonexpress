@@ -1,7 +1,11 @@
-RESUME FROM: M17-c334
+RESUME FROM: M18-c334
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T13:26:23+07:00
+- item: M17-c334
+- BLOCKED: locked-component M17-c334
 
 ### 2026-11-01T13:25:21+07:00
 - item: M16-c334
@@ -98,10 +102,6 @@ RESUME FROM: M17-c334
 ### 2026-11-01T12:42:51+07:00
 - item: M11-c333
 - BLOCKED: sitemap-stale — live deploy predates HEAD (Last-Modified 29 Oct, newest lastmod 27 Oct); `<loc>` host is the apex, which redirects to `www`
-
-### 2026-11-01T12:41:42+07:00
-- item: M10-c333
-- BLOCKED: Supabase MCP unauthenticated; cannot verify or apply migrations/pending
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
