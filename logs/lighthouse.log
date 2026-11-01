@@ -406,3 +406,11 @@ M08-c338 2026-11-01 lighthouse mobile (next start :11101, existing build, dummy 
 / mobile 89/88 LCP 3.5/3.7 s TBT 30/40 ms CLS 0.002/0.002
 /product/barbecue mobile 97/97 LCP 2.1/2.1 s TBT 30/30 ms CLS 0/0
 note: bare /product is 404; /product/barbecue used as product sample. Supabase unreachable (catalogue fetch fails). Sample-only, no code changes. Product at/above G23 95; / below 95 (LCP-bound).
+M08-c341 2026-11-01 lighthouse mobile (next start :11102, existing build, dummy SUPABASE keys, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked, 2 runs each)
+/ mobile 78/83 LCP 5.9/4.6 s TBT 30/20 ms CLS 0.001/0.001
+/product/barbecue mobile 89/91 LCP 3.8/3.4 s TBT 30/20 ms CLS 0.001/0.001
+note: bare /product is 404; /product/barbecue used as product sample. Supabase unreachable. Sample-only, no code changes. Both below G23 95 (LCP-bound; run-to-run variance high, lower than c338).
+M08-c345 2026-11-02 lighthouse mobile (next start :11103, existing build, dummy SUPABASE keys, SENTRY_DSN/REDIS_URL/MEILISEARCH_HOST blanked, 2 runs each)
+/ mobile 86/84 LCP 4.3/4.5 s TBT 50/30 ms CLS 0.001/0.001
+/product/barbecue mobile 85/89 LCP 4.3/3.7 s TBT 30/30 ms CLS 0.001/0.001
+note: bare /product is 404; /product/barbecue used as product sample. Supabase unreachable. Sample-only, no code changes. Both below G23 95 (LCP-bound).
