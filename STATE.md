@@ -1,7 +1,11 @@
-RESUME FROM: M08-c339
+RESUME FROM: M09-c339
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T18:09:52+07:00
+- item: M08-c339
+- RESULT: DONE
 
 ### 2026-11-01T18:07:31+07:00
 - item: M07-c339
@@ -98,10 +102,6 @@ RESUME FROM: M08-c339
 ### 2026-11-01T17:03:31+07:00
 - item: M02-c338
 - BLOCKED: gate fail product 36.58/29.82/20.52 (380/768/1440), mismatch-scored vs electro-product-fresh
-
-### 2026-11-01T16:44:42+07:00
-- item: M01-c338
-- BLOCKED: gate-exceeded home 380=12.83% 768=13.8% (1440=5.8% passes)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
