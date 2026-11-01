@@ -31667,3 +31667,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T18:07:31+07:00
 - item: M07-c339
 - RESULT: DONE
+
+## Archived 2026-11-01T19:13:52+07:00 after M13-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:09:52+07:00
+- item: M08-c339
+- RESULT: DONE
