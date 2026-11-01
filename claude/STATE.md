@@ -240,3 +240,4 @@
 המשך מ: M05-c333 DONE (2026-11-01): pnpm test 627 files passed / 7165 tests passed, 0 failures; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
 המשך מ: M06-c333 DONE (2026-11-01): pnpm build green, no code drift; committed pending claude_STATE.md status-drift lines; no forbidden files touched
 המשך מ: M09-c333 DONE (2026-11-01): knip (SUPABASE_DB_URL stub) re-run: only @capacitor/android flagged, required by android/ native project so kept; dead exports are public API surface/entry points outside Next graph (see M09-c327); no code changes; no forbidden files touched
+המשך מ: M16-c333 DONE (2026-11-01): /product/[slug] (only indexable PDP route) emits Product + BreadcrumbList JSON-LD (buildProductJsonLd/buildBreadcrumbJsonLd, one script each, no AggregateRating); /product/[slug]/gift is noindex so excluded; json-ld.test.ts 26/26 pass; no code changes; no forbidden files touched
