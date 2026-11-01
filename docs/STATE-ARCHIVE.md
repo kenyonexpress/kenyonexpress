@@ -30401,3 +30401,27 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T07:14:43+07:00
 - item: M14-c327
 - RESULT: DONE
+
+## Archived 2026-11-01T08:53:39+07:00 after M04-c329 (3 lines from STATE.md)
+
+### 2026-11-01T07:16:23+07:00
+- item: M15-c327
+- BLOCKED: console errors remain on / and /product (CSP, /api/cart, Suspense; Supabase key errors deferred)
+
+## Archived 2026-11-01T08:55:34+07:00 after M05-c329 (3 lines from STATE.md)
+
+### 2026-11-01T07:17:12+07:00
+- item: M16-c327
+- RESULT: DONE
+
+## Archived 2026-11-01T08:56:53+07:00 after M06-c329 (3 lines from STATE.md)
+
+### 2026-11-01T07:18:03+07:00
+- item: M17-c327
+- RESULT: DONE
+
+## Archived 2026-11-01T08:57:48+07:00 after M07-c329 (3 lines from STATE.md)
+
+### 2026-11-01T07:19:00+07:00
+- item: M18-c327
+- RESULT: DONE

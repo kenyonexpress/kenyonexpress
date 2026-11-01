@@ -1,7 +1,23 @@
-RESUME FROM: M04-c329
+RESUME FROM: M08-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T08:57:48+07:00
+- item: M07-c329
+- RESULT: DONE
+
+### 2026-11-01T08:56:53+07:00
+- item: M06-c329
+- RESULT: DONE
+
+### 2026-11-01T08:55:34+07:00
+- item: M05-c329
+- RESULT: DONE
+
+### 2026-11-01T08:53:39+07:00
+- item: M04-c329
+- RESULT: DONE
 
 ### 2026-11-01T08:52:25+07:00
 - item: M03-c329
@@ -86,22 +102,6 @@ RESUME FROM: M04-c329
 ### 2026-11-01T07:39:00+07:00
 - item: M01-c328
 - BLOCKED: reference snapshot images don't load, so compare.mjs can't produce a gate number for / (forced diffs are 27–40%, well above 11%)
-
-### 2026-11-01T07:19:00+07:00
-- item: M18-c327
-- RESULT: DONE
-
-### 2026-11-01T07:18:03+07:00
-- item: M17-c327
-- RESULT: DONE
-
-### 2026-11-01T07:17:12+07:00
-- item: M16-c327
-- RESULT: DONE
-
-### 2026-11-01T07:16:23+07:00
-- item: M15-c327
-- BLOCKED: console errors remain on / and /product (CSP, /api/cart, Suspense; Supabase key errors deferred)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
