@@ -31637,3 +31637,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T18:00:41+07:00
 - item: M02-c339
 - BLOCKED: no valid reference (live host is our own build) and product-card count mismatch 12 vs 4; forced 380/768/1440 = 36.58/29.82/20.51%, all over the 11% gate
+
+## Archived 2026-11-01T19:04:22+07:00 after M08-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:01:58+07:00
+- item: M03-c339
+- BLOCKED: category reference missing: kenyonexpress.co.il now serves our own Vercel build**
