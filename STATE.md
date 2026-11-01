@@ -1,7 +1,11 @@
-RESUME FROM: M02-c345
+RESUME FROM: M03-c345
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T01:03:38+07:00
+- item: M02-c345
+- BLOCKED: gate-fail product 36.58/29.82/20.52 at 380/768/1440 (override-run, grid 12 vs 4), live reference is our own build
 
 ### 2026-11-02T00:44:33+07:00
 - item: M01-c345
@@ -97,10 +101,6 @@ RESUME FROM: M02-c345
 
 ### 2026-11-01T21:59:01+07:00
 - item: C120
-- RESULT: DONE
-
-### 2026-11-01T21:57:52+07:00
-- item: C119
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
