@@ -30647,3 +30647,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T09:35:08+07:00
 - item: M01-c330
 - BLOCKED: gate-fail (39.83 / 36.52 / 27.52, all above 11%)
+
+## Archived 2026-11-01T11:02:43+07:00 after M09-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:00:55+07:00
+- item: M02-c330
+- BLOCKED: gate-not-met product 26.82/21.68/11.95**.
