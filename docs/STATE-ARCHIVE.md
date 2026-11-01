@@ -31523,3 +31523,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T16:44:42+07:00
 - item: M01-c338
 - BLOCKED: gate-exceeded home 380=12.83% 768=13.8% (1440=5.8% passes)
+
+## Archived 2026-11-01T18:11:11+07:00 after M09-c339 (3 lines from STATE.md)
+
+### 2026-11-01T17:03:31+07:00
+- item: M02-c338
+- BLOCKED: gate fail product 36.58/29.82/20.52 (380/768/1440), mismatch-scored vs electro-product-fresh
