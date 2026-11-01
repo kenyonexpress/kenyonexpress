@@ -1,7 +1,11 @@
-RESUME FROM: M09-c343
+RESUME FROM: M10-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T00:08:03+07:00
+- item: M09-c343
+- RESULT: DONE
 
 ### 2026-11-02T00:06:24+07:00
 - item: M08-c343
@@ -98,10 +102,6 @@ RESUME FROM: M09-c343
 ### 2026-11-01T21:12:48+07:00
 - item: M15-c342
 - BLOCKED: M15-c342: console errors on `/` and `/product/bar-drink` (image 400s, plus Supabase invalid key)**
-
-### 2026-11-01T21:10:55+07:00
-- item: M14-c342
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
