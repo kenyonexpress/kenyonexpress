@@ -1,7 +1,11 @@
-RESUME FROM: M03-c340
+RESUME FROM: M04-c340
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T18:56:55+07:00
+- item: M03-c340
+- BLOCKED: no valid category reference — `kenyonexpress.co.il` now serves our own Vercel build.
 
 ### 2026-11-01T18:55:29+07:00
 - item: M02-c340
@@ -97,10 +101,6 @@ RESUME FROM: M03-c340
 
 ### 2026-11-01T17:25:35+07:00
 - item: M16-c338
-- RESULT: DONE
-
-### 2026-11-01T17:24:25+07:00
-- item: M15-c338
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
