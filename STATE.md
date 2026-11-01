@@ -122,6 +122,7 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c251 DONE
 
 המשך מ: M16-c337 DONE (product page emits Product + BreadcrumbList JSON-LD via json-ld.ts; gift page noindex; 26 json-ld tests pass; no code changes)
+המשך מ: M16-c346 DONE (46/46 sitemap product URLs HTTP 200 with Product + BreadcrumbList; 26 json-ld tests pass; raw HTML shows each node twice via Suspense swap, see docs/M16-c346.md)
 
 המשך מ: M05-c253 DONE (pnpm test: 616 files passed, 2 skipped; 7072 tests passed, 28 skipped; no drift, no code changes)
 
