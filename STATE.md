@@ -1,7 +1,11 @@
-RESUME FROM: C121
+RESUME FROM: C130
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T22:08:47+07:00
+- item: C121
+- BLOCKED: live `/` hydration #418 not reproducible on HEAD (suspects in locked components); prod build of HEAD fails type-check from merge 788c1af1a
 
 ### 2026-11-01T21:59:01+07:00
 - item: C120
@@ -98,10 +102,6 @@ RESUME FROM: C121
 ### 2026-11-01T20:57:56+07:00
 - item: M04-c342
 - RESULT: DONE
-
-### 2026-11-01T20:56:27+07:00
-- item: M03-c342
-- BLOCKED: no-reference
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

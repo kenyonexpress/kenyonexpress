@@ -30006,3 +30006,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T20:54:46+07:00
 - item: M02-c342
 - BLOCKED: gate-fail — product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all above the 11% gate.
+
+## Archived 2026-11-01T22:08:47+07:00 after C121 (3 lines from STATE.md)
+
+### 2026-11-01T20:56:27+07:00
+- item: M03-c342
+- BLOCKED: no-reference
