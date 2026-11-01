@@ -120,46 +120,6 @@ export function isPostHogEnabled(): boolean {
 }
 
 /**
- * The id this browser's events are keyed on, for the ONE caller that must not
- * invent its own: the session-replay loader bootstraps posthog-js with it, so
- * a recording and the fetch-path events land on the same person. Server-side
- * it degrades to the per-process id, which no caller should want -- replay is
- * browser-only by nature.
- */
-export function currentDistinctId(): string {
-  return distinctId()
-}
-
-/**
- * The replay loader parks the initialised posthog-js client here. Typed
- * structurally rather than importing the SDK's types: this module must stay
- * importable from every runtime, and the SDK is a lazy, browser-only guest.
- */
-type PostHogGlobal = { capture: (event: string, properties?: Record<string, unknown>) => void }
-
-function sdkClient(): PostHogGlobal | null {
-  if (typeof window === 'undefined') return null
-  const candidate = (window as unknown as { __ke_posthog?: PostHogGlobal }).__ke_posthog
-  return candidate && typeof candidate.capture === 'function' ? candidate : null
-}
-
-/**
- * With no SDK there is no client object to construct, so init only warms the
- * distinct id (creating and persisting it in the browser before the first
- * event). Idempotent, synchronous, no network. Kept as the explicit entry
- * point so call sites read the same as initSentry and so a future move to a
- * real SDK changes this file only.
- */
-export function initPostHog(): void {
-  if (!KEY) return
-  try {
-    distinctId()
-  } catch {
-    // Best effort by definition.
-  }
-}
-
-/**
  * Property values are restricted to scalars on purpose: it makes accidentally
  * attaching a whole order, profile or request object a type error instead of a
  * PII leak discovered in the PostHog UI.

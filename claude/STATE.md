@@ -1,3 +1,4 @@
+המשך מ: M09-c328 DONE (2026-11-01): removed 5 dead functions (subscriptionChargeAgorot, scheduleBroadcast, invalidateRedirectCache, parseCheckoutDetails+CheckoutDetailsParse, initPostHog) with zero references; deps kept (capacitor/lighthouse/mdx used via CLI or peer); other knip exports are public API surface; tsc clean, biome clean, 627 test files passed; no forbidden files touched
 המשך מ: M07-c328 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
 המשך מ: M06-c328 DONE (2026-11-01): pnpm build exit 0; no drift to fix, no source changes; no forbidden files touched
 המשך מ: M04-c328 DONE (2026-11-01): pnpm type-check exit 0 (tsc --noEmit clean); no drift to fix, no source changes; no forbidden files touched

@@ -83,25 +83,6 @@ const checkoutDetailsFormSchema = z.object({
 
 export type CheckoutDetailsForm = z.infer<typeof checkoutDetailsFormSchema>
 
-export type CheckoutDetailsParse =
-  | { ok: true; data: CheckoutDetailsForm }
-  | { ok: false; fieldErrors: Partial<Record<keyof CheckoutDetailsForm, string>> }
-
-/**
- * safeParse flattened to one message per field, first issue wins. The form
- * renders one error line under each input, so a list per field buys nothing.
- */
-export function parseCheckoutDetails(raw: Record<string, unknown>): CheckoutDetailsParse {
-  const parsed = checkoutDetailsFormSchema.safeParse(raw)
-  if (parsed.success) return { ok: true, data: parsed.data }
-  const fieldErrors: Partial<Record<keyof CheckoutDetailsForm, string>> = {}
-  for (const issue of parsed.error.issues) {
-    const field = issue.path[0] as keyof CheckoutDetailsForm | undefined
-    if (field && !fieldErrors[field]) fieldErrors[field] = issue.message
-  }
-  return { ok: false, fieldErrors }
-}
-
 const checkoutPaymentSchema = z.object({
   client_ref: uuid,
   apply_wallet_ils: ilsAmount.default(0),

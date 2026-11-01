@@ -19,7 +19,7 @@
  */
 
 import { shekelsFromIls, shekelsFromIlsRounded } from '@/lib/money-format'
-import { type Agorot, agorot, ilsToAgorot } from './money'
+import { type Agorot, ilsToAgorot } from './money'
 import { type SplitAmounts, normalizeIls, round2, splitOnSiteCharge } from './product-money'
 
 /**
@@ -408,11 +408,6 @@ export function isRecurringProduct(row: unknown): boolean {
   return (
     row !== null && typeof row === 'object' && (row as Record<string, unknown>).type === 'recurring'
   )
-}
-
-/** Agorot, integer, for a row that stores its own amount. */
-export function subscriptionChargeAgorot(sub: Pick<BillableSubscription, 'amount_agorot'>): Agorot {
-  return agorot(sub.amount_agorot)
 }
 
 /** The storefront's one-line price for a subscription: "₪49 לחודש". */

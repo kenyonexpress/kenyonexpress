@@ -124,9 +124,3 @@ export async function lookupRedirect(pathname: string): Promise<RedirectHit | nu
   if (!map) return null
   return map.get(normalizePath(pathname)) ?? null
 }
-
-/** Test seam and admin hook: drop the cache so the next lookup re-reads. */
-export function invalidateRedirectCache(): void {
-  cache = null
-  loadedAt = 0
-}
