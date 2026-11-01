@@ -3,6 +3,10 @@ RESUME FROM: M04-c335
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T13:56:31+07:00
+- item: M04-c335
+- RESULT: DONE
+
 ### 2026-11-01T13:55:42+07:00
 - item: M03-c335
 - BLOCKED: category re-measure — compare.mjs refuses at 380/768/1440 because the live reference host now serves our own build, so no valid reference exists
@@ -97,10 +101,6 @@ RESUME FROM: M04-c335
 
 ### 2026-11-01T12:47:39+07:00
 - item: M16-c333
-- RESULT: DONE
-
-### 2026-11-01T12:46:38+07:00
-- item: M15-c333
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
