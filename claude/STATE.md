@@ -1,3 +1,4 @@
+המשך מ: C124 BLOCKED supabase-cli-hang (supabase db query --linked hangs >120s even for select 1, no output; keychain-backed token not usable non-interactively; no audit output so no migrations/pgTAP/docs written) | prev C120 DONE
 המשך מ: C120 DONE (2026-11-01): logs/, STATE.md.bak, *.raw, claude_STATE.md ignored; 192 tracked logs untracked; stale claude_STATE.md removed; no forbidden files touched
 המשך מ: C119 DONE (2026-11-01): one-agent enforced; ke-autopilot tmux killed, 4 launchd plists disabled, autopilot merged into closeout/v1-final (layout.tsx kept locked)
 המשך מ: M07-c342 DONE (2026-11-01): TODO/FIXME scan of src found 6 TODOs (cardcom.ts:254, :317; r2-migration.ts:103-106), all already filed in docs/BACKLOG.md #1-#3 (blocked on Cardcom prod creds / Supabase service-role key); none resolvable now; no forbidden files touched
