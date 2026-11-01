@@ -225,3 +225,4 @@
 המשך מ: M06-c329 DONE (2026-11-01): pnpm build exit 0, all routes generated, no type/lint errors; no tracked drift after build (only untracked logs), nothing to fix; no forbidden files touched
 המשך מ: M09-c329 DONE (2026-11-01): knip (SUPABASE_DB_URL stub) re-run: only @capacitor/android flagged, required by android/ native project so kept; dead exports are public API surface/entry points outside Next graph (see M09-c327); no code changes; no forbidden files touched
 המשך מ: M06-c330 DONE (2026-11-01): pnpm build exit 0, all routes generated; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
+המשך מ: M09-c330 DONE (2026-11-01): knip (SUPABASE_DB_URL stub) re-run: same result as M09-c327/c329, only @capacitor/android flagged and required by android/ native project so kept; dead exports are public API surface/entry points outside Next graph; no code changes; no forbidden files touched
