@@ -30168,3 +30168,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T22:34:21+07:00
 - item: C130
 - BLOCKED: locked-component** (city cards inside the hero, header icons), and the `compare.mjs` gate is not met either. I committed to `closeout/v1-final` as `761fedc1b` and did not push. The home page is measurably further from the reference at 380 and 768 than it was before, and I didn't want that going out on a push. The gate numbers also don't depend on the hero or header locks, so the rest wouldn't pass even with those unlocked. Say if you want it pushed.
+
+## Archived 2026-11-02T01:32:09+07:00 after M05-c345 (3 lines from STATE.md)
+
+### 2026-11-01T22:53:45+07:00
+- item: C122
+- BLOCKED: locked-component (header/topbar/hero bands) + gate not met
