@@ -1,7 +1,11 @@
-RESUME FROM: C123
+RESUME FROM: C124
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T22:55:42+07:00
+- item: C123
+- BLOCKED: locked-component — mobile perf levers (Heebo subset/preload, dynamic root providers) are in `src/app/layout.tsx`, and the HEAD production build fails type-check.
 
 ### 2026-11-01T22:53:45+07:00
 - item: C122
@@ -97,10 +101,6 @@ RESUME FROM: C123
 
 ### 2026-11-01T21:01:14+07:00
 - item: M06-c342
-- RESULT: DONE
-
-### 2026-11-01T21:00:02+07:00
-- item: M05-c342
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
