@@ -1,7 +1,11 @@
-RESUME FROM: M15-c341
+RESUME FROM: M16-c341
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T20:16:28+07:00
+- item: M15-c341
+- BLOCKED: console errors present on / and /product (Supabase Invalid API key is credential-deferred; CSP-blocked Vercel scripts, product-page Suspense error and image-ratio warnings are not)
 
 ### 2026-11-01T20:14:56+07:00
 - item: M14-c341
@@ -98,10 +102,6 @@ RESUME FROM: M15-c341
 ### 2026-11-01T19:06:51+07:00
 - item: M10-c340
 - BLOCKED: Supabase MCP unauthorized and CLI has no access token; 313, 316–319 and the 301/306/315/320 column changes confirmed unapplied
-
-### 2026-11-01T19:05:27+07:00
-- item: M09-c340
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
