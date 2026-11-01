@@ -1,7 +1,11 @@
-RESUME FROM: M18-c337
+RESUME FROM: M02-c338
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T16:44:42+07:00
+- item: M01-c338
+- BLOCKED: gate-exceeded home 380=12.83% 768=13.8% (1440=5.8% passes)
 
 ### 2026-11-01T16:28:31+07:00
 - item: M18-c337
@@ -97,10 +101,6 @@ RESUME FROM: M18-c337
 
 ### 2026-11-01T14:56:07+07:00
 - item: M14-c336
-- RESULT: DONE
-
-### 2026-11-01T14:55:21+07:00
-- item: M13-c336
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
