@@ -1,3 +1,4 @@
+המשך מ: M18-c331 DONE (2026-11-01): STATE.md already under 300 lines (claude/STATE.md 233, STATE.md 219), nothing to archive; no forbidden files touched
 המשך מ: M07-c331 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
 המשך מ: M16-c330 DONE (2026-11-01): /product/[slug] emits Product + BreadcrumbList JSON-LD (two scripts, via lib/seo/json-ld.ts); json-ld.test.ts 26/26 pass; /product/[slug]/gift is noindex so excluded; no code changes; no forbidden files touched
 המשך מ: M05-c330 DONE (2026-11-01): pnpm test clean, 627 files / 7165 tests passed, 2 skipped files, no drift to fix; no code changes; no forbidden files touched
@@ -230,3 +231,4 @@
 המשך מ: M09-c330 DONE (2026-11-01): knip (SUPABASE_DB_URL stub) re-run: same result as M09-c327/c329, only @capacitor/android flagged and required by android/ native project so kept; dead exports are public API surface/entry points outside Next graph; no code changes; no forbidden files touched
 המשך מ: M10-c330 BLOCKED (2026-11-01): migrations/pending/ still holds 72 files (306,310-321 etc. present, none moved to applied/); cannot verify or apply: Supabase MCP unauthenticated in non-interactive session (ixvwfbuvfxxsjiywhbbb); no code changes; no forbidden files touched
 המשך מ: M05-c331 DONE (2026-11-01): pnpm test 627 files passed / 7165 tests passed, 0 failures; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
+המשך מ: M14-c331 DONE-DEFERRED (SENTRY_AUTH_TOKEN placeholder)
