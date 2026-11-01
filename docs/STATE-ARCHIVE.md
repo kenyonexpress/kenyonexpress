@@ -30539,3 +30539,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T08:41:27+07:00
 - item: M01-c329
 - BLOCKED: compare gate not measurable (live reference is our own build; forced Electro v7 run is 27–40%, above the 11% gate)
+
+## Archived 2026-11-01T10:10:23+07:00 after M09-c330 (3 lines from STATE.md)
+
+### 2026-11-01T08:51:01+07:00
+- item: M02-c329
+- BLOCKED: no valid reference (live host is our own build); Electro-archive fallback scores 36.17/29.82/20.52% at 380/768/1440, all above 11%
