@@ -31139,3 +31139,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T13:20:20+07:00
 - item: M11-c334
 - BLOCKED: sitemap stale (CDN age 2.3 days, lastmod 27 Oct) and `<loc>` uses the apex host, which redirects to www. Needs the production `NEXT_PUBLIC_APP_URL` fixed and a redeploy or cache purge.
+
+## Archived 2026-11-01T14:19:10+07:00 after M18-c335 (3 lines from STATE.md)
+
+### 2026-11-01T13:21:13+07:00
+- item: M12-c334
+- RESULT: DONE
