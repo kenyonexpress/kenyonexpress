@@ -1,7 +1,11 @@
-RESUME FROM: M08-c335
+RESUME FROM: M09-c335
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:08:17+07:00
+- item: M08-c335
+- RESULT: DONE
 
 ### 2026-11-01T14:05:46+07:00
 - item: M07-c335
@@ -98,10 +102,6 @@ RESUME FROM: M08-c335
 ### 2026-11-01T13:09:50+07:00
 - item: M03-c334
 - BLOCKED: no valid category reference (kenyonexpress.co.il now serves our own build; no Electro category ref in refs/)
-
-### 2026-11-01T13:08:36+07:00
-- item: M02-c334
-- BLOCKED: gate not met: official reference refused (live host is our own build), fallback Electro reference measures 36.58 / 29.82 / 20.52% against the 11% gate
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
