@@ -8,8 +8,8 @@ should be replaced with logical properties that flip automatically.
 
 - Generated: 2026-10-31
 - Files scanned: 1578
-- Files with violations: 55
-- Total violations: 104
+- Files with violations: 53
+- Total violations: 102
 
 ### By token
 
@@ -17,8 +17,8 @@ should be replaced with logical properties that flip automatically.
 | --- | --- |
 | `right-` | 19 |
 | `mr-` | 18 |
-| `text-right` | 16 |
 | `left:` | 14 |
+| `text-right` | 14 |
 | `left-` | 14 |
 | `right:` | 7 |
 | `border-l` | 6 |
@@ -51,7 +51,7 @@ should be replaced with logical properties that flip automatically.
 | src/app/(admin)/admin/queues/page.tsx | 131 | `mr-` | `me-` |
 | src/app/(admin)/admin/search/page.tsx | 99 | `text-right` | `text-end` |
 | src/app/(admin)/admin/search/page.tsx | 139 | `mr-` | `me-` |
-| src/app/(admin)/admin/status/page.tsx | 67 | `text-right` | `text-end` |
+| src/app/(admin)/admin/status/page.tsx | 68 | `text-right` | `text-end` |
 | src/app/(admin)/admin/vendors/page.tsx | 65 | `mr-` | `me-` |
 | src/app/(admin)/admin/vendors/page.tsx | 79 | `text-right` | `text-end` |
 | src/app/(main)/coupons/[id]/page.tsx | 98 | `right-` | `end-` |
@@ -99,8 +99,6 @@ should be replaced with logical properties that flip automatically.
 | src/components/cart/CartLineItem.tsx | 96 | `right-` | `end-` |
 | src/components/category/PriceRangeSlider.tsx | 56 | `left:` | `inset-inline-start:` |
 | src/components/category/PriceRangeSlider.tsx | 57 | `right:` | `inset-inline-end:` |
-| src/components/FooterAccordion.test.tsx | 131 | `text-right` | `text-end` |
-| src/components/FooterAccordion.tsx | 22 | `text-right` | `text-end` |
 | src/components/home/BenefitBar.test.tsx | 33 | `right-` | `end-` |
 | src/components/home/BenefitBar.test.tsx | 51 | `right-` | `end-` |
 | src/components/home/BenefitBar.tsx | 49 | `right-` | `end-` |
