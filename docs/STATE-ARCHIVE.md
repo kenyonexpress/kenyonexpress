@@ -30300,3 +30300,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T01:03:38+07:00
 - item: M02-c345
 - BLOCKED: gate-fail product 36.58/29.82/20.52 at 380/768/1440 (override-run, grid 12 vs 4), live reference is our own build
+
+## Archived 2026-11-02T03:02:02+07:00 after M09-c346 (3 lines from STATE.md)
+
+### 2026-11-02T01:05:15+07:00
+- item: M03-c345
+- BLOCKED: no category reference (live URL is our own build); commit 2508eaa9 unpushed, main diverged from origin

@@ -1,7 +1,11 @@
-RESUME FROM: M09-c346
+RESUME FROM: M10-c346
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T03:02:02+07:00
+- item: M09-c346
+- RESULT: DONE
 
 ### 2026-11-02T03:00:30+07:00
 - item: M08-c346
@@ -98,10 +102,6 @@ RESUME FROM: M09-c346
 ### 2026-11-02T01:06:25+07:00
 - item: M04-c345
 - RESULT: DONE
-
-### 2026-11-02T01:05:15+07:00
-- item: M03-c345
-- BLOCKED: no category reference (live URL is our own build); commit 2508eaa9 unpushed, main diverged from origin
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
