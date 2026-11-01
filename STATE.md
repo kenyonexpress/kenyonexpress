@@ -1,7 +1,11 @@
-RESUME FROM: C127
+RESUME FROM: C128
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T23:52:39+07:00
+- item: C127
+- RESULT: DONE
 
 ### 2026-11-01T23:51:25+07:00
 - item: C126
@@ -98,10 +102,6 @@ RESUME FROM: C127
 ### 2026-11-01T21:07:26+07:00
 - item: M10-c342
 - BLOCKED: Supabase MCP unauthenticated, cannot verify or apply migrations
-
-### 2026-11-01T21:06:13+07:00
-- item: M09-c342
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
