@@ -1,7 +1,11 @@
-RESUME FROM: M16-c345
+RESUME FROM: M17-c345
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T01:54:12+07:00
+- item: M16-c345
+- RESULT: DONE
 
 ### 2026-11-02T01:50:44+07:00
 - item: M15-c345
@@ -98,10 +102,6 @@ RESUME FROM: M16-c345
 ### 2026-11-02T00:12:47+07:00
 - item: M11-c343
 - RESULT: DONE
-
-### 2026-11-02T00:11:23+07:00
-- item: M10-c343
-- BLOCKED: supabase CLI not linked/authenticated for ixvwfbuvfxxsjiywhbbb
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
