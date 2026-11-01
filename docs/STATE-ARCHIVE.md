@@ -30084,3 +30084,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T21:10:55+07:00
 - item: M14-c342
 - RESULT: DONE
+
+## Archived 2026-11-02T00:11:23+07:00 after M10-c343 (3 lines from STATE.md)
+
+### 2026-11-01T21:12:48+07:00
+- item: M15-c342
+- BLOCKED: M15-c342: console errors on `/` and `/product/bar-drink` (image 400s, plus Supabase invalid key)**
