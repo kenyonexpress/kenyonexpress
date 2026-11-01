@@ -1,7 +1,11 @@
-RESUME FROM: M03-c341
+RESUME FROM: M04-c341
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:58:27+07:00
+- item: M03-c341
+- BLOCKED: no-reference (no category Electro v7 capture; live URL serves our own build)
 
 ### 2026-11-01T19:57:13+07:00
 - item: M02-c341
@@ -96,10 +100,6 @@ RESUME FROM: M03-c341
 - BLOCKED: locked-component M17-c339
 
 ### 2026-11-01T18:18:33+07:00
-- item: M16-c339
-- RESULT: DONE
-
-### 2026-11-01T18:18:07+07:00
 - item: M16-c339
 - RESULT: DONE
 
