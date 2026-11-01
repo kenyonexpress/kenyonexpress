@@ -31739,3 +31739,27 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T18:20:31+07:00
 - item: M18-c339
 - RESULT: DONE
+
+## Archived 2026-11-01T20:02:58+07:00 after M06-c341 (3 lines from STATE.md)
+
+### 2026-11-01T18:35:34+07:00
+- item: M01-c340
+- BLOCKED: gate-fail
+
+## Archived 2026-11-01T20:05:48+07:00 after M07-c341 (3 lines from STATE.md)
+
+### 2026-11-01T18:55:29+07:00
+- item: M02-c340
+- BLOCKED: product gate not met (36.58% / 29.82% / 20.52%; default reference is our own build, grid mismatch 12 vs 4 cards)
+
+## Archived 2026-11-01T20:08:27+07:00 after M08-c341 (3 lines from STATE.md)
+
+### 2026-11-01T18:56:55+07:00
+- item: M03-c340
+- BLOCKED: no valid category reference — `kenyonexpress.co.il` now serves our own Vercel build.
+
+## Archived 2026-11-01T20:09:43+07:00 after M09-c341 (3 lines from STATE.md)
+
+### 2026-11-01T18:57:38+07:00
+- item: M04-c340
+- RESULT: DONE
