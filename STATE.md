@@ -1,7 +1,11 @@
-RESUME FROM: M18-c342
+RESUME FROM: M02-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:31:33+07:00
+- item: M01-c343
+- BLOCKED: gate-fail
 
 ### 2026-11-01T21:16:29+07:00
 - item: M18-c342
@@ -98,10 +102,6 @@ RESUME FROM: M18-c342
 ### 2026-11-01T20:14:56+07:00
 - item: M14-c341
 - RESULT: DONE
-
-### 2026-11-01T20:14:13+07:00
-- item: M13-c341
-- BLOCKED: prod /api/health and /api/ready return 503 because Meilisearch is down (unknown_error); the other dependencies are healthy
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
