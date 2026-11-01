@@ -31277,3 +31277,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:15:48+07:00
 - item: M15-c335
 - BLOCKED: product page has console errors (image 400s, supplier_load_failed, Suspense prerender error)
+
+## Archived 2026-11-01T15:36:24+07:00 after M04-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:17:00+07:00
+- item: M16-c335
+- RESULT: DONE
