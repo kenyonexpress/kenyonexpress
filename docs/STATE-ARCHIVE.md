@@ -30318,3 +30318,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T01:24:28+07:00
 - item: M05-c345
 - BLOCKED: migration-ledger-drift (17->6 failing, docs/M05-c345.md)
+
+## Archived 2026-11-02T03:18:09+07:00 after M12-c346 (3 lines from STATE.md)
+
+### 2026-11-02T01:32:09+07:00
+- item: M05-c345
+- BLOCKED: migration-ledger-drift
