@@ -31667,3 +31667,27 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T18:07:31+07:00
 - item: M07-c339
 - RESULT: DONE
+
+## Archived 2026-11-01T19:13:52+07:00 after M13-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:09:52+07:00
+- item: M08-c339
+- RESULT: DONE
+
+## Archived 2026-11-01T19:14:45+07:00 after M14-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:11:11+07:00
+- item: M09-c339
+- RESULT: DONE
+
+## Archived 2026-11-01T19:16:12+07:00 after M15-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:12:02+07:00
+- item: M10-c339
+- BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot verify or apply migrations
+
+## Archived 2026-11-01T19:17:18+07:00 after M16-c340 (3 lines from STATE.md)
+
+### 2026-11-01T18:13:14+07:00
+- item: M11-c339
+- BLOCKED: sitemap stale (2.5 days old) and all locs on apex host that 308-redirects to www. Needs a prod `NEXT_PUBLIC_APP_URL` fix and redeploy.

@@ -1,7 +1,23 @@
-RESUME FROM: M13-c340
+RESUME FROM: M17-c340
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:17:18+07:00
+- item: M16-c340
+- RESULT: DONE
+
+### 2026-11-01T19:16:12+07:00
+- item: M15-c340
+- BLOCKED: console-errors
+
+### 2026-11-01T19:14:45+07:00
+- item: M14-c340
+- RESULT: DONE
+
+### 2026-11-01T19:13:52+07:00
+- item: M13-c340
+- RESULT: DONE
 
 ### 2026-11-01T19:08:56+07:00
 - item: M12-c340
@@ -85,22 +101,6 @@ RESUME FROM: M13-c340
 
 ### 2026-11-01T18:14:14+07:00
 - item: M12-c339
-- RESULT: DONE
-
-### 2026-11-01T18:13:14+07:00
-- item: M11-c339
-- BLOCKED: sitemap stale (2.5 days old) and all locs on apex host that 308-redirects to www. Needs a prod `NEXT_PUBLIC_APP_URL` fix and redeploy.
-
-### 2026-11-01T18:12:02+07:00
-- item: M10-c339
-- BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot verify or apply migrations
-
-### 2026-11-01T18:11:11+07:00
-- item: M09-c339
-- RESULT: DONE
-
-### 2026-11-01T18:09:52+07:00
-- item: M08-c339
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
@@ -229,3 +229,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c336 DONE (2026-11-01): pnpm type-check green (tsc --noEmit exit 0), no tracked drift, no code changes; no forbidden files touched
 
 המשך מ: M10-c340 BLOCKED (2026-11-01): migrations/pending NOT applied. REST probe (service key valid) shows missing: 313 vouchers_redemption_events/partner_pin, 316 notification_consents, 317 user_passkeys/user_phone_verifications, 318 club_tier_benefits, 319 affiliate_links.product_id, 315/320 products cols, 301/306 suppliers cols. Present: 164, 310. Supabase MCP unauthorized + CLI has no access token in this session, so apply_migration cannot run
+
+המשך מ: M16-c340 DONE (2026-11-01): audit only, no code changes. The only indexable PDP (src/app/(store)/product/[slug]/page.tsx) emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld (26 unit tests pass); /product/[slug]/gift is noindex so it is exempt; no forbidden files touched
