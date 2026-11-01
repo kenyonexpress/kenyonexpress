@@ -30294,3 +30294,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T00:44:33+07:00
 - item: M01-c345
 - BLOCKED: gate-over-11pct (380=39.85, 768=36.53, 1440=27.53)
+
+## Archived 2026-11-02T03:00:30+07:00 after M08-c346 (3 lines from STATE.md)
+
+### 2026-11-02T01:03:38+07:00
+- item: M02-c345
+- BLOCKED: gate-fail product 36.58/29.82/20.52 at 380/768/1440 (override-run, grid 12 vs 4), live reference is our own build
