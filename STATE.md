@@ -3,6 +3,10 @@ RESUME FROM: M16-c339
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T18:18:07+07:00
+- item: M16-c339
+- RESULT: DONE
+
 ### 2026-11-01T18:17:21+07:00
 - item: M15-c339
 - RESULT: DONE
@@ -98,10 +102,6 @@ RESUME FROM: M16-c339
 ### 2026-11-01T17:18:15+07:00
 - item: M10-c338
 - BLOCKED: Supabase MCP unauthenticated, cannot verify or apply pending migrations
-
-### 2026-11-01T17:17:23+07:00
-- item: M09-c338
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
