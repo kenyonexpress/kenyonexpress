@@ -30659,3 +30659,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T10:02:08+07:00
 - item: M03-c330
 - BLOCKED: no category reference — live host serves our own build, compare.mjs refuses (exit 5)
+
+## Archived 2026-11-01T11:04:28+07:00 after M11-c331 (3 lines from STATE.md)
+
+### 2026-11-01T10:03:03+07:00
+- item: M04-c330
+- RESULT: DONE
