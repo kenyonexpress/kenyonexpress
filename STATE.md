@@ -1,7 +1,11 @@
-RESUME FROM: C137
+RESUME FROM: C138
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T06:22:53+07:00
+- item: C137
+- BLOCKED: compare.mjs home 45.73/40.31/27.53 vs <11 (LTR English Electro baseline vs required RTL Hebrew section order; header/hero locked)
 
 ### 2026-11-02T05:44:25+07:00
 - item: C136
@@ -98,10 +102,6 @@ RESUME FROM: C137
 ### 2026-11-02T02:30:06+07:00
 - item: M03-c346
 - BLOCKED: category-reference-missing
-
-### 2026-11-02T02:28:24+07:00
-- item: M02-c346
-- BLOCKED: gate-fail
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
