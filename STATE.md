@@ -1,7 +1,27 @@
-RESUME FROM: M13-c328
+RESUME FROM: M18-c328
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T08:16:39+07:00
+- item: M17-c328
+- BLOCKED: locked-component M17-c328
+
+### 2026-11-01T08:15:21+07:00
+- item: M16-c328
+- RESULT: DONE
+
+### 2026-11-01T08:14:25+07:00
+- item: M15-c328
+- RESULT: DONE
+
+### 2026-11-01T08:13:11+07:00
+- item: M14-c328
+- RESULT: DONE
+
+### 2026-11-01T08:12:25+07:00
+- item: M13-c328
+- RESULT: DONE
 
 ### 2026-11-01T08:11:35+07:00
 - item: M12-c328
@@ -81,26 +101,6 @@ RESUME FROM: M13-c328
 
 ### 2026-11-01T07:12:32+07:00
 - item: M12-c327
-- RESULT: DONE
-
-### 2026-11-01T07:11:47+07:00
-- item: M11-c327
-- RESULT: DONE
-
-### 2026-11-01T07:10:49+07:00
-- item: M10-c327
-- BLOCKED: Supabase MCP unauthenticated in non-interactive session, cannot verify or apply migrations
-
-### 2026-11-01T07:10:08+07:00
-- item: M09-c327
-- RESULT: DONE
-
-### 2026-11-01T07:09:03+07:00
-- item: M08-c327
-- RESULT: DONE
-
-### 2026-11-01T07:04:46+07:00
-- item: M07-c327
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF

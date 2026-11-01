@@ -30347,3 +30347,33 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T07:03:51+07:00
 - item: M06-c327
 - RESULT: DONE
+
+## Archived 2026-11-01T08:12:25+07:00 after M13-c328 (3 lines from STATE.md)
+
+### 2026-11-01T07:04:46+07:00
+- item: M07-c327
+- RESULT: DONE
+
+## Archived 2026-11-01T08:13:11+07:00 after M14-c328 (3 lines from STATE.md)
+
+### 2026-11-01T07:09:03+07:00
+- item: M08-c327
+- RESULT: DONE
+
+## Archived 2026-11-01T08:14:25+07:00 after M15-c328 (3 lines from STATE.md)
+
+### 2026-11-01T07:10:08+07:00
+- item: M09-c327
+- RESULT: DONE
+
+## Archived 2026-11-01T08:15:21+07:00 after M16-c328 (3 lines from STATE.md)
+
+### 2026-11-01T07:10:49+07:00
+- item: M10-c327
+- BLOCKED: Supabase MCP unauthenticated in non-interactive session, cannot verify or apply migrations
+
+## Archived 2026-11-01T08:16:39+07:00 after M17-c328 (3 lines from STATE.md)
+
+### 2026-11-01T07:11:47+07:00
+- item: M11-c327
+- RESULT: DONE
