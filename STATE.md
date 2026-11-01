@@ -1,7 +1,31 @@
-RESUME FROM: M09-c333
+RESUME FROM: M15-c333
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T12:45:15+07:00
+- item: M14-c333
+- RESULT: DONE
+
+### 2026-11-01T12:44:32+07:00
+- item: M13-c333
+- RESULT: DONE
+
+### 2026-11-01T12:43:39+07:00
+- item: M12-c333
+- RESULT: DONE
+
+### 2026-11-01T12:42:51+07:00
+- item: M11-c333
+- BLOCKED: sitemap-stale — live deploy predates HEAD (Last-Modified 29 Oct, newest lastmod 27 Oct); `<loc>` host is the apex, which redirects to `www`
+
+### 2026-11-01T12:41:42+07:00
+- item: M10-c333
+- BLOCKED: Supabase MCP unauthenticated; cannot verify or apply migrations/pending
+
+### 2026-11-01T12:40:46+07:00
+- item: M09-c333
+- RESULT: DONE
 
 ### 2026-11-01T12:39:36+07:00
 - item: M08-c333
@@ -78,30 +102,6 @@ RESUME FROM: M09-c333
 ### 2026-11-01T11:40:05+07:00
 - item: M08-c332
 - RESULT: DONE
-
-### 2026-11-01T11:37:39+07:00
-- item: M07-c332
-- RESULT: DONE
-
-### 2026-11-01T11:36:42+07:00
-- item: M06-c332
-- RESULT: DONE
-
-### 2026-11-01T11:34:50+07:00
-- item: M05-c332
-- RESULT: DONE
-
-### 2026-11-01T11:32:42+07:00
-- item: M04-c332
-- RESULT: DONE
-
-### 2026-11-01T11:31:38+07:00
-- item: M03-c332
-- BLOCKED: category gate has no live reference (kenyonexpress.co.il now serves our own build; compare.mjs exit 5)
-
-### 2026-11-01T11:30:24+07:00
-- item: M02-c332
-- BLOCKED: M02-c332 compare.mjs refuses (exit 5): live reference host now serves our own build, so no valid gate number exists
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

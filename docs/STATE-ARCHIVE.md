@@ -30863,3 +30863,39 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T11:29:20+07:00
 - item: M01-c332
 - BLOCKED: gate-fail
+
+## Archived 2026-11-01T12:40:46+07:00 after M09-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:30:24+07:00
+- item: M02-c332
+- BLOCKED: M02-c332 compare.mjs refuses (exit 5): live reference host now serves our own build, so no valid gate number exists
+
+## Archived 2026-11-01T12:41:42+07:00 after M10-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:31:38+07:00
+- item: M03-c332
+- BLOCKED: category gate has no live reference (kenyonexpress.co.il now serves our own build; compare.mjs exit 5)
+
+## Archived 2026-11-01T12:42:51+07:00 after M11-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:32:42+07:00
+- item: M04-c332
+- RESULT: DONE
+
+## Archived 2026-11-01T12:43:39+07:00 after M12-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:34:50+07:00
+- item: M05-c332
+- RESULT: DONE
+
+## Archived 2026-11-01T12:44:32+07:00 after M13-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:36:42+07:00
+- item: M06-c332
+- RESULT: DONE
+
+## Archived 2026-11-01T12:45:15+07:00 after M14-c333 (3 lines from STATE.md)
+
+### 2026-11-01T11:37:39+07:00
+- item: M07-c332
+- RESULT: DONE
