@@ -3,6 +3,10 @@ RESUME FROM: M05-c342
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T20:59:37+07:00
+- item: M05-c342
+- RESULT: DONE
+
 ### 2026-11-01T20:57:56+07:00
 - item: M04-c342
 - RESULT: DONE
@@ -98,10 +102,6 @@ RESUME FROM: M05-c342
 ### 2026-11-01T19:21:05+07:00
 - item: M18-c340
 - RESULT: DONE
-
-### 2026-11-01T19:18:51+07:00
-- item: M17-c340
-- BLOCKED: locked-component M17-c340
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
