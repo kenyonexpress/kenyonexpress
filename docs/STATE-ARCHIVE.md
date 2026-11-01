@@ -30731,3 +30731,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T10:20:34+07:00
 - item: M15-c330
 - BLOCKED: console error on / (React #418 hydration mismatch); no source repo in workdir to fix
+
+## Archived 2026-11-01T11:34:50+07:00 after M05-c332 (3 lines from STATE.md)
+
+### 2026-11-01T10:21:37+07:00
+- item: M16-c330
+- RESULT: DONE
