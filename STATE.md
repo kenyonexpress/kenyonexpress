@@ -1,7 +1,11 @@
-RESUME FROM: C128
+RESUME FROM: C129
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T23:53:52+07:00
+- item: C128
+- BLOCKED: C128 tag v2.1.0 missing, LAUNCH.flag missing; C121 C122 C123 C124 C125 C126 not DONE
 
 ### 2026-11-01T23:52:39+07:00
 - item: C127
@@ -98,10 +102,6 @@ RESUME FROM: C128
 ### 2026-11-01T21:08:17+07:00
 - item: M11-c342
 - BLOCKED: sitemap-stale
-
-### 2026-11-01T21:07:26+07:00
-- item: M10-c342
-- BLOCKED: Supabase MCP unauthenticated, cannot verify or apply migrations
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
