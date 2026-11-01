@@ -1,7 +1,19 @@
-RESUME FROM: M03-c339
+RESUME FROM: M06-c339
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T18:04:55+07:00
+- item: M05-c339
+- RESULT: DONE
+
+### 2026-11-01T18:02:58+07:00
+- item: M04-c339
+- RESULT: DONE
+
+### 2026-11-01T18:01:58+07:00
+- item: M03-c339
+- BLOCKED: category reference missing: kenyonexpress.co.il now serves our own Vercel build**
 
 ### 2026-11-01T18:00:41+07:00
 - item: M02-c339
@@ -90,18 +102,6 @@ RESUME FROM: M03-c339
 ### 2026-11-01T16:27:40+07:00
 - item: M17-c337
 - BLOCKED: locked-component M17-c337
-
-### 2026-11-01T16:25:24+07:00
-- item: M16-c337
-- RESULT: DONE
-
-### 2026-11-01T16:24:12+07:00
-- item: M15-c337
-- BLOCKED: console-errors-present
-
-### 2026-11-01T16:22:18+07:00
-- item: M14-c337
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
