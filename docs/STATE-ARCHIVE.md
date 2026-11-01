@@ -31859,3 +31859,21 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T19:37:01+07:00
 - item: M01-c341
 - BLOCKED: gate-fail
+
+## Archived 2026-11-01T21:02:24+07:00 after M07-c342 (3 lines from STATE.md)
+
+### 2026-11-01T19:57:13+07:00
+- item: M02-c341
+- BLOCKED: product gate fails at all widths (36.58 / 29.82 / 20.52 vs 11%); only valid reference is refs/electro-product-fresh.html, live-site reference is our own build
+
+## Archived 2026-11-01T21:04:54+07:00 after M08-c342 (3 lines from STATE.md)
+
+### 2026-11-01T19:58:27+07:00
+- item: M03-c341
+- BLOCKED: no-reference (no category Electro v7 capture; live URL serves our own build)
+
+## Archived 2026-11-01T21:06:13+07:00 after M09-c342 (3 lines from STATE.md)
+
+### 2026-11-01T19:59:37+07:00
+- item: M04-c341
+- RESULT: DONE
