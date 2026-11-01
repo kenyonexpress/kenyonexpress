@@ -1,7 +1,15 @@
-RESUME FROM: M02-c331
+RESUME FROM: M04-c331
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T10:51:05+07:00
+- item: M03-c331
+- BLOCKED: reference-gone
+
+### 2026-11-01T10:49:57+07:00
+- item: M02-c331
+- BLOCKED: ** product gate fails (36.17% / 29.82% / 20.52% against the Electro reference, with a catalogue mismatch). The standard live reference is now our own build.
 
 ### 2026-11-01T10:39:15+07:00
 - item: M01-c331
@@ -94,14 +102,6 @@ RESUME FROM: M02-c331
 ### 2026-11-01T09:06:37+07:00
 - item: M15-c329
 - BLOCKED: console errors remain on /product (avif image 400s, Suspense prerender error); Supabase "Invalid API key" errors on both pages are DONE-DEFERRED
-
-### 2026-11-01T09:05:24+07:00
-- item: M14-c329
-- RESULT: DONE
-
-### 2026-11-01T09:04:42+07:00
-- item: M13-c329
-- BLOCKED: Meilisearch down in prod, so /api/health and /api/ready return 503
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
