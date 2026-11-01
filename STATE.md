@@ -3,6 +3,10 @@ RESUME FROM: M18-c330
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T10:24:05+07:00
+- item: M18-c330
+- RESULT: DONE
+
 ### 2026-11-01T10:23:17+07:00
 - item: M17-c330
 - BLOCKED: locked-component M17-c330
@@ -98,10 +102,6 @@ RESUME FROM: M18-c330
 ### 2026-11-01T09:03:49+07:00
 - item: M12-c329
 - RESULT: DONE
-
-### 2026-11-01T09:02:48+07:00
-- item: M11-c329
-- BLOCKED: sitemap-stale
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
