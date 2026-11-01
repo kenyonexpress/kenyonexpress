@@ -30120,3 +30120,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T21:32:56+07:00
 - item: M02-c343
 - BLOCKED: no product reference exists, since kenyonexpress.co.il serves our own build, so the compare.mjs gate cannot produce a number
+
+## Archived 2026-11-02T00:26:20+07:00 after M16-c343 (3 lines from STATE.md)
+
+### 2026-11-01T21:46:18+07:00
+- item: M03-c343
+- BLOCKED: category gate fails at 380 (19.31%) and 768 (16.82%)
