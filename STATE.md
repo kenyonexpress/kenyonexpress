@@ -1,7 +1,11 @@
-RESUME FROM: M02-c328
+RESUME FROM: M03-c328
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T07:56:18+07:00
+- item: M02-c328
+- BLOCKED: gate-fail (product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all over 11%)
 
 ### 2026-11-01T07:39:00+07:00
 - item: M01-c328
@@ -98,10 +102,6 @@ RESUME FROM: M02-c328
 ### 2026-11-01T06:22:24+07:00
 - item: M16-c326
 - RESULT: DONE
-
-### 2026-11-01T06:21:23+07:00
-- item: M15-c326
-- BLOCKED: console errors on / and /product — Supabase invalid key (DONE-DEFERRED part), product Suspense/prerender error, CSP blocking Vercel scripts
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
