@@ -280,3 +280,4 @@
 המשך מ: M05-c340 DONE (2026-11-01): pnpm test 627 files passed/2 skipped, 7165 tests passed/28 skipped, 0 failures, no drift to fix; no code changes; no forbidden files touched
 המשך מ: M06-c340 DONE (2026-11-01): pnpm build exit 0 (Next prod build, all routes generated); only drift was docs/M-CYCLE-STATUS.md timestamps, committed; no forbidden files touched
 המשך מ: M09-c340 DONE (2026-11-01): depcheck+knip re-run, same as c339; unused devDeps are config/native false positives (tailwind/postcss/capacitor/lint-staged/lighthouse), knip unused files/exports are mobile app, storybook, load scripts, shadcn, schema (no safe removals; knip also fails to load drizzle.config without SUPABASE_DB_URL); no code changes; no forbidden files touched
+המשך מ: M18-c340 DONE (2026-11-01): claude/STATE.md already under 300 lines (282 before this entry, 283 after), nothing trimmed; full history already in docs/STATE-ARCHIVE.md; no forbidden files touched
