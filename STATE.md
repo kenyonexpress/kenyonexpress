@@ -1,7 +1,11 @@
-RESUME FROM: M17-c331
+RESUME FROM: M18-c331
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:12:30+07:00
+- item: M17-c331
+- BLOCKED: compare.mjs gate fails on home (bands up to ~67% vs 11% limit); pre-existing, not caused by this verification-only item
 
 ### 2026-11-01T11:09:16+07:00
 - item: M16-c331
@@ -98,10 +102,6 @@ RESUME FROM: M17-c331
 ### 2026-11-01T10:16:24+07:00
 - item: M11-c330
 - RESULT: DONE
-
-### 2026-11-01T10:15:17+07:00
-- item: M10-c330
-- BLOCKED: Supabase MCP unauthenticated, cannot verify/apply 72 pending migrations
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
