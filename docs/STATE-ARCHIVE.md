@@ -30809,3 +30809,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T11:03:29+07:00
 - item: M10-c331
 - BLOCKED: Supabase MCP unauthenticated; cannot list or apply migrations
+
+## Archived 2026-11-01T11:53:16+07:00 after M18-c332 (3 lines from STATE.md)
+
+### 2026-11-01T11:04:28+07:00
+- item: M11-c331
+- BLOCKED: sitemap `<loc>` and `robots.txt` use the apex host, which 308-redirects to www, and the cached sitemap is about 54 hours old
