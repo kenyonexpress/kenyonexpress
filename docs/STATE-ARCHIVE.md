@@ -31385,3 +31385,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:57:25+07:00
 - item: M15-c336
 - BLOCKED: console errors on / and /product (prerender-Suspense error on /product, image-dimension warnings on /, /api/cart failure, plus Supabase invalid-key errors)
+
+## Archived 2026-11-01T17:05:42+07:00 after M04-c338 (3 lines from STATE.md)
+
+### 2026-11-01T14:58:06+07:00
+- item: M16-c336
+- RESULT: DONE
