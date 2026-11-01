@@ -234,3 +234,4 @@
 המשך מ: M05-c331 DONE (2026-11-01): pnpm test 627 files passed / 7165 tests passed, 0 failures; committed generated drift docs/M-CYCLE-STATUS.md; no code changes; no forbidden files touched
 המשך מ: M14-c331 DONE-DEFERRED (SENTRY_AUTH_TOKEN placeholder)
 המשך מ: M04-c332 DONE (2026-11-01): pnpm type-check (tsc --noEmit) exit 0, zero errors; no tracked drift to commit; no code changes; no forbidden files touched
+המשך מ: M17-c332 BLOCKED locked-component (2026-11-01): RTL probe at 380/768/1440 on / and /product/צימר-מאסטר: html dir=rtl lang=he, zero horizontal overflow, product page zero LTR leaks; rtl-lint 102 hits are comments/OG-image text, none real. Home leak: HeroSlider.tsx:555-628 dir="ltr" wrappers make hero promo paragraphs (Hebrew) direction:ltr; locked file, not edited. compare.mjs gate not run; no code changes
