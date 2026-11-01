@@ -1,7 +1,11 @@
-RESUME FROM: C126
+RESUME FROM: C127
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T23:51:25+07:00
+- item: C126
+- BLOCKED: **. The live database is behind the repo's migrations, and I didn't apply them. Two commits are pushed to `closeout/v1-final`: `150168b93` and `f81312771`.
 
 ### 2026-11-01T23:07:50+07:00
 - item: C125
@@ -97,10 +101,6 @@ RESUME FROM: C126
 
 ### 2026-11-01T21:06:13+07:00
 - item: M09-c342
-- RESULT: DONE
-
-### 2026-11-01T21:04:54+07:00
-- item: M08-c342
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
