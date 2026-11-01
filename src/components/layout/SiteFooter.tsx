@@ -177,11 +177,14 @@ export default function SiteFooter() {
               // The site has TWO newsletter fields. `NewsletterSignup` is LTR
               // and explains why in a comment; this one, the footer's own copy
               // of the same form, was not - the same address flush left on one
-              // and flush right on the other.
+              // and flush right on the other. The PLACEHOLDER is Hebrew though:
+              // under dir="ltr" it sat flush left with "Email" on the wrong
+              // end (C134). While empty the box is RTL; the first typed
+              // character drops :placeholder-shown and the address is LTR.
               dir="ltr"
               placeholder="הזן כתובת Email"
               aria-label="כתובת אימייל לניוזלטר"
-              className="min-w-0 flex-1 border-0 bg-white px-5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
+              className="min-w-0 flex-1 border-0 bg-white px-5 text-sm placeholder-shown:[direction:rtl] text-ink focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
             />
             <button
               type="submit"

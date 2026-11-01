@@ -111,7 +111,7 @@ async function runSubscribeToNewsletter(
     to: email,
     subject: 'אישור הרשמה לניוזלטר של קניון EXPRESS',
     tag: 'newsletter_confirm',
-    html: `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif;text-align:right">
+    html: `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif;text-align:start">
       <h1 style="font-size:20px">רגע לפני שנתחיל</h1>
       <p>נרשמת לרשימת הדיוור של קניון EXPRESS. לאישור ההרשמה יש ללחוץ:</p>
       <p><a href="${confirmUrl}" style="background:${OFF_PAGE.brand};color:${OFF_PAGE.ink};font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">אישור ההרשמה</a></p>

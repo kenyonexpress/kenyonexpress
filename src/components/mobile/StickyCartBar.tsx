@@ -32,7 +32,7 @@ export default function StickyCartBar({
     // store layout already pads <main> by the same 14 for the nav.
     <div
       data-sticky-cart-bar
-      className="md:hidden fixed bottom-14 left-0 right-0 bg-white border-t border-border p-3 flex items-center justify-between gap-2 z-30"
+      className="md:hidden fixed bottom-14 start-0 end-0 bg-white border-t border-border p-3 flex items-center justify-between gap-2 z-30"
     >
       <div className="text-lg font-bold text-foreground">{formatter.format(price / 100)}</div>
       <button

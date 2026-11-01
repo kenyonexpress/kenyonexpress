@@ -24,7 +24,7 @@ export default function MobileNavBar() {
   return (
     <nav
       data-mobile-nav
-      className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border flex justify-around items-center h-14 z-40"
+      className="md:hidden fixed bottom-0 start-0 end-0 bg-white border-t border-border flex justify-around items-center h-14 z-40"
     >
       {navItems.map(({ href, label, icon: Icon, testId }) => {
         const active = isActive(href)
