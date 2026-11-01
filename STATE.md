@@ -1,7 +1,11 @@
-RESUME FROM: M07-c346
+RESUME FROM: M08-c346
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T02:57:31+07:00
+- item: M07-c346
+- RESULT: DONE
 
 ### 2026-11-02T02:56:11+07:00
 - item: M06-c346
@@ -98,10 +102,6 @@ RESUME FROM: M07-c346
 ### 2026-11-02T01:03:38+07:00
 - item: M02-c345
 - BLOCKED: gate-fail product 36.58/29.82/20.52 at 380/768/1440 (override-run, grid 12 vs 4), live reference is our own build
-
-### 2026-11-02T00:44:33+07:00
-- item: M01-c345
-- BLOCKED: gate-over-11pct (380=39.85, 768=36.53, 1440=27.53)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
