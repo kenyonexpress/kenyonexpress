@@ -1,7 +1,27 @@
-RESUME FROM: M08-c329
+RESUME FROM: M13-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T09:03:49+07:00
+- item: M12-c329
+- RESULT: DONE
+
+### 2026-11-01T09:02:48+07:00
+- item: M11-c329
+- BLOCKED: sitemap-stale
+
+### 2026-11-01T09:01:51+07:00
+- item: M10-c329
+- BLOCKED: Supabase MCP unauthenticated, cannot verify or apply migrations/pending
+
+### 2026-11-01T09:01:07+07:00
+- item: M09-c329
+- RESULT: DONE
+
+### 2026-11-01T09:00:08+07:00
+- item: M08-c329
+- RESULT: DONE
 
 ### 2026-11-01T08:57:48+07:00
 - item: M07-c329
@@ -82,26 +102,6 @@ RESUME FROM: M08-c329
 ### 2026-11-01T08:01:49+07:00
 - item: M06-c328
 - RESULT: DONE
-
-### 2026-11-01T08:00:30+07:00
-- item: M05-c328
-- RESULT: DONE
-
-### 2026-11-01T07:58:32+07:00
-- item: M04-c328
-- RESULT: DONE
-
-### 2026-11-01T07:57:38+07:00
-- item: M03-c328
-- BLOCKED: no-reference
-
-### 2026-11-01T07:56:18+07:00
-- item: M02-c328
-- BLOCKED: gate-fail (product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all over 11%)
-
-### 2026-11-01T07:39:00+07:00
-- item: M01-c328
-- BLOCKED: reference snapshot images don't load, so compare.mjs can't produce a gate number for / (forced diffs are 27–40%, well above 11%)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
