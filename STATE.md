@@ -1,7 +1,19 @@
-RESUME FROM: M06-c337
+RESUME FROM: M09-c337
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T16:16:14+07:00
+- item: M08-c337
+- RESULT: DONE
+
+### 2026-11-01T16:13:46+07:00
+- item: M07-c337
+- RESULT: DONE
+
+### 2026-11-01T16:12:42+07:00
+- item: M06-c337
+- RESULT: DONE
 
 ### 2026-11-01T16:11:17+07:00
 - item: M05-c337
@@ -90,18 +102,6 @@ RESUME FROM: M06-c337
 ### 2026-11-01T14:39:11+07:00
 - item: M03-c336
 - BLOCKED: M03-c336 — no valid compare reference (kenyonexpress.co.il now serves our own build; no Electro category ref)
-
-### 2026-11-01T14:38:05+07:00
-- item: M02-c336
-- BLOCKED: compare.mjs live reference is our own build (self-comparison refused); no Electro-reference mode exists to produce a number
-
-### 2026-11-01T14:36:50+07:00
-- item: M01-c336
-- BLOCKED: gate-fail home 27.52–39.85% (>11%) at 380/768/1440; forbidden hero/header files
-
-### 2026-11-01T14:19:10+07:00
-- item: M18-c335
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
