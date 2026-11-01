@@ -30209,3 +30209,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T05:59:58+07:00
 - item: M03-c326
 - BLOCKED: no valid category reference (kenyonexpress.co.il now serves our own build; compare.mjs refuses)
+
+## Archived 2026-11-01T07:10:08+07:00 after M09-c327 (3 lines from STATE.md)
+
+### 2026-11-01T06:03:57+07:00
+- item: M04-c326
+- RESULT: DONE
