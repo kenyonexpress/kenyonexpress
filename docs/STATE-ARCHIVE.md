@@ -30185,3 +30185,9 @@ line only, and the full block for each goal is in the root file.
 המשך מ: M08-c324 DONE (2026-11-01): Lighthouse mobile on fresh prod :3517, 3 runs: / 74/79/80 (LCP 4.9-6.0s, TBT 24-134ms, CLS up to 0.059), /product/bar-drink 85/87/83 (LCP 3.8-4.6s, TBT 20-42ms, CLS 0); below G23 95 target, LCP-bound; measurement only, no code changes; logs/lighthouse-m08-c324.log; no forbidden files touched
 המשך מ: M10-c324 DONE-DEFERRED (2026-11-01): migrations/pending (17 files) not verifiable, Supabase MCP unauthenticated and no DB password; blocker filed in docs/M10-c324-MIGRATIONS-VERIFY-BLOCKER.md; no forbidden files touched
 המשך מ: M17-c324 BLOCKED locked-component (2026-11-01): fresh RTL probe (playwright, dev :3000) at 380/768/1440 on / and /product/barbecue: html lang=he dir=rtl, body rtl, no horizontal overflow, 0 text-align:left; /product fully clean (0 LTR Hebrew nodes); / has 11 Hebrew nodes with computed direction:ltr, all inside locked hero/slider (none outside); fix needs HeroSection/HeroSlider edit; no forbidden files touched
+
+## Archived 2026-11-01T07:03:31+07:00 after M06-c327 (3 lines from STATE.md)
+
+### 2026-11-01T05:26:42+07:00
+- item: C118
+- RESULT: DONE

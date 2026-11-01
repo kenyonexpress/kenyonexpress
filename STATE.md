@@ -3,6 +3,10 @@ RESUME FROM: M06-c327
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-01T07:03:31+07:00
+- item: M06-c327
+- RESULT: DONE
+
 ### 2026-11-01T07:02:33+07:00
 - item: M05-c327
 - RESULT: DONE
@@ -98,10 +102,6 @@ RESUME FROM: M06-c327
 ### 2026-11-01T05:42:32+07:00
 - item: M01-c326
 - BLOCKED: gate-fail
-
-### 2026-11-01T05:26:42+07:00
-- item: C118
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
