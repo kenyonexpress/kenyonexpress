@@ -229,3 +229,5 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 המשך מ: M04-c336 DONE (2026-11-01): pnpm type-check green (tsc --noEmit exit 0), no tracked drift, no code changes; no forbidden files touched
 
 המשך מ: M10-c340 BLOCKED (2026-11-01): migrations/pending NOT applied. REST probe (service key valid) shows missing: 313 vouchers_redemption_events/partner_pin, 316 notification_consents, 317 user_passkeys/user_phone_verifications, 318 club_tier_benefits, 319 affiliate_links.product_id, 315/320 products cols, 301/306 suppliers cols. Present: 164, 310. Supabase MCP unauthorized + CLI has no access token in this session, so apply_migration cannot run
+
+המשך מ: M16-c340 DONE (2026-11-01): audit only, no code changes. The only indexable PDP (src/app/(store)/product/[slug]/page.tsx) emits Product + BreadcrumbList JSON-LD via lib/seo/json-ld (26 unit tests pass); /product/[slug]/gift is noindex so it is exempt; no forbidden files touched
