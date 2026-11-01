@@ -1,7 +1,11 @@
-RESUME FROM: M09-c332
+RESUME FROM: M10-c332
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T11:41:11+07:00
+- item: M09-c332
+- RESULT: DONE
 
 ### 2026-11-01T11:40:05+07:00
 - item: M08-c332
@@ -98,10 +102,6 @@ RESUME FROM: M09-c332
 ### 2026-11-01T10:51:05+07:00
 - item: M03-c331
 - BLOCKED: reference-gone
-
-### 2026-11-01T10:49:57+07:00
-- item: M02-c331
-- BLOCKED: ** product gate fails (36.17% / 29.82% / 20.52% against the Electro reference, with a catalogue mismatch). The standard live reference is now our own build.
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
