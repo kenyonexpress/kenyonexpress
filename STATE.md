@@ -1,7 +1,11 @@
-RESUME FROM: M09-c329
+RESUME FROM: M10-c329
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T09:01:07+07:00
+- item: M09-c329
+- RESULT: DONE
 
 ### 2026-11-01T09:00:08+07:00
 - item: M08-c329
@@ -98,10 +102,6 @@ RESUME FROM: M09-c329
 ### 2026-11-01T07:57:38+07:00
 - item: M03-c328
 - BLOCKED: no-reference
-
-### 2026-11-01T07:56:18+07:00
-- item: M02-c328
-- BLOCKED: gate-fail (product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all over 11%)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
