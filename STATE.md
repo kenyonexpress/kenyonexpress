@@ -1,7 +1,11 @@
-RESUME FROM: C119
+RESUME FROM: C120
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:57:52+07:00
+- item: C119
+- RESULT: DONE
 
 ### 2026-11-01T21:56:33+07:00
 - item: M06-c343
@@ -98,10 +102,6 @@ RESUME FROM: C119
 ### 2026-11-01T20:54:46+07:00
 - item: M02-c342
 - BLOCKED: gate-fail — product 36.58% / 29.82% / 20.52% at 380 / 768 / 1440, all above the 11% gate.
-
-### 2026-11-01T20:40:18+07:00
-- item: M01-c342
-- BLOCKED: compare-gate 380=12.83% 768=13.8% (locked hero/header bands)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

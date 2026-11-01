@@ -29994,3 +29994,9 @@ line only, and the full block for each goal is in the root file.
 המשך מ: C90 DONE (2026-10-30): wa_otp_enabled flag (fails closed, default off) gates wa-otp send/verify; 3/15min per-phone limit; otp_attempts audit writer; migration 312 written to pending (not applied, MCP unauthed); mocked route tests pass; docs/C90-WA-OTP.md; no forbidden files touched
 המשך מ: C91 DONE (2026-10-30): card_verify_enabled flag (fails closed, default off) gates POST /api/payments/verify-card; 1 ILS auth+void, token on profiles.saved_payment_method already in place; fixed route.ts missing agorot decl; migration 313 written to pending (not applied, MCP unauthed); mocked tests pass; docs/C91-CARD-VERIFY.md; no forbidden files touched
 המשך מ: G105 DONE (2026-10-30): /account audited (orders, coupons, wallet, addresses, referrals, tier badge, invoice download, cancel 14d fee min(5pct,100 ILS) all existed); added coupon transfer (action + form + tests); migration 314 in pending, not applied (MCP unauthed); tsc clean on touched files; docs/G105-ACCOUNT.md; no forbidden files touched
+
+## Archived 2026-11-01T21:57:52+07:00 after C119 (3 lines from STATE.md)
+
+### 2026-11-01T20:40:18+07:00
+- item: M01-c342
+- BLOCKED: compare-gate 380=12.83% 768=13.8% (locked hero/header bands)
