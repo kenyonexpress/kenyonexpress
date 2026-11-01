@@ -3,6 +3,10 @@ RESUME FROM: M05-c345
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-02T01:24:28+07:00
+- item: M05-c345
+- BLOCKED: migration-ledger-drift (17->6 failing, docs/M05-c345.md)
+
 ### 2026-11-02T01:06:25+07:00
 - item: M04-c345
 - RESULT: DONE
@@ -98,10 +102,6 @@ RESUME FROM: M05-c345
 ### 2026-11-01T22:53:45+07:00
 - item: C122
 - BLOCKED: locked-component (header/topbar/hero bands) + gate not met
-
-### 2026-11-01T22:34:21+07:00
-- item: C130
-- BLOCKED: locked-component** (city cards inside the hero, header icons), and the `compare.mjs` gate is not met either. I committed to `closeout/v1-final` as `761fedc1b` and did not push. The home page is measurably further from the reference at 380 and 768 than it was before, and I didn't want that going out on a push. The gate numbers also don't depend on the hero or header locks, so the rest wouldn't pass even with those unlocked. Say if you want it pushed.
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
