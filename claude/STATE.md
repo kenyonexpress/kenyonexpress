@@ -268,3 +268,5 @@
 המשך מ: C126 BLOCKED (2026-11-01): tsc clean, build passes, vitest 17 fail (migration inventory + env keys), e2e core 16/20 pass, live DB behind migrations (orders.order_number, fraud_flags.kind) blocks checkout/refund specs; see docs/C126-e2e.md; no forbidden files touched
 המשך מ: C129 BLOCKED (2026-11-02): c343 M04 tsc exit 0 DONE; M05 vitest 17 failed/9546 passed BLOCKED; M11/M12 200 DONE; M13 503 meili-only DONE-DEFERRED; C128 tag/LAUNCH.flag still missing; docs/C129-maint.md
 המשך מ: M07-c343 DONE (2026-11-02): TODO/FIXME scan, 3 items all >7d old, still blocked (Cardcom creds / service-role key), re-filed in docs/BACKLOG.md; proof docs/M07-c343.md; no code changes
+המשך מ: M08-c343 DONE (2026-11-02): LH mobile perf / 86/79/90, /product/<slug> 82/82/81 (3 runs each, local build, below 95 G23 target, LCP-driven); proof docs/M08-c343.md; no code changes
+המשך מ: M09-c343 DONE (2026-11-02): knip deps scan: only @capacitor/android flagged, kept (android/ platform + cap sync); no unused runtime deps; dead exports are type-only/generated, left; proof docs/M09-c343.md; no code changes; no forbidden files touched
