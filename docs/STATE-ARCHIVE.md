@@ -31217,3 +31217,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:03:20+07:00
 - item: M05-c335
 - BLOCKED: migration preflights, duplicate numbers (243, 244) and number 300 collision need a renumber and sequencing decision. The 7 credential-dependent failures are DONE-DEFERRED.
+
+## Archived 2026-11-01T14:55:21+07:00 after M13-c336 (3 lines from STATE.md)
+
+### 2026-11-01T14:04:40+07:00
+- item: M06-c335
+- RESULT: DONE
