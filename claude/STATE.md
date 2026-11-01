@@ -1,3 +1,4 @@
+המשך מ: M18-c332 DONE (2026-11-01): claude/STATE.md already under 300 lines (237 before this entry), nothing to archive to docs/STATE-ARCHIVE.md; no forbidden files touched
 המשך מ: M07-c332 DONE (2026-11-01): TODO/FIXME scan of src/scripts/migrations/e2e/tests/packages/supabase: same 6 TODO markers (cardcom.ts:249,312; r2-migration.ts:103-106), 0 FIXME, all >7 days old and already filed in docs/BACKLOG.md #1-#3 (Cardcom prod creds / service-role key); nothing resolvable now; BACKLOG stamp bumped; no forbidden files touched
 המשך מ: M18-c331 DONE (2026-11-01): STATE.md already under 300 lines (claude/STATE.md 233, STATE.md 219), nothing to archive; no forbidden files touched
 המשך מ: M07-c331 DONE (2026-11-01): TODO/FIXME scan found 6 markers (cardcom.ts x2, r2-migration.ts x4), all >7 days old and already filed in docs/BACKLOG.md (3 items, blocked on Cardcom prod creds / service-role key); nothing resolvable; no forbidden files touched
