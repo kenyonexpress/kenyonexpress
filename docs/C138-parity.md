@@ -165,6 +165,7 @@ all bands:
   y  500   47.4%  ########################
   y  600   60.3%  ##############################
   y  700   13.3%  #######
+=== category 380
 OVERALL first 2600px: 30.49%
   of which: reference blank 10.45%  ours blank 17.22%  both painted 2.82%
 !! Fix the server, then re-measure. Do not chase the bands.
@@ -242,20 +243,6 @@ all bands:
   y  600     11%  ######
   y  700    5.7%  ###
   y  800   10.9%  #####
-=== category 380
-OVERALL first 2600px: 30.49%
-  of which: reference blank 10.45%  ours blank 17.22%  both painted 2.82%
-!! Fix the server, then re-measure. Do not chase the bands.
-=== category 768
-OVERALL first 2600px: 29.88%
-  of which: reference blank 8.27%  ours blank 19.69%  both painted 1.93%
-!! HEIGHT RATIO 0.59x — the percentage above is NOT a pixel gate.
-  y    0   57.9%  #############################
-  y  100    5.2%  ###
-=== category 1440
-OVERALL first 2600px: 17.55%
-  of which: reference blank 4.67%  ours blank 12.19%  both painted 0.68%
-  y    0   12.3%  ######
   y  100   49.1%  #########################
 ```
 
