@@ -30545,3 +30545,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T08:51:01+07:00
 - item: M02-c329
 - BLOCKED: no valid reference (live host is our own build); Electro-archive fallback scores 36.17/29.82/20.52% at 380/768/1440, all above 11%
+
+## Archived 2026-11-01T10:15:17+07:00 after M10-c330 (3 lines from STATE.md)
+
+### 2026-11-01T08:52:25+07:00
+- item: M03-c329
+- BLOCKED: no-reference
