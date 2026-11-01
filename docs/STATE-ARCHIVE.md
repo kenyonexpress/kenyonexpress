@@ -30299,3 +30299,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T06:24:07+07:00
 - item: M17-c326
 - BLOCKED: locked-component**. The home page has an LTR leak, and the only fix is in a locked file.
+
+## Archived 2026-11-01T08:00:30+07:00 after M05-c328 (3 lines from STATE.md)
+
+### 2026-11-01T06:24:55+07:00
+- item: M18-c326
+- RESULT: DONE
