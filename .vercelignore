@@ -33,3 +33,21 @@
 /vitest.config.ts
 /playwright.config.ts
 /biome.json
+
+# Local working sets, never imported by the build (only cited in comments).
+# Without these the upload was 745MB and failed mid-stream with `fetch failed`
+# (C135). Anchored for the same reason as above.
+/.claude/
+/refs/
+/wp_import/
+/.lighthouseci/
+/shots/
+/.image-staging/
+/docs/
+/logs/
+/playwright-report/
+/test-results/
+/data.ms/
+/data-import/
+/coverage/
+/*.tsbuildinfo
