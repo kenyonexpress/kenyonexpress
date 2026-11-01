@@ -1,7 +1,11 @@
-RESUME FROM: M11-c346
+RESUME FROM: M12-c346
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T03:16:36+07:00
+- item: M11-c346
+- RESULT: DONE
 
 ### 2026-11-02T03:14:54+07:00
 - item: M10-c346
@@ -98,10 +102,6 @@ RESUME FROM: M11-c346
 ### 2026-11-02T01:32:09+07:00
 - item: M05-c345
 - BLOCKED: migration-ledger-drift
-
-### 2026-11-02T01:24:28+07:00
-- item: M05-c345
-- BLOCKED: migration-ledger-drift (17->6 failing, docs/M05-c345.md)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
