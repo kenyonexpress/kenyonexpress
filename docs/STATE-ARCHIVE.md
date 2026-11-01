@@ -30354,3 +30354,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T01:43:57+07:00
 - item: M10-c345
 - BLOCKED: supabase CLI not linked/logged in (no access token), cannot verify or apply migrations/pending
+
+## Archived 2026-11-02T03:29:22+07:00 after M18-c346 (3 lines from STATE.md)
+
+### 2026-11-02T01:45:06+07:00
+- item: M11-c345
+- RESULT: DONE
