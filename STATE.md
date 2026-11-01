@@ -1,7 +1,11 @@
-RESUME FROM: M18-c340
+RESUME FROM: M02-c341
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T19:37:01+07:00
+- item: M01-c341
+- BLOCKED: gate-fail
 
 ### 2026-11-01T19:21:05+07:00
 - item: M18-c340
@@ -97,10 +101,6 @@ RESUME FROM: M18-c340
 
 ### 2026-11-01T18:17:21+07:00
 - item: M15-c339
-- RESULT: DONE
-
-### 2026-11-01T18:15:51+07:00
-- item: M14-c339
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
