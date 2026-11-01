@@ -1,7 +1,11 @@
-RESUME FROM: M10-c336
+RESUME FROM: M11-c336
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:50:41+07:00
+- item: M10-c336
+- BLOCKED: supabase-mcp-unauthorized
 
 ### 2026-11-01T14:49:51+07:00
 - item: M09-c336
@@ -96,10 +100,6 @@ RESUME FROM: M10-c336
 - BLOCKED: migration preflights, duplicate numbers (243, 244) and number 300 collision need a renumber and sequencing decision. The 7 credential-dependent failures are DONE-DEFERRED.
 
 ### 2026-11-01T13:56:53+07:00
-- item: M04-c335
-- RESULT: DONE
-
-### 2026-11-01T13:56:31+07:00
 - item: M04-c335
 - RESULT: DONE
 

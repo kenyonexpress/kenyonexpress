@@ -31199,3 +31199,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T13:55:42+07:00
 - item: M03-c335
 - BLOCKED: category re-measure — compare.mjs refuses at 380/768/1440 because the live reference host now serves our own build, so no valid reference exists
+
+## Archived 2026-11-01T14:50:41+07:00 after M10-c336 (3 lines from STATE.md)
+
+### 2026-11-01T13:56:31+07:00
+- item: M04-c335
+- RESULT: DONE
