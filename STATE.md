@@ -1,7 +1,27 @@
-RESUME FROM: M10-c342
+RESUME FROM: M15-c342
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:10:55+07:00
+- item: M14-c342
+- RESULT: DONE
+
+### 2026-11-01T21:10:05+07:00
+- item: M13-c342
+- RESULT: DONE
+
+### 2026-11-01T21:09:15+07:00
+- item: M12-c342
+- RESULT: DONE
+
+### 2026-11-01T21:08:17+07:00
+- item: M11-c342
+- BLOCKED: sitemap-stale
+
+### 2026-11-01T21:07:26+07:00
+- item: M10-c342
+- BLOCKED: Supabase MCP unauthenticated, cannot verify or apply migrations
 
 ### 2026-11-01T21:06:13+07:00
 - item: M09-c342
@@ -81,26 +101,6 @@ RESUME FROM: M10-c342
 
 ### 2026-11-01T20:09:43+07:00
 - item: M09-c341
-- RESULT: DONE
-
-### 2026-11-01T20:08:27+07:00
-- item: M08-c341
-- RESULT: DONE
-
-### 2026-11-01T20:05:48+07:00
-- item: M07-c341
-- RESULT: DONE
-
-### 2026-11-01T20:02:58+07:00
-- item: M06-c341
-- RESULT: DONE
-
-### 2026-11-01T20:02:33+07:00
-- item: M06-c341
-- RESULT: DONE
-
-### 2026-11-01T20:01:31+07:00
-- item: M05-c341
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
