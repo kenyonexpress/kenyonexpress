@@ -6,20 +6,30 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 interface PullToRefreshProps {
   onRefresh: () => Promise<void>
   children: React.ReactNode
+  /**
+   * Asked at the start of each pull, in the browser, whether this page takes
+   * pull-to-refresh. Deciding here instead of choosing whether to render the
+   * component keeps the server and client trees identical on every path.
+   */
+  enabled?: (pathname: string) => boolean
 }
 
-export default function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
+export default function PullToRefresh({ onRefresh, children, enabled }: PullToRefreshProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [pullDistance, setPullDistance] = useState(0)
   const startYRef = useRef<number | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop
-    if (scrollTop === 0) {
-      startYRef.current = e.touches?.[0]?.clientY ?? null
-    }
-  }, [])
+  const handleTouchStart = useCallback(
+    (e: TouchEvent) => {
+      if (enabled && !enabled(window.location.pathname)) return
+      const scrollTop = window.scrollY || document.documentElement.scrollTop
+      if (scrollTop === 0) {
+        startYRef.current = e.touches?.[0]?.clientY ?? null
+      }
+    },
+    [enabled],
+  )
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
@@ -61,8 +71,10 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
     }
   }, [handleTouchStart, handleTouchMove, handleTouchEnd])
 
+  // `contents`: the wrapper takes no box, so wrapping a page changes nothing
+  // in its layout. Touch events still bubble through it to the listeners.
   return (
-    <div ref={containerRef} data-pull-to-refresh className="relative w-full">
+    <div ref={containerRef} data-pull-to-refresh className="contents">
       {pullDistance > 0 && (
         <div
           className="flex justify-center items-center h-12 bg-brand text-gray-900 transition-transform"

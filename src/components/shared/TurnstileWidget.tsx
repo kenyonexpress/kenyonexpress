@@ -5,8 +5,11 @@ import { Turnstile } from '@marsidev/react-turnstile'
 /**
  * Cloudflare Turnstile widget. Renders nothing until NEXT_PUBLIC_TURNSTILE_SITE_KEY
  * is set or while the turnstile_enabled flag is off, so an unconfigured deployment shows the same forms as before. The widget
- * writes the token to the form as `cf-turnstile-response` and can be verified
- * server-side via verifyTurnstile().
+ * writes the token as a hidden `cf-turnstile-response` input inside its own
+ * container, so it lands in the form it sits in, and can be verified
+ * server-side via verifyTurnstile(). (It used to also append the token to
+ * `document.querySelector('form')`, the first form in the document, which on
+ * the home page is not the form the widget belongs to.)
  */
 export default function TurnstileWidget() {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
@@ -16,23 +19,6 @@ export default function TurnstileWidget() {
   return (
     <Turnstile
       siteKey={siteKey}
-      onSuccess={(token) => {
-        const form = document.querySelector('form')
-        if (form) {
-          const input = document.createElement('input')
-          input.type = 'hidden'
-          input.name = 'cf-turnstile-response'
-          input.value = token
-          form.appendChild(input)
-        }
-      }}
-      onError={() => {
-        const form = document.querySelector('form')
-        if (form) {
-          const input = form.querySelector('input[name="cf-turnstile-response"]')
-          if (input) input.remove()
-        }
-      }}
       options={{
         language: 'he',
         theme: 'light',

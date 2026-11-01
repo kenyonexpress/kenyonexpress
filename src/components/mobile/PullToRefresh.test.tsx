@@ -48,7 +48,7 @@ describe('PullToRefresh', () => {
     )
 
     const mainDiv = container.querySelector('[data-pull-to-refresh]')
-    expect(mainDiv).toHaveClass('relative', 'w-full')
+    expect(mainDiv).toHaveClass('contents')
   })
 
   it('wraps children properly', () => {

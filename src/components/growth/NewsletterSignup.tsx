@@ -2,7 +2,7 @@
 
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type NewsletterState, subscribeToNewsletter } from '@/server/actions/newsletter'
-import { useActionState, useEffect, useId, useRef } from 'react'
+import { useActionState, useEffect, useId, useRef, useState } from 'react'
 
 const EMPTY: NewsletterState = { ok: false }
 
@@ -14,12 +14,19 @@ const EMPTY: NewsletterState = { ok: false }
  * single-field footer form is a step people fail rather than read. Pressing a
  * button labelled "הרשמה" directly under a sentence saying what it does is an
  * explicit act, and the double opt-in mail is what actually subscribes.
+ *
+ * Turnstile mounts on the first focus or press inside the form, not on page
+ * load: this form sits in the footer of every page, so loading the Cloudflare
+ * iframe up front costs every visitor a third-party request (and a console
+ * 400 on any host the site key does not list) for a form few of them use.
  */
 export default function NewsletterSignup({ source = 'footer' }: { source?: string }) {
   const [state, action, pending] = useActionState(subscribeToNewsletter, EMPTY)
   const id = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const [armed, setArmed] = useState(false)
+  const arm = () => setArmed(true)
 
   useEffect(() => {
     if (state.ok && state.message) {
@@ -37,7 +44,13 @@ export default function NewsletterSignup({ source = 'footer' }: { source?: strin
     .join(' ')
 
   return (
-    <form action={action} dir="rtl" className="ke-newsletter">
+    <form
+      action={action}
+      dir="rtl"
+      className="ke-newsletter"
+      onFocus={armed ? undefined : arm}
+      onPointerDown={armed ? undefined : arm}
+    >
       <input type="hidden" name="source" value={source} />
 
       <label htmlFor={id} className="ke-newsletter__label">
@@ -74,7 +87,7 @@ export default function NewsletterSignup({ source = 'footer' }: { source?: strin
         בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי. אפשר להסיר את ההרשמה בכל מייל.
       </p>
 
-      <TurnstileWidget />
+      {armed && <TurnstileWidget />}
 
       {state.error && (
         <p id={`${id}-error`} role="alert" className="ke-newsletter__error">

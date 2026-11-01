@@ -7,6 +7,10 @@ vi.mock('@/server/actions/newsletter', () => ({
   subscribeToNewsletter: vi.fn(),
 }))
 
+vi.mock('@/components/shared/TurnstileWidget', () => ({
+  default: () => <div data-testid="turnstile" />,
+}))
+
 describe('NewsletterSignup', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -24,6 +28,14 @@ describe('NewsletterSignup', () => {
     render(<NewsletterSignup />)
 
     expect(screen.getByText(/בלחיצה על הרשמה אני מאשר קבלת דיוור פרסומי/)).toBeInTheDocument()
+  })
+
+  it('mounts Turnstile only after the form is focused, not on page load', () => {
+    render(<NewsletterSignup />)
+    expect(screen.queryByTestId('turnstile')).not.toBeInTheDocument()
+
+    fireEvent.focus(screen.getByPlaceholderText('you@example.com'))
+    expect(screen.getByTestId('turnstile')).toBeInTheDocument()
   })
 
   it('applies RTL direction to form', () => {
