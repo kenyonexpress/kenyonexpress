@@ -31313,3 +31313,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T14:39:11+07:00
 - item: M03-c336
 - BLOCKED: M03-c336 — no valid compare reference (kenyonexpress.co.il now serves our own build; no Electro category ref)
+
+## Archived 2026-11-01T16:18:08+07:00 after M10-c337 (3 lines from STATE.md)
+
+### 2026-11-01T14:40:34+07:00
+- item: M04-c336
+- RESULT: DONE
