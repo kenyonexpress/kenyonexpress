@@ -1,7 +1,11 @@
-RESUME FROM: M15-c342
+RESUME FROM: M16-c342
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T21:12:48+07:00
+- item: M15-c342
+- BLOCKED: M15-c342: console errors on `/` and `/product/bar-drink` (image 400s, plus Supabase invalid key)**
 
 ### 2026-11-01T21:10:55+07:00
 - item: M14-c342
@@ -98,10 +102,6 @@ RESUME FROM: M15-c342
 ### 2026-11-01T20:10:47+07:00
 - item: M10-c341
 - BLOCKED: Supabase MCP unauthenticated in non-interactive session; cannot verify or apply migrations/pending (72 files)
-
-### 2026-11-01T20:09:43+07:00
-- item: M09-c341
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
