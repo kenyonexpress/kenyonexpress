@@ -1,7 +1,11 @@
-RESUME FROM: C129
+RESUME FROM: M07-c343
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T00:02:01+07:00
+- item: C129
+- BLOCKED: M05 test (17 failing, migration-gate tests plus push/backup/proxy); C128 still BLOCKED
 
 ### 2026-11-01T23:53:52+07:00
 - item: C128
@@ -98,10 +102,6 @@ RESUME FROM: C129
 ### 2026-11-01T21:09:15+07:00
 - item: M12-c342
 - RESULT: DONE
-
-### 2026-11-01T21:08:17+07:00
-- item: M11-c342
-- BLOCKED: sitemap-stale
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

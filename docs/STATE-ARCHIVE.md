@@ -30060,3 +30060,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T21:07:26+07:00
 - item: M10-c342
 - BLOCKED: Supabase MCP unauthenticated, cannot verify or apply migrations
+
+## Archived 2026-11-02T00:02:01+07:00 after C129 (3 lines from STATE.md)
+
+### 2026-11-01T21:08:17+07:00
+- item: M11-c342
+- BLOCKED: sitemap-stale
