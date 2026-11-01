@@ -1,7 +1,11 @@
-RESUME FROM: M03-c333
+RESUME FROM: M04-c333
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T12:31:29+07:00
+- item: M03-c333
+- BLOCKED: no valid category reference (live host is our own build; no Electro v7 category capture in refs/)
 
 ### 2026-11-01T12:30:08+07:00
 - item: M02-c333
@@ -97,10 +101,6 @@ RESUME FROM: M03-c333
 
 ### 2026-11-01T11:08:19+07:00
 - item: M15-c331
-- RESULT: DONE
-
-### 2026-11-01T11:07:08+07:00
-- item: M14-c331
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
