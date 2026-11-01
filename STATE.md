@@ -1,7 +1,19 @@
-RESUME FROM: M07-c336
+RESUME FROM: M10-c336
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-01T14:49:51+07:00
+- item: M09-c336
+- RESULT: DONE
+
+### 2026-11-01T14:47:59+07:00
+- item: M08-c336
+- RESULT: DONE
+
+### 2026-11-01T14:44:51+07:00
+- item: M07-c336
+- RESULT: DONE
 
 ### 2026-11-01T14:43:44+07:00
 - item: M06-c336
@@ -90,18 +102,6 @@ RESUME FROM: M07-c336
 ### 2026-11-01T13:56:31+07:00
 - item: M04-c335
 - RESULT: DONE
-
-### 2026-11-01T13:55:42+07:00
-- item: M03-c335
-- BLOCKED: category re-measure — compare.mjs refuses at 380/768/1440 because the live reference host now serves our own build, so no valid reference exists
-
-### 2026-11-01T13:54:40+07:00
-- item: M02-c335
-- BLOCKED: ** because the gate fails at all three widths.
-
-### 2026-11-01T13:42:27+07:00
-- item: M01-c335
-- BLOCKED: gate-fail
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
