@@ -1,3 +1,4 @@
+המשך מ: C135 DONE (2026-11-02): prod redeploy HEAD 243c52522 dpl_9aTp3gF7NPnVTYkdCyMtG6kJ5zKp READY, aliased www, new x-vercel-id; .vercelignore excludes local dirs; docs/C135-deploy.md
 המשך מ: C132 DONE (2026-11-02): pnpm type-check on closeout/v1-final HEAD exit 0, 0 errors, 2164 src files; no code change; docs/C132-types.md
 המשך מ: C131 DONE (2026-11-02): supabase db query --linked "select 'DB-OK'" printed DB-OK, exit 0; docs/C131-db.md
 המשך מ: M09-c345 DONE (2026-11-02): knip: 0 unused runtime deps, @capacitor/android kept (cap sync), 260 dead exports left (scripts/types/generated); no code changes; docs/M09-c345.md | prev C128 BLOCKED
