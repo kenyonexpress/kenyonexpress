@@ -30947,3 +30947,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-01T11:49:55+07:00
 - item: M15-c332
 - BLOCKED: console-errors-on-product (2 missing images, Suspense/runtime-data error; the Invalid API key part is DONE-DEFERRED)**
+
+## Archived 2026-11-01T13:12:49+07:00 after M05-c334 (3 lines from STATE.md)
+
+### 2026-11-01T11:50:43+07:00
+- item: M16-c332
+- RESULT: DONE
