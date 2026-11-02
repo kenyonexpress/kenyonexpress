@@ -1,7 +1,11 @@
-RESUME FROM: C151
+RESUME FROM: C152
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T04:17:04+07:00
+- item: C151
+- BLOCKED: network (iPhone hotspot 172.20.10.1, Supabase 1.1-3.7 s/ping); run 7 green 2362/0, runs 9-10 lost to page-load timeouts
 
 ### 2026-11-02T22:31:10+07:00
 - item: C150
@@ -98,10 +102,6 @@ RESUME FROM: C151
 ### 2026-11-02T18:55:31+07:00
 - item: C145
 - BLOCKED: locked-component C145 compare.mjs home380 44.87 (locked bands 0-400 = 12.35pt), LH PWA installable PASS
-
-### 2026-11-02T18:27:07+07:00
-- item: C143
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
