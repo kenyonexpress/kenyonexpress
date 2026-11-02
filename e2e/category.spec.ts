@@ -9,7 +9,11 @@ import { firstCategorySlug } from './helpers'
  * in the header and again under the grid as `--bottom`.
  */
 const SETTLED_COUNT = '.category-page__count:not(.category-page__count--pending)'
-/** The category archive's count, printed inside its H1 (XD17). */
+/**
+ * The category archive's count, printed inside its H1 (XD17). `.last()` at
+ * every use: while the streamed body replaces the shell the H1 can briefly be
+ * in the DOM twice, and strict mode then failed on two matches (C142).
+ */
 const TITLE_COUNT = '.category-page__title-count'
 
 test.describe('category archive', () => {
@@ -161,7 +165,9 @@ test.describe('category archive', () => {
     await expect(firstCard).toBeVisible({ timeout: 15_000 })
     // The category archive prints its count inside the H1 ("N מבצעים זמינים",
     // XD17), not as a separate count line the way /products and /search do.
-    await expect(page.locator(TITLE_COUNT)).toHaveText(/\d+ מבצעים זמינים/, { timeout: 15_000 })
+    await expect(page.locator(TITLE_COUNT).last()).toHaveText(/\d+ מבצעים זמינים/, {
+      timeout: 15_000,
+    })
     await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
   })
 
@@ -341,8 +347,10 @@ test.describe('category listing: page size and autocomplete', () => {
     // one page of CATEGORY_PAGE_SIZE (24) cards and appends from there.
     // `?paginate=1` is the numbered-pages variant and still carries the links.
     await page.goto(`/category/${slug}?paginate=1`)
-    await expect(page.locator(TITLE_COUNT)).toHaveText(/\d+ מבצעים זמינים/, { timeout: 15_000 })
-    const countText = (await page.locator(TITLE_COUNT).textContent()) ?? ''
+    await expect(page.locator(TITLE_COUNT).last()).toHaveText(/\d+ מבצעים זמינים/, {
+      timeout: 15_000,
+    })
+    const countText = (await page.locator(TITLE_COUNT).last().textContent()) ?? ''
     const total = Number(/(\d+)/.exec(countText)?.[1] ?? '0')
 
     // Real cards only: the streaming skeleton reuses the item class.
