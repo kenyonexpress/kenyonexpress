@@ -1,7 +1,11 @@
-RESUME FROM: C144
+RESUME FROM: M03-c347
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T20:25:53+07:00
+- item: C144
+- BLOCKED: C144 C137 C138 C139 C145 C149
 
 ### 2026-11-02T20:24:00+07:00
 - item: C149
@@ -98,10 +102,6 @@ RESUME FROM: C144
 ### 2026-11-02T03:22:52+07:00
 - item: M15-c346
 - BLOCKED: console errors on / (React #418 hydration mismatch), prod build stale, redeploy of HEAD needed
-
-### 2026-11-02T03:20:34+07:00
-- item: M14-c346
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
