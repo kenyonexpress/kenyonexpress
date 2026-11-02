@@ -178,10 +178,16 @@ async function remove(table, id, label) {
 }
 
 async function findUserByEmail(email) {
-  // listUsers is paginated; for a tiny CI project the first page is enough.
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
-  if (error) throw new Error(`listUsers: ${error.message}`)
-  return data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) ?? null
+  // Every page: anonymous guest sign-ins grow the user list each E2E run and
+  // listUsers returns the newest first, so page 1 stopped holding the fixtures.
+  const wanted = email.toLowerCase()
+  for (let page = 1; ; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+    if (error) throw new Error(`listUsers: ${error.message}`)
+    const hit = data.users.find((u) => u.email?.toLowerCase() === wanted)
+    if (hit) return hit
+    if (data.users.length < 1000) return null
+  }
 }
 
 async function ensureAuthUser({ email, password, fullName, role = 'customer' }) {

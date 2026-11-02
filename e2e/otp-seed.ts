@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { createClient } from '@supabase/supabase-js'
+import { type SupabaseClient, createClient } from '@supabase/supabase-js'
 
 /**
  * SEEDS A CHECKOUT PHONE CODE THE SERVER WILL ACCEPT, for the one gate a
@@ -66,19 +66,38 @@ export async function seedCheckoutPhoneOtp(
   if (!url || !key) return false
 
   const admin = createClient(url, key, { auth: { persistSession: false } })
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
-  if (error) throw new Error(`otp-seed listUsers: ${error.message}`)
-  const user = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase())
-  if (!user) throw new Error(`otp-seed: no auth user for ${email}`)
+  const userId = await findUserId(admin, email)
+  if (!userId) throw new Error(`otp-seed: no auth user for ${email}`)
 
   const { error: insertError } = await admin.from('auth_wa_otps' as never).insert({
     phone_e164: phoneE164,
-    user_id: user.id,
+    user_id: userId,
     code_hash: hashOtp(phoneE164, code, env),
     expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
   } as never)
   if (insertError) throw new Error(`otp-seed insert: ${insertError.message}`)
   return true
+}
+
+/**
+ * The auth user id for an email, searching EVERY page. Guest checkout signs in
+ * anonymously, so each run adds users and listUsers returns the newest first:
+ * at 216 users (198 anonymous) the fixtures had fallen off a single page of
+ * 200. The reset below then found nobody and cleared nothing, and the
+ * customer's refund-request bucket hit 8 of 5 (C151).
+ */
+async function findUserId(
+  admin: Pick<SupabaseClient, 'auth'>,
+  email: string,
+): Promise<string | undefined> {
+  const wanted = email.toLowerCase()
+  for (let page = 1; ; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+    if (error) throw new Error(`listUsers: ${error.message}`)
+    const hit = data.users.find((u) => u.email?.toLowerCase() === wanted)
+    if (hit) return hit.id
+    if (data.users.length < 1000) return undefined
+  }
 }
 
 const fixtureIds = new Map<string, string>()
@@ -105,9 +124,7 @@ export async function resetFixtureRateLimits(email: string): Promise<boolean> {
   const admin = createClient(url, key, { auth: { persistSession: false } })
   let userId = fixtureIds.get(email.toLowerCase())
   if (!userId) {
-    const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
-    if (error) throw new Error(`rate-limit reset listUsers: ${error.message}`)
-    userId = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase())?.id
+    userId = await findUserId(admin, email)
     if (!userId) return false
     fixtureIds.set(email.toLowerCase(), userId)
   }
