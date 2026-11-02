@@ -30564,3 +30564,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T06:22:53+07:00
 - item: C137
 - BLOCKED: compare.mjs home 45.73/40.31/27.53 vs <11 (LTR English Electro baseline vs required RTL Hebrew section order; header/hero locked)
+
+## Archived 2026-11-02T21:57:56+07:00 after M17-c347 (3 lines from STATE.md)
+
+### 2026-11-02T06:40:29+07:00
+- item: C138
+- BLOCKED: locked-component (home 380 topbar+header+hero bands alone = 12.34pt > 11% gate)
