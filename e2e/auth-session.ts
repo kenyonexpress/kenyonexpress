@@ -50,7 +50,9 @@ export async function signInWithEmail(
   await page.getByLabel('סיסמה').fill(password)
   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
   // Either the return path or a generic signed-in page; never stay on /login.
-  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+  // 45 s: the action can make two auth calls, each allowed 10 s by the client,
+  // and a full run measured the hosted project at up to 3.5 s per ping (C151).
+  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 45_000 })
 }
 
 /**

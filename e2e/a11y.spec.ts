@@ -726,6 +726,12 @@ test('the search combobox says which suggestion is selected', async ({ page, vie
  * (see line 21-24), but they are now required for full compliance.
  */
 test.describe('account pages have no WCAG A/AA violations', () => {
+  // A real sign-in, then a navigation, then a scan: three round trips to the
+  // hosted Supabase. Under a full 3-worker run its latency spiked to 3.5 s on a
+  // bare health ping and one auth call hit the 10 s client timeout (C151), so
+  // the default 30 s left no room. Slow, not skipped.
+  test.beforeEach(() => test.slow())
+
   test('account overview has no violations', async ({ page }) => {
     test.skip(!paidFlowEnabled(), 'E2E_CUSTOMER_PASSWORD not configured')
     await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
