@@ -8,6 +8,7 @@ import { CSP_NONCE_HEADER, generateNonce } from '@/lib/security/csp-nonce'
 import {
   contentSecurityPolicyFor,
   frameOptionsFor,
+  isLoopbackHost,
   isPaymentFramePath,
   permissionsPolicyFor,
 } from '@/lib/security/frame-policy'
@@ -43,6 +44,15 @@ import { type NextFetchEvent, type NextRequest, NextResponse } from 'next/server
  * Content-Security-Policy header). The path-dependent CSP with nonce replaces
  * the static 'unsafe-inline' fallback from next.config.ts.
  */
+function hostOf(header: string | null): string {
+  if (!header) return ''
+  try {
+    return new URL(`http://${header}`).hostname
+  } catch {
+    return ''
+  }
+}
+
 function forward(
   request: NextRequest,
   requestId: string,
@@ -63,7 +73,14 @@ function forward(
   // blocked scripts per route, no service worker registration, no interaction).
   // Until the shell can be rendered per request, the policy stays on the
   // 'unsafe-inline' form that contentSecurityPolicyFor() emits without a nonce.
-  response.headers.set('Content-Security-Policy', contentSecurityPolicyFor(pathname))
+  response.headers.set(
+    'Content-Security-Policy',
+    contentSecurityPolicyFor(pathname, undefined, {
+      // The Host the browser asked for, not nextUrl: under `next start`
+      // nextUrl reports the bind address whatever the request named.
+      upgradeInsecureRequests: !isLoopbackHost(hostOf(request.headers.get('host'))),
+    }),
+  )
   response.headers.set('X-Frame-Options', frameOptionsFor(pathname))
   response.headers.set('Permissions-Policy', permissionsPolicyFor(pathname))
 

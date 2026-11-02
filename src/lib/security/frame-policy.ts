@@ -154,6 +154,25 @@ export type ContentSecurityPolicyOptions = {
    * the environment"; null means no reporting directive.
    */
   reportUri?: string | null
+  /**
+   * False drops `upgrade-insecure-requests`. Only for a loopback host
+   * (isLoopbackHost): there is no https listener on localhost, and WebKit,
+   * unlike Chromium, applies the upgrade there, so every script and stylesheet
+   * of a local `next start` failed TLS in Safari and the WebKit e2e projects
+   * rendered unstyled (measured 2026-11-02, C142). Production never answers
+   * a loopback Host.
+   */
+  upgradeInsecureRequests?: boolean
+}
+
+/** localhost, 127.0.0.1 and ::1: hosts a deployed site is never reached on. */
+export function isLoopbackHost(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '[::1]' ||
+    hostname === '::1'
+  )
 }
 
 /** The report endpoint for this deployment's environment, or null. */
@@ -174,7 +193,11 @@ export function contentSecurityPolicyFor(
     : "frame-ancestors 'none'"
   const reportUri = options.reportUri === undefined ? cspReportUri() : options.reportUri
   const reporting = reportUri ? [`report-uri ${reportUri}`, `report-to ${CSP_REPORT_GROUP}`] : []
-  return [...baseDirectives(nonce), frameAncestors, ...reporting].join('; ')
+  const base =
+    options.upgradeInsecureRequests === false
+      ? baseDirectives(nonce).filter((d) => d !== 'upgrade-insecure-requests')
+      : baseDirectives(nonce)
+  return [...base, frameAncestors, ...reporting].join('; ')
 }
 
 /**
