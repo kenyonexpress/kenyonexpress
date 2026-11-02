@@ -71,6 +71,8 @@ interface Props {
    */
   city: string | null
   attributes: Attribute[]
+  /** Short selling points under the stock line (Electro's short description). */
+  highlights?: string[]
   variants: Variant[]
   isCoupon: boolean
   /**
@@ -128,6 +130,7 @@ export default function ProductInfo({
   categorySlug = null,
   city,
   attributes,
+  highlights = [],
   variants,
   isCoupon,
   couponOffer,
@@ -288,6 +291,14 @@ export default function ProductInfo({
               : 'אזל מהמלאי'
             : 'במלאי, מוכן למשלוח'}
       </p>
+
+      {highlights.length > 0 && (
+        <ul className="pdp-summary__highlights" data-pdp="highlights">
+          {highlights.map((h) => (
+            <li key={h}>{h}</li>
+          ))}
+        </ul>
+      )}
 
       {/*
         Said only when there is a real number behind it. `stockDisplay` returns

@@ -65,7 +65,8 @@ export async function loadProductBySlug(slug: string) {
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
        recurring_amount_agorot, billing_interval, billing_interval_count,
-       city, latitude, longitude,
+       city, latitude, longitude, short_description_he, highlights, attributes,
+       shipping_price_agorot,
        categories!products_category_id_fkey(id, name_he, slug)`,
       )
       .eq('slug', slug)
@@ -107,14 +108,14 @@ export async function loadProductBySlug(slug: string) {
         .order('name_he')
         .then(({ data }) => data),
       loadGalleryAssets(images),
-      isCoupon
-        ? readOptionalColumns<Coupon054Row>(
-            probe,
-            COUPON_054_COLUMNS,
-            [product.id],
-            'product page',
-          ).then((rows) => rows.get(product.id))
-        : Promise.resolve(undefined),
+      // Read for every product, not only coupons: `offer_valid_until` is the
+      // validity line in the legal block of a physical deal too (C149).
+      readOptionalColumns<Coupon054Row>(
+        probe,
+        COUPON_054_COLUMNS,
+        [product.id],
+        'product page',
+      ).then((rows) => rows.get(product.id)),
       isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
       loadRatingSummary(product.id),
     ],

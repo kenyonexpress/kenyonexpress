@@ -46,6 +46,7 @@ export function describeCouponExpiry(input: {
     const remainingMs = validUntil.getTime() - now.getTime()
     daysLeft = Math.max(0, Math.floor(remainingMs / DAY_MS))
     deadlineLabel = `בתוקף עד ${validUntil.toLocaleDateString('he-IL', {
+      timeZone: 'Asia/Jerusalem',
       day: 'numeric',
       month: 'long',
       year: 'numeric',

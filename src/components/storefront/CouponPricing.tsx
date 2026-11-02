@@ -115,6 +115,7 @@ export function CouponTerms({
               <span className="text-muted">בתוקף עד: </span>
               <time dateTime={validUntil.toISOString()} className="font-medium">
                 {validUntil.toLocaleDateString('he-IL', {
+                  timeZone: 'Asia/Jerusalem',
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',

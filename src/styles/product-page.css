@@ -620,3 +620,110 @@
 .pdp-acc .pdp-details__title {
   display: none;
 }
+
+/* C149: Electro's short-description bullets under the stock line. */
+.pdp-summary__highlights {
+  margin: 12px 0 0;
+  padding-inline-start: 18px;
+  list-style: disc;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+/* C149: Electro's "Specification" table (shop_attributes): label column,
+   hairline rows, no outer frame. */
+.pdp-specs {
+  width: 100%;
+  margin-block-end: 12px;
+  border-collapse: collapse;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+.pdp-specs th,
+.pdp-specs td {
+  padding-block: 8px;
+  padding-inline: 0 12px;
+  border-block-end: 1px solid var(--pdp-line);
+  text-align: start;
+  vertical-align: top;
+}
+.pdp-specs th {
+  width: 40%;
+  font-weight: var(--weight-bold);
+}
+@media (min-width: 768px) {
+  .pdp-specs th {
+    width: 220px;
+  }
+}
+
+/* C149: legal disclosure. */
+.pdp-legal {
+  padding-block-end: 12px;
+}
+.pdp-legal__text {
+  margin: 8px 0 0;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+/* Coupon QR + how-to-redeem. Stacked on phones, QR beside the steps from
+   768px. */
+.pdp-coupon-qr {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--pdp-line);
+  border-radius: 8px;
+}
+@media (min-width: 768px) {
+  .pdp-coupon-qr {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+.pdp-coupon-qr__figure {
+  margin: 0;
+  flex: none;
+  text-align: center;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}
+.pdp-coupon-qr__figure img {
+  display: block;
+  margin-inline: auto;
+}
+.pdp-coupon-qr__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: var(--weight-bold);
+  color: var(--pdp-ink);
+}
+.pdp-coupon-qr__steps,
+.pdp-coupon-qr__list {
+  margin: 0 0 8px;
+  padding-inline-start: 20px;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+.pdp-coupon-qr__steps {
+  list-style: decimal;
+}
+.pdp-coupon-qr__list {
+  list-style: disc;
+}
+
+/* C149: specs + legal stack full width under the details row. */
+@media (min-width: 768px) {
+  .pdp-details--stack {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    margin-top: 24px;
+  }
+}

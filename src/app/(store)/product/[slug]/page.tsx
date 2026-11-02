@@ -4,6 +4,7 @@ import LocationPin from '@/components/product/LocationPin'
 import PurchaseCountWrapper from '@/components/product/PurchaseCountWrapper'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import CouponQrExpiry from '@/components/storefront/CouponQrExpiry'
+import { ProductLegal, ProductSpecs } from '@/components/storefront/ProductDealDetails'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductGalleryMobile from '@/components/storefront/ProductGalleryMobile'
 import ProductInfo from '@/components/storefront/ProductInfo'
@@ -155,7 +156,14 @@ export default async function ProductPage({ params }: Props) {
     couponOffer,
     recurringOffer,
     rating,
+    coupon054,
   } = detail
+
+  const highlights = Array.isArray(product.highlights)
+    ? (product.highlights as unknown[]).filter(
+        (h): h is string => typeof h === 'string' && h.trim() !== '',
+      )
+    : []
 
   const category = Array.isArray(product.categories)
     ? null
@@ -329,6 +337,7 @@ export default async function ProductPage({ params }: Props) {
             productType={productType}
             city={productLocation({ ...product, supplier }).city?.name ?? null}
             attributes={attributes}
+            highlights={highlights}
             variants={variants ?? []}
             isCoupon={isCoupon}
             couponOffer={couponOffer}
@@ -407,6 +416,22 @@ export default async function ProductPage({ params }: Props) {
               whatsappEnabled={readWhatsAppEnabled(product)}
             />
           </details>
+        </div>
+
+        {/* Specs, then the consumer-law disclosure: seller, validity,
+            cancellation (14ג), returns. Every product, templated or not. */}
+        <div className="pdp-details pdp-details--stack">
+          {/* Template values (C148 masters) as a full-width spec table, like
+              Electro's Specification tab; null for rows without a template. */}
+          <ProductSpecs attributes={product.attributes} />
+          <ProductLegal
+            attributes={product.attributes}
+            productType={isCoupon ? 'coupon' : 'physical'}
+            supplierName={supplier?.name ?? null}
+            offerValidUntil={coupon054?.offer_valid_until ?? null}
+            couponExpiryDays={product.coupon_expiry_days}
+            shippingPriceAgorot={product.shipping_price_agorot}
+          />
         </div>
 
         {/* Related products */}

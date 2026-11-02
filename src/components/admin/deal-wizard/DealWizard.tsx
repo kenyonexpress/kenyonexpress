@@ -75,7 +75,7 @@ export default function DealWizard({
         </a>
       </div>
       <input
-        type="search"
+        type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="חיפוש תבנית: אייפון, צימר, עיסוי..."

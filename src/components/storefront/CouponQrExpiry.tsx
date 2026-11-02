@@ -73,9 +73,14 @@ export default async function CouponQrExpiry({
       )}
       <div className="pdp-coupon-qr__body">
         <h2 className="pdp-coupon-qr__title">איך מממשים</h2>
-        <p className="pdp-coupon-qr__text">
-          משלמים באתר ומקבלים שובר עם קוד QR חתום. מציגים אותו בקופה בבית העסק, והיתרה משולמת שם.
-        </p>
+        <ol className="pdp-coupon-qr__steps" data-pdp="redeem-steps">
+          <li>משלמים באתר ומקבלים שובר במייל, ב-SMS ובאזור האישי.</li>
+          <li>
+            בשובר מופיעים קוד QR חתום וקוד מימוש בן 8 ספרות. בבית העסק סורקים את ה-QR, או מקלידים את
+            8 הספרות כשאין סורק.
+          </li>
+          <li>היתרה, אם יש, משולמת בבית העסק. מומלץ לתאם מראש לפי פרטי הספק שבדף.</li>
+        </ol>
         <ul className="pdp-coupon-qr__list">
           {expiry.deadlineLabel && offer.validUntil && (
             <li>
