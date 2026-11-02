@@ -3,7 +3,7 @@
  */
 import { CONSENT_COOKIE, CONSENT_WORDING_VERSION } from '@/lib/analytics/consent'
 import { render } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * The two PostHog events AnalyticsProvider itself emits: the `$pageview` that
@@ -33,6 +33,13 @@ vi.mock('@/lib/supabase/client', () => ({
     auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) },
   }),
 }))
+
+// The provider imports the Supabase client lazily (idle callback). An import
+// still in flight when the file finishes was reported as an unhandled
+// EnvironmentTeardownError on one full run (C142); settle them first.
+afterAll(async () => {
+  await vi.dynamicImportSettled()
+})
 
 vi.mock('@/lib/analytics/tracker', () => ({
   track: (...args: unknown[]) => track(...args),
