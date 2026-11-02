@@ -52,6 +52,26 @@ beforeEach(() => {
 })
 
 describe('supplier agreement recording (C29)', () => {
+  it('stamps the acceptance with the click time, not the card completion time (C179)', async () => {
+    const clickedAt = '2026-11-03T08:00:00.000Z'
+    await createSupplierLead({ ...payload, accepted_at: clickedAt }, '1.2.3.4', {})
+
+    const agreement = calls.find((c) => c.table === 'supplier_agreements' && c.op === 'insert')
+    expect(agreement?.values).toMatchObject({ created_at: clickedAt, ip_address: '1.2.3.4' })
+    const audit = calls.find((c) => c.table === 'audit_log' && c.op === 'insert')
+    expect(audit?.values).toMatchObject({
+      changes: { new: { accepted_at: clickedAt, hash: supplierAgreementHash() } },
+    })
+  })
+
+  it('falls back to now when an older stored payload has no accepted_at', async () => {
+    const before = Date.now()
+    await createSupplierLead(payload, '1.2.3.4', {})
+    const agreement = calls.find((c) => c.table === 'supplier_agreements' && c.op === 'insert')
+    const at = Date.parse((agreement?.values as { created_at: string }).created_at)
+    expect(at).toBeGreaterThanOrEqual(before)
+  })
+
   it('records agreement with version hash, IP and user agent', async () => {
     await createSupplierLead(payload, '1.2.3.4', {
       verificationId: 'verification-123',

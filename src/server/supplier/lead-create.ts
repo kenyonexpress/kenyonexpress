@@ -17,6 +17,14 @@ export interface SupplierLeadPayload {
   website: string
   message: string
   agreement_hash: string
+  /**
+   * When the applicant ticked the box (C179). With card verification on, the
+   * lead is created only after Cardcom answers, minutes later and possibly
+   * never on the same request, so `now()` at insert would record the card's
+   * time rather than the acceptance's. Optional because payloads stored on
+   * verification rows before C179 do not carry it.
+   */
+  accepted_at?: string
 }
 
 function escapeHtml(value: string): string {
@@ -69,6 +77,10 @@ export async function createSupplierLead(
   opts?: { verificationId?: string; userAgent?: string | null },
 ): Promise<{ ok: true; leadId: string } | { ok: false }> {
   const admin = createAdminClient()
+  const acceptedAt =
+    p.accepted_at && !Number.isNaN(Date.parse(p.accepted_at))
+      ? new Date(p.accepted_at).toISOString()
+      : new Date().toISOString()
   const { data: lead, error } = await admin
     .from('supplier_leads')
     .insert({
@@ -96,6 +108,7 @@ export async function createSupplierLead(
     version_date: SUPPLIER_AGREEMENT_VERSION,
     ip_address: ip && /^[0-9a-fA-F.:]+$/.test(ip) ? ip : null,
     user_agent: opts?.userAgent?.slice(0, 512) ?? null,
+    created_at: acceptedAt,
   } as never)
   if (agreementError) {
     log.error('supplier_lead.agreement_record_failed', { reason: agreementError.message })
@@ -111,7 +124,7 @@ export async function createSupplierLead(
       new: {
         version: SUPPLIER_AGREEMENT_VERSION,
         hash: p.agreement_hash,
-        accepted_at: new Date().toISOString(),
+        accepted_at: acceptedAt,
         email: p.email.toLowerCase(),
       },
     },

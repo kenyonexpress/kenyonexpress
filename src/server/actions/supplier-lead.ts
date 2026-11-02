@@ -117,6 +117,7 @@ async function runSubmitSupplierLead(
     website: parsed.data.website,
     message: parsed.data.message,
     agreement_hash: parsed.data.agreement_hash,
+    accepted_at: new Date().toISOString(),
   }
 
   if (!cardVerify) {
