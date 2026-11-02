@@ -30426,3 +30426,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T02:31:15+07:00
 - item: M04-c346
 - RESULT: DONE
+
+## Archived 2026-11-02T08:52:25+07:00 after C140 (3 lines from STATE.md)
+
+### 2026-11-02T02:53:15+07:00
+- item: M05-c346
+- BLOCKED: migration-ledger-drift
