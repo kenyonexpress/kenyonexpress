@@ -603,3 +603,19 @@ Launch is on HOLD. Open items, see docs/LAUNCH-CHECKLIST.md for detail:
 3. Mobile Lighthouse below 90 and home/product parity above 11% (re-measure once build is green).
 4. Locked HeroSlider `<p dir=ltr>` Hebrew nodes (needs your decision, file is locked).
 5. Cloudflare token missing.
+
+---
+
+## C144 v2.1.0 launch gate (2026-11-02)
+
+v2.1.0 is not tagged. The C144 precondition (C131-C143 and C145-C149 all DONE) fails on 5 items:
+
+| Item | Blocker |
+|------|---------|
+| C137 | compare.mjs home 45.73/40.31/27.53% vs <11%; header/hero bands are locked components |
+| C138 | home 380 TopBar+Header+Hero bands alone = 12.34pt, above the 11% gate |
+| C139 | Lighthouse mobile ≥90 not measurable cleanly: host network ~10 KB/s, NO_FCP |
+| C145 | compare.mjs home380 44.87% (locked bands 0-400px = 12.35pt); PWA installable PASS |
+| C149 | compare product 13.88-39.53%; locked header band + imageless reference vs real images |
+
+To clear: unlock the forbidden header/hero files (or exempt locked bands from compare.mjs), and re-run C139 Lighthouse from a stable network. Then re-run C144: `git tag v2.1.0 && git push origin v2.1.0`, check with `git ls-remote --tags origin | grep v2.1.0`, then `touch ~/ke-goals/LAUNCH.flag`. Proof: docs/C144-launch.md.
