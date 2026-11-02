@@ -2,9 +2,11 @@ import ValidityCountdown from '@/components/coupon/ValidityCountdown'
 import WhatsAppButton from '@/components/shared/WhatsAppButton'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { resolveCarrier } from '@/lib/shipping/carriers'
+import { formatRedemptionCode } from '@/lib/voucher-code'
 import { VALIDITY_LABEL } from '@/lib/vouchers/countdown'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { buildOrderInquiryText, storeWhatsAppLink, waChatLink } from '@/lib/whatsapp'
+import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import { getOrderDetail } from '@/server/queries/orders'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -199,7 +201,17 @@ export default async function OrderDetailPage({ params }: Props) {
                           />
                         )}
                         <div>
-                          <p className="coupon-card__code">{voucher.code}</p>
+                          <p className="coupon-card__code" dir="ltr">
+                            {formatVoucherCode(voucher.code)}
+                          </p>
+                          {voucher.redemptionCode && status.presentable && (
+                            <p className="account-row__meta">
+                              קוד מימוש בן 8 ספרות:{' '}
+                              <strong dir="ltr">
+                                {formatRedemptionCode(voucher.redemptionCode)}
+                              </strong>
+                            </p>
+                          )}
                           <p className="account-row__meta">
                             <span
                               className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}

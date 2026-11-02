@@ -58,6 +58,7 @@ function detail(overrides: Partial<OrderDetail> = {}): OrderDetail {
             collectAmountAgorot: agorot(11_000),
             faceValueAgorot: agorot(15_000),
             qrDataUrl: null,
+            redemptionCode: null,
             usedAt: null,
           },
         ],

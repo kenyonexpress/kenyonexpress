@@ -21,6 +21,7 @@ const FILES = [
   'src/server/actions/admin/vouchers.ts',
   'src/app/(admin)/admin/coupons/codes/[id]/page.tsx',
   'src/app/(admin)/admin/coupons/codes/page.tsx',
+  'src/app/(store)/checkout/return/page.tsx',
 ]
 
 const HINT = 'suppliers!vouchers_supplier_id_fkey('

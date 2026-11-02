@@ -39,6 +39,8 @@ export interface OrderVoucher {
   collectAmountAgorot: Agorot | null
   faceValueAgorot: Agorot | null
   qrDataUrl: string | null
+  /** The 8-digit manual-entry code (migration 325); null on older rows. */
+  redemptionCode: string | null
   usedAt: string | null
 }
 
@@ -320,13 +322,14 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       ? admin
           .from('vouchers')
           .select(
-            'code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
+            'code, redemption_code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
           )
           .in('order_item_id', itemIds)
           .order('issued_at', { ascending: true })
       : Promise.resolve({
           data: [] as {
             code: string
+            redemption_code: string | null
             status: string
             expires_at: string | null
             remaining_amount_due_agorot: number | null
@@ -373,6 +376,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
         faceValueAgorot:
           coupon.face_value_agorot === null ? null : agorot(coupon.face_value_agorot),
         qrDataUrl,
+        redemptionCode: coupon.redemption_code ?? null,
         usedAt: coupon.redeemed_at,
       })
     }

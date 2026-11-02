@@ -15,6 +15,7 @@ import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { WALLET_AMOUNT_CANDIDATES, readFirstAvailableColumn } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
+import { formatRedemptionCode } from '@/lib/voucher-code'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import {
   buildCouponShareText,
@@ -118,9 +119,10 @@ async function CheckoutReturnBody({ searchParams }: Props) {
     admin
       .from('vouchers')
       .select(
-        `id, code, qr_payload, expires_at,
+        `id, code, redemption_code, qr_payload, expires_at,
          face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-         products(name_he, city, latitude, longitude)`,
+         products(name_he, city, latitude, longitude),
+         supplier:suppliers!vouchers_supplier_id_fkey(name, contact_phone, whatsapp)`,
       )
       .eq('order_id', orderId)
       .order('issued_at', { ascending: true }),
@@ -195,6 +197,16 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                   siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.kenyonexpress.co.il',
                 }),
               )
+              // The supplier is the one who honours the coupon, so the
+              // customer's question about it goes to them, with the order
+              // number in the opening line. Same wording as the order page.
+              const supplier = (
+                Array.isArray(coupon.supplier) ? coupon.supplier[0] : coupon.supplier
+              ) as { name: string; contact_phone: string | null; whatsapp: string | null } | null
+              const supplierPhone = supplier?.whatsapp ?? supplier?.contact_phone ?? null
+              const supplierHref = supplierPhone
+                ? waChatLink(supplierPhone, `הזמנה ${order.id.slice(0, 8).toUpperCase()}`)
+                : null
               return (
                 <article className="coupon-card" key={coupon.id}>
                   <div>
@@ -217,6 +229,12 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                     <div className="coupon-card__code" dir="ltr" data-testid="coupon-code">
                       {formatVoucherCode(coupon.code)}
                     </div>
+                    {coupon.redemption_code && (
+                      <div className="coupon-card__note" data-testid="coupon-redemption-code">
+                        קוד מימוש בן 8 ספרות:{' '}
+                        <strong dir="ltr">{formatRedemptionCode(coupon.redemption_code)}</strong>
+                      </div>
+                    )}
                     {coupon.collect_amount_agorot > 0 && (
                       <div className="coupon-card__collect">
                         לתשלום בעסק במימוש: {shekels(coupon.collect_amount_agorot)}
@@ -249,6 +267,27 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                       <WhatsAppIcon size={16} />
                       שתפו את הקופון בוואטסאפ
                     </a>
+                    {supplierHref && (
+                      <a
+                        href={supplierHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-testid="coupon-supplier-whatsapp"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          marginTop: 10,
+                          marginInlineStart: 16,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: 'var(--color-whatsapp-ink)',
+                        }}
+                      >
+                        <WhatsAppIcon size={16} />
+                        צור קשר עם הספק{supplier?.name ? ` ${supplier.name}` : ''}
+                      </a>
+                    )}
                   </div>
                   {coupon.qrDataUrl && (
                     <div className="coupon-card__qr" data-testid="coupon-qr">
