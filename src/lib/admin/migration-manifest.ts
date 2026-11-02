@@ -1118,4 +1118,22 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '325',
+    file: '325_vouchers_redemption_code.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '326',
+    file: '326_payments_token_id.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '327',
+    file: '327_profiles_email_nullable_for_anonymous.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

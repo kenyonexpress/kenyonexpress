@@ -255,6 +255,9 @@ describe('the pending migration inventory', () => {
       '321_card_verify_enabled_flag.sql',
       '322_rls_suppliers_column_grants.sql',
       '323_order_items_percent_snapshot_lock.sql',
+      '325_vouchers_redemption_code.sql',
+      '326_payments_token_id.sql',
+      '327_profiles_email_nullable_for_anonymous.sql',
     ])
   })
 
@@ -526,6 +529,9 @@ describe('the pending migration inventory', () => {
       'preflight_322.sql',
       'preflight_323.sql',
       'preflight_324.sql',
+      'preflight_325.sql',
+      'preflight_326.sql',
+      'preflight_327.sql',
     ])
   })
 
