@@ -30558,3 +30558,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T05:44:25+07:00
 - item: C136
 - RESULT: DONE
+
+## Archived 2026-11-02T21:55:10+07:00 after M16-c347 (3 lines from STATE.md)
+
+### 2026-11-02T06:22:53+07:00
+- item: C137
+- BLOCKED: compare.mjs home 45.73/40.31/27.53 vs <11 (LTR English Electro baseline vs required RTL Hebrew section order; header/hero locked)
