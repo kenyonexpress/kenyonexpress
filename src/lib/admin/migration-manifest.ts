@@ -1136,4 +1136,22 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '328',
+    file: '328_deal_templates.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '329',
+    file: '329_is_demo.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '330',
+    file: '330_demo_deals.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

@@ -21,6 +21,7 @@ import {
   formatIls,
   ilsToAgorot,
   multiplyAgorot,
+  roundToWholeShekels,
   sumAgorot,
 } from './commerce/money'
 
@@ -268,6 +269,11 @@ export function agorotToDecimalString(value: Agorot | number): string {
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, '0')}`
 }
 
+/** Agorot to a whole-shekel string for an admin form field ("199"), half away from zero. */
+export function agorotToWholeShekelString(value: Agorot | number): string {
+  return String(roundToWholeShekels(agorot(Math.round(value))))
+}
+
 /**
  * Admin whole-shekel input (decision 02.11.2026: admin enters whole shekels).
  * Accepts "49", "49.90" (rounded to the agora) and thousands separators;
@@ -311,6 +317,13 @@ export function bpToPercentString(points: number, decimals: 0 | 1 | 2 = 2): stri
     return `${sign}${Math.floor(tenths / 10)}.${tenths % 10}`
   }
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, '0')}`
+}
+
+/** Basis points as the shortest exact percent string: 8500 -> "85", 1250 -> "12.5". */
+export function bpToShortPercentString(points: number): string {
+  const full = bpToPercentString(points, 2)
+  if (full.endsWith('.00')) return full.slice(0, -3)
+  return full.endsWith('0') ? full.slice(0, -1) : full
 }
 
 /** A ratio rendered as a percent string, e.g. (1, 3, 2) -> "33.33". Not money. */

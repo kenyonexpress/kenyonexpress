@@ -71,7 +71,7 @@ export default function DealPreview({
         </div>
       )}
       <div className="space-y-3 p-4">
-        {categoryName && <p className="text-xs text-[#0062bd]">{categoryName}</p>}
+        {categoryName && <p className="text-xs text-link">{categoryName}</p>}
         <h3 className="text-lg font-bold leading-snug text-gray-900">
           {text('title') || 'כותרת הדיל'}
         </h3>
@@ -79,14 +79,14 @@ export default function DealPreview({
           <p className="text-sm text-gray-600">{text('short_description')}</p>
         )}
         <div className="flex items-baseline gap-3">
-          <span className="text-2xl font-bold text-[#E4002B]">
+          <span className="text-2xl font-bold text-price">
             {price != null ? formatAgorot(price) : '₪-'}
           </span>
           {compare != null && compare > (price ?? 0) && (
             <span className="text-sm text-gray-500 line-through">{formatAgorot(compare)}</span>
           )}
           {discount != null && discount > 0 && (
-            <span className="rounded bg-[#E4002B] px-2 py-0.5 text-xs font-bold text-white">
+            <span className="rounded bg-price px-2 py-0.5 text-xs font-bold text-white">
               {discount}%-
             </span>
           )}
@@ -104,7 +104,7 @@ export default function DealPreview({
         <button
           type="button"
           disabled
-          className="w-full rounded-full bg-[#fed700] py-2.5 text-sm font-bold text-gray-900"
+          className="w-full rounded-full bg-brand-primary py-2.5 text-sm font-bold text-gray-900"
         >
           {template.product_type === 'coupon' ? 'לרכישת השובר' : 'הוספה לסל'}
         </button>
@@ -141,7 +141,7 @@ export default function DealPreview({
             {text('supplier_hours') && (
               <p className="whitespace-pre-line text-gray-600">{text('supplier_hours')}</p>
             )}
-            {text('supplier_waze') && <p className="text-[#0062bd]">ניווט ב-Waze</p>}
+            {text('supplier_waze') && <p className="text-link">ניווט ב-Waze</p>}
           </section>
         )}
 

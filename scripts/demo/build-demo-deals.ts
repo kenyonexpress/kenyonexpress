@@ -1,5 +1,5 @@
 /**
- * C149: builds migrations/pending/330_demo_deals.sql from ./demo-deals.mjs.
+ * C149: builds migrations/applied/330_demo_deals.sql from ./demo-deals.mjs.
  *
  * Every deal goes through the C148 pipeline (validateDeal + buildProductWrite)
  * against its own master, so a demo row is exactly what the admin wizard
@@ -22,7 +22,7 @@ import { agorotFromIlsNumber } from '../../src/lib/money'
 import { CITIES, DEALS } from './demo-deals.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const OUT = resolve(root, 'migrations/pending/330_demo_deals.sql')
+const OUT = resolve(root, 'migrations/applied/330_demo_deals.sql')
 
 /** Published store number: demo businesses never route a call to a stranger. */
 const DEMO_PHONE = '052-4635550'

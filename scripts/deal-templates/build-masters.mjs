@@ -4,7 +4,7 @@
  *
  * Writes:
  *   src/lib/deal-templates/masters.json        (read by the admin + tests)
- *   migrations/pending/328_deal_templates.sql  (table + seed, idempotent)
+ *   migrations/applied/328_deal_templates.sql  (table + seed, idempotent)
  *
  * Every master carries ONLY the fields its deal type needs. The fields every
  * deal shares (title, price, gallery, supplier block, legal block ...) live in
@@ -1064,7 +1064,7 @@ on conflict (slug) do update set
   updated_at = now()
 where public.deal_templates.is_system;
 `
-writeFileSync(resolve(root, 'migrations/pending/328_deal_templates.sql'), sql)
+writeFileSync(resolve(root, 'migrations/applied/328_deal_templates.sql'), sql)
 console.log(
   `masters: ${masters.length} (coupon ${masters.filter((m) => m.product_type === C).length}, physical ${masters.filter((m) => m.product_type === P).length})`,
 )

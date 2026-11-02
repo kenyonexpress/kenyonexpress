@@ -258,6 +258,9 @@ describe('the pending migration inventory', () => {
       '325_vouchers_redemption_code.sql',
       '326_payments_token_id.sql',
       '327_profiles_email_nullable_for_anonymous.sql',
+      '328_deal_templates.sql',
+      '329_is_demo.sql',
+      '330_demo_deals.sql',
     ])
   })
 

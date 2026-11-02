@@ -145,7 +145,7 @@ export default function TemplateCloner({
               type="button"
               aria-label={`הסרת ${f.label}`}
               onClick={() => setFields(fields.filter((x) => x.key !== f.key))}
-              className="ms-auto text-gray-400 hover:text-[#E4002B]"
+              className="ms-auto text-gray-400 hover:text-price"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -199,7 +199,7 @@ export default function TemplateCloner({
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-[#E4002B]">
+        <p role="alert" className="text-sm text-price">
           {error}
         </p>
       )}
@@ -218,7 +218,7 @@ export default function TemplateCloner({
             setSaving(false)
             setError(err)
           }}
-          className="rounded-lg bg-[#fed700] px-5 py-2 text-sm font-semibold text-gray-900 hover:bg-[#fedd26] disabled:opacity-60"
+          className="rounded-lg bg-brand-primary px-5 py-2 text-sm font-semibold text-gray-900 hover:bg-brand-primary-hover disabled:opacity-60"
         >
           {saving ? 'שומר...' : 'שמירת התבנית והמשך'}
         </button>

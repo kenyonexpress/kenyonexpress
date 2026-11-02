@@ -27,6 +27,7 @@ const ADMIN_ACTIONS = join(process.cwd(), 'src/server/actions/admin')
  */
 const UPLOADER_WRITABLE = new Set([
   'categories.ts',
+  'deal-templates.ts', // the product wizard: writes through products.ts (same uploader policy), cashback only for canSeeMoney
   'images.ts',
   'products.ts',
   'product-location.ts', // a product's city and street address: catalogue copy

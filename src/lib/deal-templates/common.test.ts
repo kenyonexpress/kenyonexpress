@@ -135,7 +135,7 @@ describe('deal masters', () => {
 
   it('migration 328 seeds every master in masters.json', () => {
     const sql = readFileSync(
-      resolve(__dirname, '../../../migrations/pending/328_deal_templates.sql'),
+      resolve(__dirname, '../../../migrations/applied/328_deal_templates.sql'),
       'utf8',
     )
     for (const m of masters)

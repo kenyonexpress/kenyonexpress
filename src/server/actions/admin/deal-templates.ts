@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import {
   type DealTemplate,
   type RawValues,
@@ -15,19 +16,22 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils/slugify'
 import { upsertProductNoRedirect } from '@/server/actions/admin/products'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
 const TEMPLATE_SELECT =
   'slug, name_he, product_type, category_slug, fields, defaults, is_system, parent_slug'
 
 async function loadTemplate(slug: string): Promise<DealTemplate | null> {
-  const { data } = await createAdminClient()
+  const { data, error } = await createAdminClient()
     .from('deal_templates' as never)
     .select(TEMPLATE_SELECT)
     .eq('slug', slug)
     .is('deleted_at', null)
     .maybeSingle()
+  // A failed read is not "no such template": throw rather than tell the
+  // admin a master they can see does not exist.
+  if (error) throw new Error(`deal_templates read failed: ${error.message}`)
   return (data as DealTemplate | null) ?? null
 }
 
@@ -141,7 +145,13 @@ async function freeSlug(base: string): Promise<string> {
   const root = base.length >= 2 ? base.slice(0, 80) : 'deal'
   for (let n = 1; n < 50; n++) {
     const candidate = n === 1 ? root : `${root}-${n}`
-    const { data } = await admin.from('products').select('id').eq('slug', candidate).maybeSingle()
+    const { data, error } = await admin
+      .from('products')
+      .select('id')
+      .eq('slug', candidate)
+      .maybeSingle()
+    // A failed lookup would otherwise hand out a slug that may be taken.
+    if (error) throw new Error(`products slug lookup failed: ${error.message}`)
     if (!data) return candidate
   }
   return `${root}-${Date.now().toString(36)}`
@@ -158,7 +168,11 @@ export async function createDealFromTemplate(input: unknown): Promise<CreateDeal
     if (!template) return { ok: false, error: 'התבנית לא נמצאה' }
 
     const admin = createAdminClient()
-    const { data: cats } = await admin.from('categories').select('id').is('deleted_at', null)
+    const { data: cats, error: catsError } = await admin
+      .from('categories')
+      .select('id')
+      .is('deleted_at', null)
+    if (catsError) return { ok: false, error: 'טעינת הקטגוריות נכשלה' }
     const result = validateDeal(template, values as RawValues, {
       categoryIds: (cats ?? []).map((c) => c.id),
       publish,
@@ -184,11 +198,17 @@ export async function createDealFromTemplate(input: unknown): Promise<CreateDeal
     const id = saved.id
     if (!id) return { ok: false, error: 'שמירת המוצר נכשלה' }
 
+    // cashback_percent is money: a role that cannot see money keeps the
+    // value upsertProductNoRedirect stored, as the product form does.
+    const extra = canSeeMoney(session.role)
+      ? { attributes: write.attributes, cashback_percent: write.cashbackPercent }
+      : { attributes: write.attributes }
     const { error } = await admin
       .from('products')
-      .update({ attributes: write.attributes, cashback_percent: write.cashbackPercent } as never)
+      .update(extra as never)
       .eq('id', id)
     if (error) return { ok: false, error: error.message }
+    updateTag(CATALOGUE_TAG)
     return { ok: true, id, slug, published: canPublish }
   })
 }

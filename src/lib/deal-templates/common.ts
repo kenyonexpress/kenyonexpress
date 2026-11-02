@@ -11,7 +11,16 @@
  * `coupon_price_ils` are the existing upsert inputs and are whole-shekel
  * integers, exactly what ProductForm posts.
  */
-import { type Agorot, agorotFromIlsNumber, formatAgorot } from '@/lib/money'
+import {
+  BP_WHOLE,
+  agorotFromDb,
+  agorotFromShekelInput,
+  agorotToWholeShekelString,
+  bpFromPercentColumn,
+  bpToShortPercentString,
+  formatAgorot,
+  percentFromColumn,
+} from '@/lib/money'
 
 export type FieldType =
   | 'text'
@@ -194,7 +203,7 @@ export function initialValues(t: DealTemplate): RawValues {
   if (t.product_type === 'coupon') {
     values.validity_days = toRaw(d.validity_days ?? 90)
   } else {
-    values.shipping_price = String(Math.round(Number(d.shipping_price_agorot ?? 0) / 100))
+    values.shipping_price = agorotToWholeShekelString(agorotFromDb(d.shipping_price_agorot))
     values.supplier_transfer_days = toRaw(d.supplier_transfer_days ?? 14)
     values.cancellation_window_days = toRaw(d.cancellation_window_days ?? 14)
     values.returns_policy = RETURNS_TEXT
@@ -203,7 +212,7 @@ export function initialValues(t: DealTemplate): RawValues {
   for (const field of t.fields) {
     const v = d[field.key] ?? field.default
     if (field.type === 'money' && d[`${field.key}_agorot`] != null) {
-      values[field.key] = String(Math.round(Number(d[`${field.key}_agorot`]) / 100))
+      values[field.key] = agorotToWholeShekelString(agorotFromDb(d[`${field.key}_agorot`]))
     } else if (v !== undefined) {
       values[field.key] = toRaw(v)
     }
@@ -266,10 +275,11 @@ export function validateField(
     }
     case 'money': {
       if (!/^\d+$/.test(text)) return [null, `${label}: סכום בשקלים שלמים בלבד`]
-      const shekels = Number(text)
-      if (field.min != null && shekels < field.min)
+      const amount = agorotFromShekelInput(text)
+      if (amount == null) return [null, `${label}: סכום בשקלים שלמים בלבד`]
+      if (field.min != null && amount < field.min * 100)
         return [null, `${label}: מינימום ${field.min} ₪`]
-      return [agorotFromIlsNumber(shekels), null]
+      return [amount, null]
     }
     case 'percent': {
       if (!/^\d{1,3}(?:\.\d{1,2})?$/.test(text)) return [null, `${label}: אחוז בין 0 ל-100`]
@@ -394,8 +404,9 @@ export function buildProductWrite(
   v: Record<string, CleanValue>,
   ctx: { slug: string; supplierId: string | null; images: string[]; publish: boolean },
 ): ProductWrite {
-  const shekels = (a: CleanValue) => (a == null ? '' : String(Math.round(Number(a) / 100)))
-  const platform = Number(v.platform_percent ?? 0)
+  const shekels = (a: CleanValue) => (a == null ? '' : agorotToWholeShekelString(agorotFromDb(a)))
+  const platformBp = bpFromPercentColumn(v.platform_percent) ?? 0
+  const cashbackPercent = percentFromColumn(v.cashback_percent) ?? 0
   const form: Record<string, string> = {
     slug: ctx.slug,
     name_he: String(v.title ?? ''),
@@ -405,8 +416,8 @@ export function buildProductWrite(
     supplier_id: ctx.supplierId ?? '',
     type: t.product_type,
     status: ctx.publish ? 'active' : 'draft',
-    platform_percent: String(platform),
-    supplier_split_percent: String(Math.round((100 - platform) * 100) / 100),
+    platform_percent: bpToShortPercentString(platformBp),
+    supplier_split_percent: bpToShortPercentString(BP_WHOLE - platformBp),
     max_per_order: v.max_units_per_order == null ? '' : String(v.max_units_per_order),
     offer_valid_until: v.offer_valid_until ? String(v.offer_valid_until) : '',
     tags: ((v.tags as string[]) ?? []).join(','),
@@ -468,16 +479,16 @@ export function buildProductWrite(
         ? { returns_policy: v.returns_policy, delivery_days: v.delivery_days }
         : { validity_days: Number(v.validity_days ?? 90) }),
     },
-    cashback_percent: Number(v.cashback_percent ?? 0),
+    cashback_percent: cashbackPercent,
   }
-  return { form, attributes, cashbackPercent: Number(v.cashback_percent ?? 0) }
+  return { form, attributes, cashbackPercent }
 }
 
 /** Display a template value in Hebrew for the preview and the product page. */
 export function displayValue(field: TemplateField, v: CleanValue): string {
   if (v === null || v === undefined) return ''
   if (field.type === 'bool') return v ? 'כן' : 'לא'
-  if (field.type === 'money') return formatAgorot(Number(v) as Agorot)
+  if (field.type === 'money') return formatAgorot(agorotFromDb(v))
   if (Array.isArray(v)) return v.join(', ')
   return String(v)
 }

@@ -58,7 +58,7 @@ export default async function NewProductPage({
   }
 
   return (
-    <div className="space-y-4 max-w-[1320px]">
+    <div className="space-y-4 max-w-page">
       <h1 className="text-xl font-bold text-gray-900">דיל חדש</h1>
       <DealWizard
         templates={templates as unknown as DealTemplate[]}

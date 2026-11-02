@@ -63,13 +63,13 @@ export default function DealWizard({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="rounded-full bg-[#fed700] px-3 py-1 text-xs font-bold text-gray-900">
+        <span className="rounded-full bg-brand-primary px-3 py-1 text-xs font-bold text-gray-900">
           שלב 1 מתוך 2
         </span>
         <h2 className="text-lg font-bold text-gray-900">בחירת תבנית דיל</h2>
         <a
           href="/admin/products/new?mode=classic"
-          className="ms-auto text-sm text-[#0062bd] hover:underline"
+          className="ms-auto text-sm text-link hover:underline"
         >
           טופס מוצר מלא (ללא תבנית)
         </a>
@@ -96,7 +96,7 @@ export default function DealWizard({
                   <button
                     type="button"
                     onClick={() => setTemplate(t)}
-                    className="w-full rounded-lg border border-gray-200 bg-white p-3 text-start hover:border-[#fed700] hover:bg-[#fffbe0]"
+                    className="w-full rounded-lg border border-gray-200 bg-white p-3 text-start hover:border-brand-primary hover:bg-warning-surface"
                   >
                     <span className="block font-semibold text-gray-900">{t.name_he}</span>
                     <span className="block text-xs text-gray-500">
@@ -141,7 +141,7 @@ export default function DealWizard({
           <button
             type="button"
             onClick={() => setCloning(true)}
-            className="text-sm font-semibold text-[#0062bd] hover:underline"
+            className="text-sm font-semibold text-link hover:underline"
           >
             + יצירת תבנית חדשה מהתבנית הקרובה ביותר (נשמרת לשימוש עתידי)
           </button>
@@ -235,7 +235,7 @@ function FieldInput({
                 type="button"
                 aria-pressed={on}
                 onClick={() => onChange(on ? selected.filter((s) => s !== o) : [...selected, o])}
-                className={`rounded-full border px-3 py-1 text-xs ${on ? 'border-[#fed700] bg-[#fed700] font-semibold' : 'border-gray-300 bg-white'}`}
+                className={`rounded-full border px-3 py-1 text-xs ${on ? 'border-brand-primary bg-brand-primary font-semibold' : 'border-gray-300 bg-white'}`}
               >
                 {o}
               </button>
@@ -274,7 +274,7 @@ function FieldInput({
       {control}
       {field.help && <p className="mt-1 text-xs text-gray-500">{field.help}</p>}
       {error && (
-        <p role="alert" className="mt-1 text-xs text-[#E4002B]">
+        <p role="alert" className="mt-1 text-xs text-price">
           {error}
         </p>
       )}
@@ -373,14 +373,14 @@ function DealForm({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="rounded-full bg-[#fed700] px-3 py-1 text-xs font-bold text-gray-900">
+        <span className="rounded-full bg-brand-primary px-3 py-1 text-xs font-bold text-gray-900">
           שלב 2 מתוך 2
         </span>
         <h2 className="text-lg font-bold text-gray-900">דיל חדש: {template.name_he}</h2>
         <button
           type="button"
           onClick={onBack}
-          className="ms-auto text-sm text-[#0062bd] hover:underline"
+          className="ms-auto text-sm text-link hover:underline"
         >
           חזרה לבחירת תבנית
         </button>
@@ -444,7 +444,7 @@ function DealForm({
                         ))}
                       </select>
                       {errors.category && (
-                        <p role="alert" className="mt-1 text-xs text-[#E4002B]">
+                        <p role="alert" className="mt-1 text-xs text-price">
                           {errors.category}
                         </p>
                       )}
@@ -481,7 +481,7 @@ function DealForm({
                     altSubject={String(values.title ?? '')}
                   />
                   {errors.gallery && (
-                    <p role="alert" className="mt-1 text-xs text-[#E4002B]">
+                    <p role="alert" className="mt-1 text-xs text-price">
                       {errors.gallery}
                     </p>
                   )}
@@ -492,7 +492,7 @@ function DealForm({
 
           {message && (
             <output
-              className={`block text-sm ${message.kind === 'ok' ? 'text-green-700' : 'text-[#E4002B]'}`}
+              className={`block text-sm ${message.kind === 'ok' ? 'text-green-700' : 'text-price'}`}
             >
               {message.text}
             </output>
@@ -503,7 +503,7 @@ function DealForm({
                 type="button"
                 disabled={pending}
                 onClick={() => submit(true)}
-                className="rounded-lg bg-[#fed700] px-6 py-2.5 text-sm font-semibold text-gray-900 hover:bg-[#fedd26] disabled:opacity-60"
+                className="rounded-lg bg-brand-primary px-6 py-2.5 text-sm font-semibold text-gray-900 hover:bg-brand-primary-hover disabled:opacity-60"
               >
                 {pending ? 'שומר...' : 'פרסום'}
               </button>
