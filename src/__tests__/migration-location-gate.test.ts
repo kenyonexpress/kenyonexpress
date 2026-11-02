@@ -128,7 +128,10 @@ describe('a new migration lands in migrations/pending or nowhere', () => {
 
       // If a file appears as Added in migrations/applied/, check if it came from
       // migrations/pending/ first (the proper apply-then-move workflow).
-      if (status === 'A' && path.startsWith('migrations/applied/')) {
+      if (
+        status === 'A' &&
+        ['migrations/applied/', 'migrations/cancelled/'].some((d) => path.startsWith(d))
+      ) {
         const filename = path.split('/').pop() ?? ''
         const pendingPath = `migrations/pending/${filename}`
         const pendingHistory = git(['log', '--oneline', '--all', '--', pendingPath])

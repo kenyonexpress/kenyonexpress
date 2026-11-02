@@ -2,6 +2,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import ProductInfo from './ProductInfo'
 
+vi.mock('@/server/actions/reviews', () => ({
+  getWishlistSaved: vi.fn().mockResolvedValue(false),
+  toggleWishlist: vi.fn().mockResolvedValue({ ok: true, saved: true }),
+}))
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),

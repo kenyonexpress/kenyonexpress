@@ -26,9 +26,13 @@ export default function WishlistButton({
 
   useEffect(() => {
     let cancelled = false
-    getWishlistSaved(productId).then((value) => {
-      if (!cancelled) setSaved(value)
-    })
+    // A failed read (offline, action error) leaves the heart unsaved rather
+    // than surfacing as an unhandled rejection.
+    getWishlistSaved(productId)
+      .then((value) => {
+        if (!cancelled) setSaved(value)
+      })
+      .catch(() => {})
     return () => {
       cancelled = true
     }
