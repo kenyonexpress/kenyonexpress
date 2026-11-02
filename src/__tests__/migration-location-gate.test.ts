@@ -116,6 +116,16 @@ describe('a new migration lands in migrations/pending or nowhere', () => {
     // supabase/migrations is the same act as creating one there.
     const raw = git(['diff', '--name-status', '--diff-filter=AR', `${base}...HEAD`])
     const offenders: string[] = []
+    // Every path that has ever existed under migrations/pending/, read ONCE.
+    // This was one `git log --all` per added file; with ~2000 commits on the
+    // branch that took 7-9s alone and timed out at 30s under a parallel
+    // Playwright run (C142).
+    const everPending = new Set(
+      git(['log', '--all', '--name-only', '--format=', '--', 'migrations/pending/'])
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    )
 
     for (const line of raw.split('\n')) {
       if (!line.trim()) continue
@@ -134,8 +144,7 @@ describe('a new migration lands in migrations/pending or nowhere', () => {
       ) {
         const filename = path.split('/').pop() ?? ''
         const pendingPath = `migrations/pending/${filename}`
-        const pendingHistory = git(['log', '--oneline', '--all', '--', pendingPath])
-        if (pendingHistory.trim()) {
+        if (everPending.has(pendingPath)) {
           // File was created in pending/ first, then moved to applied/. This is allowed.
           continue
         }
