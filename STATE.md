@@ -1,7 +1,11 @@
-RESUME FROM: M15-c347
+RESUME FROM: M16-c347
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T21:51:25+07:00
+- item: M15-c347
+- RESULT: DONE
 
 ### 2026-11-02T21:45:38+07:00
 - item: M14-c347
@@ -98,10 +102,6 @@ RESUME FROM: M15-c347
 ### 2026-11-02T06:22:53+07:00
 - item: C137
 - BLOCKED: compare.mjs home 45.73/40.31/27.53 vs <11 (LTR English Electro baseline vs required RTL Hebrew section order; header/hero locked)
-
-### 2026-11-02T05:44:25+07:00
-- item: C136
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
