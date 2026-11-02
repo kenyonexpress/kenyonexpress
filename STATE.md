@@ -1,7 +1,11 @@
-RESUME FROM: M03-c347
+RESUME FROM: M04-c347
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T21:03:20+07:00
+- item: M03-c347
+- BLOCKED: locked-component header band plus content mismatch against Electro shop reference (31.43/32.93/21.08 vs <11)
 
 ### 2026-11-02T20:25:53+07:00
 - item: C144
@@ -98,10 +102,6 @@ RESUME FROM: M03-c347
 ### 2026-11-02T03:25:44+07:00
 - item: M16-c346
 - RESULT: DONE
-
-### 2026-11-02T03:22:52+07:00
-- item: M15-c346
-- BLOCKED: console errors on / (React #418 hydration mismatch), prod build stale, redeploy of HEAD needed
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
