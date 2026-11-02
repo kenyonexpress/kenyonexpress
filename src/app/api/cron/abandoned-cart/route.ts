@@ -1,4 +1,3 @@
-import { OFF_PAGE } from '@/styles/tokens'
 import { loadCartProductData } from '@/lib/cart/load-products'
 import { buildCartView } from '@/lib/cart/pricing'
 import type { CartStorageItem, CartView } from '@/lib/cart/types'
@@ -13,6 +12,7 @@ import { trackEvent } from '@/lib/observability/posthog'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { OFF_PAGE } from '@/styles/tokens'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**

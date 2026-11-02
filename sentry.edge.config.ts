@@ -1,5 +1,5 @@
-import { scrubEventUser } from '@/lib/observability/sentry-user'
 import { isClientDisconnect, shouldReportToSentry } from '@/lib/observability/sentry-filter'
+import { scrubEventUser } from '@/lib/observability/sentry-user'
 import * as Sentry from '@sentry/nextjs'
 
 /**

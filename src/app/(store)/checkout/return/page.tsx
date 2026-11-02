@@ -1,7 +1,7 @@
-import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import PasskeyBanner from '@/components/auth/PasskeyBanner'
 import LocationPin from '@/components/product/LocationPin'
 import PushPrompt from '@/components/push/PushPrompt'
+import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import PurchaseMarker from '@/components/pwa/PurchaseMarker'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {

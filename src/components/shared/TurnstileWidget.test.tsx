@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { render } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import TurnstileWidget from './TurnstileWidget'
 
 describe('TurnstileWidget', () => {
@@ -12,7 +12,7 @@ describe('TurnstileWidget', () => {
   })
 
   it('renders nothing when NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set', () => {
-    delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+    Reflect.deleteProperty(process.env, 'NEXT_PUBLIC_TURNSTILE_SITE_KEY')
     const { container } = render(<TurnstileWidget />)
     expect(container.firstChild).toBeNull()
   })

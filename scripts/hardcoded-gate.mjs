@@ -49,45 +49,14 @@ const isAdvisory = (file) => ADVISORY_FILES.has(file)
 const scannableLines = (file, content) =>
   blankCommentLines(content.split(/\r?\n/).join('\n'), { block: hasBlockComments(file) })
 
-function collectMatches(re, line) {
-  const out = []
-  re.lastIndex = 0
-  let m = re.exec(line)
-  while (m !== null) {
-    out.push(m[0])
-    m = re.exec(line)
-  }
-  return out
-}
-
 function scanFile(file) {
+  let content
   try {
-    return scanContent(readFileSync(file, 'utf8'))
+    content = readFileSync(file, 'utf8')
   } catch {
     return []
   }
-  const hits = []
-  const lines = scannableLines(file, content)
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    for (const value of collectMatches(HEX_RE, line)) hits.push({ line: i + 1, value })
-    for (const value of collectMatches(PX_RE, line)) hits.push({ line: i + 1, value })
-  }
-  return hits
-}
-
-function parseLedger(text) {
-  const counts = {}
-  for (const line of text.split(/\r?\n/)) {
-    if (!line.startsWith('|')) continue
-    const cells = line.split('|').map((c) => c.trim())
-    if (cells.length < 5) continue
-    const file = cells[1]
-    if (!file || file === 'File' || /^-+$/.test(file)) continue
-    if (!Number.parseInt(cells[2], 10) && cells[2] !== '0') continue
-    counts[file] = (counts[file] ?? 0) + 1
-  }
-  return counts
+  return scanContent(scannableLines(file, content).join('\n'))
 }
 
 function loadBaseline(range) {
