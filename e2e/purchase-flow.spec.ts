@@ -37,7 +37,8 @@ test.describe('search to checkout', () => {
     await page.goto('/')
     await expectHebrewRtl(page)
 
-    const deals = page.locator('a[href^="/product/"]')
+    // :visible: below md the hero's product links are in the DOM but hidden.
+    const deals = page.locator('a[href^="/product/"]:visible')
     await expect(deals.first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
 
     // Not just present: the link has to lead to a page that renders. An href

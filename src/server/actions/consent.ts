@@ -12,6 +12,7 @@ import {
   CONSENT_GRANULAR_MAX_AGE_SECONDS,
 } from '@/lib/analytics/consent-categories'
 import { withActionContext } from '@/lib/observability/action-context'
+import { secureCookie } from '@/lib/security/secure-cookie'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -37,7 +38,7 @@ async function runDecideConsent(formData: FormData): Promise<void> {
     sameSite: 'lax',
     // Readable by the pre-paint snippet and the analytics client.
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
+    secure: await secureCookie(),
   })
 
   redirect(await backToWhereTheyWere())
@@ -105,7 +106,7 @@ async function runSaveGranularConsent(value: string): Promise<void> {
     sameSite: 'lax',
     // Readable by client-side analytics scripts
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
+    secure: await secureCookie(),
   })
 
   // Also set the legacy cookie for backward compatibility
@@ -123,7 +124,7 @@ async function runSaveGranularConsent(value: string): Promise<void> {
     path: '/',
     sameSite: 'lax',
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
+    secure: await secureCookie(),
   })
 
   redirect(await backToWhereTheyWere())

@@ -25,7 +25,11 @@ test.describe('supplier apply @supplier', () => {
     })
 
     await page.goto('/suppliers')
-    await page.waitForLoadState('networkidle') // the submit handler is attached on hydration
+    // The submit handler is attached on hydration. Not `networkidle`: WebKit
+    // keeps a request open on this page and never reaches it (C142).
+    await page.waitForLoadState('load')
+    await page.waitForFunction(() => document.readyState === 'complete')
+    await page.waitForTimeout(1_000)
     await expectHebrewRtl(page)
 
     await page.locator('#lead-business').fill('עסק בדיקה E2E')

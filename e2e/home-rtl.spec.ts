@@ -113,16 +113,21 @@ test.describe('home page RTL', () => {
     const lines = page.locator('.hero-copy-column p')
     await expect(lines.first()).toBeAttached()
 
-    const leaks = await lines.evaluateAll((els) =>
-      els
-        .filter(
-          (el) => el.getAttribute('dir') === 'ltr' || getComputedStyle(el).direction !== 'rtl',
-        )
-        .map(
-          (el) => `"${(el.textContent ?? '').trim().slice(0, 30)}" dir=${el.getAttribute('dir')}`,
-        ),
-    )
-    expect(leaks, 'hero paragraphs laid out ltr').toEqual([])
+    // Polled: sampled mid-hydration the slider's fallback copy read ltr once
+    // at 768 and rtl on every settled look (C142).
+    const leaks = () =>
+      lines.evaluateAll((els) =>
+        els
+          .filter(
+            (el) => el.getAttribute('dir') === 'ltr' || getComputedStyle(el).direction !== 'rtl',
+          )
+          .map(
+            (el) => `"${(el.textContent ?? '').trim().slice(0, 30)}" dir=${el.getAttribute('dir')}`,
+          ),
+      )
+    await expect
+      .poll(leaks, { message: 'hero paragraphs laid out ltr', timeout: 10_000 })
+      .toEqual([])
   })
 
   test('every ltr node on the page is on the allow-list', async ({ page }) => {

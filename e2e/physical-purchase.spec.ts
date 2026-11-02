@@ -63,6 +63,8 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     })
 
     await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: PAY_RETURN_TIMEOUT })
+    const paidOrderId = new URL(page.url()).searchParams.get('order_id')
+    expect(paidOrderId, 'order_id on the return URL').toBeTruthy()
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
       timeout: PAY_RETURN_TIMEOUT,
     })
@@ -74,12 +76,10 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     await expect(page.getByTestId('coupon-qr')).toHaveCount(0)
 
     // And the order is in the account.
-    // The list rows carry date, total and count, not line names; the newest
-    // order's "פרטים" page lists its lines.
-    await page.goto('/account/orders')
-    const details = await page.getByRole('link', { name: 'פרטים' }).first().getAttribute('href')
-    expect(details, 'the newest order has no details link').toBeTruthy()
-    await page.goto(details as string)
+    // The order just paid, by the id the return URL carried: the list rows
+    // carry date, total and count, not line names, and "the newest row" is a
+    // race with any other journey on the fixture account.
+    await page.goto(`/account/orders/${paidOrderId}`)
     await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות').first()).toBeVisible({
       timeout: 15_000,
     })

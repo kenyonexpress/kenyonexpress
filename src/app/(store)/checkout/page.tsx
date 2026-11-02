@@ -82,7 +82,7 @@ export default function CheckoutPage(props: {
   return (
     <Suspense
       fallback={
-        <div className="checkout-page">
+        <div className="checkout-page checkout-page--pending">
           <CheckoutBreadcrumb />
           <h1 className="checkout-page__title">קופה</h1>
           <CheckoutShell />

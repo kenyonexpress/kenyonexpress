@@ -70,7 +70,10 @@ export default function ContactForm() {
           name="channel"
           required
           defaultValue={CONTACT_CHANNELS[0].slug}
-          className={fieldClass}
+          // menulist-button: WebKit draws the default `menulist` select 23px
+          // tall whatever its min-height, under the 24px target floor (C142);
+          // this appearance keeps the native arrow and honours the sizing.
+          className={`${fieldClass} [appearance:menulist-button]`}
         >
           {CONTACT_CHANNELS.map((c) => (
             <option key={c.slug} value={c.slug}>

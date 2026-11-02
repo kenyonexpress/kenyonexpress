@@ -10,6 +10,15 @@
  * the right 645..1310, order panel on the left 145..611 (466 wide).
  */
 
+.checkout-page--pending {
+  /* The streaming shell is shorter than the form that replaces it, so the
+     footer painted inside the first viewport and was pushed out when the body
+     arrived: CLS 0.2065 at 768, all of it the footer (measured 2026-11-02,
+     C142). Holding the shell at a viewport keeps the footer below the fold
+     until the real height is known. */
+  min-block-size: 100vh;
+}
+
 .checkout-page {
   /* Was a hardcoded 1170, the old Bootstrap width. The site container is
      declared once in globals.css and the cart already moved onto it; leaving

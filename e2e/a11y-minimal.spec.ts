@@ -43,7 +43,7 @@ test.describe('IS 5568 - Core Page Types', () => {
   test('product page has no WCAG A/AA violations', async ({ page }) => {
     // Get first product link from home page
     await page.goto('/')
-    const productLink = page.locator('a[href^="/product/"]').first()
+    const productLink = page.locator('a[href^="/product/"]:visible').first()
     await expect(productLink).toBeVisible({ timeout: 10000 })
     const href = await productLink.getAttribute('href')
 

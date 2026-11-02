@@ -18,6 +18,7 @@ import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
+import { secureCookie } from '@/lib/security/secure-cookie'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -76,7 +77,7 @@ async function setChallengeCookie(sealed: string): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.set(PASSKEY_CHALLENGE_COOKIE, sealed, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: await secureCookie(),
     sameSite: 'lax',
     path: '/',
     maxAge: Math.floor(PASSKEY_CHALLENGE_TTL_MS / 1000),

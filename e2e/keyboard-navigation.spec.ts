@@ -9,7 +9,12 @@ import { awaitStreamedReveal } from './helpers'
  */
 
 test.describe('Keyboard Navigation - Hebrew RTL', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, browserName }) => {
+    // Safari's default ("Press Tab to highlight each item" off) tabs to form
+    // controls only, so a Tab sequence over links is a Chromium contract.
+    // Keyboard reachability of every control is covered in a11y.spec on all
+    // projects.
+    test.skip(browserName === 'webkit', 'WebKit tabs to form controls only by default')
     // Set Hebrew language for all tests
     await page.addInitScript(() => {
       document.documentElement.lang = 'he'

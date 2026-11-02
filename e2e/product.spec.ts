@@ -35,7 +35,9 @@ test.describe('product page', () => {
     ).toBeVisible()
     // Chromium on a desktop has no navigator.share, so the button offers a
     // copy; on a device with a share sheet it offers that instead.
-    await expect(page.getByRole('button', { name: /העתקת קישור|^שיתוף$/ })).toBeVisible()
+    // `.first()`: WebKit has navigator.share, and the page then carries the
+    // share button in the info band and its sticky twin.
+    await expect(page.getByRole('button', { name: /העתקת קישור|^שיתוף$/ }).first()).toBeVisible()
   })
 
   test('the gallery frame takes the keyboard and zooms in place', async ({ page }) => {

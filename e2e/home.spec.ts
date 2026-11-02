@@ -52,7 +52,9 @@ test.describe('homepage', () => {
   test('renders product links with add-to-cart buttons', async ({ page }) => {
     await page.goto('/')
 
-    const productLink = page.locator('a[href^="/product/"]').first()
+    // :visible: below md the first product link sits in the desktop hero,
+    // which is in the DOM but hidden (HeroMobile paints that band, C130).
+    const productLink = page.locator('a[href^="/product/"]:visible').first()
     await expect(productLink).toBeVisible({ timeout: 15000 })
 
     // Deal cards expose add-to-cart via Hebrew aria-label (revealed on hover,
@@ -116,6 +118,12 @@ test.describe('homepage', () => {
    * artwork is near 245 tall.
    */
   test('every deal card image is pinned to the same 245px height', async ({ page }) => {
+    // The pin is the >=768 rule; below it product-card-deals.css sizes the
+    // thumb with clamp(120px, 38vw, 180px) by design (the two-column phone grid).
+    test.skip(
+      (page.viewportSize()?.width ?? 1440) < 768,
+      'below 768 the thumb is clamp-sized, not pinned',
+    )
     await page.goto('/')
     await expect(page.locator('.p_con__image').first()).toBeVisible({ timeout: 15000 })
 
@@ -534,6 +542,12 @@ test.describe('homepage', () => {
   test('the hero holds its first slide until the visitor interacts, then rotates', async ({
     page,
   }) => {
+    // The desktop slider; below md the hero is HeroMobile's scroll-snap
+    // carousel (C130) and this element is in the DOM but not displayed.
+    test.skip(
+      (page.viewportSize()?.width ?? 1440) < 768,
+      'below 768 the hero is the HeroMobile carousel',
+    )
     await page.goto('/')
     const slider = page.locator('[data-hero-slider]')
     // ONE slider, and waiting for that is the point.

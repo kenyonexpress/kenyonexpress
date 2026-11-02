@@ -165,6 +165,16 @@ export type ContentSecurityPolicyOptions = {
   upgradeInsecureRequests?: boolean
 }
 
+/** The hostname of a Host header value (port and brackets handled), or ''. */
+export function hostOfHeader(header: string | null | undefined): string {
+  if (!header) return ''
+  try {
+    return new URL(`http://${header}`).hostname
+  } catch {
+    return ''
+  }
+}
+
 /** localhost, 127.0.0.1 and ::1: hosts a deployed site is never reached on. */
 export function isLoopbackHost(hostname: string): boolean {
   return (
