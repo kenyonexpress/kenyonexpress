@@ -1,7 +1,11 @@
-RESUME FROM: C149
+RESUME FROM: C144
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T20:24:00+07:00
+- item: C149
+- BLOCKED: locked-component compare product 13.88-39.53% vs <11 (locked header band + imageless reference vs required real images)
 
 ### 2026-11-02T19:28:54+07:00
 - item: C148
@@ -97,10 +101,6 @@ RESUME FROM: C149
 
 ### 2026-11-02T03:20:34+07:00
 - item: M14-c346
-- RESULT: DONE
-
-### 2026-11-02T03:19:22+07:00
-- item: M13-c346
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
