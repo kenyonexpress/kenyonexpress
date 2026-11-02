@@ -1,7 +1,11 @@
-RESUME FROM: M05-c347
+RESUME FROM: M06-c347
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T21:19:25+07:00
+- item: M05-c347
+- RESULT: DONE
 
 ### 2026-11-02T21:04:42+07:00
 - item: M04-c347
@@ -98,10 +102,6 @@ RESUME FROM: M05-c347
 ### 2026-11-02T03:29:22+07:00
 - item: M18-c346
 - RESULT: DONE
-
-### 2026-11-02T03:28:38+07:00
-- item: M17-c346
-- BLOCKED: rtl-leak-home
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
