@@ -32,7 +32,11 @@ for (const width of WIDTHS) {
     }) => {
       await page.setViewportSize({ width, height: 1400 })
       await page.goto(path)
-      await page.waitForLoadState('networkidle')
+      // Layout, not network: /products keeps fetching (infinite scroll, live
+      // stock), so 'networkidle' timed out at 30 s on one load in 18 (C151).
+      // Glyph positions depend on the laid-out text and the web font only.
+      await page.waitForLoadState('load')
+      await page.evaluate(() => document.fonts.ready.then(() => undefined))
 
       const wrong = await page.evaluate(() => {
         const offenders: { text: string; shekelX: number; digitX: number }[] = []
