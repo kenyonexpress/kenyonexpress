@@ -471,11 +471,11 @@
   }
 }
 
-/* 380px: 1 column */
+/* 380px: 2 columns, as Electro v7's mobile shop grid (row-cols-2), C145 */
 @media (max-width: 575px) {
   .category-products__item {
-    width: 100%;
-    flex: 0 0 100%;
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
   }
 }
 
@@ -498,8 +498,8 @@
 }
 @media (max-width: 575px) {
   .category-products--4-col .category-products__item {
-    width: 100%;
-    flex: 0 0 100%;
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
   }
 }
 
@@ -522,8 +522,8 @@
 }
 @media (max-width: 575px) {
   .category-products--3-col .category-products__item {
-    width: 100%;
-    flex: 0 0 100%;
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
   }
 }
 
@@ -540,8 +540,8 @@
 }
 @media (max-width: 575px) {
   .category-products--2-col .category-products__item {
-    width: 100%;
-    flex: 0 0 100%;
+    width: calc(50% - 8px);
+    flex: 0 0 calc(50% - 8px);
   }
 }
 

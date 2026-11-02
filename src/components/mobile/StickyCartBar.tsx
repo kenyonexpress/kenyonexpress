@@ -17,6 +17,8 @@ export default function StickyCartBar({
     style: 'currency',
     currency: 'ILS',
     minimumFractionDigits: 0,
+    // Whole shekels only on every surface (decision 02.11.2026).
+    maximumFractionDigits: 0,
   })
 
   return (

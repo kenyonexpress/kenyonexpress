@@ -36,7 +36,8 @@ function fireInstallPrompt() {
 
 beforeEach(() => {
   localStorage.clear()
-  localStorage.setItem('ke:views', '2')
+  sessionStorage.clear()
+  localStorage.setItem('ke:visits', '2')
   document.documentElement.removeAttribute('data-pwa-prompt')
   vi.stubGlobal('matchMedia', ((query: string) => ({
     matches: false,
@@ -56,8 +57,8 @@ describe('InstallPrompt', () => {
     expect(document.documentElement.hasAttribute('data-pwa-prompt')).toBe(false)
   })
 
-  it('is never offered before the third view', () => {
-    localStorage.setItem('ke:views', '1')
+  it('is never offered before the third visit', () => {
+    localStorage.setItem('ke:visits', '1')
     render(<InstallPrompt />)
     fireInstallPrompt()
     act(() => {
@@ -66,9 +67,11 @@ describe('InstallPrompt', () => {
     expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
   })
 
-  it('counts each load and offers the install on the third', () => {
-    localStorage.setItem('ke:views', '0')
+  it('counts each visit and offers the install on the third', () => {
+    localStorage.setItem('ke:visits', '0')
     for (const expected of [false, false, true]) {
+      // A new browser session is a new visit.
+      sessionStorage.clear()
       const { unmount } = render(<InstallPrompt />)
       fireInstallPrompt()
       act(() => {
@@ -77,7 +80,21 @@ describe('InstallPrompt', () => {
       expect(!!screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBe(expected)
       unmount()
     }
-    expect(localStorage.getItem('ke:views')).toBe('3')
+    expect(localStorage.getItem('ke:visits')).toBe('3')
+  })
+
+  it('does not count page loads within one visit', () => {
+    localStorage.setItem('ke:visits', '0')
+    for (let load = 0; load < 5; load++) {
+      const { unmount } = render(<InstallPrompt />)
+      fireInstallPrompt()
+      act(() => {
+        window.dispatchEvent(new Event('scroll'))
+      })
+      expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+      unmount()
+    }
+    expect(localStorage.getItem('ke:visits')).toBe('1')
   })
 
   it('appears after an interaction, and reserves its own space', () => {

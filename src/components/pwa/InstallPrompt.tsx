@@ -33,12 +33,16 @@ const DISMISSED_KEY = 'ke:pwa-install-dismissed'
 export const PURCHASED_KEY = 'ke:purchased'
 
 /**
- * Page loads counted so far, and the one on which the offer is first made. The
- * first two views are a stranger looking around; by the third they have come
- * back or gone deeper, which is the earliest the app is worth asking about.
+ * Visits counted so far, and the one on which the offer is first made (C145).
+ * A visit is a browser session, not a page load: someone browsing ten products
+ * in one sitting has visited once. The first two visits are a stranger looking
+ * around; the third is somebody who keeps coming back, which is the earliest
+ * the app is worth asking about. The session flag marks this tab's visit as
+ * already counted, so reloads and in-site navigation do not inflate it.
  */
-const VIEWS_KEY = 'ke:views'
-const INSTALL_AT_VIEW = 3
+const VISITS_KEY = 'ke:visits'
+const VISIT_COUNTED_KEY = 'ke:visit-counted'
+const INSTALL_AT_VISIT = 3
 const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
 /**
@@ -96,11 +100,16 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     if (localStorage.getItem(DISMISSED_KEY) === '1') return
-    // Counted before the path check: a view on the cart is still a view. Not
-    // gated on the dismissal either, which returned above and so stops counting.
-    const views = (Number.parseInt(localStorage.getItem(VIEWS_KEY) ?? '', 10) || 0) + 1
-    localStorage.setItem(VIEWS_KEY, String(views))
-    if (views < INSTALL_AT_VIEW) return
+    // Counted before the path check: a visit that lands on the cart is still a
+    // visit. Not gated on the dismissal either, which returned above and so
+    // stops counting.
+    let visits = Number.parseInt(localStorage.getItem(VISITS_KEY) ?? '', 10) || 0
+    if (sessionStorage.getItem(VISIT_COUNTED_KEY) !== '1') {
+      visits += 1
+      localStorage.setItem(VISITS_KEY, String(visits))
+      sessionStorage.setItem(VISIT_COUNTED_KEY, '1')
+    }
+    if (visits < INSTALL_AT_VISIT) return
     if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
 
     // `matchMedia` and `navigator.standalone` rather than a userAgent test for

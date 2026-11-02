@@ -112,3 +112,10 @@ describe('StickyCartBar', () => {
     expect(cartBar).toHaveClass('z-30')
   })
 })
+
+describe('StickyCartBar whole shekels', () => {
+  it('never shows agorot', () => {
+    render(<StickyCartBar price={9990} onAddToCart={vi.fn()} isLoading={false} />)
+    expect(screen.getByText(/₪/).textContent).not.toMatch(/[.,]\d{2}/)
+  })
+})

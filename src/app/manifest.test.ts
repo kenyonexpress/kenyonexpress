@@ -26,10 +26,11 @@ describe('web app manifest', () => {
     const maskable = m.icons?.filter((i) => i.purpose === 'maskable') ?? []
     const any = m.icons?.filter((i) => i.purpose === 'any') ?? []
 
-    expect(maskable).toHaveLength(1)
+    expect(maskable.length).toBeGreaterThan(0)
     expect(any.length).toBeGreaterThan(0)
     // Same asset for both purposes is the bug this guards.
-    expect(maskable[0]?.src).not.toBe(any[0]?.src)
+    const anySrcs = new Set(any.map((i) => i.src))
+    for (const icon of maskable) expect(anySrcs.has(icon.src)).toBe(false)
   })
 
   it('offers both launcher sizes', () => {

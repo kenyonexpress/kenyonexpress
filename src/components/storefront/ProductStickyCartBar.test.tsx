@@ -40,8 +40,10 @@ describe('ProductStickyCartBar - Click Path', () => {
   })
 
   it('renders sticky cart bar with correct price', () => {
-    render(<ProductStickyCartBar basePrice={50000} productId="test-id" />)
-    expect(screen.getByText(/₪/)).toBeInTheDocument()
+    // basePrice is shekels: 99 must read 99, not 0.99 (C145).
+    render(<ProductStickyCartBar basePrice={99} productId="test-id" />)
+    expect(screen.getByText(/₪/).textContent).toMatch(/(^|\D)99(\D|$)/)
+    expect(screen.getByText(/₪/).textContent).not.toMatch(/0[.,]99/)
   })
 
   it('has add to cart button that is clickable', () => {

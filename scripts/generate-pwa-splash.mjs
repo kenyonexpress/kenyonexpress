@@ -10,7 +10,8 @@
 import { mkdir } from 'node:fs/promises'
 import sharp from 'sharp'
 
-const SRC = 'public/logo.png'
+// The upgraded vector logo (C137): rendered at each device's own density.
+const SRC = 'public/images/logo.svg'
 const OUT = 'public/splash'
 const BG = { r: 0xff, g: 0xff, b: 0xff, alpha: 1 }
 
@@ -31,8 +32,8 @@ await mkdir(OUT, { recursive: true })
 for (const [w, h, dpr] of DEVICES) {
   const W = w * dpr
   const H = h * dpr
-  const mark = await sharp(SRC)
-    .resize(Math.round(W * 0.4), Math.round(W * 0.4), { fit: 'inside' })
+  const mark = await sharp(SRC, { density: 72 * Math.ceil((W * 0.6) / 380) })
+    .resize(Math.round(W * 0.6), Math.round(W * 0.6), { fit: 'inside' })
     .png()
     .toBuffer()
   await sharp({ create: { width: W, height: H, channels: 4, background: BG } })

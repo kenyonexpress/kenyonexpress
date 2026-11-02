@@ -152,7 +152,7 @@ export default function MobileDrawer() {
         inert={!open}
         tabIndex={-1}
         dir="rtl"
-        className={`fixed inset-y-0 start-0 z-50 w-drawer-mobile overflow-y-auto bg-drawer outline-none transition-transform duration-300 motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
+        className={`fixed inset-y-0 start-0 z-50 w-drawer-mobile overflow-y-auto bg-drawer-bg outline-none transition-transform duration-300 motion-reduce:transition-none md:w-drawer-tablet xl:hidden ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

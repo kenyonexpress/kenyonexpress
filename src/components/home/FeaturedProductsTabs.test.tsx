@@ -130,8 +130,8 @@ describe('FeaturedProductsTabs', () => {
     const grid = container.querySelector('.grid')
     expect(grid).toBeInTheDocument()
     expect(grid).toHaveClass('grid')
-    expect(grid).toHaveClass('grid-cols-1')
-    expect(grid).toHaveClass('md:grid-cols-2')
+    // Electro v7 mobile: two cards per row from 380px up (C145).
+    expect(grid).toHaveClass('grid-cols-2')
     expect(grid).toHaveClass('xl:grid-cols-4')
   })
 

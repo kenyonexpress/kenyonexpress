@@ -382,11 +382,13 @@ export async function raiseInstallBanner(page: Page): Promise<Locator> {
   const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
   // The offer is made only after a first purchase, and the flag is read when
   // the component mounts, so it has to be there before a reload.
-  // It also waits for the third page view (INSTALL_AT_VIEW in InstallPrompt),
-  // so the counter is pre-set one short and the reload below is view three.
+  // It also waits for the third visit (INSTALL_AT_VISIT in InstallPrompt), so
+  // the counter is pre-set one short and this tab's visit flag is cleared, which
+  // makes the reload below the start of visit three.
   await page.evaluate(() => {
     localStorage.setItem('ke:purchased', '1')
-    localStorage.setItem('ke:views', '2')
+    localStorage.setItem('ke:visits', '2')
+    sessionStorage.removeItem('ke:visit-counted')
   })
   await page.reload({ waitUntil: 'domcontentloaded' })
   const fire = () =>
