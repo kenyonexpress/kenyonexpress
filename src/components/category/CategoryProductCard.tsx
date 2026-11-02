@@ -151,8 +151,6 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
           )}
         </span>
 
-        {priceBlock && <span className="category-card__price">{priceBlock}</span>}
-
         <Link href={`/product/${product.slug}`} className="category-card__link">
           <h2 className="category-card__title">{product.name_he}</h2>
           <span className="category-card__thumb">

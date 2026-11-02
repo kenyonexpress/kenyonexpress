@@ -249,20 +249,23 @@ function CategoryPageFallback() {
     <div className="category-page">
       <div className="category-page__inner">
         <CategoryBreadcrumb items={[defaultHomeCrumb()]} />
-        <header className="category-page__header">
-          {/* A div, not an empty <h1>. The heading's text is the category name
-              and the category name is the URL, so there is nothing to put in it
-              yet - and a document that briefly carries a heading with no
-              accessible name is worse for a screen reader than one that briefly
-              carries no heading. Same classes, so the same line box. */}
-          <div className="category-page__title category-page__title--pending" aria-hidden="true" />
-        </header>
-        {/* The bar's box, not the bar: `CategoryControlBar` calls
-            `useSearchParams`, and a prerendered fallback cannot read the
-            request. Same class, so the same measured 45.89px. */}
-        <div className="category-control-bar" aria-hidden="true" />
-        <div className="category-page__body">
+        <div className="category-page__body category-page__body--aside">
           <div className="category-page__main">
+            <header className="category-page__header">
+              {/* A div, not an empty <h1>. The heading's text is the category name
+                and the category name is the URL, so there is nothing to put in it
+                yet - and a document that briefly carries a heading with no
+                accessible name is worse for a screen reader than one that briefly
+                carries no heading. Same classes, so the same line box. */}
+              <div
+                className="category-page__title category-page__title--pending"
+                aria-hidden="true"
+              />
+            </header>
+            {/* The bar's box, not the bar: `CategoryControlBar` calls
+              `useSearchParams`, and a prerendered fallback cannot read the
+              request. Same class, so the same measured 45.89px. */}
+            <div className="category-control-bar" aria-hidden="true" />
             <CategoryGridSkeleton count={CATEGORY_SKELETON_CARDS} />
           </div>
           <div className="category-sidebar" aria-hidden="true" />
@@ -395,21 +398,21 @@ async function CategoryPageBody({
         <CategoryBreadcrumb items={crumbs} />
         <CategoryHeroBanner imageUrl={category.image_url} categoryName={category.name_he} />
 
-        <header className="category-page__header">
-          <h1 className="category-page__title">
-            {category.name_he}
-            <span className="category-page__title-count">
-              <Suspense fallback=" ...">
-                <ResultCountText args={args} />
-              </Suspense>
-            </span>
-          </h1>
-        </header>
-
-        <CategoryControlBar value={sort} />
-
-        <div className="category-page__body">
+        <div className="category-page__body category-page__body--aside">
           <div className="category-page__main">
+            <header className="category-page__header">
+              <h1 className="category-page__title">
+                {category.name_he}
+                <span className="category-page__title-count">
+                  <Suspense fallback=" ...">
+                    <ResultCountText args={args} />
+                  </Suspense>
+                </span>
+              </h1>
+            </header>
+
+            <CategoryControlBar value={sort} />
+
             <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
               <ResultGrid args={args} linkParams={linkParams} usePagination={usePagination} />
             </Suspense>

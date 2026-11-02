@@ -359,6 +359,42 @@
   min-width: 0;
 }
 
+/* /category from 1200px: the Electro v7 shop layout (refs/electro_shop_1440.png),
+   a 270px filter column on the inline start and the title, control bar and
+   grid beside it in 5 columns. Below 1200px the column stacks under the grid
+   as before. /search and /products keep the stacked body. */
+@media (min-width: 1200px) {
+  .category-page__body--aside {
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    column-gap: 30px;
+    align-items: start;
+  }
+
+  .category-page__body--aside > .category-page__main {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .category-page__body--aside > .category-sidebar {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: none;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .category-page__body--aside .category-products .category-products__item {
+    width: calc(20% - 12.8px);
+    flex: 0 0 calc(20% - 12.8px);
+  }
+
+  .category-page__body--aside .category-card {
+    padding-inline: 12px;
+  }
+}
+
 /* THE SEARCH RESULTS AREA NEVER SHRINKS, AND THAT IS THE PAGE'S CLS.
  *
  * `.category-page__body` is `display: block`, so the filter sidebar and the
