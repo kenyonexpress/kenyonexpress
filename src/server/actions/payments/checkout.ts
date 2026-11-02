@@ -263,7 +263,8 @@ async function chargeSavedToken(args: {
     .select('id')
     .single()
   if (paymentError || !payment) {
-    return { ok: false, error: `יצירת תשלום נכשלה: ${paymentError?.message}`, code: 'INTERNAL' }
+    log.error('checkout.payment_insert_failed', { orderId, reason: paymentError?.message })
+    return { ok: false, error: 'לא ניתן ליצור את התשלום כרגע, נסו שוב', code: 'INTERNAL' }
   }
 
   // The journal entry the reserved vocabulary was waiting for: this is the one
@@ -790,7 +791,8 @@ async function runBeginCheckout(
     .select('id')
     .single()
   if (orderError || !order) {
-    return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
+    log.error('checkout.order_insert_failed', { userId: user.id, reason: orderError?.message })
+    return { ok: false, error: 'לא ניתן ליצור את ההזמנה כרגע, נסו שוב', code: 'INTERNAL' }
   }
 
   // rc5 F12: the affiliate link that brought this visit (cookie set by the
@@ -974,7 +976,13 @@ async function runBeginCheckout(
   const { error: itemsError } = await admin.from('order_items').insert(itemRows)
   if (itemsError) {
     await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
-    return { ok: false, error: `שמירת פריטי הזמנה נכשלה: ${itemsError.message}`, code: 'INTERNAL' }
+    // Logged, not shown: the raw text was a driver error ("TypeError: fetch
+    // failed", C151) or a column name, neither of which a customer can act on.
+    log.error('checkout.order_items_insert_failed', {
+      orderId: order.id,
+      reason: itemsError.message,
+    })
+    return { ok: false, error: 'לא ניתן לשמור את ההזמנה כרגע, נסו שוב', code: 'INTERNAL' }
   }
 
   // 4b. HOLD THE STOCK, before a single agora is asked for.
@@ -1196,7 +1204,11 @@ async function runBeginCheckout(
     .select('id')
     .single()
   if (paymentError || !payment) {
-    return { ok: false, error: `יצירת תשלום נכשלה: ${paymentError?.message}`, code: 'INTERNAL' }
+    log.error('checkout.payment_insert_failed', {
+      orderId: order.id,
+      reason: paymentError?.message,
+    })
+    return { ok: false, error: 'לא ניתן ליצור את התשלום כרגע, נסו שוב', code: 'INTERNAL' }
   }
 
   try {
