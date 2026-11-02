@@ -188,6 +188,11 @@
   .legal-page__title {
     font-size: 28px;
     line-height: 36px;
+    /* Two lines held open: the fallback face set "מדיניות ביטולים והחזרות" on
+       one line, Heebo then wrapped it to two, and everything below moved 36px
+       (CLS 0.2164 at 380, measured 2026-11-02, C142). Font loading lives in
+       the locked layout, so the box is reserved here instead. */
+    min-block-size: 2lh;
   }
 
   .legal-page__section h2 {

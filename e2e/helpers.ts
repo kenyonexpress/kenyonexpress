@@ -3,6 +3,7 @@ import path from 'node:path'
 import {
   type Browser,
   type BrowserContext,
+  type BrowserContextOptions,
   type Locator,
   type Page,
   expect,
@@ -810,7 +811,7 @@ export const sharedCustomerTest = test.extend<{ sharedCustomer: undefined }>({
  */
 export async function newFixtureContext(
   browser: Browser,
-  options: { storageState?: string } = {},
+  options: { storageState?: string | Exclude<BrowserContextOptions['storageState'], string> } = {},
 ): Promise<BrowserContext> {
   const info = test.info()
   const base = (info.project.use.extraHTTPHeaders ?? {}) as Record<string, string>
@@ -877,7 +878,14 @@ export async function newSignedInContext(
     // skips it, so reset here too (see resetFixtureRateLimits).
     const { resetFixtureRateLimits } = await import('./otp-seed')
     await resetFixtureRateLimits(ROLE_CREDENTIALS[role].email)
-    return newFixtureContext(browser, { storageState: file })
+    // Parsed here rather than handed over as a path: a cache another worker is
+    // replacing must fall through to a fresh sign-in, not fail the test.
+    try {
+      const state = JSON.parse(fs.readFileSync(file, 'utf8'))
+      return newFixtureContext(browser, { storageState: state })
+    } catch {
+      // fall through
+    }
   }
 
   const context = await newFixtureContext(browser)
@@ -886,6 +894,11 @@ export async function newSignedInContext(
   await signInWithEmail(page, email, password)
   await page.close()
   fs.mkdirSync(AUTH_CACHE_DIR, { recursive: true })
-  await context.storageState({ path: file })
+  // Written to a private file and renamed into place: rename is atomic, so a
+  // parallel worker never reads a half-written cache ("Error reading storage
+  // state", C142).
+  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`
+  fs.writeFileSync(tmp, JSON.stringify(await context.storageState()))
+  fs.renameSync(tmp, file)
   return context
 }
