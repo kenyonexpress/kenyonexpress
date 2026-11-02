@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest'
 describe('C16 migration schema', () => {
   const migrationPath = resolve(
     process.cwd(),
-    'migrations/pending/300_c16_payment_refund_infrastructure.sql',
+    'migrations/cancelled/300_c16_payment_refund_infrastructure.sql',
   )
   const migrationSql = readFileSync(migrationPath, 'utf-8')
 

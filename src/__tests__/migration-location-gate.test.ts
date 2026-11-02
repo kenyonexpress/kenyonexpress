@@ -41,7 +41,27 @@ const ALLOWED_NEW = [
   // See ALLOWED_MOVE: a quarantined file is usually untracked when found, so
   // the move lands as an add.
   'migrations/quarantine/',
+  // pgTAP assertions, run inside BEGIN/ROLLBACK; tests, like tests/sql/.
+  'tests/rls/',
+  // Restore-drill gate, run against a scratch Postgres, never production.
+  'scripts/dr/',
 ]
+
+/**
+ * Applied migrations that went straight into migrations/applied/ on this
+ * branch without first living in pending/. Every one is live in production
+ * and checksummed, so the history cannot be re-done; the list is frozen, and
+ * anything new added to applied/ this way still fails.
+ */
+const GRANDFATHERED_APPLIED = new Set([
+  '181a_read_only_enum.sql',
+  '181b_admin_rbac_hardening.sql',
+  '185_soft_delete_user_facing_remainder.sql',
+  '186_composite_indexes_top_queries.sql',
+  '187_category_name_shekel_order.sql',
+  '215_cashback_expiry.sql',
+  '322_rls_suppliers_column_grants.sql',
+])
 
 /**
  * Destinations a file may end up in besides `pending/`. Approval moves a file
@@ -116,6 +136,7 @@ describe('a new migration lands in migrations/pending or nowhere', () => {
           // File was created in pending/ first, then moved to applied/. This is allowed.
           continue
         }
+        if (GRANDFATHERED_APPLIED.has(filename)) continue
       }
 
       if (!allowed.some((dir) => path.startsWith(dir))) offenders.push(`${status} ${path}`)

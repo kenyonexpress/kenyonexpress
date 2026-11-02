@@ -56,7 +56,7 @@ describe('readClubTiers', () => {
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn).toHaveBeenCalledWith(
       'club.tiers_table_missing',
-      expect.objectContaining({ detail: expect.stringContaining('243_club_tiers.sql') }),
+      expect.objectContaining({ detail: expect.stringContaining('164_club_tiers.sql') }),
     )
   })
 

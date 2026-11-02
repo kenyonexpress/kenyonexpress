@@ -430,12 +430,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '184',
-    file: '184_orders_monthly_partitioning.sql',
-    state: 'pending',
-    hasPreflight: true,
-  },
-  {
-    number: '184',
     file: '184_carts_one_row_per_owner.sql',
     state: 'applied',
     hasPreflight: false,
@@ -484,21 +478,15 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '189',
-    file: '189_passkeys_webauthn.sql',
-    state: 'pending',
-    hasPreflight: true,
-  },
-  {
-    number: '189',
     file: '189_affiliate_program.sql',
     state: 'applied',
     hasPreflight: false,
   },
   {
-    number: '190',
-    file: '190_whatsapp_otp.sql',
-    state: 'pending',
-    hasPreflight: true,
+    number: '189',
+    file: '189_passkeys_webauthn.sql',
+    state: 'cancelled',
+    hasPreflight: false,
   },
   {
     number: '190',
@@ -510,6 +498,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '190',
     file: '190_partner_api_infrastructure.sql',
     state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '190',
+    file: '190_whatsapp_otp.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
@@ -538,12 +532,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '193',
-    file: '193_affiliate_campaigns.sql',
-    state: 'pending',
-    hasPreflight: true,
-  },
-  {
-    number: '193',
     file: '193_observability_endpoint_metrics.sql',
     state: 'applied',
     hasPreflight: false,
@@ -552,6 +540,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '193',
     file: '193_price_history.sql',
     state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '193',
+    file: '193_affiliate_campaigns.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
@@ -574,12 +568,6 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '195',
-    file: '195_push_subscriptions.sql',
-    state: 'pending',
-    hasPreflight: true,
-  },
-  {
-    number: '195',
     file: '195_perf_tickets.sql',
     state: 'applied',
     hasPreflight: false,
@@ -588,6 +576,12 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     number: '195',
     file: '195_stock_waitlist.sql',
     state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '195',
+    file: '195_push_subscriptions.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
@@ -778,14 +772,14 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '243',
-    file: '243_club_tiers.sql',
-    state: 'pending',
+    file: '243_product_full_address.sql',
+    state: 'applied',
     hasPreflight: false,
   },
   {
     number: '243',
-    file: '243_product_full_address.sql',
-    state: 'applied',
+    file: '243_club_tiers.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
@@ -874,14 +868,14 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '287',
-    file: '287_club_tiers_add_cashback_bonus.sql',
-    state: 'pending',
-    hasPreflight: true,
+    file: '287_sms_marketing.sql',
+    state: 'applied',
+    hasPreflight: false,
   },
   {
     number: '287',
-    file: '287_sms_marketing.sql',
-    state: 'applied',
+    file: '287_club_tiers_add_cashback_bonus.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
@@ -982,14 +976,14 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '300',
-    file: '300_c16_payment_refund_infrastructure.sql',
-    state: 'pending',
-    hasPreflight: true,
+    file: '300_profiles_orders_physical_count.sql',
+    state: 'applied',
+    hasPreflight: false,
   },
   {
     number: '300',
-    file: '300_profiles_orders_physical_count.sql',
-    state: 'applied',
+    file: '300_c16_payment_refund_infrastructure.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
@@ -1000,14 +994,14 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
   },
   {
     number: '305',
-    file: '305_rename_gift_send_at_to_gift_scheduled_at.sql',
-    state: 'pending',
-    hasPreflight: true,
+    file: '305_add_gift_scheduled_at_column.sql',
+    state: 'applied',
+    hasPreflight: false,
   },
   {
     number: '305',
-    file: '305_add_gift_scheduled_at_column.sql',
-    state: 'applied',
+    file: '305_rename_gift_send_at_to_gift_scheduled_at.sql',
+    state: 'cancelled',
     hasPreflight: false,
   },
   {
@@ -1105,5 +1099,23 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     file: '321_card_verify_enabled_flag.sql',
     state: 'applied',
     hasPreflight: false,
+  },
+  {
+    number: '322',
+    file: '322_rls_suppliers_column_grants.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '323',
+    file: '323_order_items_percent_snapshot_lock.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '324',
+    file: '324_orders_monthly_partitioning.sql',
+    state: 'pending',
+    hasPreflight: true,
   },
 ] as const

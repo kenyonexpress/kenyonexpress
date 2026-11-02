@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-MIGRATION_FILE="migrations/pending/300_c16_payment_refund_infrastructure.sql"
+MIGRATION_FILE="migrations/cancelled/300_c16_payment_refund_infrastructure.sql"
 
 if [ ! -f "$MIGRATION_FILE" ]; then
   echo "❌ Migration file not found: $MIGRATION_FILE"

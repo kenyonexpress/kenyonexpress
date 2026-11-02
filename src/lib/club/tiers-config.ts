@@ -57,7 +57,7 @@ export async function readClubTiers(client: ClubTiersClient): Promise<ClubTiersR
         warnedMissing = true
         log.warn('club.tiers_table_missing', {
           detail:
-            'club_tiers absent: apply migrations/pending/243_club_tiers.sql. Compiled defaults in use.',
+            'club_tiers absent: apply migrations/applied/164_club_tiers.sql. Compiled defaults in use.',
         })
       }
       return { tiers: CLUB_TIERS, source: 'defaults', reason: 'table missing', tableMissing: true }

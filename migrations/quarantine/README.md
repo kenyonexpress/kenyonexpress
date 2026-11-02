@@ -23,3 +23,10 @@
 **מה שצריך לקרות:** אם הרשמת ספקים נכנסת לתור (‏`W7`), המיגרציה נכתבת
 מחדש עם מספר, preflight, אגורות שלמות, מדיניות מפורשת לכל טבלה, והכרעה על
 אחסון ה-IBAN. הקובץ הזה הוא הטיוטה, לא המקור.
+
+## `130_pg_cron_pg_net.sql`, `cron_jobs.sql` — moved 02.11.2026 (C142)
+
+Written by C38 into `supabase/migrations/` and `supabase/schedules/`, outside
+`migrations/pending/` and without a preflight. 130 clashes with the applied
+`130_payment_events.sql`. pg_cron and pg_net are live from applied 161/162, so
+these drafts are not to be applied as they are.

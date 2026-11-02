@@ -1,4 +1,9 @@
--- 184_orders_monthly_partitioning.sql
+-- 324_orders_monthly_partitioning.sql
+--
+-- RENUMBERED 184 -> 324 on 2026-11-02 (C142). Production spent 184 on
+-- 184_carts_one_row_per_owner (migrations/applied/), so this unapplied file
+-- moved again. Run preflight_324.sql first; references below to
+-- `preflight_184` predate the renumber and mean preflight_324.
 --
 -- RENUMBERED 148 -> 184 on 2026-09-09. Production had already used
 -- 148 for a different migration (see migrations/applied/), so the number

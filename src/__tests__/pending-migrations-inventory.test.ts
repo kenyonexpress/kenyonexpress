@@ -253,6 +253,8 @@ describe('the pending migration inventory', () => {
       '318_club_tier_benefits.sql',
       '320_products_opening_hours.sql',
       '321_card_verify_enabled_flag.sql',
+      '322_rls_suppliers_column_grants.sql',
+      '323_order_items_percent_snapshot_lock.sql',
     ])
   })
 
@@ -468,16 +470,8 @@ describe('the pending migration inventory', () => {
     // issue dedupe, the RLS policy and the widened kind check all present,
     // zero rows) and filed here as the record like 217/223/224/226-233.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
-      '184_orders_monthly_partitioning.sql',
-      '189_passkeys_webauthn.sql',
-      '190_whatsapp_otp.sql',
-      '193_affiliate_campaigns.sql',
-      '195_push_subscriptions.sql',
-      '243_club_tiers.sql',
-      '287_club_tiers_add_cashback_bonus.sql',
-      '300_c16_payment_refund_infrastructure.sql',
-      '305_rename_gift_send_at_to_gift_scheduled_at.sql',
       '319_affiliate_links_product.sql',
+      '324_orders_monthly_partitioning.sql',
       'preflight_000.sql',
       'preflight_162.sql',
       'preflight_164.sql',
@@ -529,6 +523,9 @@ describe('the pending migration inventory', () => {
       'preflight_319.sql',
       'preflight_320.sql',
       'preflight_321.sql',
+      'preflight_322.sql',
+      'preflight_323.sql',
+      'preflight_324.sql',
     ])
   })
 
@@ -554,7 +551,15 @@ describe('the pending migration inventory', () => {
     // file is the only written record of WHY the revoke must not happen.
     expect(sqlFilesIn(CANCELLED_DIR)).toEqual([
       '165_revoke_anon_helpers.sql',
+      '189_passkeys_webauthn.sql',
+      '190_whatsapp_otp.sql',
+      '193_affiliate_campaigns.sql',
       '193_weekend_and_free_shipping.sql',
+      '195_push_subscriptions.sql',
+      '243_club_tiers.sql',
+      '287_club_tiers_add_cashback_bonus.sql',
+      '300_c16_payment_refund_infrastructure.sql',
+      '305_rename_gift_send_at_to_gift_scheduled_at.sql',
       'preflight_165.sql',
     ])
   })

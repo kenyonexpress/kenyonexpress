@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
  * Tests for backup_log table and fn_record_backup function.
  * Verifies the "backup pointer" system that tracks RPO.
  *
- * Prerequisites: migration 130_pg_cron_pg_net.sql applied
+ * Prerequisites: pg_cron + pg_net (migrations/applied/161, 162) applied
  */
 
 // Talks to a real database, so it needs a real key; without one it skips
