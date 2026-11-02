@@ -30492,3 +30492,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T03:22:52+07:00
 - item: M15-c346
 - BLOCKED: console errors on / (React #418 hydration mismatch), prod build stale, redeploy of HEAD needed
+
+## Archived 2026-11-02T21:04:42+07:00 after M04-c347 (3 lines from STATE.md)
+
+### 2026-11-02T03:25:44+07:00
+- item: M16-c346
+- RESULT: DONE
