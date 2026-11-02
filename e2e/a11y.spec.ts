@@ -481,11 +481,18 @@ test.describe('the checkout wizard, step by step', () => {
     // (checkout-page.css, `.checkout-steps` is display:none below 992), so at
     // 768 the page is single-page and there is no "next" to press (C142).
     if ((viewport?.width ?? 1280) < 992) {
-      await page.locator('.checkout-pay-btn').click()
-      await expect(
-        page.locator('.checkout-field__error').first(),
-        'submitting the empty single-page checkout raised no error to scan',
-      ).toBeVisible()
+      // Click and check together, retried: at domcontentloaded the checkout is
+      // still streaming, and a click on the pay button before CheckoutForm
+      // hydrates runs no validation. One landed on nothing on WebKit-380
+      // (C151); the shopper's next click is the one that counts.
+      await expect(async () => {
+        await page.locator('.checkout-pay-btn').click({ timeout: 3_000 })
+        await expect(page.locator('.checkout-field__error').first()).toBeVisible({
+          timeout: 2_000,
+        })
+      }, 'submitting the empty single-page checkout raised no error to scan').toPass({
+        timeout: 20_000,
+      })
       const single = await scan(page)
       expect(
         single.violations.map((v) => v.id),
