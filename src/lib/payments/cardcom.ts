@@ -1,3 +1,4 @@
+import { agorotToDecimalString } from '@/lib/money'
 import { z } from 'zod'
 
 import { agorot } from '@/lib/commerce/money'
@@ -172,7 +173,7 @@ export class CardcomProvider implements PaymentProvider {
   }
 
   private ilsFromAgorot(amountAgorot: number): string {
-    return (amountAgorot / 100).toFixed(2)
+    return agorotToDecimalString(amountAgorot)
   }
 
   async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {

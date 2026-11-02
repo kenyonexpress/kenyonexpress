@@ -1,5 +1,5 @@
-import { type Agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
-import { applyBp } from '@/lib/money'
+import { type Agorot, agorotToIls } from '@/lib/commerce/money'
+import { agorotFromIlsColumn, applyBp } from '@/lib/money'
 
 /**
  * A catalogue ILS price -> integer agorot, through the money module.
@@ -7,14 +7,15 @@ import { applyBp } from '@/lib/money'
  * The catalogue columns (`kenyon_price`, `full_price`) are numeric shekels, so
  * a boundary conversion is unavoidable; what is avoidable is doing the
  * arithmetic in floats after it. `toFixed(2)` pins the value to exactly two
- * decimals as a STRING and `ilsToAgorot` parses that exactly, so the only
+ * decimals as a STRING and parses that exactly (`agorotFromIlsColumn` in money.ts), so the only
  * rounding is the explicit half-up one and everything after it is integer.
  */
 export function catalogueIlsToAgorot(value: unknown): Agorot | null {
-  const parsed = Number(value)
-  if (!Number.isFinite(parsed)) return null
+  // `null` and an empty string have always read as a zero price here.
+  if (value === null || (typeof value === 'string' && value.trim() === ''))
+    return agorotFromIlsColumn(0)
   try {
-    return ilsToAgorot(parsed.toFixed(2))
+    return agorotFromIlsColumn(typeof value === 'string' ? value.trim() : value)
   } catch {
     return null
   }

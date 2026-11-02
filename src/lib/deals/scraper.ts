@@ -6,6 +6,7 @@
  */
 
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { agorotFromDb } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { slugify } from '@/lib/utils/slugify'
@@ -101,7 +102,7 @@ function parseLiveSiteDeal(item: unknown): ScrapedDeal | null {
   const nameHe = obj.name_he || obj.nameHe || obj.title
   if (!nameHe || typeof nameHe !== 'string') return null
 
-  const priceAgorot = Number(obj.price || obj.priceAgorot || 0)
+  const priceAgorot = agorotFromDb(obj.price || obj.priceAgorot || 0)
   if (priceAgorot <= 0) return null
 
   const stockQuantity = Number(obj.stock || obj.stockQuantity || 0)

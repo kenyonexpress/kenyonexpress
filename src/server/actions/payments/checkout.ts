@@ -12,7 +12,7 @@ import {
   isCompleteShippingAddress,
   requiresVerifiedShipping,
 } from '@/lib/checkout/verified-shipping'
-import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import { agorot, agorotToIls } from '@/lib/commerce/money'
 import {
   buildOrderItemMoneyRow,
   buildOrderMoneyRow,
@@ -35,6 +35,7 @@ import {
   normalizeVelocityPhone,
 } from '@/lib/fraud/velocity'
 import { giftSendAt } from '@/lib/gifts/send-at'
+import { agorotFromIlsColumnOr, agorotFromIlsNumber } from '@/lib/money'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -654,8 +655,8 @@ async function runBeginCheckout(
     }
 
     if (item.type === 'coupon') {
-      const couponPrice = Number(product.coupon_price_ils ?? 0)
-      if (!(couponPrice > 0)) {
+      const couponPriceUnit = agorotFromIlsColumnOr(product.coupon_price_ils)
+      if (!(couponPriceUnit > 0)) {
         return {
           ok: false,
           error: `למוצר "${item.name_he}" לא הוגדר מחיר קופון`,
@@ -667,7 +668,7 @@ async function runBeginCheckout(
         productType: item.type,
         unitPrice: item.unit_price,
         quantity: item.quantity,
-        couponPriceUnit: ilsToAgorot(couponPrice.toFixed(2)),
+        couponPriceUnit,
         platformPercent: split.pair.platformPercent,
         cashbackPercent: product.cashback_percent ?? 0,
       })
@@ -708,7 +709,7 @@ async function runBeginCheckout(
       (select, ids) => admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
       user.id,
     )
-    const requestedAgorot = ilsToAgorot(input.apply_wallet_ils.toFixed(2))
+    const requestedAgorot = agorotFromIlsNumber(input.apply_wallet_ils)
     if (requestedAgorot > balanceAgorot) {
       return { ok: false, error: 'יתרת הארנק אינה מספיקה', code: 'INSUFFICIENT_WALLET' }
     }

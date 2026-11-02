@@ -21,6 +21,7 @@
 //    charged partly on the site and partly at the till. Only the first part is
 //    discountable; reducing the second would hand the shopper money out of the
 //    supplier's register. The caller passes only the on-site payable amount.
+import { bpToPercentString } from '@/lib/money'
 
 export type DiscountCampaign = {
   id: string
@@ -127,7 +128,9 @@ function labelFor(campaign: DiscountCampaign): string {
   if (campaign.kind === 'percent' && campaign.percent_bp !== null) {
     const percent = campaign.percent_bp / 100
     // 10 rather than 10.0, but 12.5 kept.
-    const shown = Number.isInteger(percent) ? String(percent) : percent.toFixed(1)
+    const shown = Number.isInteger(percent)
+      ? String(percent)
+      : bpToPercentString(campaign.percent_bp, 1)
     return `${shown}%- הנחה`
   }
   return 'הנחה'

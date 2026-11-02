@@ -2,6 +2,7 @@
 
 import { buildCancellationRequestedEmail } from '@/lib/email/cancellation-requested'
 import { sendEmail } from '@/lib/email/resend'
+import { agorotFromDb } from '@/lib/money'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
@@ -251,7 +252,7 @@ async function runRequestOrderRefund(input: {
     productType: i.product_type as RefundLineInput['productType'],
     settlementStatus: i.settlement_status as SettlementState,
     supplierId: i.supplier_id,
-    supplierReleasedAgorot: Number(i.supplier_immediate_agorot ?? 0),
+    supplierReleasedAgorot: agorotFromDb(i.supplier_immediate_agorot),
   }))
   const vouchers: RefundVoucherInput[] = (voucherRows ?? []).map((v) => ({
     voucherId: v.id,

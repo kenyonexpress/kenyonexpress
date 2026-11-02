@@ -23,7 +23,7 @@ import {
   previewRecurringMoney,
   readRecurringProductFields,
 } from '@/lib/commerce/recurring'
-import { agorot, agorotToIls, parseIls } from '@/lib/money'
+import { agorot, agorotToIls, numberFromInput, parseIls } from '@/lib/money'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
@@ -262,8 +262,8 @@ export default function ProductForm({
       ...(v.id ? { id: v.id } : {}),
       name_he: v.name_he,
       sku: v.sku,
-      price: v.price !== '' ? Number(v.price) : null,
-      price_modifier: Number(v.price_modifier) || 0,
+      price: v.price !== '' ? numberFromInput(v.price, Number.NaN) : null,
+      price_modifier: numberFromInput(v.price_modifier) || 0,
       stock_quantity: v.stock_quantity !== '' ? Number(v.stock_quantity) : null,
       is_active: v.is_active,
     })),

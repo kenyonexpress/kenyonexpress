@@ -1,13 +1,14 @@
 'use server'
 
+import { requireAdminSession } from '@/lib/admin/rbac'
+import { agorotToIls } from '@/lib/commerce/money'
 // No writeAuditLog import: this action writes its audit_log row inline, after
 // the persistence block, so it can carry a metadata object (payment id, refund
 // transaction id, both amounts, the supplier debits, the reason) that the
 // helper's signature does not take. The actor is written there from the session
 // requireAdminSession() proved, which the 169 trigger cannot supply on this
 // path because the refund runs on the service-role client.
-import { requireAdminSession } from '@/lib/admin/rbac'
-import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import { agorotFromDb, agorotFromIlsNumber } from '@/lib/money'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -168,7 +169,7 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     productType: i.product_type as ProductType,
     settlementStatus: i.settlement_status as SettlementState,
     supplierId: i.supplier_id,
-    supplierReleasedAgorot: Number(i.supplier_immediate_agorot ?? 0),
+    supplierReleasedAgorot: agorotFromDb(i.supplier_immediate_agorot),
   }))
   const voucherInputs: RefundVoucherInput[] = (voucherRows ?? []).map((v) => ({
     voucherId: v.id,
@@ -208,7 +209,7 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       chargedAt: chargedAt && !Number.isNaN(chargedAt.getTime()) ? chargedAt : undefined,
       partialAmountAgorot:
         input.partialAmountIls !== undefined
-          ? ilsToAgorot(input.partialAmountIls.toFixed(2))
+          ? agorotFromIlsNumber(input.partialAmountIls)
           : undefined,
     })
   } catch (error) {

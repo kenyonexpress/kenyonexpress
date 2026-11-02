@@ -13,6 +13,7 @@ import {
 } from '@/lib/invoices/document'
 import { formatInvoiceNumber, invoiceSeries, resolveInvoiceIssuer } from '@/lib/invoices/issuer'
 import { BUSINESS_REGISTRATION_NUMBER } from '@/lib/legal-entity'
+import { percentFromColumn } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
@@ -443,7 +444,7 @@ async function buildDocumentForRow(
           },
         ],
         chargedAgorot: row.total_agorot,
-        vatPercent: Number(row.vat_percent),
+        vatPercent: percentFromColumn(row.vat_percent) ?? undefined,
         reference: row.order_id,
       }),
       transactionId: deal.transactionId,
@@ -459,7 +460,7 @@ async function buildDocumentForRow(
     customer: loaded.context.customer,
     lines: loaded.context.lines,
     chargedAgorot: loaded.context.chargedAgorot,
-    vatPercent: Number(row.vat_percent),
+    vatPercent: percentFromColumn(row.vat_percent) ?? undefined,
     reference: row.order_id,
   })
 

@@ -1,3 +1,4 @@
+import { agorotFromDb } from '@/lib/money'
 import 'server-only'
 
 import { type Agorot, agorot } from '@/lib/commerce/money'
@@ -92,9 +93,9 @@ export async function getMyTier(): Promise<MyTier | null> {
       tierKey: r.tier_key ?? '',
       tierNameHe: r.tier_name_he,
       benefits: benefitList(r.tier_benefits_json),
-      spendAgorot: agorot(Number(r.spend_agorot)),
+      spendAgorot: agorotFromDb(r.spend_agorot),
       nextTierNameHe: r.next_tier_name_he,
-      toNextAgorot: agorot(Number(r.to_next_agorot)),
+      toNextAgorot: agorotFromDb(r.to_next_agorot),
       cashbackBonusPercent: currentTier?.cashback_bonus_percent ?? 0,
     }
   }
@@ -107,7 +108,7 @@ export async function getMyTier(): Promise<MyTier | null> {
     benefits: benefitList(lowest.benefits_json),
     spendAgorot: agorot(0),
     nextTierNameHe: next?.name_he ?? null,
-    toNextAgorot: agorot(next ? Number(next.min_spend_agorot) : 0),
+    toNextAgorot: next ? agorotFromDb(next.min_spend_agorot) : agorot(0),
     cashbackBonusPercent: lowest.cashback_bonus_percent ?? 0,
   }
 }
@@ -140,7 +141,7 @@ export async function listPublicTiers(): Promise<PublicTier[] | null> {
   ).map((t) => ({
     key: t.key,
     nameHe: t.name_he,
-    minSpendAgorot: agorot(Number(t.min_spend_agorot)),
+    minSpendAgorot: agorotFromDb(t.min_spend_agorot),
     benefits: benefitList(t.benefits_json),
   }))
 }

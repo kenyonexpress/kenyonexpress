@@ -1,5 +1,5 @@
 import { discountBp } from '@/lib/catalogue/discount-sort'
-import { type Agorot, parseIls } from '@/lib/money'
+import { type Agorot, agorotFromIlsNumber, parseIls } from '@/lib/money'
 
 /**
  * What the comparison table says about one product, derived once.
@@ -45,7 +45,7 @@ export type CompareColumn = {
 function toAgorot(value: number | string | null): Agorot | null {
   if (value === null) return null
   try {
-    const amount = parseIls(typeof value === 'number' ? value.toFixed(2) : value)
+    const amount = typeof value === 'number' ? agorotFromIlsNumber(value) : parseIls(value)
     return amount > 0 ? amount : null
   } catch {
     return null

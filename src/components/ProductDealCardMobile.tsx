@@ -1,4 +1,5 @@
 import CardLabel from '@/components/product-card/CardLabel'
+import { ilsFromIlsColumn } from '@/lib/money'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 
@@ -31,8 +32,8 @@ export default function ProductDealCardMobile({ product }: { product: Product })
       ? (product.images[0] as string)
       : null
 
-  const price = Number(product.kenyon_price ?? 0)
-  const old = product.full_price != null ? Number(product.full_price) : null
+  const price = ilsFromIlsColumn(product.kenyon_price) ?? 0
+  const old = ilsFromIlsColumn(product.full_price)
 
   return (
     <div

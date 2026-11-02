@@ -1,5 +1,6 @@
 import { requireSection } from '@/lib/admin/rbac'
-import { agorot, agorotToIls } from '@/lib/commerce/money'
+import { agorotToIls } from '@/lib/commerce/money'
+import { agorotFromDb } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { updateClubTier } from '@/server/actions/admin/club-tiers'
 import type { ClubTierBenefitRow, ClubTierRow } from '@/server/queries/club'
@@ -84,7 +85,7 @@ export default async function ClubTiersPage({ searchParams }: Props) {
               סף רכישות (ש&quot;ח)
               <input
                 name="min_spend_ils"
-                defaultValue={Math.round(agorotToIls(agorot(Number(t.min_spend_agorot))))}
+                defaultValue={Math.round(agorotToIls(agorotFromDb(t.min_spend_agorot)))}
                 inputMode="decimal"
                 required
                 className="rounded-md border border-border px-2 py-1"
@@ -146,7 +147,7 @@ export default async function ClubTiersPage({ searchParams }: Props) {
                 name="gift_value_ils"
                 inputMode="decimal"
                 defaultValue={Math.round(
-                  agorotToIls(agorot(Number(benefitsByTier.get(t.id)?.gift_value_agorot ?? 0))),
+                  agorotToIls(agorotFromDb(benefitsByTier.get(t.id)?.gift_value_agorot)),
                 )}
                 className="rounded-md border border-border px-2 py-1"
                 dir="ltr"

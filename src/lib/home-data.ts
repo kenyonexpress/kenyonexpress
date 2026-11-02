@@ -1,6 +1,7 @@
 import type { Product } from '@/components/ProductCard'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import type { HotCoupon } from '@/lib/hot-coupons'
+import { agorotFromIlsColumnOr } from '@/lib/money'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -65,8 +66,8 @@ function activeProducts(select: string) {
 }
 
 function discountOf(p: { kenyon_price: number | null; full_price: number | null }): number {
-  const price = Number(p.kenyon_price ?? 0)
-  const old = Number(p.full_price ?? 0)
+  const price = agorotFromIlsColumnOr(p.kenyon_price)
+  const old = agorotFromIlsColumnOr(p.full_price)
   return old > price && old > 0 ? (old - price) / old : 0
 }
 

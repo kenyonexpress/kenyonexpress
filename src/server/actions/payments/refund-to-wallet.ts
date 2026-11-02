@@ -2,7 +2,8 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireAdminSession } from '@/lib/admin/rbac'
-import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import { agorot, agorotToIls } from '@/lib/commerce/money'
+import { agorotFromIlsNumber } from '@/lib/money'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -159,7 +160,7 @@ async function runRefundOrderToWallet(input: WalletRefundInput): Promise<WalletR
 
   const requestedAgorot =
     input.partialAmountIls !== undefined
-      ? ilsToAgorot(input.partialAmountIls.toFixed(2))
+      ? agorotFromIlsNumber(input.partialAmountIls)
       : chargedAgorot
   if (requestedAgorot > chargedAgorot) {
     return { ok: false, error: 'סכום הזיכוי גדול מהחיוב', code: 'STATE_INVALID' }

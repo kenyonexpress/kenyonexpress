@@ -8,7 +8,8 @@ import {
 } from '@/lib/cart/types'
 import { calculateCommission } from '@/lib/commerce/commission'
 import { isImplausibleDiscountAgorot } from '@/lib/commerce/implausible-discount'
-import { type Agorot, agorot, ilsToAgorot, multiplyAgorot } from '@/lib/commerce/money'
+import { type Agorot, agorot, multiplyAgorot } from '@/lib/commerce/money'
+import { agorotFromIlsColumn, percentFromColumn } from '@/lib/money'
 import {
   DEFAULT_SHIPPING_METHOD_ID,
   type ShippingMethod,
@@ -67,13 +68,18 @@ function firstImage(images: unknown): string | null {
   return first ?? null
 }
 
-function resolveUnitPrice(product: ProductRow, variant: VariantRow | null): number {
+function ilsOrZero(value: unknown): Agorot {
+  const parsed = agorotFromIlsColumn(value)
+  if (parsed === null && value != null) throw new TypeError('price is not an ILS amount')
+  return parsed ?? ZERO
+}
+
+function resolveUnitPrice(product: ProductRow, variant: VariantRow | null): Agorot {
   if (variant) {
-    return Number(
-      variant.price ?? Number(product.kenyon_price ?? 0) + Number(variant.price_modifier),
-    )
+    if (variant.price != null) return ilsOrZero(variant.price)
+    return agorot(ilsOrZero(product.kenyon_price) + ilsOrZero(variant.price_modifier))
   }
-  return Number(product.kenyon_price ?? 0)
+  return ilsOrZero(product.kenyon_price)
 }
 
 /**
@@ -162,9 +168,8 @@ function productType(product: ProductRow): 'physical' | 'coupon' | null {
  */
 function compareAtAgorot(product: ProductRow): Agorot | null {
   const value = product.full_price
-  if (value == null || Number.isNaN(Number(value))) return null
   try {
-    return ilsToAgorot(Number(value).toFixed(2))
+    return agorotFromIlsColumn(value)
   } catch {
     return null
   }
@@ -172,21 +177,18 @@ function compareAtAgorot(product: ProductRow): Agorot | null {
 
 /** Null when the admin has not set the mandatory per-product percent yet. */
 function platformPercent(product: ProductRow): number | null {
-  const value = product.platform_percent
-  if (value == null || Number.isNaN(Number(value))) return null
-  return Number(value)
+  return percentFromColumn(product.platform_percent)
 }
 
 /** Null when the admin has not set the mandatory absolute coupon price yet. */
-function couponPriceIls(product: ProductRow): number | null {
-  const value = product.coupon_price_ils
-  if (value == null || Number.isNaN(Number(value)) || Number(value) <= 0) return null
-  return Number(value)
+function couponPriceAgorot(product: ProductRow): Agorot | null {
+  const value = agorotFromIlsColumn(product.coupon_price_ils)
+  if (value == null || value <= 0) return null
+  return value
 }
 
 function cashbackPercent(product: ProductRow): number {
-  const value = product.cashback_percent
-  return value != null && !Number.isNaN(Number(value)) ? Number(value) : DEFAULT_CASHBACK_PERCENT
+  return percentFromColumn(product.cashback_percent) ?? DEFAULT_CASHBACK_PERCENT
 }
 
 export function buildCartView(
@@ -241,15 +243,14 @@ export function buildCartView(
     // `numeric` column and arrives as a JS number; it is converted to agorot
     // here, once, and every downstream value is integer arithmetic on the
     // result. Nothing below ever divides by 100 to get back.
-    const unitPrice = ilsToAgorot(resolveUnitPrice(product, variant).toFixed(2))
+    const unitPrice = resolveUnitPrice(product, variant)
     const lineTotal = multiplyAgorot(unitPrice, item.quantity)
     const type = productType(product)
     const lineKey = `${item.product_id}::${item.variant_id ?? 'null'}`
 
     const percent = platformPercent(product)
-    const couponPrice = couponPriceIls(product)
-    const couponPriceUnit =
-      type === 'coupon' && couponPrice != null ? ilsToAgorot(couponPrice.toFixed(2)) : null
+    const couponPrice = couponPriceAgorot(product)
+    const couponPriceUnit = type === 'coupon' && couponPrice != null ? couponPrice : null
 
     // Both types need the percent since 2026-07-27, and a coupon additionally
     // needs its admin-set absolute price. A line missing either renders as

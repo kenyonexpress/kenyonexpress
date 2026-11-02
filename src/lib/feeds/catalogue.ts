@@ -2,6 +2,7 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { numberFromInput } from '@/lib/money'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -101,7 +102,7 @@ function parseDate(value: string | null): Date | null {
 
 function toNumber(value: number | null): number | null {
   if (value === null || value === undefined) return null
-  const parsed = Number(value)
+  const parsed = numberFromInput(value, Number.NaN)
   return Number.isFinite(parsed) ? parsed : null
 }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import ProductCard, { type Product } from '@/components/ProductCard'
+import { agorotFromIlsColumnOr } from '@/lib/money'
 import { useState } from 'react'
 
 /** refs/electro.html .section-products-carousel — Featured Products with filter tabs */
@@ -15,7 +16,9 @@ type TabId = (typeof TABS)[number]['id']
 function filterProducts(products: Product[], tab: TabId): Product[] {
   if (tab === 'sale') {
     return products.filter(
-      (p) => p.full_price != null && Number(p.full_price) > Number(p.kenyon_price ?? 0),
+      (p) =>
+        p.full_price != null &&
+        agorotFromIlsColumnOr(p.full_price) > agorotFromIlsColumnOr(p.kenyon_price),
     )
   }
   if (tab === 'instock') {

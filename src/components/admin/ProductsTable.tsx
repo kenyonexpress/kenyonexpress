@@ -7,6 +7,7 @@ import {
   MAX_PLAUSIBLE_DISCOUNT_PERCENT,
   isImplausibleDiscount,
 } from '@/lib/commerce/implausible-discount'
+import { numberFromInput, percentFromColumn } from '@/lib/money'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import {
   type BulkPriceInput,
@@ -94,7 +95,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
   const ids = Array.from(selected)
 
   async function applyPrices() {
-    const value = Number(priceValue)
+    const value = numberFromInput(priceValue, Number.NaN)
     if (!priceValue || Number.isNaN(value)) {
       toast.error('הזינו ערך מספרי')
       return
@@ -212,7 +213,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
       accessor: (p) => p.platform_percent ?? -1,
       cell: (p) => (
         <span className="text-black/80" dir="ltr">
-          {p.platform_percent == null ? 'לא הוגדר' : `${Number(p.platform_percent)}%`}
+          {p.platform_percent == null ? 'לא הוגדר' : `${percentFromColumn(p.platform_percent)}%`}
         </span>
       ),
     },

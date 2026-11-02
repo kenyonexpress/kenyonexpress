@@ -1,6 +1,6 @@
 /** Shared formatting for the account area. Hebrew locale, ILS, Israel timezone. */
 
-import { type Agorot, agorot, formatAgorot, parseIls } from '@/lib/money'
+import { type Agorot, agorot, agorotFromIlsNumber, formatAgorot, parseIls } from '@/lib/money'
 
 /**
  * Render integer agorot as shekels, through money.ts and nothing else.
@@ -28,7 +28,7 @@ export function formatIls(value: Agorot): string {
  */
 export function ilsColumnToAgorot(value: number | string | null | undefined): Agorot {
   if (value == null || value === '') return agorot(0)
-  return parseIls(typeof value === 'number' ? value.toFixed(2) : value)
+  return typeof value === 'number' ? agorotFromIlsNumber(value) : parseIls(value)
 }
 
 export function formatDate(iso: string | null): string {

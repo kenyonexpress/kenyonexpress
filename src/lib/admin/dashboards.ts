@@ -1,4 +1,4 @@
-import { type Agorot, agorot, sumAgorot } from '@/lib/money'
+import { type Agorot, agorot, agorotFromDb, sumAgorot } from '@/lib/money'
 
 /**
  * Pure aggregation for the admin dashboards screen. Every amount is integer
@@ -55,6 +55,6 @@ export function countBy<T>(rows: readonly T[], key: (row: T) => string): Record<
 /** Natural balance summed over every ledger account of one kind. */
 export function ledgerKindTotal(rows: readonly LedgerBalanceRow[], kind: string): Agorot {
   return sumAgorot(
-    rows.filter((r) => r.kind === kind).map((r) => agorot(Number(r.natural_balance_agorot ?? 0))),
+    rows.filter((r) => r.kind === kind).map((r) => agorotFromDb(r.natural_balance_agorot)),
   )
 }

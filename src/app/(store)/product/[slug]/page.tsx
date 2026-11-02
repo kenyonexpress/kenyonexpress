@@ -20,6 +20,7 @@ import {
   storefrontProductTypeLabel,
 } from '@/lib/commerce/product-type'
 import { productLocation } from '@/lib/geo/distance'
+import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
@@ -160,10 +161,10 @@ export default async function ProductPage({ params }: Props) {
     ? null
     : (product.categories as { id: string; name_he: string; slug: string } | null)
 
-  const basePrice = Number(product.kenyon_price ?? 0)
+  const basePrice = ilsFromIlsColumn(product.kenyon_price) ?? 0
   const oldPrice =
-    product.full_price != null && Number(product.full_price) > basePrice
-      ? Number(product.full_price)
+    product.full_price != null && (ilsFromIlsColumn(product.full_price) ?? 0) > basePrice
+      ? (ilsFromIlsColumn(product.full_price) ?? 0)
       : null
 
   // One resolution, asked for rather than derived. `isCoupon` and the sentence
@@ -256,7 +257,7 @@ export default async function ProductPage({ params }: Props) {
             // Agorot, converted exactly once at the vendor boundary by
             // `toCurrencyAmount`. `kenyon_price` is still the pre-integer
             // shekel column, so this is the one rounding on the path.
-            priceAgorot: Math.round(Number(product.kenyon_price ?? 0) * 100),
+            priceAgorot: agorotFromIlsColumnOr(product.kenyon_price),
             quantity: 1,
             category: category?.name_he ?? null,
             supplier: supplier?.name ?? null,

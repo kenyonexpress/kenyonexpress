@@ -1,4 +1,5 @@
 import { EcMapPointer, EcTag } from '@/components/icons/electro-icons'
+import { ilsFromIlsColumn } from '@/lib/money'
 import { shekelsFromIls } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -21,7 +22,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
   // is the pricing model abolished on 2026-07-24. A coupon without a price is
   // shown without one rather than advertised at an invented number.
   const platformPrice = coupon.platform_price
-  const original = Number(coupon.original_price)
+  const original = ilsFromIlsColumn(coupon.original_price) ?? 0
   const discountPct =
     coupon.discount_percentage ??
     (platformPrice != null && original > 0

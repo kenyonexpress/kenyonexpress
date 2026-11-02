@@ -97,6 +97,16 @@ const FORBIDDEN: { name: string; pattern: RegExp; allow: Allow[] }[] = [
     pattern: /\.toFixed\(/,
     allow: [
       {
+        file: 'src/lib/money.ts',
+        test: /return \(\(part \/ whole\) \* 100\)\.toFixed\(decimals\)/,
+        reason: 'ratioToPercentString: display of a non-money ratio (delivery rate, error rate)',
+      },
+      {
+        file: 'src/lib/money.ts',
+        test: /value\.toFixed\(decimals\) : '0'/,
+        reason: 'fixedDecimal: display of a non-money metric, the single toFixed outside the idiom',
+      },
+      {
         file: '*',
         test: /ilsToAgorot\(.*\.toFixed\(2\)\)/,
         reason: 'THE sanctioned boundary idiom: pin to a 2-decimal string, parse exactly',

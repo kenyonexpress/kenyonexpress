@@ -1,5 +1,7 @@
 'use client'
 
+import { roundToWholeShekels } from '@/lib/commerce/money'
+import { agorot, numberFromInput } from '@/lib/money'
 import { useCallback, useMemo, useState } from 'react'
 
 type Props = {
@@ -64,7 +66,7 @@ export default function PriceRangeSlider({
           min={min}
           max={max}
           value={localMin}
-          onChange={(e) => handleMinChange(Number(e.target.value))}
+          onChange={(e) => handleMinChange(numberFromInput(e.target.value))}
           className="price-slider__input price-slider__input--min"
           disabled={isPending}
           aria-label="מחיר מינימלי"
@@ -74,15 +76,19 @@ export default function PriceRangeSlider({
           min={min}
           max={max}
           value={localMax}
-          onChange={(e) => handleMaxChange(Number(e.target.value))}
+          onChange={(e) => handleMaxChange(numberFromInput(e.target.value))}
           className="price-slider__input price-slider__input--max"
           disabled={isPending}
           aria-label="מחיר מקסימלי"
         />
       </div>
       <div className="price-slider__values">
-        <span className="price-slider__value">₪{(localMin / 100).toFixed(0)}</span>
-        <span className="price-slider__value">₪{(localMax / 100).toFixed(0)}</span>
+        <span className="price-slider__value">
+          ₪{roundToWholeShekels(agorot(Math.round(localMin)))}
+        </span>
+        <span className="price-slider__value">
+          ₪{roundToWholeShekels(agorot(Math.round(localMax)))}
+        </span>
       </div>
       <button
         type="button"

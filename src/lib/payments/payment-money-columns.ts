@@ -1,3 +1,4 @@
+import { numberFromInput } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 /**
  * Which money columns `public.payments` actually has in the database this
@@ -55,7 +56,7 @@ export type PaymentMoneySchema = {
  */
 function numeric(stored: unknown): number | null {
   if (stored === null || stored === undefined || stored === '') return null
-  const parsed = Number(stored)
+  const parsed = numberFromInput(stored, Number.NaN)
   return Number.isFinite(parsed) ? parsed : null
 }
 

@@ -10,7 +10,7 @@ import {
   sumPayoutsDue,
 } from '@/lib/analytics/ops-kpis'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
-import { parseIls } from '@/lib/money'
+import { agorotFromDb, agorotFromIlsNumber, parseIls } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { supplierDueAgorot } from '@/lib/supplier/dashboard'
 
@@ -259,7 +259,7 @@ export type OpsLoad =
 function ilsColumnToAgorot(value: string | number | null): number {
   if (value === null) return 0
   try {
-    return parseIls(typeof value === 'number' ? value.toFixed(2) : value)
+    return typeof value === 'number' ? agorotFromIlsNumber(value) : parseIls(value)
   } catch {
     return -1
   }
@@ -322,7 +322,7 @@ export async function loadOpsKpis(days: number, now: Date = new Date()): Promise
   for (const row of refundRows.data ?? []) {
     if (row.state !== 'completed') continue
     completed += 1
-    granted += Number(row.granted_agorot ?? 0)
+    granted += agorotFromDb(row.granted_agorot)
   }
 
   const due = sumPayoutsDue(

@@ -1122,6 +1122,7 @@ site. The two have to change together.
 - `319_affiliate_links_product.sql` - an affiliate link can point at one product (C103, F12), one link per product per affiliate. Pending, not applied.
 - `320_products_opening_hours.sql` - products.opening_hours jsonb driving the open-on-weekend chip (C104, F13). Pending, not applied.
 - `321_card_verify_enabled_flag.sql` - card_verify_enabled flag (C91), OFF: supplier applications skip the 1 ILS card verification. Pending, not applied.
+- `323_order_items_percent_snapshot_lock.sql` - BEFORE UPDATE trigger freezing order_items.platform_percent / supplier_split_percent / commission_percent_snapshot once orders.paid_at is set (C141). Replaces the never-applied, unrunnable 291 lock. APPLIED to production 2026-11-02 via supabase db query --linked; verified in docs/C141-money.md.
 - `171_category_name_shekel_order.sql` - The shekel sign in a category name renders on the wrong side. Applied; lives in `migrations/applied/`.
 - `226_fraud_controls.sql` - Two server-only tables behind the checkout fraud gate (fraud_flags, fraud_review_queue). Applied; lives in `migrations/applied/`.
 - `228_invoice_sequences.sql` - Platform-owned sequential document numbering per terminal and series. Applied; lives in `migrations/applied/`.

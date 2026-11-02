@@ -1,4 +1,4 @@
-import { type Agorot, agorot, divRoundHalfUp } from '@/lib/money'
+import { type Agorot, agorot, divRoundHalfUp, numberFromInput } from '@/lib/money'
 
 /**
  * Customer club tiers, decided by what the customer paid on the site over the
@@ -110,7 +110,10 @@ export function tiersFromRows(rows: readonly ClubTierRow[] | null | undefined): 
   for (const id of CLUB_TIER_IDS) {
     const row = byId.get(id)
     if (!row) return fallback(`missing tier ${id}`)
-    const value = typeof row.min_agorot === 'string' ? Number(row.min_agorot) : row.min_agorot
+    const value =
+      typeof row.min_agorot === 'string'
+        ? numberFromInput(row.min_agorot, Number.NaN)
+        : row.min_agorot
     if (value === null || !Number.isSafeInteger(value) || value < 0) {
       return fallback(`${id}: min_agorot is not a non-negative integer`)
     }

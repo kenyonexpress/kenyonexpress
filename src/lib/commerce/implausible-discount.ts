@@ -1,4 +1,5 @@
-import { type Agorot, ilsToAgorot } from '@/lib/commerce/money'
+import type { Agorot } from '@/lib/commerce/money'
+import { agorotFromIlsColumn } from '@/lib/money'
 
 /**
  * A PRICE THAT IS TOO GOOD TO BE TRUE IS A DATA ERROR, NOT AN OFFER.
@@ -156,5 +157,7 @@ export function isImplausibleDiscount(
 }
 
 function toAgorot(value: string | number): Agorot {
-  return ilsToAgorot(Number(value).toFixed(2))
+  const parsed = agorotFromIlsColumn(typeof value === 'string' ? value.trim() : value)
+  if (parsed === null) throw new TypeError('not an ILS amount')
+  return parsed
 }

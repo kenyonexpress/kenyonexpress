@@ -1,4 +1,4 @@
-import { type Agorot, agorot } from '@/lib/money'
+import { type Agorot, agorotFromDb } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -59,7 +59,7 @@ interface SettingsRow {
  * hold one.
  */
 function columnAgorot(value: number | null | undefined): Agorot {
-  return agorot(Math.round(Number(value ?? 0)))
+  return agorotFromDb(value)
 }
 
 /**

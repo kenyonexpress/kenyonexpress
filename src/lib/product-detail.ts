@@ -4,6 +4,7 @@ import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
 import { buildRecurringOffer } from '@/lib/commerce/recurring'
+import { ilsFromIlsColumn } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -119,7 +120,7 @@ export async function loadProductBySlug(slug: string) {
     ],
   )
 
-  const basePrice = Number(product.kenyon_price ?? 0)
+  const basePrice = ilsFromIlsColumn(product.kenyon_price) ?? 0
 
   // Built HERE and not on the page, because `buildCouponOffer` reads the
   // current time to decide whether the offer has lapsed, and a Server

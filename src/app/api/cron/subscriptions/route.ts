@@ -7,6 +7,7 @@ import {
   dueSubscriptions,
   isBillingInterval,
 } from '@/lib/commerce/recurring'
+import { percentFromColumn } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider } from '@/lib/payments'
@@ -90,7 +91,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     admin
       .from(pendingTable('subscriptions'))
       .select(
-        'id, product_id, status, amount_agorot, platform_percent_snapshot, billing_interval, billing_interval_count, next_charge_at, last_charge_at, failed_attempts, payment_token_id, payment_tokens(cardcom_token, cardcom_account_id)',
+        'id, product_id, status, amount_agorot, platform_percent_snapshot:platform_percent, billing_interval, billing_interval_count, next_charge_at, last_charge_at, failed_attempts, payment_token_id, payment_tokens(cardcom_token, cardcom_account_id)',
       )
       .in('status', ['active', 'past_due'])
       .not('next_charge_at', 'is', null)
@@ -125,7 +126,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       product_id: row.product_id,
       billing_interval: row.billing_interval,
       billing_interval_count: row.billing_interval_count ?? 1,
-      platform_percent_snapshot: Number(row.platform_percent_snapshot),
+      platform_percent_snapshot: percentFromColumn(row.platform_percent_snapshot) ?? 0,
       payment_token_id: row.payment_token_id,
       cardcom_account_id: token?.cardcom_account_id ?? null,
     }

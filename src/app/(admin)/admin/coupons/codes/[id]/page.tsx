@@ -42,7 +42,7 @@ interface VoucherDetail {
   face_value_agorot: number
   coupon_price_agorot: number
   remaining_amount_due_agorot: number
-  platform_percent_snapshot: number
+  platform_percent: number
   offer_valid_until: string
   expires_at: string
   issued_at: string
@@ -147,7 +147,7 @@ export default async function AdminVoucherDetailPage({ params }: Props) {
           <Row label="ערך מלא" value={ils(voucher.face_value_agorot)} />
           <Row label="שולם באתר" value={ils(voucher.coupon_price_agorot)} />
           <Row label="לגבייה בבית העסק" value={ils(voucher.remaining_amount_due_agorot)} />
-          <Row label="אחוז פלטפורמה בעת הרכישה" value={`${voucher.platform_percent_snapshot}%`} />
+          <Row label="אחוז פלטפורמה בעת הרכישה" value={`${voucher.platform_percent}%`} />
           <p className="pt-2 text-xs text-gray-500">
             היתרה נגבית במזומן בבית העסק ואינה עוברת דרכנו.
           </p>

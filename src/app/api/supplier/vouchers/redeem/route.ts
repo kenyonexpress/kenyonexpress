@@ -1,4 +1,5 @@
 import { sendGaEvent } from '@/lib/analytics/server-events'
+import { agorotFromDb } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -165,7 +166,7 @@ async function stampStaff(idempotencyKey: string, staffId: string, userId: strin
  */
 async function reportRedemption(result: Record<string, unknown>): Promise<void> {
   try {
-    const paid = Number(result.coupon_price_agorot ?? 0)
+    const paid = agorotFromDb(result.coupon_price_agorot)
     if (!Number.isFinite(paid) || paid <= 0) return
     await sendGaEvent('redeem_coupon', {
       items: [

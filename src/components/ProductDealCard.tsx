@@ -1,6 +1,7 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import CardLabel from '@/components/product-card/CardLabel'
 import { KE_LIVE_DEAL_TABLET_SQUARE } from '@/lib/ke-live-deals-data'
+import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -103,8 +104,8 @@ export default function ProductDealCard({ product }: { product: Product }) {
       ? (product.images[0] as string)
       : null
 
-  const price = Number(product.kenyon_price ?? 0)
-  const old = product.full_price != null ? Number(product.full_price) : null
+  const price = ilsFromIlsColumn(product.kenyon_price) ?? 0
+  const old = ilsFromIlsColumn(product.full_price)
   const hasDiscount = old != null && old > price
   const discountPct = hasDiscount ? Math.round((1 - price / old) * 100) : 0
   const outOfStock = product.stock_quantity === 0
@@ -226,7 +227,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
             <AddToCartButton
               productId={product.id}
               productName={product.name_he}
-              priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
+              priceAgorot={agorotFromIlsColumnOr(product.kenyon_price)}
               disabled={outOfStock}
               variant="icon"
               className="flex h-full w-full items-center justify-center"

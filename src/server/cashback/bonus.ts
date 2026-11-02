@@ -1,3 +1,4 @@
+import { agorotFromDb } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -30,7 +31,7 @@ export async function awardOrderCountBonus(admin: SupabaseClient, orderId: strin
       log.warn('cashback.bonus_award_failed', { orderId, reason: error.message })
       return
     }
-    const awarded = Number(data ?? 0)
+    const awarded = agorotFromDb(data)
     if (awarded > 0) {
       log.info('cashback.bonus_awarded', { orderId, amountAgorot: awarded })
     }

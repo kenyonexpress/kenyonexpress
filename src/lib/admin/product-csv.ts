@@ -1,3 +1,4 @@
+import { numberFromInput } from '@/lib/money'
 import { cadenceFromDays, parseLogisticsFields } from './product-logistics-fields'
 
 /**
@@ -171,7 +172,7 @@ export function validateRow(form: FormData): string | null {
   }
   const percent = form.get('platform_percent')
   if (percent != null) {
-    const p = Number(percent)
+    const p = percent === '' ? 0 : numberFromInput(percent, Number.NaN)
     if (!Number.isFinite(p) || p < 0 || p > 100) return 'platform_percent בין 0 ל-100'
   }
   return null

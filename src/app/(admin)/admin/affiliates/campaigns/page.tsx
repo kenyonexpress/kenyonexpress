@@ -1,4 +1,5 @@
 import { requireSection } from '@/lib/admin/rbac'
+import { bpToPercentString } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { saveAffiliateCampaign } from '@/server/actions/admin/affiliates'
 import Link from 'next/link'
@@ -43,7 +44,7 @@ function CampaignForm({ c }: { c?: Campaign }) {
         עמלה (%)
         <input
           name="commission_percent"
-          defaultValue={c ? (c.commission_bp / 100).toFixed(2) : ''}
+          defaultValue={c ? bpToPercentString(c.commission_bp) : ''}
           inputMode="decimal"
           required
           dir="ltr"

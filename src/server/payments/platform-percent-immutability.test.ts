@@ -2,10 +2,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { describe, expect, it } from 'vitest'
 
 /**
- * Verifies that migration 130's trigger prevents UPDATE of
+ * Verifies that migration 323's trigger prevents UPDATE of
  * platform_percent_snapshot on paid orders.
  *
- * This test requires migration 130 to be applied. If the column or trigger
+ * This test requires migration 323 to be applied. If the column or trigger
  * does not exist, the test will fail with a clear database error (42703 or
  * 42P01), which is the correct outcome: the migration must be applied before
  * the immutability guarantee holds.
@@ -15,7 +15,7 @@ const configured = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
 )
 
-describe.skipIf(!configured)('order_items.platform_percent_snapshot immutability', () => {
+describe.skipIf(!configured)('order_items.platform_percent snapshot immutability', () => {
   it('blocks UPDATE of platform_percent_snapshot on a paid order', async () => {
     const admin = createAdminClient()
 
@@ -45,7 +45,8 @@ describe.skipIf(!configured)('order_items.platform_percent_snapshot immutability
         total_price_ils: 100,
         commission_percent: 20,
         supplier_payout_ils: 80,
-        platform_percent_snapshot: 20,
+        platform_percent: 20,
+        supplier_split_percent: 80,
       })
       .select('id')
       .single()
@@ -56,7 +57,7 @@ describe.skipIf(!configured)('order_items.platform_percent_snapshot immutability
     // Attempt to UPDATE platform_percent_snapshot on the paid order
     const { error: updateError } = await admin
       .from('order_items')
-      .update({ platform_percent_snapshot: 30 })
+      .update({ platform_percent: 30, supplier_split_percent: 70 })
       .eq('id', item!.id)
 
     // The trigger should block the update
@@ -95,7 +96,8 @@ describe.skipIf(!configured)('order_items.platform_percent_snapshot immutability
         total_price_ils: 100,
         commission_percent: 20,
         supplier_payout_ils: 80,
-        platform_percent_snapshot: 20,
+        platform_percent: 20,
+        supplier_split_percent: 80,
       })
       .select('id')
       .single()
@@ -106,7 +108,7 @@ describe.skipIf(!configured)('order_items.platform_percent_snapshot immutability
     // Attempt to UPDATE platform_percent_snapshot on the unpaid order
     const { error: updateError } = await admin
       .from('order_items')
-      .update({ platform_percent_snapshot: 30 })
+      .update({ platform_percent: 30, supplier_split_percent: 70 })
       .eq('id', item!.id)
 
     // The trigger should allow the update (order is not paid)

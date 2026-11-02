@@ -1,6 +1,7 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { numberFromInput } from '@/lib/money'
 import { shekelsFromIls } from '@/lib/money-format'
 import { type CouponDealFormState, upsertCouponDeal } from '@/server/actions/admin/coupon-deals'
 import type { CouponDeal, Vendor } from '@/types/database'
@@ -90,7 +91,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 min="1"
                 step="1"
                 value={originalPrice || ''}
-                onChange={(e) => setOriginalPrice(Number(e.target.value))}
+                onChange={(e) => setOriginalPrice(numberFromInput(e.target.value))}
                 required
                 dir="ltr"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
@@ -111,7 +112,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
                 step="1"
                 max={originalPrice || undefined}
                 value={platformPrice || ''}
-                onChange={(e) => setPlatformPrice(Number(e.target.value))}
+                onChange={(e) => setPlatformPrice(numberFromInput(e.target.value))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
               <p className="mt-1 text-xs text-gray-500">

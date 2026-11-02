@@ -1,4 +1,5 @@
 import { requireSection } from '@/lib/admin/rbac'
+import { fixedDecimal } from '@/lib/money'
 import { fetchUnifiedObservability } from '@/lib/observability/integrations'
 import { getEndpointMetrics, getUnresolvedAlerts } from '@/lib/observability/metrics'
 import { AlertCircle, BarChart3, Zap } from 'lucide-react'
@@ -217,7 +218,7 @@ export default async function ObservabilityPage() {
                               : 'text-green-400'
                           }
                         >
-                          {metric.error_rate_percent.toFixed(3)}%
+                          {fixedDecimal(metric.error_rate_percent, 3)}%
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -390,7 +391,7 @@ function EndpointCard({
               metric.error_rate_percent > 0.1 ? 'font-semibold text-red-400' : 'text-green-400'
             }
           >
-            {metric.error_rate_percent.toFixed(3)}%
+            {fixedDecimal(metric.error_rate_percent, 3)}%
           </p>
         </div>
       </div>

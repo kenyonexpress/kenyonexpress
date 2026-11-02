@@ -1,5 +1,6 @@
 import { formatDate, formatIls } from '@/lib/account/format'
 import { agorot } from '@/lib/commerce/money'
+import { agorotFromDb, bpToPercentString } from '@/lib/money'
 import { createClient } from '@/lib/supabase/server'
 import { urlQrDataUrl } from '@/lib/vouchers/qr-image'
 import { createAffiliateLink, joinAffiliateProgram } from '@/server/actions/affiliate'
@@ -152,10 +153,10 @@ async function AffiliateContent({ searchParams }: Props) {
   const qrs = await Promise.all(linkRows.map((l) => urlQrDataUrl(linkUrl(l))))
   const pending = attributionRows
     .filter((a) => a.status === 'pending')
-    .reduce((sum, a) => sum + Number(a.commission_agorot ?? 0), 0)
+    .reduce((sum, a) => sum + agorotFromDb(a.commission_agorot), 0)
   const earned = attributionRows
     .filter((a) => a.status === 'paid')
-    .reduce((sum, a) => sum + Number(a.commission_agorot ?? 0), 0)
+    .reduce((sum, a) => sum + agorotFromDb(a.commission_agorot), 0)
 
   return (
     <main dir="rtl" className="mx-auto max-w-3xl space-y-6 px-4 py-8">
@@ -183,7 +184,7 @@ async function AffiliateContent({ searchParams }: Props) {
                 <select name="campaign_id" className="rounded-md border border-border px-2 py-1">
                   {campaignRows.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({(c.commission_bp / 100).toFixed(2)}%)
+                      {c.name} ({bpToPercentString(c.commission_bp)}%)
                     </option>
                   ))}
                 </select>
@@ -249,7 +250,7 @@ async function AffiliateContent({ searchParams }: Props) {
               <li key={a.id}>
                 {formatDate(a.created_at)} · {ATTRIBUTION_HE[a.status] ?? a.status}
                 {a.commission_agorot != null &&
-                  ` · ${formatIls(agorot(Number(a.commission_agorot)))}`}
+                  ` · ${formatIls(agorotFromDb(a.commission_agorot))}`}
               </li>
             ))}
           </ul>

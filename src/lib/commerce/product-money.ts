@@ -26,7 +26,8 @@
  * from nowhere on others.
  */
 
-import { type Agorot, agorot, ilsToAgorot, percentToBasisPoints, percentageOf } from './money'
+import { agorotFromIlsNumber, numberFromInput } from '@/lib/money'
+import { type Agorot, agorot, percentToBasisPoints, percentageOf } from './money'
 
 /**
  * `recurring` was added 2026-08-07. It splits its per-cycle charge exactly the
@@ -75,7 +76,7 @@ export interface PublishBlocker {
  */
 export function normalizePercent(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null
-  const parsed = typeof value === 'number' ? value : Number(String(value).trim())
+  const parsed = typeof value === 'number' ? value : numberFromInput(String(value), Number.NaN)
   if (!Number.isFinite(parsed)) return null
   if (parsed < 0 || parsed > 100) return null
   return round2(parsed)
@@ -84,7 +85,7 @@ export function normalizePercent(value: unknown): number | null {
 /** Coerces an absolute shekel amount. Null for missing or non-positive. */
 export function normalizeIls(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null
-  const parsed = typeof value === 'number' ? value : Number(String(value).trim())
+  const parsed = typeof value === 'number' ? value : numberFromInput(String(value), Number.NaN)
   if (!Number.isFinite(parsed) || parsed <= 0) return null
   return round2(parsed)
 }
@@ -308,7 +309,7 @@ export function assertPublishable(input: PublishGateInput): PublishGateResult {
   }
 
   if (input.type === 'recurring') {
-    const amount = Number(input.recurringAmountAgorot)
+    const amount = numberFromInput(input.recurringAmountAgorot, Number.NaN)
     if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
       blockers.push({
         field: 'recurring_amount_agorot',
@@ -337,7 +338,7 @@ export function assertPublishable(input: PublishGateInput): PublishGateResult {
       })
     }
 
-    const days = Number(input.couponExpiryDays)
+    const days = numberFromInput(input.couponExpiryDays, Number.NaN)
     if (!Number.isFinite(days) || !Number.isInteger(days) || days <= 0) {
       blockers.push({ field: 'coupon_expiry_days', message: 'חייב להגדיר תוקף קופון בימים' })
     }
@@ -515,7 +516,7 @@ export function buildProductMoneyWrite(input: {
   > = {}
 
   if (isRecurring) {
-    const amount = Number(input.recurringAmountAgorot)
+    const amount = numberFromInput(input.recurringAmountAgorot, Number.NaN)
     if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
       return {
         ok: false,
@@ -530,7 +531,7 @@ export function buildProductMoneyWrite(input: {
         message: 'חייב לבחור תדירות חיוב: חודשי או שנתי',
       }
     }
-    const count = Number(input.billingIntervalCount ?? 1)
+    const count = numberFromInput(input.billingIntervalCount ?? 1, Number.NaN)
     if (!Number.isFinite(count) || !Number.isInteger(count) || count < 1) {
       return {
         ok: false,
@@ -639,7 +640,7 @@ export function previewProductMoney(input: {
         ? (normalizeIls(input.couponPriceIls) ?? 0)
         : physicalOnSiteChargeIls(input.priceIls, input.discountPercent)
 
-  const base = ilsToAgorot(paidOnlineIls.toFixed(2))
+  const base = agorotFromIlsNumber(paidOnlineIls)
   const { platformFee, supplierDue } = splitOnSiteCharge(base, input.platformPercent)
 
   return {

@@ -1,3 +1,4 @@
+import { agorotFromDb, agorotFromIlsColumnOr, numberFromInput } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 /**
  * Reads columns that may not exist yet in the target database.
@@ -148,8 +149,14 @@ export function __resetColumnCandidateCache(): void {
  * "fixed" to the other name, which reproduces it in the other direction.
  */
 export const CASHBACK_PERCENT_CANDIDATES: readonly ColumnCandidate<number>[] = [
-  { column: 'cashback_bp', toCanonical: (v) => (v == null ? null : Number(v) / 100) },
-  { column: 'cashback_percent', toCanonical: (v) => (v == null ? null : Number(v)) },
+  {
+    column: 'cashback_bp',
+    toCanonical: (v) => (v == null ? null : numberFromInput(v, Number.NaN) / 100),
+  },
+  {
+    column: 'cashback_percent',
+    toCanonical: (v) => (v == null ? null : numberFromInput(v, Number.NaN)),
+  },
 ]
 
 /**
@@ -163,8 +170,8 @@ export const CASHBACK_PERCENT_CANDIDATES: readonly ColumnCandidate<number>[] = [
  * the row identity is read from that column here.
  */
 export const WALLET_AMOUNT_CANDIDATES: readonly ColumnCandidate<number>[] = [
-  { column: 'amount_agorot', toCanonical: (v) => (v == null ? null : Math.round(Number(v))) },
-  { column: 'amount_ils', toCanonical: (v) => (v == null ? null : Math.round(Number(v) * 100)) },
+  { column: 'amount_agorot', toCanonical: (v) => (v == null ? null : agorotFromDb(v)) },
+  { column: 'amount_ils', toCanonical: (v) => (v == null ? null : agorotFromIlsColumnOr(v)) },
 ]
 
 /**
@@ -176,8 +183,8 @@ export const WALLET_AMOUNT_CANDIDATES: readonly ColumnCandidate<number>[] = [
  * `balance_ils`, so that is the live truth there.
  */
 export const WALLET_BALANCE_CANDIDATES: readonly ColumnCandidate<number>[] = [
-  { column: 'balance_agorot', toCanonical: (v) => (v == null ? null : Math.round(Number(v))) },
-  { column: 'balance_ils', toCanonical: (v) => (v == null ? null : Math.round(Number(v) * 100)) },
+  { column: 'balance_agorot', toCanonical: (v) => (v == null ? null : agorotFromDb(v)) },
+  { column: 'balance_ils', toCanonical: (v) => (v == null ? null : agorotFromIlsColumnOr(v)) },
 ]
 
 /**

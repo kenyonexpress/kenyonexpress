@@ -1,4 +1,3 @@
-import { createSubscriptionsForOrder, type RecurringProductBilling, type SubscriptionAdmin, planSubscriptions } from '@/server/payments/subscription-create'
 import { sendServerPurchase } from '@/lib/analytics/server-events'
 import { orFail } from '@/lib/catalogue-read'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
@@ -35,6 +34,12 @@ import {
   buildChargeSettledEvents,
   recordSettlementEvents,
 } from '@/server/payments/settlement-events'
+import {
+  type RecurringProductBilling,
+  type SubscriptionAdmin,
+  createSubscriptionsForOrder,
+  planSubscriptions,
+} from '@/server/payments/subscription-create'
 import { sendVoucherEmail } from '@/server/payments/voucher-email'
 import { completeReferralForOrder } from '@/server/referrals/complete'
 import type { Json } from '@/types/database'
@@ -470,7 +475,7 @@ export async function finalizeOrder(input: {
       await admin
         .from('order_items')
         .select(
-          `id, order_id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, platform_percent_snapshot, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status`,
+          `id, order_id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, platform_percent_snapshot:platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status`,
         )
         .eq('order_id', order.id),
       'finalize.order_items_read_failed',
@@ -750,17 +755,21 @@ export async function finalizeOrder(input: {
       } else {
         // Kept as a single from().insert( expression: saved-cards.test.ts pins
         // this file as the ONLY payment_tokens writer by matching that literal.
-        const { data: tokenRow, error: tokenInsertError } = await admin.from('payment_tokens').insert({
-          profile_id: order.user_id,
-          cardcom_token: input.token.token,
-          last_4: input.token.last4,
-          card_brand: input.token.brand,
-          expiry_month: input.token.expiryMonth,
-          expiry_year: input.token.expiryYear,
-          // A token is only chargeable on the terminal that minted it, so the
-          // saved card is useless without knowing which account that was.
-          cardcom_account_id: cardcomAccountId,
-        }).select('id').maybeSingle()
+        const { data: tokenRow, error: tokenInsertError } = await admin
+          .from('payment_tokens')
+          .insert({
+            profile_id: order.user_id,
+            cardcom_token: input.token.token,
+            last_4: input.token.last4,
+            card_brand: input.token.brand,
+            expiry_month: input.token.expiryMonth,
+            expiry_year: input.token.expiryYear,
+            // A token is only chargeable on the terminal that minted it, so the
+            // saved card is useless without knowing which account that was.
+            cardcom_account_id: cardcomAccountId,
+          })
+          .select('id')
+          .maybeSingle()
         if (tokenInsertError) {
           // Not fatal to the order -- the charge is already verified -- but a
           // recurring line below cannot become a subscription without this row,

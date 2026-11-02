@@ -1,4 +1,4 @@
-import type { Agorot } from '@/lib/money'
+import { type Agorot, numberFromInput } from '@/lib/money'
 
 const AGOROT_PER_ILS = 100
 
@@ -79,7 +79,7 @@ function shekelBody(value: Agorot): string {
 
 /** A legacy shekel float rounded to a whole shekel, for display only. */
 function wholeFromIls(value: number | string | null | undefined): number {
-  const n = typeof value === 'string' ? Number(value) : (value ?? 0)
+  const n = typeof value === 'string' ? numberFromInput(value, Number.NaN) : (value ?? 0)
   if (!Number.isFinite(n)) return 0
   const whole = Math.round(Math.abs(n))
   return n < 0 && whole > 0 ? -whole : whole
@@ -138,7 +138,7 @@ export function shekelsFromIls(value: number | string | null | undefined): strin
 
 /** `shekelsFromIls` with no agorot: whole shekels, for dense admin tables. */
 export function shekelsFromIlsRounded(value: number | string | null | undefined): string {
-  const n = typeof value === 'string' ? Number(value) : (value ?? 0)
+  const n = typeof value === 'string' ? numberFromInput(value, Number.NaN) : (value ?? 0)
   const safe = Number.isFinite(n) ? Math.round(n) : 0
   return isolate(`${safe.toLocaleString('he-IL', { useGrouping: true })}${NBSP}₪`)
 }

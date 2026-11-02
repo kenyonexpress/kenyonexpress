@@ -2,6 +2,11 @@
  * Helper functions for SMS broadcast operations
  */
 
+/** part/whole as a percent rounded to two decimals. Not money. */
+function percentOf(part: number, whole: number): number {
+  return Math.round((part / whole) * 10_000) / 100
+}
+
 export function isValidPhoneNumber(phone: string): boolean {
   // Israeli phone validation: 05X-XXXXXXX or +972XXXXXXXXX formats
   const normalized = phone.replace(/[\s\-()]/g, '')
@@ -48,10 +53,10 @@ export function calculateSmsBroadcastMetrics(
   }
 
   return {
-    deliveryRate: Number(((delivered / totalSent) * 100).toFixed(2)),
-    failureRate: Number(((failed / totalSent) * 100).toFixed(2)),
-    bounceRate: Number(((bounced / totalSent) * 100).toFixed(2)),
-    optoutRate: Number(((optedOut / totalSent) * 100).toFixed(2)),
+    deliveryRate: percentOf(delivered, totalSent),
+    failureRate: percentOf(failed, totalSent),
+    bounceRate: percentOf(bounced, totalSent),
+    optoutRate: percentOf(optedOut, totalSent),
   }
 }
 
@@ -62,7 +67,7 @@ export function getMessageLength(message: string): number {
 
 export function estimateSmsCost(recipientCount: number, pricePerSms = 0.01): number {
   // Returns cost in dollars
-  return Number((recipientCount * pricePerSms).toFixed(3))
+  return Math.round(recipientCount * pricePerSms * 1000) / 1000
 }
 
 export function isDeliveryHealthy(bounceRate: number, optoutRate: number): boolean {

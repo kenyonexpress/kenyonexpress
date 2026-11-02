@@ -29,7 +29,7 @@ import {
 } from '@/lib/checkout/verified-shipping'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import { useDeviceFingerprint } from '@/lib/fraud/use-fingerprint'
-import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
+import { type Agorot, agorotFromIlsNumber, sumAgorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { resetTurnstile } from '@/lib/security/turnstile-client'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
@@ -319,7 +319,7 @@ export default function CheckoutForm({
   // agorot here so the cap below compares like with like. Comparing the raw
   // shekel balance against the agorot subtotal would have offered a wallet
   // ceiling a hundred times the cart.
-  const walletBalanceAgorot: Agorot = parseIls(walletBalance.toFixed(2))
+  const walletBalanceAgorot: Agorot = agorotFromIlsNumber(walletBalance)
   const walletMaxIls = Math.min(walletBalanceAgorot, cart.subtotal) / 100
 
   const [firstName, ...restName] = (address.full_name ?? '').split(' ')

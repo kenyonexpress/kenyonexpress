@@ -1,6 +1,7 @@
 import { formatDateTime, formatIls } from '@/lib/account/format'
 import { agorot } from '@/lib/commerce/money'
 import { cancellationNoticeLines } from '@/lib/email/cancellation-requested'
+import { agorotFromDb } from '@/lib/money'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -55,8 +56,8 @@ export default async function CancelDonePage({ params, searchParams }: Props) {
     refundId: row.id,
     orderRef: id,
     requestedAtIso: row.requested_at,
-    requestedAgorot: Number(row.requested_agorot),
-    cancellationFeeAgorot: Number(row.cancellation_fee_agorot),
+    requestedAgorot: agorotFromDb(row.requested_agorot),
+    cancellationFeeAgorot: agorotFromDb(row.cancellation_fee_agorot),
     destination: row.destination,
     autoApproved: row.state === 'approved',
   })
@@ -81,7 +82,10 @@ export default async function CancelDonePage({ params, searchParams }: Props) {
             <strong>
               {formatIls(
                 agorot(
-                  Math.max(0, Number(row.requested_agorot) - Number(row.cancellation_fee_agorot)),
+                  Math.max(
+                    0,
+                    agorotFromDb(row.requested_agorot) - agorotFromDb(row.cancellation_fee_agorot),
+                  ),
                 ),
               )}
             </strong>

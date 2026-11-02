@@ -9,11 +9,12 @@ import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
-import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import { agorotToIls } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
 import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { agorotFromIlsNumber } from '@/lib/money'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -266,7 +267,7 @@ async function runUpsertProduct(
   // ever sees a float on this path.
   const recurringAmountAgorot =
     fields.type === 'recurring' && recurringAmountIls != null
-      ? ilsToAgorot(recurringAmountIls.toFixed(2))
+      ? agorotFromIlsNumber(recurringAmountIls)
       : null
 
   // Every money column this write must set, derived once by the same pure

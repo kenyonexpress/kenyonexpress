@@ -6,6 +6,7 @@ import CardLabel, { isPlaceProduct } from '@/components/product-card/CardLabel'
 import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
+import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -109,8 +110,8 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
 
   const asset = thumb && product.assets ? product.assets[thumb] : null
 
-  const price = product.kenyon_price != null ? Number(product.kenyon_price) : null
-  const old = product.full_price != null ? Number(product.full_price) : null
+  const price = ilsFromIlsColumn(product.kenyon_price)
+  const old = ilsFromIlsColumn(product.full_price)
   const hasDiscount = price != null && old != null && old > price
   const pct = hasDiscount && old != null && price != null ? discountPercent(price, old) : 0
   const outOfStock = product.stock_quantity === 0
@@ -208,7 +209,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
           <AddToCartButton
             productId={product.id}
             productName={product.name_he}
-            priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
+            priceAgorot={agorotFromIlsColumnOr(product.kenyon_price)}
             variant="icon"
             className="category-card__atc"
           >

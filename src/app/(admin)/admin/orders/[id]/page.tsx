@@ -46,7 +46,7 @@ interface OrderItemRow {
   total_price_ils: number
   settlement_status: string
   item_status: string
-  platform_percent_snapshot: number | null
+  platform_percent: number | null
   supplier_split_percent: number | null
   discount_percent: number | null
   coupon_price_ils: number | null
@@ -344,7 +344,7 @@ function LineTable({
                     {ils(item.total_price_ils)}
                   </td>
                   <td className="px-4 py-3 text-gray-700" dir="ltr">
-                    {percent(item.platform_percent_snapshot)}
+                    {percent(item.platform_percent)}
                   </td>
                   <td className="px-4 py-3 text-gray-700" dir="ltr">
                     {percent(item.supplier_split_percent)}

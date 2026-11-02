@@ -1,5 +1,6 @@
 'use client'
 
+import { ilsFromIlsColumn } from '@/lib/money'
 import { generatePayoutStatement } from '@/server/actions/admin/payouts'
 import { Play } from 'lucide-react'
 import { useState, useTransition } from 'react'
@@ -88,8 +89,8 @@ export default function GeneratePayoutClient({ suppliers, defaultStart, defaultE
 
       {selected && (
         <p className="mt-2 text-xs text-gray-500">
-          מינימום לתשלום אצל {selected.name}: ‏{Number(selected.min_payout_ils ?? 100)} ש"ח. מתחת
-          לסכום הזה הריצה מתגלגלת והשורות נאספות בפעם הבאה.
+          מינימום לתשלום אצל {selected.name}: ‏{ilsFromIlsColumn(selected.min_payout_ils) ?? 100}{' '}
+          ש"ח. מתחת לסכום הזה הריצה מתגלגלת והשורות נאספות בפעם הבאה.
         </p>
       )}
     </div>

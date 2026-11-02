@@ -1,3 +1,4 @@
+import { agorotFromDb } from '@/lib/money'
 import 'server-only'
 
 import { decideSettlement } from '@/lib/affiliate/rules'
@@ -107,7 +108,7 @@ export async function settleAffiliateCommissions(
       orderStatus: row.orders.status,
       paidAt: row.orders.paid_at,
       createdAt: row.orders.created_at,
-      orderTotalAgorot: Number(row.orders.total_ils_agorot ?? 0),
+      orderTotalAgorot: agorotFromDb(row.orders.total_ils_agorot),
       orderUserId: row.orders.user_id,
       affiliateUserId: row.affiliates.user_id,
       commissionBp: row.commission_bp,

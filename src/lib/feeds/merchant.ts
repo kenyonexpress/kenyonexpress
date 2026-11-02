@@ -1,3 +1,4 @@
+import { agorotFromIlsNumber, agorotToDecimalString } from '@/lib/money'
 import { absoluteUrl } from '@/lib/site-url'
 import type { FeedProduct } from './catalogue'
 import { cdata, tag } from './xml'
@@ -127,7 +128,7 @@ function priceTags(product: FeedProduct, payable: number): string[] {
 
 /** Google wants `<number> <currency>`, in that order, with a space. */
 function amount(value: number): string {
-  return `${value.toFixed(2)} ILS`
+  return `${agorotToDecimalString(agorotFromIlsNumber(value))} ILS`
 }
 
 const GOOGLE_CONDITIONS = new Set(['new', 'refurbished', 'used'])

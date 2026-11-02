@@ -5,6 +5,7 @@
  * Requires CRON_SECRET authentication via Bearer token
  */
 
+import { fixedDecimal } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { getEndpointMetrics } from '@/lib/observability/metrics'
 import {
@@ -109,7 +110,7 @@ async function handleGET(request: NextRequest) {
             method: metric.method,
             alertType: 'error_rate_high',
             severity: metric.error_rate_percent > 1 ? 'critical' : 'warning',
-            metricValue: metric.error_rate_percent.toFixed(3),
+            metricValue: fixedDecimal(metric.error_rate_percent, 3),
             thresholdValue: 0.1,
             timestamp: new Date().toISOString(),
           }

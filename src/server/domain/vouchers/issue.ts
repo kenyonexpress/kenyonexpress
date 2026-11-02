@@ -1,5 +1,6 @@
 import { type Agorot, agorot, ilsToAgorot } from '@/lib/commerce/money'
 import type { VoucherRateColumn } from '@/lib/commerce/order-money-columns'
+import { numberFromInput } from '@/lib/money'
 import { generateUniqueRedemptionCode } from '@/lib/voucher-code'
 import { computeVoucherExpiry, generateUniqueVoucherCode } from './code'
 import { signVoucherQrPayload } from './qr'
@@ -138,7 +139,7 @@ export async function issueVoucher(
   }
 
   const { faceValue, couponPrice, remainingDue } = buildVoucherMoney(input)
-  const platformPercent = Number(input.platformPercent)
+  const platformPercent = numberFromInput(input.platformPercent, Number.NaN)
   if (!Number.isFinite(platformPercent) || platformPercent < 0 || platformPercent > 100) {
     throw new VoucherIssueError(
       'platform_percent must be a number between 0 and 100; no default exists',

@@ -1,3 +1,4 @@
+import { agorotFromDb } from '@/lib/money'
 /**
  * Which columns an order and its lines are actually written to.
  *
@@ -143,8 +144,7 @@ export interface OrderMoneyRead {
 }
 
 function fromAgorot(value: unknown): number {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? Math.round(parsed) : 0
+  return agorotFromDb(value)
 }
 
 /**

@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { BRAND_DISPLAY_NAME, BRAND_DISPLAY_PARTS } from '@/lib/brand'
+import { ilsFromIlsColumn } from '@/lib/money'
 import { buildOgCard } from '@/lib/og/product-card'
 import { loadProductBySlug } from '@/lib/product-detail'
 import { SITE } from '@/styles/tokens'
@@ -60,7 +61,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     ? buildOgCard({
         name: data.product.name_he ?? 'דיל',
         supplierName: data.supplier?.name ?? null,
-        priceIls: Number(data.product.kenyon_price ?? 0) || null,
+        priceIls: ilsFromIlsColumn(data.product.kenyon_price) || null,
         offer: data.couponOffer,
       })
     : buildOgCard({ name: 'דיל', supplierName: null, priceIls: null, offer: null })

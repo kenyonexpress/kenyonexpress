@@ -6,6 +6,7 @@ import CardLabel from '@/components/product-card/CardLabel'
 import SupplierVerificationBadge from '@/components/supplier/SupplierVerificationBadge'
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { cityByName } from '@/lib/geo/cities'
+import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
 import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -144,8 +145,8 @@ function DealsProductCard({ product }: { product: Product }) {
 
   const asset = thumb && product.assets ? product.assets[thumb] : null
 
-  const price = Number(product.kenyon_price ?? 0)
-  const old = product.full_price != null ? Number(product.full_price) : null
+  const price = ilsFromIlsColumn(product.kenyon_price) ?? 0
+  const old = ilsFromIlsColumn(product.full_price)
   const hasDiscount = old != null && old > price
   const discountPct = hasDiscount ? Math.round((1 - price / old) * 100) : 0
   const outOfStock = product.stock_quantity === 0
@@ -293,7 +294,7 @@ function DealsProductCard({ product }: { product: Product }) {
             <AddToCartButton
               productId={product.id}
               productName={product.name_he}
-              priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
+              priceAgorot={agorotFromIlsColumnOr(product.kenyon_price)}
               disabled={outOfStock}
               variant="icon"
               className="flex h-full w-full items-center justify-center"
@@ -319,8 +320,8 @@ function DefaultProductCard({ product }: { product: Product }) {
 
   const asset = thumb && product.assets ? product.assets[thumb] : null
 
-  const price = Number(product.kenyon_price ?? 0)
-  const old = product.full_price != null ? Number(product.full_price) : null
+  const price = ilsFromIlsColumn(product.kenyon_price) ?? 0
+  const old = ilsFromIlsColumn(product.full_price)
   const hasDiscount = old != null && old > price
   const outOfStock = product.stock_quantity === 0
   const canAdd = product.kenyon_price != null && !outOfStock
@@ -429,7 +430,7 @@ function DefaultProductCard({ product }: { product: Product }) {
             <AddToCartButton
               productId={product.id}
               productName={product.name_he}
-              priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
+              priceAgorot={agorotFromIlsColumnOr(product.kenyon_price)}
               className="bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors [border-radius:var(--radius-button)]"
             >
               הוסף לסל

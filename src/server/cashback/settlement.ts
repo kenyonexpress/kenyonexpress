@@ -1,6 +1,6 @@
 import { type PaidOrderLike, type SettlementPlan, planSettlement } from '@/lib/cashback/settlement'
 import { agorotToIls } from '@/lib/commerce/money'
-import { agorot } from '@/lib/money'
+import { agorot, agorotFromDb } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -274,7 +274,7 @@ export async function settleCashback(
         } as never,
       )
       if (error) throw new Error(error.message)
-      const awarded = Number(data ?? 0)
+      const awarded = agorotFromDb(data)
       if (awarded > 0) {
         summary.bonusAwarded++
         summary.bonusAwardedAgorot += awarded

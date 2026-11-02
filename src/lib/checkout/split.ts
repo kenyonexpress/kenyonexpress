@@ -3,7 +3,8 @@ import {
   type CommissionResult,
   calculateCommission,
 } from '@/lib/commerce/commission'
-import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import { agorotToIls } from '@/lib/commerce/money'
+import { agorotFromIlsNumber } from '@/lib/money'
 import type { CalculateSplitInput } from '@/lib/validations/checkout'
 
 export type SplitLineView = {
@@ -53,15 +54,15 @@ export type SplitResultView = {
 export function calculateSplit(input: CalculateSplitInput): SplitResultView {
   const commissionInput: CommissionInput = {
     idempotencyKey: input.idempotencyKey,
-    walletApplied: ilsToAgorot(input.walletAppliedIls.toFixed(2)),
+    walletApplied: agorotFromIlsNumber(input.walletAppliedIls),
     lines: input.lines.map((line) => ({
       id: line.id,
       productType: line.productType,
-      unitPrice: ilsToAgorot(line.unitPriceIls.toFixed(2)),
+      unitPrice: agorotFromIlsNumber(line.unitPriceIls),
       quantity: line.quantity,
       platformPercent: line.platformPercent ?? null,
       couponPriceUnit:
-        line.couponPriceIls !== undefined ? ilsToAgorot(line.couponPriceIls.toFixed(2)) : undefined,
+        line.couponPriceIls !== undefined ? agorotFromIlsNumber(line.couponPriceIls) : undefined,
       cashbackPercent: line.cashbackPercent,
     })),
   }

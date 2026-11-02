@@ -18,8 +18,9 @@
  * default percent, because there is no default percent anywhere in this system.
  */
 
+import { agorotFromIlsNumber } from '@/lib/money'
 import { shekelsFromIls, shekelsFromIlsRounded } from '@/lib/money-format'
-import { type Agorot, ilsToAgorot } from './money'
+import type { Agorot } from './money'
 import { type SplitAmounts, normalizeIls, round2, splitOnSiteCharge } from './product-money'
 
 /**
@@ -159,7 +160,7 @@ export function recurringCycleMoney(
     throw new Error('recurringCycleMoney: amount must be a positive shekel value')
   }
 
-  const chargeAgorot = ilsToAgorot(amount.toFixed(2))
+  const chargeAgorot = agorotFromIlsNumber(amount)
   const split = splitOnSiteCharge(chargeAgorot, platformPercent)
 
   return {

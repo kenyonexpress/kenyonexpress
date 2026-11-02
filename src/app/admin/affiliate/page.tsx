@@ -1,5 +1,6 @@
 'use client'
 
+import { numberFromInput } from '@/lib/money'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 
@@ -162,7 +163,7 @@ export default function AffiliatePage() {
               type="number"
               value={newCampaign.commission_rate}
               onChange={(e) =>
-                setNewCampaign({ ...newCampaign, commission_rate: Number(e.target.value) })
+                setNewCampaign({ ...newCampaign, commission_rate: numberFromInput(e.target.value) })
               }
               min="0"
               max="5000"
