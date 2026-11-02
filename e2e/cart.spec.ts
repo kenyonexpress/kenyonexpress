@@ -271,8 +271,12 @@ test.describe('the cart sheet and the keyboard', () => {
   test('the phone sheet takes focus, keeps it, and gives it back on Escape', async ({
     page,
     viewport,
+    browserName,
   }) => {
     test.skip((viewport?.width ?? 0) > 767, 'above 767px the panel is MiniCartDropdown')
+    // Safari tabs to form controls only by default, so Tab skips the sheet's
+    // links and "Tab N left the sheet" measures the preference, not the trap.
+    test.skip(browserName === 'webkit', 'WebKit tabs to form controls only by default')
 
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)

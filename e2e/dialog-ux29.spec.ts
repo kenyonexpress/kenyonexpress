@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { presetConsent } from './helpers'
 
 /**
  * UX29 Modal System - Dialog Component Tests
@@ -18,6 +19,10 @@ import { expect, test } from '@playwright/test'
 
 test.describe('UX29 Modal - Dialog Component', () => {
   test.beforeEach(async ({ page }) => {
+    // A decided visitor: the fixed consent banner otherwise sits over the
+    // dialog's footer at 768 and every click on "Close Dialog" is intercepted
+    // until the test times out (C142).
+    await presetConsent(page)
     // Navigate to the test dialog page
     await page.goto('/test-dialog')
     // Wait for page to be ready
@@ -124,9 +129,20 @@ test.describe('UX29 Modal - Dialog Component', () => {
     const classes = await dialogContent.getAttribute('class')
     expect(classes).toMatch(/md:inset-auto/) // remove fullscreen on desktop
     expect(classes).toMatch(/md:max-w-lg/) // max width constraint
-    expect(classes).toMatch(/md:start-\[50%\]/) // horizontal centering
     expect(classes).toMatch(/md:top-\[50%\]/) // vertical centering
-    expect(classes).toMatch(/md:-translate-x-1\/2/) // centering transform
+
+    // Centred ON SCREEN, measured: `start-[50%]` plus a physical -50% translate
+    // put the box off the left edge in RTL (C142), and every class assertion
+    // above still passed.
+    const box = await dialogContent.boundingBox()
+    const width = page.viewportSize()?.width ?? 0
+    expect(box, 'the dialog has a box').not.toBeNull()
+    expect(box?.x ?? -1, 'the dialog starts inside the viewport').toBeGreaterThanOrEqual(0)
+    expect(
+      (box?.x ?? 0) + (box?.width ?? 0),
+      'the dialog ends inside the viewport',
+    ).toBeLessThanOrEqual(width + 1)
+    expect(Math.abs((box?.x ?? 0) + (box?.width ?? 0) / 2 - width / 2)).toBeLessThan(2)
   })
 
   test('should have visible backdrop blur effect', async ({ page }) => {

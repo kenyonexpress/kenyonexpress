@@ -477,7 +477,10 @@ test.describe('the checkout wizard, step by step', () => {
     // step section into live's single long page and hides the continue
     // buttons. One scan therefore covers ALL sections at once -- including
     // the error state, raised through the same submit the shopper uses.
-    if ((viewport?.width ?? 1280) < 768) {
+    // 992, not 768: the wizard exists only where the two-column grid does
+    // (checkout-page.css, `.checkout-steps` is display:none below 992), so at
+    // 768 the page is single-page and there is no "next" to press (C142).
+    if ((viewport?.width ?? 1280) < 992) {
       await page.locator('.checkout-pay-btn').click()
       await expect(
         page.locator('.checkout-field__error').first(),

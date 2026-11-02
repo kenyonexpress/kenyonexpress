@@ -11,6 +11,11 @@ import { expectHebrewRtl } from './helpers'
  * replaces the form with the thank-you.
  */
 test.describe('supplier apply @supplier', () => {
+  // The page registers the service worker, and a request the worker answers
+  // is invisible to page.route: on WebKit the POST went to the real endpoint
+  // and wrote a lead (C142). Blocked, the interception holds on every engine.
+  test.use({ serviceWorkers: 'block' })
+
   test('the form requires the agreement, posts its fields and shows the thank-you', async ({
     page,
   }) => {
@@ -20,7 +25,8 @@ test.describe('supplier apply @supplier', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ ok: true, message: 'קיבלנו את הפרטים, תודה!' }),
+        // The route's real success shape: `{ message }`, no `ok` field.
+        body: JSON.stringify({ message: 'קיבלנו את הפרטים, תודה!' }),
       })
     })
 

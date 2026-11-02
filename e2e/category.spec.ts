@@ -34,7 +34,9 @@ test.describe('category archive', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}`)
-    const sort = page.getByLabel('מיון מוצרים')
+    // The visible one: until the streamed body replaces the shell, the
+    // control bar can be in the DOM twice (seen on WebKit at 380, C142).
+    const sort = page.getByLabel('מיון מוצרים').locator('visible=true').first()
     await expect(sort).toBeVisible()
 
     // The select speaks WooCommerce orderby values ("price"); the URL speaks

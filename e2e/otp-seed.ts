@@ -126,6 +126,10 @@ export async function resetFixtureRateLimits(email: string): Promise<boolean> {
     .delete()
     .in('key', [
       `checkout-velocity-email:${email.toLowerCase()}`,
+      // Sign-in attempts per account (actions/auth.ts): every worker signs the
+      // same fixture in, so the bucket filled and WebKit-380's account scans
+      // sat on /login (C142).
+      `login-account:${email.toLowerCase()}`,
       ...TEST_PHONES.map((phone) => `checkout-velocity-phone:${phone}`),
     ])
   if (velocityError) throw new Error(`velocity reset: ${velocityError.message}`)

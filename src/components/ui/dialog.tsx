@@ -38,7 +38,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed inset-0 z-50 grid w-full gap-4 border-0 bg-background p-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full md:inset-auto md:start-[50%] md:top-[50%] md:w-full md:max-w-lg md:border md:-translate-x-1/2 md:translate-y-[-50%] md:p-6 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95 md:data-[state=closed]:slide-out-to-start-1/2 md:data-[state=closed]:slide-out-to-top-[48%] md:data-[state=open]:slide-in-from-start-1/2 md:data-[state=open]:slide-in-from-top-[48%] md:[border-radius:var(--radius-modal)]',
+        'fixed inset-0 z-50 grid w-full gap-4 border-0 bg-background p-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full md:inset-auto md:inset-x-0 md:mx-auto md:top-[50%] md:w-full md:max-w-lg md:border md:translate-y-[-50%] md:p-6 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95 md:data-[state=closed]:slide-out-to-start-1/2 md:data-[state=closed]:slide-out-to-top-[48%] md:data-[state=open]:slide-in-from-start-1/2 md:data-[state=open]:slide-in-from-top-[48%] md:[border-radius:var(--radius-modal)]',
         className,
       )}
       {...props}

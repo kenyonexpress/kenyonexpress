@@ -3,6 +3,7 @@
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { CONTACT_CHANNELS } from '@/lib/contact-channels'
 import type { ContactState } from '@/server/actions/contact'
+import { ChevronDown } from 'lucide-react'
 import { useId, useState } from 'react'
 
 const EMPTY: ContactState = { ok: false }
@@ -65,22 +66,29 @@ export default function ContactForm() {
         >
           נושא הפנייה
         </label>
-        <select
-          id={`${baseId}-channel`}
-          name="channel"
-          required
-          defaultValue={CONTACT_CHANNELS[0].slug}
-          // menulist-button: WebKit draws the default `menulist` select 23px
-          // tall whatever its min-height, under the 24px target floor (C142);
-          // this appearance keeps the native arrow and honours the sizing.
-          className={`${fieldClass} [appearance:menulist-button]`}
-        >
-          {CONTACT_CHANNELS.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id={`${baseId}-channel`}
+            name="channel"
+            required
+            defaultValue={CONTACT_CHANNELS[0].slug}
+            // appearance-none: WebKit draws a native select 23px tall whatever
+            // its min-height, under the 24px target floor (C142). The arrow is
+            // drawn by the icon beside it.
+            className={`${fieldClass} appearance-none pe-9`}
+          >
+            {CONTACT_CHANNELS.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={16}
+            aria-hidden="true"
+            className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted"
+          />
+        </div>
       </div>
 
       <div>

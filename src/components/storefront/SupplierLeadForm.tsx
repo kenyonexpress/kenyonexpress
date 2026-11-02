@@ -45,7 +45,10 @@ export default function SupplierLeadForm({
       const res = await fetch('/api/supplier/apply', { method: 'POST', body: formData })
       const data = await res.json()
 
-      if (res.ok && data.ok) {
+      // The route answers success as `{ message }` or `{ redirectUrl }` and
+      // has no `ok` field; requiring `data.ok` turned every accepted
+      // application into "שגיאה לא צפויה" (measured 2026-11-02, C142).
+      if (res.ok && !data.error) {
         if (data.redirectUrl) {
           window.location.assign(data.redirectUrl)
         } else {
