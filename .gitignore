@@ -81,3 +81,4 @@ logs/
 STATE.md.bak
 *.raw
 claude_STATE.md
+.claude/settings.local.json
