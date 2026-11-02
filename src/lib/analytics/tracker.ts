@@ -11,12 +11,8 @@ import {
   utmForEvent,
 } from '@/lib/analytics/attribution'
 import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
-import {
-  type ClientEvent,
-  type ClientEventName,
-  MAX_BATCH_SIZE,
-  hasRequiredProps,
-} from '@/lib/analytics/events'
+import { type ClientEventName, MAX_BATCH_SIZE, hasRequiredProps } from '@/lib/analytics/event-names'
+import type { ClientEvent } from '@/lib/analytics/events'
 import { EventQueue, FLUSH_INTERVAL_MS, type SendResult } from '@/lib/analytics/queue'
 import { type AnalyticsSession, touchSession } from '@/lib/analytics/session'
 

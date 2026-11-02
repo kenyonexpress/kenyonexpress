@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 // Marketing attribution, UTM only (owner decision, 2026-07-20). There is no
 // paid media yet, so referrer classification and click IDs (gclid, fbclid,
 // ttclid) have no consumer. The jsonb shape below keeps room for them, so
@@ -19,26 +17,47 @@ export const UTM_KEYS = [
 
 export type UtmKey = (typeof UTM_KEYS)[number]
 
-const touchSchema = z
-  .object({
-    utm_source: z.string().max(120).optional(),
-    utm_medium: z.string().max(120).optional(),
-    utm_campaign: z.string().max(200).optional(),
-    utm_content: z.string().max(200).optional(),
-    utm_term: z.string().max(200).optional(),
-    at: z.string().optional(),
-  })
-  .strict()
+/**
+ * Max length per field, the same caps the event envelope uses. Checked by hand
+ * rather than with zod (C139): this module runs in the browser tracker on every
+ * page, and one cookie parse was the only reason zod shipped in the storefront's
+ * first-load JavaScript.
+ */
+const TOUCH_MAX: Record<UtmKey | 'at', number> = {
+  utm_source: 120,
+  utm_medium: 120,
+  utm_campaign: 200,
+  utm_content: 200,
+  utm_term: 200,
+  at: Number.POSITIVE_INFINITY,
+}
 
-const attributionSchema = z
-  .object({
-    first: touchSchema.optional(),
-    last: touchSchema.optional(),
-  })
-  .strict()
+export type Touch = Partial<Record<UtmKey | 'at', string>>
+export interface Attribution {
+  first?: Touch
+  last?: Touch
+}
 
-export type Touch = z.infer<typeof touchSchema>
-export type Attribution = z.infer<typeof attributionSchema>
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
+
+/** Strict: unknown keys, non-strings and over-long values all reject. */
+function isTouch(v: unknown): v is Touch {
+  if (!isPlainObject(v)) return false
+  return Object.entries(v).every(([k, val]) => {
+    if (!Object.hasOwn(TOUCH_MAX, k)) return false
+    if (val === undefined) return true
+    return typeof val === 'string' && val.length <= TOUCH_MAX[k as keyof typeof TOUCH_MAX]
+  })
+}
+
+function isAttribution(v: unknown): v is Attribution {
+  if (!isPlainObject(v)) return false
+  return Object.entries(v).every(
+    ([k, val]) => (k === 'first' || k === 'last') && (val === undefined || isTouch(val)),
+  )
+}
 
 /**
  * Extracts the canonical UTM set from a query string. Keys are lowercased and
@@ -86,8 +105,8 @@ export function mergeAttribution(
 export function parseAttribution(raw: string | undefined | null): Attribution | null {
   if (!raw) return null
   try {
-    const parsed = attributionSchema.safeParse(JSON.parse(raw))
-    return parsed.success ? parsed.data : null
+    const parsed: unknown = JSON.parse(raw)
+    return isAttribution(parsed) ? parsed : null
   } catch {
     return null
   }

@@ -1,4 +1,4 @@
-import { MAX_BATCH_SIZE } from '@/lib/analytics/events'
+import { MAX_BATCH_SIZE } from '@/lib/analytics/event-names'
 
 // Transport-agnostic batching queue. Kept free of browser globals so the
 // batching, flush and retry rules are unit-testable; the DOM wiring (timers,

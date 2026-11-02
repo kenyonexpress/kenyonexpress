@@ -1,7 +1,7 @@
 'use client'
 
 import { trackingAllowed } from '@/lib/analytics/commerce-client'
-import { WEB_VITAL_METRICS, type WebVitalMetric } from '@/lib/analytics/events'
+import { WEB_VITAL_METRICS, type WebVitalMetric } from '@/lib/analytics/event-names'
 import { getTracker, track } from '@/lib/analytics/tracker'
 import { identifyUser, isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
