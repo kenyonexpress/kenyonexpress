@@ -82,9 +82,12 @@ const IMG_SRC = [
  * CSP instead of 'unsafe-inline'. The nonce is generated per request in src/proxy.ts.
  */
 function baseDirectives(nonce?: string) {
+  // React dev mode rebuilds server callstacks with eval() and logs a console
+  // error when CSP blocks it; production bundles never call eval().
+  const devEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
   const scriptSrc = nonce
-    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com`
-    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com"
+    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${devEval} https://challenges.cloudflare.com`
+    : `script-src 'self' 'unsafe-inline'${devEval} https://challenges.cloudflare.com`
 
   const styleSrc = nonce ? `style-src 'self' 'nonce-${nonce}'` : "style-src 'self' 'unsafe-inline'"
 
