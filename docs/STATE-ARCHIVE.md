@@ -30859,3 +30859,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T19:28:54+07:00
 - item: C148
 - RESULT: DONE
+
+## Archived 2026-11-03T05:16:24+07:00 after C173 (3 lines from STATE.md)
+
+### 2026-11-02T20:24:00+07:00
+- item: C149
+- BLOCKED: locked-component compare product 13.88-39.53% vs <11 (locked header band + imageless reference vs required real images)
