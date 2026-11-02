@@ -100,8 +100,20 @@ test.describe('home page RTL', () => {
     for (const [label, selector] of ANCHORS) {
       const node = page.locator(selector).first()
       await expect(node, `${label} (${selector}) is on the page`).toBeAttached()
-      const direction = await node.evaluate((el) => getComputedStyle(el).direction)
-      expect(direction, `${label} (${selector}) resolves to rtl`).toBe('rtl')
+      // Resolve and read in one evaluate, polled. The home streams, and a node
+      // resolved by the locator can be swapped out before a separate evaluate
+      // reads it; a detached element computes direction as "" (C151, the hero
+      // category sidebar, once in four full runs). An ltr node still fails.
+      await expect
+        .poll(
+          () =>
+            page.evaluate((sel) => {
+              const el = document.querySelector(sel)
+              return el?.isConnected ? getComputedStyle(el).direction : ''
+            }, selector),
+          { message: `${label} (${selector}) resolves to rtl` },
+        )
+        .toBe('rtl')
     }
   })
 
