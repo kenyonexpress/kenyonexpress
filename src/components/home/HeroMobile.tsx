@@ -46,7 +46,9 @@ export default function HeroMobile() {
           </span>
         </Link>
       ))}
-      {/* C137: the Apple and Tesla products banners close the carousel. */}
+      {/* C137: the Apple and Tesla products banners close the carousel. They sit
+          off-screen along the x axis, where lazy images never start loading
+          (M01-c348), so their small logo and photo load eagerly. */}
       {HERO_BRAND_BANNERS.map((b) => (
         <Link
           key={b.id}
@@ -56,7 +58,14 @@ export default function HeroMobile() {
           className="relative flex h-full min-w-full snap-start items-center gap-4 bg-white px-5"
         >
           <span className="flex min-w-0 flex-1 flex-col items-start gap-1 text-start">
-            <Image src={b.logo} alt="" width={48} height={48} className="size-12 object-contain" />
+            <Image
+              src={b.logo}
+              alt=""
+              width={48}
+              height={48}
+              loading="eager"
+              className="size-12 object-contain"
+            />
             <span className="text-2xl font-bold text-heading">{b.title}</span>
             <span className="text-base text-muted-foreground">{b.subtitle}</span>
             <span className="mt-1 text-sm font-bold text-link">{b.cta}</span>
@@ -67,6 +76,7 @@ export default function HeroMobile() {
               alt=""
               fill
               sizes="180px"
+              loading="eager"
               style={{ objectFit: 'contain' }}
             />
           </span>
