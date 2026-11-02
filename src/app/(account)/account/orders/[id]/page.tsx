@@ -4,7 +4,7 @@ import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/
 import { resolveCarrier } from '@/lib/shipping/carriers'
 import { VALIDITY_LABEL } from '@/lib/vouchers/countdown'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
-import { waChatLink } from '@/lib/whatsapp'
+import { buildOrderInquiryText, storeWhatsAppLink, waChatLink } from '@/lib/whatsapp'
 import { getOrderDetail } from '@/server/queries/orders'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -19,6 +19,7 @@ export default async function OrderDetailPage({ params }: Props) {
   // never a leak.
   const order = await getOrderDetail(id)
   if (!order) notFound()
+  const storeContactHref = storeWhatsAppLink(buildOrderInquiryText(order.orderNumber))
 
   return (
     <>
@@ -81,6 +82,18 @@ export default async function OrderDetailPage({ params }: Props) {
               <Link className="account-btn" href={`/account/orders/${order.id}/invoice`}>
                 הורדת חשבונית
               </Link>
+            </div>
+          </div>
+        )}
+        {storeContactHref && (
+          <div className="account-row">
+            <div className="account-row__main">
+              <p className="account-row__meta">שאלה על ההזמנה?</p>
+            </div>
+            <div className="account-row__actions">
+              <WhatsAppButton href={storeContactHref} size="sm">
+                צור קשר בוואטסאפ
+              </WhatsAppButton>
             </div>
           </div>
         )}

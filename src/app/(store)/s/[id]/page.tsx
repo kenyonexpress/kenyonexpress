@@ -1,6 +1,8 @@
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import ShareMenu from '@/components/shared/ShareMenu'
+import WhatsAppButton from '@/components/shared/WhatsAppButton'
 import { buildLocalBusinessJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import {
   SUPPLIER_PAGE_SIZE,
@@ -14,6 +16,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 import { alternatesFor } from '@/lib/seo/alternates'
+import { buildBusinessInquiryText, storeWhatsAppLink } from '@/lib/whatsapp'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -78,6 +81,8 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
     logoUrl: supplier.logoUrl,
     siteUrl,
   })
+  const pageUrl = `${siteUrl}/s/${id}`
+  const whatsappHref = storeWhatsAppLink(buildBusinessInquiryText(supplier.name, pageUrl))
 
   return (
     <div className="category-page mx-auto max-w-6xl px-4 py-8">
@@ -91,6 +96,18 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
         <h1 className="text-2xl font-bold text-heading">{supplier.name}</h1>
         {supplier.city ? <p className="text-sm text-black/60">{supplier.city}</p> : null}
         {supplier.address ? <p className="text-sm text-black/60">{supplier.address}</p> : null}
+        <div className="flex flex-wrap items-center gap-4 pt-2">
+          {whatsappHref ? (
+            <WhatsAppButton href={whatsappHref} size="sm">
+              שאלה על העסק בוואטסאפ
+            </WhatsAppButton>
+          ) : null}
+          <ShareMenu
+            title={supplier.name}
+            subject={{ name: supplier.name, priceIls: null, offer: null }}
+            url={pageUrl}
+          />
+        </div>
       </header>
 
       <Suspense fallback={<CategoryGridSkeleton count={SUPPLIER_PAGE_SIZE} />}>

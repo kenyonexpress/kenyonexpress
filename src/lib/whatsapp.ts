@@ -171,6 +171,18 @@ export function buildRedemptionInquiryText(productName: string | null): string {
   return `שלום, יש לי קופון מ-KenyonExpress${subject} ואשמח לתאם מימוש`
 }
 
+/**
+ * The message pre-filled when a shopper taps WhatsApp on a business page. It
+ * goes to the store's own number, not the business's: a supplier opts into
+ * WhatsApp per product (`products.whatsapp_enabled`), and a business page is
+ * not a product, so nobody agreed to take these chats.
+ */
+export function buildBusinessInquiryText(businessName: string, url?: string): string {
+  const lines = [`שלום, ראיתי את "${businessName}" בקניון EXPRESS ואשמח לפרטים`]
+  if (url) lines.push(url)
+  return lines.join('\n')
+}
+
 export function buildOrderInquiryText(orderShortId: string): string {
   return `שלום, אשמח לעדכון על הזמנה ${orderShortId} שביצעתי באתר KenyonExpress`
 }
