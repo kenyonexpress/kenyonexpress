@@ -1,7 +1,11 @@
-RESUME FROM: C139
+RESUME FROM: C140
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T08:24:37+07:00
+- item: C139
+- BLOCKED: lh-network
 
 ### 2026-11-02T06:40:29+07:00
 - item: C138
@@ -98,10 +102,6 @@ RESUME FROM: C139
 ### 2026-11-02T02:53:15+07:00
 - item: M05-c346
 - BLOCKED: migration-ledger-drift
-
-### 2026-11-02T02:31:15+07:00
-- item: M04-c346
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
