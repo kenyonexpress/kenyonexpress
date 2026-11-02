@@ -29,6 +29,9 @@ export default function HeroMobile() {
             fill
             sizes="100vw"
             priority={i === 0}
+            // Next 16 no longer derives this from `priority`; the first slide
+            // is the phone LCP (C139).
+            fetchPriority={i === 0 ? 'high' : 'auto'}
             style={{ objectFit: 'cover' }}
           />
           <span className="home-hero-scrim absolute inset-0 flex flex-col justify-end gap-1 p-4 text-white">

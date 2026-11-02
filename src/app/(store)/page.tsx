@@ -95,21 +95,20 @@ export default async function HomePage() {
         Nationwide only (decision 15.10.2026): no city cards row, no location
         filter, no location prompt.
       */}
-      <Suspense fallback={null}>
-        <DealOfTheDaySection />
-      </Suspense>
-      <Suspense fallback={null}>
-        <CategoriesRowSection />
-      </Suspense>
-      <Suspense fallback={null}>
-        <FeaturedProducts />
-      </Suspense>
-      <Suspense fallback={null}>
-        <HotCouponsSection />
-      </Suspense>
-      <Suspense fallback={null}>
-        <BrandsSection />
-      </Suspense>
+      {/*
+        NO Suspense around these five (C139). Every one reads 'use cache' data
+        (lib/home-data.ts), the same as `getDealsPage` above, so they resolve
+        inside the prerender. Wrapped in `fallback={null}` boundaries they were
+        still emitted as out-of-order segments ~60KB further down the document,
+        AFTER the newsletter and the deals list: on a slow phone those painted
+        first and were then pushed 4,500px down when the segments landed.
+        Lighthouse mobile measured that as CLS 0.512 on production.
+      */}
+      <DealOfTheDaySection />
+      <CategoriesRowSection />
+      <FeaturedProducts />
+      <HotCouponsSection />
+      <BrandsSection />
       <NewsletterSection />
       <HomeInfiniteDeals initial={firstDeals} />
     </>
