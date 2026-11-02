@@ -55,6 +55,12 @@ describe('robots', () => {
     expect(disallowList()).toContain('/gift/')
   })
 
+  it('disallows the MFA challenge screens', () => {
+    for (const path of ['/mfa', '/admin-mfa']) {
+      expect(disallowList()).toContain(path)
+    }
+  })
+
   it('still allows the storefront to be crawled', () => {
     const rules = robots().rules
     const first = Array.isArray(rules) ? rules[0] : rules

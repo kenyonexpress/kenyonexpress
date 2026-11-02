@@ -1,5 +1,11 @@
 import Link from 'next/link'
 
+// Sign-in, sign-up and MFA screens have nothing to rank for. Without this they
+// inherit the root canonical (the home page) and get indexed as duplicates of it.
+export const metadata = {
+  robots: { index: false, follow: false },
+}
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main

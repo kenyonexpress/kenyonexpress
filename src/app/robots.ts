@@ -40,6 +40,8 @@ export default function robots(): MetadataRoute.Robots {
           '/gift/', // claim links: the URL token is the credential
           '/reset-password',
           '/forgot-password',
+          '/mfa',
+          '/admin-mfa',
         ],
       },
     ],
