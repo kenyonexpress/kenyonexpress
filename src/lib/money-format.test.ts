@@ -1,5 +1,5 @@
 import { agorot } from '@/lib/money'
-import { shekels, shekelsPlain, shekelsRounded } from '@/lib/money-format'
+import { repairPriceOrder, shekels, shekelsPlain, shekelsRounded } from '@/lib/money-format'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -104,5 +104,23 @@ describe('shekelsRounded', () => {
     // Documented, not accidental: this formats the cart-count badge, and a cart
     // total cannot be negative. A refund is never rendered through this one.
     expect(shekelsRounded(agorot(-9900))).toBe(`${LRI}0${NBSP}₪${PDI}`)
+  })
+})
+
+describe('repairPriceOrder (database text with a price in it)', () => {
+  it('isolates a sign-first price', () => {
+    expect(repairPriceOrder('עד ₪99')).toBe(`עד ${LRI}99${NBSP}₪${PDI}`)
+  })
+
+  it('isolates a digits-first price written with a plain space, which renders sign-left', () => {
+    expect(repairPriceOrder('שובר 200 ₪ למעדנייה')).toBe(`שובר ${LRI}200${NBSP}₪${PDI} למעדנייה`)
+    expect(repairPriceOrder('שובר 1,200₪')).toBe(`שובר ${LRI}1,200${NBSP}₪${PDI}`)
+  })
+
+  it('leaves text without a price, and an already isolated price, untouched', () => {
+    expect(repairPriceOrder('מוצר 200 גרם')).toBe('מוצר 200 גרם')
+    const done = `שובר ${LRI}200${NBSP}₪${PDI}`
+    expect(repairPriceOrder(done)).toBe(done)
+    expect(repairPriceOrder(repairPriceOrder('עד ₪99'))).toBe(repairPriceOrder('עד ₪99'))
   })
 })

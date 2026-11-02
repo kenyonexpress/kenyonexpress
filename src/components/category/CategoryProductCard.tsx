@@ -7,7 +7,7 @@ import LocationPin from '@/components/product/LocationPin'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
-import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { repairPriceOrder, shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -152,7 +152,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
         </span>
 
         <Link href={`/product/${product.slug}`} className="category-card__link">
-          <h2 className="category-card__title">{product.name_he}</h2>
+          <h2 className="category-card__title">{repairPriceOrder(product.name_he)}</h2>
           <span className="category-card__thumb">
             {hasDiscount && (
               <span className="category-card__badge">

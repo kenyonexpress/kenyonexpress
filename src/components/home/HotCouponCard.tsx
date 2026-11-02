@@ -128,13 +128,13 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
         >
           {couponCode}
         </button>
-        {isCopied && <p className="text-xs text-green-600 mt-1 text-center">✓ הועתק!</p>}
+        {isCopied && <p className="text-xs text-green-700 mt-1 text-center">✓ הועתק!</p>}
       </div>
 
       {/* Expiration countdown */}
       {timeLeft && (
         <div className="mt-3 text-center">
-          <p className="text-xs font-semibold text-orange-600">
+          <p className="text-xs font-semibold text-orange-700">
             {timeLeft === 'תוקף פג' ? 'תוקף פג' : `תוקף: ${timeLeft}`}
           </p>
         </div>

@@ -7,6 +7,7 @@ import SupplierVerificationBadge from '@/components/supplier/SupplierVerificatio
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { cityByName } from '@/lib/geo/cities'
 import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
+import { repairPriceOrder } from '@/lib/money-format'
 import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -165,7 +166,7 @@ function DealsProductCard({ product }: { product: Product }) {
 
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="block min-h-target-min hover:underline">
-          <h2 className="p_con__title text-product-title">{product.name_he}</h2>
+          <h2 className="p_con__title text-product-title">{repairPriceOrder(product.name_he)}</h2>
         </Link>
       </div>
 
@@ -342,7 +343,7 @@ function DefaultProductCard({ product }: { product: Product }) {
           href={`/product/${product.slug}`}
           className="line-clamp-2 min-h-target-min text-section-title text-link leading-snug hover:underline"
         >
-          {product.name_he}
+          {repairPriceOrder(product.name_he)}
         </Link>
 
         <Link

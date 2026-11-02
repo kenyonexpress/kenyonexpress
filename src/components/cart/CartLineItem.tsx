@@ -5,7 +5,7 @@ import { FaMinus, FaPlus, FaTrashCan } from '@/components/icons/electro-icons'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
-import { shekels } from '@/lib/money-format'
+import { repairPriceOrder, shekels } from '@/lib/money-format'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -66,7 +66,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
 
       <div className="cart-line__body">
         <Link href={`/product/${item.slug}`} className="cart-line__name">
-          {item.name_he}
+          {repairPriceOrder(item.name_he)}
         </Link>
 
         {/* <output>, not a <p role="status">: it carries the same implicit

@@ -1,6 +1,6 @@
 import CardLabel from '@/components/product-card/CardLabel'
 import { ilsFromIlsColumn } from '@/lib/money'
-import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { repairPriceOrder, shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 
 type Product = {
@@ -62,7 +62,7 @@ export default function ProductDealCardMobile({ product }: { product: Product })
         />
       </div>
       <h2 style={{ fontSize: '16px', fontWeight: 500, margin: '0 0 8px 0', lineHeight: 1.4 }}>
-        {product.name_he}
+        {repairPriceOrder(product.name_he)}
       </h2>
       <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-price)' }}>
         {shekelsFromIlsRounded(price)}

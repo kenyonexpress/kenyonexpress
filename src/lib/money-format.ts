@@ -191,9 +191,19 @@ export function shekelsFromIlsCompactPlain(value: number | string | null | undef
  * the admin form tomorrow gets the same treatment without anybody remembering
  * this rule.
  *
- * It rewrites ONLY the exact shape `₪<digits>`. A label with no price in it
- * comes back untouched, and so does one already written the right way round.
+ * It rewrites two shapes: `₪<digits>`, and `<digits> ₪` with a plain space.
+ * The second one LOOKS right in the source and is not: the space keeps the
+ * sign from joining the digits, so it resolves as RTL against the Hebrew
+ * around it and lands LEFT of the number. Product names carry it (`שובר 200 ₪
+ * למעדנייה`, measured by `e2e/price-bidi.spec.ts` at x=84 against a digit at
+ * x=116 on /category/hot-deals). A label with no price in it comes back
+ * untouched, and so does a price that is already isolated.
  */
 export function repairPriceOrder(text: string): string {
-  return text.replace(/₪\s?(\d[\d,]*(?:\.\d+)?)/g, (_, digits) => isolate(`${digits}${NBSP}₪`))
+  return text
+    .replace(/₪\s?(\d[\d,]*(?:\.\d+)?)/g, (_, digits) => isolate(`${digits}${NBSP}₪`))
+    .replace(
+      /(^|[^⁦\d,.])(\d[\d,]*(?:\.\d+)?)[  ]?₪/g,
+      (_, lead, digits) => `${lead}${isolate(`${digits}${NBSP}₪`)}`,
+    )
 }

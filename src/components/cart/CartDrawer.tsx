@@ -6,7 +6,7 @@ import { EcCloseRemove, EcShoppingBag, FaMinus, FaPlus } from '@/components/icon
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
-import { shekels } from '@/lib/money-format'
+import { repairPriceOrder, shekels } from '@/lib/money-format'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
@@ -42,7 +42,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
 
       <div className="cart-drawer__item-body">
         <Link href={`/product/${item.slug}`} className="cart-drawer__item-name">
-          {item.name_he}
+          {repairPriceOrder(item.name_he)}
         </Link>
         {warning && <output className="cart-drawer__item-warning">{warning}</output>}
         <div className="cart-drawer__item-row">

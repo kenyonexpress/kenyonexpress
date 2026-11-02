@@ -2,7 +2,7 @@ import AddToCartButton from '@/components/cart/AddToCartButton'
 import CardLabel from '@/components/product-card/CardLabel'
 import { KE_LIVE_DEAL_TABLET_SQUARE } from '@/lib/ke-live-deals-data'
 import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
-import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { repairPriceOrder, shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -162,7 +162,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
       */}
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
-          <h2 className="p_con__title p_con__title--deal">{product.name_he}</h2>
+          <h2 className="p_con__title p_con__title--deal">{repairPriceOrder(product.name_he)}</h2>
         </Link>
       </div>
 

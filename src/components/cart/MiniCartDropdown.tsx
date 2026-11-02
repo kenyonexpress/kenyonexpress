@@ -5,7 +5,7 @@ import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import { EcCloseRemove, EcShoppingBag } from '@/components/icons/electro-icons'
 import SmartImage from '@/components/ui/SmartImage'
 import type { CartViewItem } from '@/lib/cart/types'
-import { shekels } from '@/lib/money-format'
+import { repairPriceOrder, shekels } from '@/lib/money-format'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
@@ -44,7 +44,7 @@ function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: ()
 
       <div className="mini-cart__item-body">
         <Link href={`/product/${item.slug}`} className="mini-cart__item-name" onClick={onNavigate}>
-          {item.name_he}
+          {repairPriceOrder(item.name_he)}
         </Link>
         <span className="mini-cart__item-meta tabular-nums">
           {item.quantity} × {shekels(item.unit_price)}
