@@ -25,7 +25,8 @@ export default function AllInAppToggle({ initial }: { initial: boolean }) {
           קבל הכל באפליקציה
         </p>
         <p className="account-row__meta">
-          עדכוני הזמנות, תזכורות לפני שתוקף קופון פג ומבצעים, כהתראה באפליקציה ובדפדפן.
+          עדכוני משלוח, תזכורות לפני שתוקף שובר פג וזיכויים לארנק יגיעו רק באפליקציה ובדפדפן, בלי
+          מייל ובלי וואטסאפ. קבלות, שוברים והחזרים ממשיכים להגיע במייל.
         </p>
         {error && (
           <p role="alert" className="text-sm text-red-700">

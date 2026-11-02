@@ -2,11 +2,13 @@ import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  ALL_IN_APP_KIND,
   CHANNELS,
   KIND_LABEL_HE,
   OPTIONAL_KINDS,
   type PreferenceRow,
   REQUIRED_KINDS,
+  isAllInApp,
   isPreferenceKind,
   mayNotify,
   preferenceMatrix,
@@ -62,6 +64,41 @@ describe('an optional kind honours the table', () => {
   it('does not let one kind\u2019s row govern another', () => {
     const rows: PreferenceRow[] = [{ kind: 'welcome', channel: 'email', enabled: false }]
     expect(mayNotify('cashback_credited', 'email', rows)).toBe(true)
+  })
+})
+
+describe('everything in the app only', () => {
+  const allInApp: PreferenceRow[] = [{ kind: ALL_IN_APP_KIND, channel: 'in_app', enabled: true }]
+
+  it('sends optional kinds to the app and nowhere else', () => {
+    for (const kind of OPTIONAL_KINDS) {
+      expect(mayNotify(kind, 'in_app', allInApp), `${kind}/in_app`).toBe(true)
+      expect(mayNotify(kind, 'push', allInApp), `${kind}/push`).toBe(true)
+      expect(mayNotify(kind, 'email', allInApp), `${kind}/email`).toBe(false)
+      expect(mayNotify(kind, 'whatsapp', allInApp), `${kind}/whatsapp`).toBe(false)
+    }
+  })
+
+  it('outranks a per-kind row in either direction', () => {
+    const rows: PreferenceRow[] = [
+      ...allInApp,
+      { kind: 'voucher_expiring', channel: 'email', enabled: true },
+      { kind: 'voucher_expiring', channel: 'push', enabled: false },
+    ]
+    expect(mayNotify('voucher_expiring', 'email', rows)).toBe(false)
+    expect(mayNotify('voucher_expiring', 'push', rows)).toBe(true)
+  })
+
+  it('never stops what was bought', () => {
+    for (const kind of REQUIRED_KINDS) {
+      expect(mayNotify(kind, 'email', allInApp), kind).toBe(true)
+    }
+  })
+
+  it('is inert when switched off', () => {
+    const off: PreferenceRow[] = [{ kind: ALL_IN_APP_KIND, channel: 'in_app', enabled: false }]
+    expect(isAllInApp(off)).toBe(false)
+    expect(mayNotify('voucher_expiring', 'email', off)).toBe(true)
   })
 })
 

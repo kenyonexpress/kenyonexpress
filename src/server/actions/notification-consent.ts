@@ -1,6 +1,7 @@
 'use server'
 
 import { ALL_IN_APP_CONSENT_KEY } from '@/lib/consent-keys'
+import { ALL_IN_APP_KIND } from '@/lib/notifications/preferences'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -47,7 +48,7 @@ async function runSetAllInAppNotifications(granted: boolean): Promise<ConsentOut
   const { error: prefError } = await supabase.from('notification_preferences').upsert(
     {
       user_id: user.id,
-      kind: 'all',
+      kind: ALL_IN_APP_KIND,
       channel: 'in_app',
       enabled: granted,
       updated_at: new Date().toISOString(),

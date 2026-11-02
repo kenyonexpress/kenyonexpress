@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { type PreferenceRow, mayNotify } from '@/lib/notifications/preferences'
 import { log } from '@/lib/observability/log'
 import {
   isWhatsappConfigured,
@@ -97,9 +98,11 @@ export function buildWhatsappMessage(
 export async function sendOutboxWhatsapp(
   admin: SupabaseClient,
   row: { kind: string; user_id: string | null; payload: Record<string, unknown> | null },
+  preferences: readonly PreferenceRow[] = [],
 ): Promise<'sent' | 'skipped' | 'failed'> {
   try {
     if (!isWhatsappConfigured()) return 'skipped'
+    if (!mayNotify(row.kind, 'whatsapp', preferences)) return 'skipped'
     const message = buildWhatsappMessage(row.kind, row.payload ?? {})
     if (!message || !row.user_id) return 'skipped'
 

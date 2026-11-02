@@ -1,5 +1,7 @@
 import { buildNotification } from '@/lib/email/notifications'
 import { sendEmail } from '@/lib/email/resend'
+import { loadPreferenceRows } from '@/lib/notifications/preference-store'
+import { type PreferenceRow, mayNotify } from '@/lib/notifications/preferences'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { pushOutboxRow } from '@/lib/push/dispatch'
@@ -53,6 +55,9 @@ const BATCH = 50
 
 /** Attempts before a row is parked as dead rather than retried forever. */
 const MAX_ATTEMPTS = 5
+
+/** `last_error` of an email leg the customer's preferences switched off. */
+const SUPPRESSED_BY_PREFERENCE = 'suppressed: customer notification preference'
 
 /** 2, 8, 32, 128 minutes. Long enough for a provider outage to end. */
 function backoffMinutes(attempts: number): number {
@@ -122,12 +127,27 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   let pushDead = 0
   let whatsapped = 0
   let whatsappFailed = 0
+  let suppressed = 0
 
   for (const row of rows) {
     const emailDue = row.status === 'pending' && row.next_attempt_at <= now
     const pushDue = row.push_status === 'pending' && row.push_next_attempt_at <= now
 
-    if (emailDue) {
+    // Read once per row and handed to every leg (see `pushOutboxRow`).
+    let preferences: PreferenceRow[] | undefined
+    if (emailDue || pushDue) preferences = await loadPreferenceRows(admin, row.user_id)
+
+    if (emailDue && !mayNotify(row.kind, 'email', preferences ?? [])) {
+      // Switched off by the customer, or "everything in the app only".
+      // `dead` because 095's status CHECK has no `skipped`; the reason says
+      // it was never a delivery failure. WhatsApp is not attempted either:
+      // it rides a sent email, and this one was not sent.
+      suppressed++
+      await admin
+        .from('notification_outbox')
+        .update({ status: 'dead', last_error: SUPPRESSED_BY_PREFERENCE })
+        .eq('id', row.id)
+    } else if (emailDue) {
       const built = buildNotification(row.kind, row.payload ?? {}, siteUrl)
       if (!built) {
         // A kind nothing can render will never render, however often it is
@@ -161,7 +181,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
           // transition (see lib/whatsapp/outbox.ts for why it has no state
           // machine of its own). Inert without TWILIO_*, never throws, never
           // touches the row.
-          const wa = await sendOutboxWhatsapp(admin, row)
+          const wa = await sendOutboxWhatsapp(admin, row, preferences ?? [])
           if (wa === 'sent') whatsapped++
           else if (wa === 'failed') whatsappFailed++
         } else if (result.skipped) {
@@ -196,7 +216,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     // The push leg carries its own status, counter and backoff, so a mail that
     // failed does not hold up a notification the phone could already show, and
     // a phone that is unreachable does not re-send the mail.
-    const push = await pushOutboxRow(admin, row, siteUrl)
+    const push = await pushOutboxRow(admin, row, siteUrl, preferences)
 
     if (push.outcome === 'none') {
       await admin
@@ -260,6 +280,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     pushDead,
     whatsapped,
     whatsappFailed,
+    suppressed,
   })
 }
 

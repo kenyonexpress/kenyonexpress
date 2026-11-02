@@ -84,6 +84,19 @@ export function isPreferenceKind(kind: string): kind is PreferenceKind {
   return isRequiredKind(kind) || isOptionalKind(kind)
 }
 
+/**
+ * The row the "קבל הכל באפליקציה" switch writes (`setAllInAppNotifications`).
+ * Not a kind anything sends: it is a mode over every optional kind.
+ */
+export const ALL_IN_APP_KIND = 'all'
+
+/** The channels that count as "the app": the in-app feed and the push. */
+const APP_CHANNELS: ReadonlySet<Channel> = new Set<Channel>(['in_app', 'push'])
+
+export function isAllInApp(rows: readonly { kind: string; channel: string; enabled: boolean }[]) {
+  return rows.some((r) => r.kind === ALL_IN_APP_KIND && r.channel === 'in_app' && r.enabled)
+}
+
 /** One stored row. Absent means "not decided", which is not the same as false. */
 export interface PreferenceRow {
   kind: string
@@ -109,6 +122,11 @@ export function mayNotify(kind: string, channel: Channel, rows: readonly Prefere
   // migration, or somebody with SQL access -- cannot stop a receipt.
   if (isRequiredKind(kind)) return true
   if (!isOptionalKind(kind)) return true
+
+  // "Everything in the app only" outranks the per-kind rows: optional kinds go
+  // to the app (in-app and push) and nowhere else. Required kinds returned
+  // above, so a receipt or a voucher still arrives by mail.
+  if (isAllInApp(rows)) return APP_CHANNELS.has(channel)
 
   const row = rows.find((r) => r.kind === kind && r.channel === channel)
   return row ? row.enabled : true
