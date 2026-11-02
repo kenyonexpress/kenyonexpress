@@ -1,7 +1,11 @@
-RESUME FROM: C175
+RESUME FROM: C176
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T06:20:06+07:00
+- item: C175
+- BLOCKED: supabase-down, prod db+rest UNHEALTHY 05:31-06:19 +07, no build so no cart/checkout compare
 
 ### 2026-11-03T05:30:45+07:00
 - item: C174
@@ -98,10 +102,6 @@ RESUME FROM: C175
 ### 2026-11-02T21:04:42+07:00
 - item: M04-c347
 - RESULT: DONE
-
-### 2026-11-02T21:03:20+07:00
-- item: M03-c347
-- BLOCKED: locked-component header band plus content mismatch against Electro shop reference (31.43/32.93/21.08 vs <11)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
