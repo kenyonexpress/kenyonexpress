@@ -1,0 +1,1 @@
+[{"name":"db","healthy":false,"status":"UNHEALTHY","error":"Service health check failed"},{"name":"rest","healthy":false,"status":"UNHEALTHY","info":{"db_schema":"public,graphql_public"},"error":"Service health check failed"}]2026-11-03 06:19:16 +0700

@@ -110,10 +110,10 @@ const LOCAL_SPEC = {
     { label: 'col-thumbnail', sel: '.cart-line__thumb' },
     { label: 'thumbnail-img', sel: '.cart-line__thumb img' },
     { label: 'col-name',      sel: '.cart-line__name' },
-    // Electro prints a unit price and a line subtotal in separate columns.
-    // This design prints the line total only, next to the quantity stepper
-    // that produced it, so there is no unit-price cell to measure.
-    { label: 'col-price',     sel: null },
+    // The unit-price row (".cart-line__unit") exists since the stacked mobile
+    // rows were rebuilt; CSS hides it from 768 up, where the card shows the
+    // line total only. Mapping it to null kept reporting a role we now have.
+    { label: 'col-price',     sel: '.cart-line__unit' },
     { label: 'col-qty',       sel: '.cart-line__qty' },
     // A stepper, not a text input: the value is a span between two buttons.
     { label: 'qty-input',     sel: '.cart-line__qty-value' },
@@ -131,18 +131,25 @@ const LOCAL_SPEC = {
     { label: 'checkout-btn',  sel: '.cart-checkout-btn' },
   ],
   checkout: [
-    { label: 'checkout-form', sel: '.checkout-col-main form, form.checkout-form' },
+    // The ONE form wraps both columns; `.checkout-col-main` sits inside it, so
+    // the old `.checkout-col-main form` could never match and read MISSING.
+    { label: 'checkout-form', sel: 'form.checkout-page__grid' },
     { label: 'billing-block', sel: '.checkout-section' },
     { label: 'field-row',     sel: '.checkout-fields-row' },
     { label: 'field-input',   sel: '.checkout-field input' },
     { label: 'field-label',   sel: '.checkout-field label' },
     { label: 'field-select',  sel: '.checkout-field select' },
-    { label: 'order-review',  sel: '.checkout-confirm__sections' },
-    { label: 'review-table',  sel: '.checkout-item__name' },
-    { label: 'review-total',  sel: '.checkout-item__total' },
+    // Electro's #order_review is the "your order" table block, which here is
+    // `.checkout-review`. `.checkout-confirm__sections` is a list of section
+    // titles in the confirm panel and was never the same role.
+    { label: 'order-review',  sel: '.checkout-review' },
+    { label: 'review-table',  sel: '.checkout-review__table' },
+    { label: 'review-total',  sel: '.checkout-review__row--total' },
     { label: 'payment-box',   sel: '.checkout-payment' },
     { label: 'place-order',   sel: '.checkout-pay-btn' },
-    { label: 'checkout-steps',sel: '.checkout-nav' },
+    // The stepper, which is display:none below 992 (one long column, like
+    // Electro). Present-but-hidden reads as a 0x0 rect, not as MISSING.
+    { label: 'checkout-steps',sel: '.checkout-steps' },
   ],
   // Not remapped: these two pages are a different information architecture
   // here (a Hebrew account area and a Cardcom return page), not a restyled
