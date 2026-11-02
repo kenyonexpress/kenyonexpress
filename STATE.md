@@ -1,7 +1,11 @@
-RESUME FROM: M18-c347
+RESUME FROM: M02-c348
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-02T22:17:46+07:00
+- item: M01-c348
+- BLOCKED: locked-component M01-c348 home 44.16/36.73/23.88 vs <11, header/topbar/hero bands dominate
 
 ### 2026-11-02T21:59:18+07:00
 - item: M18-c347
@@ -97,10 +101,6 @@ RESUME FROM: M18-c347
 
 ### 2026-11-02T09:18:18+07:00
 - item: C141
-- RESULT: DONE
-
-### 2026-11-02T08:52:25+07:00
-- item: C140
 - RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
