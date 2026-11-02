@@ -30835,3 +30835,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T18:27:07+07:00
 - item: C143
 - RESULT: DONE
+
+## Archived 2026-11-03T04:57:26+07:00 after C152 (3 lines from STATE.md)
+
+### 2026-11-02T18:55:31+07:00
+- item: C145
+- BLOCKED: locked-component C145 compare.mjs home380 44.87 (locked bands 0-400 = 12.35pt), LH PWA installable PASS

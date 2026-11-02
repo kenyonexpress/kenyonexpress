@@ -1,7 +1,11 @@
-RESUME FROM: C152
+RESUME FROM: C170
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T04:57:26+07:00
+- item: C152
+- BLOCKED: supabase-outage (production Postgres UNHEALTHY, build cannot collect page data, 0 Lighthouse runs possible)
 
 ### 2026-11-03T04:17:04+07:00
 - item: C151
@@ -98,10 +102,6 @@ RESUME FROM: C152
 ### 2026-11-02T18:57:54+07:00
 - item: C146
 - RESULT: DONE
-
-### 2026-11-02T18:55:31+07:00
-- item: C145
-- BLOCKED: locked-component C145 compare.mjs home380 44.87 (locked bands 0-400 = 12.35pt), LH PWA installable PASS
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
