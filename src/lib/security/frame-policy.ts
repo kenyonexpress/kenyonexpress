@@ -112,7 +112,7 @@ function baseDirectives(nonce?: string) {
  * statically cached storefront, so the gap is made OBSERVABLE instead: with a
  * Sentry DSN configured every CSP violation is reported.
  */
-export const CSP_REPORT_GROUP = 'csp-endpoint'
+const CSP_REPORT_GROUP = 'csp-endpoint'
 
 /**
  * Sentry's security-report endpoint, derived from a DSN
@@ -186,7 +186,7 @@ export function isLoopbackHost(hostname: string): boolean {
 }
 
 /** The report endpoint for this deployment's environment, or null. */
-export function cspReportUri(env: NodeJS.ProcessEnv = process.env): string | null {
+function cspReportUri(env: NodeJS.ProcessEnv = process.env): string | null {
   return sentrySecurityEndpoint(
     env.NEXT_PUBLIC_SENTRY_DSN || env.SENTRY_DSN,
     env.SENTRY_ENVIRONMENT || env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || env.VERCEL_ENV,
@@ -232,7 +232,7 @@ export const DEFAULT_CONTENT_SECURITY_POLICY = contentSecurityPolicyFor('/')
  */
 export const CAMERA_PATHS = ['/scan', '/supplier/scan'] as const
 
-export function isCameraPath(pathname: string): boolean {
+function isCameraPath(pathname: string): boolean {
   return CAMERA_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 }
 

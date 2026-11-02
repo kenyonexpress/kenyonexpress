@@ -3,9 +3,9 @@ import { z } from 'zod'
 // Pure, testable validation + helpers for the vendor (supplier) form.
 // Kept out of the 'use server' action file, which may only export async functions.
 
-export const vendorStatusSchema = z.enum(['pending', 'active', 'suspended'])
+const vendorStatusSchema = z.enum(['pending', 'active', 'suspended'])
 
-export const vendorFormSchema = z.object({
+const vendorFormSchema = z.object({
   id: z.string().uuid().optional(),
   profile_id: z.string().uuid().optional(),
   business_name: z.string().min(2, 'שם עסק נדרש'),

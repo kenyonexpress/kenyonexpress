@@ -67,7 +67,7 @@ export function toPushMessages(tokens: readonly string[], content: PushContent):
  * Disables the tokens Expo reported as gone. Never deletes: the row, with its
  * reason, is the answer to "why did this customer stop getting notifications".
  */
-export async function disableDeadTokens(
+async function disableDeadTokens(
   admin: SupabaseClient,
   tokens: readonly string[],
   reason = 'DeviceNotRegistered',
@@ -80,7 +80,7 @@ export async function disableDeadTokens(
   return error ? 0 : tokens.length
 }
 
-export async function loadPushTargets(
+async function loadPushTargets(
   admin: SupabaseClient,
   userId: string | null,
   email: string | null,
@@ -148,7 +148,7 @@ async function expoLeg(
  *                           registers a device tomorrow must not find the
  *                           retries already spent on the days they had none.
  */
-export function combinePushLegs(expo: PushLegResult, web: WebPushLegResult): PushLegResult {
+function combinePushLegs(expo: PushLegResult, web: WebPushLegResult): PushLegResult {
   const expoSent = expo.outcome === 'sent' ? expo.recipients : 0
   const delivered = expoSent + web.sent
   if (delivered > 0) return { outcome: 'sent', recipients: delivered }

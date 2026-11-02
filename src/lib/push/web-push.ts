@@ -112,7 +112,7 @@ export const PUSH_PAYLOAD_LIMIT_BYTES = 4096
  * bytes plus padding, and a body that squeaks under 4096 in a test squeaks over
  * it the first time a supplier has a long name.
  */
-export const PUSH_PLAINTEXT_BUDGET_BYTES = 3000
+const PUSH_PLAINTEXT_BUDGET_BYTES = 3000
 
 /**
  * The JSON the service worker's `push` handler parses.
@@ -122,7 +122,7 @@ export const PUSH_PLAINTEXT_BUDGET_BYTES = 3000
  * same-origin path. Sending a shape it rejects is a delivered push that shows
  * nothing, which costs the permission and gives nothing back.
  */
-export function toPushPayload(content: PushContent): {
+function toPushPayload(content: PushContent): {
   title: string
   body: string
   url: string
@@ -151,7 +151,7 @@ export function toPushPayload(content: PushContent): {
  * cannot tell it was cut. The caller settles the row as rejected and logs the
  * kind, which is how a template that grew too long becomes visible.
  */
-export function encodePushPayload(content: PushContent): string | null {
+function encodePushPayload(content: PushContent): string | null {
   const json = JSON.stringify(toPushPayload(content))
   return Buffer.byteLength(json, 'utf8') > PUSH_PLAINTEXT_BUDGET_BYTES ? null : json
 }
@@ -164,7 +164,7 @@ export function encodePushPayload(content: PushContent): string | null {
  * that is neither is our fault and will not improve; everything 5xx is theirs
  * and might.
  */
-export function classifyWebPushStatus(status: number, reason = ''): WebPushOutcome {
+function classifyWebPushStatus(status: number, reason = ''): WebPushOutcome {
   if (status >= 200 && status < 300) return { kind: 'sent' }
   if (status === 404 || status === 410) return { kind: 'gone', status }
   // Retry-After is honoured by the caller's own backoff rather than read here;

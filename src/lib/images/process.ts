@@ -24,7 +24,7 @@ export const RENDITION_WIDTHS = [1600, 800, 400] as const
  * below it are kept as they were. A tier that equals the original is not
  * emitted twice.
  */
-export function renditionWidthsFor(originalWidth: number): number[] {
+function renditionWidthsFor(originalWidth: number): number[] {
   const top = Math.min(originalWidth, RENDITION_WIDTHS[0])
   const widths = [top, ...RENDITION_WIDTHS.filter((w) => w < top)]
   return [...new Set(widths)]

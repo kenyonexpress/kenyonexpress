@@ -103,7 +103,7 @@ export async function fetchSentryStats(): Promise<SentryStats | null> {
  * Fetch PostHog analytics via PostHog API
  * Requires: POSTHOG_API_TOKEN environment variable
  */
-export async function fetchPostHogStats(): Promise<PostHogStats | null> {
+async function fetchPostHogStats(): Promise<PostHogStats | null> {
   try {
     const phToken = process.env.POSTHOG_API_TOKEN
     const phHost = process.env.POSTHOG_HOST || 'https://us.posthog.com'
@@ -164,7 +164,7 @@ export async function fetchPostHogStats(): Promise<PostHogStats | null> {
  * Fetch Axiom structured logs via Axiom API
  * Requires: AXIOM_TOKEN and AXIOM_DATASET environment variables
  */
-export async function fetchAxiomStats(): Promise<AxiomStats | null> {
+async function fetchAxiomStats(): Promise<AxiomStats | null> {
   try {
     const axiomToken = process.env.AXIOM_TOKEN
     const axiomDataset = process.env.AXIOM_DATASET
@@ -219,7 +219,7 @@ export async function fetchAxiomStats(): Promise<AxiomStats | null> {
  * Fetch Vercel deployment analytics via Vercel API
  * Requires: VERCEL_TOKEN, VERCEL_PROJECT_ID environment variables
  */
-export async function fetchVercelStats(): Promise<VercelStats | null> {
+async function fetchVercelStats(): Promise<VercelStats | null> {
   try {
     const vercelToken = process.env.VERCEL_TOKEN
     const vercelProjectId = process.env.VERCEL_PROJECT_ID

@@ -34,16 +34,6 @@ export type UptimeRobotAlert = {
   sslDaysLeft: number | null
 }
 
-/** The placeholders the setup script wires into the webhook URL. */
-export const UPTIMEROBOT_FIELDS = [
-  'alertType',
-  'monitorFriendlyName',
-  'monitorURL',
-  'alertDetails',
-  'alertDuration',
-  'sslExpiryDaysLeft',
-] as const
-
 function text(value: unknown, max: number): string {
   if (typeof value !== 'string') return ''
   // A placeholder UptimeRobot could not fill arrives as the literal `*name*`.

@@ -22,7 +22,7 @@ function emptyToNull(value: unknown): unknown {
   return value
 }
 
-export const productImportRowSchema = z.object({
+const productImportRowSchema = z.object({
   slug: z
     .string()
     .trim()

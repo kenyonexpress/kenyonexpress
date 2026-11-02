@@ -562,7 +562,7 @@ const agorotAmountSchema = z
   .positive()
   .transform((n) => agorot(n))
 
-export const tokenizedChargeInputSchema = z.object({
+const tokenizedChargeInputSchema = z.object({
   /** Correlation id stored as payments.id / ReturnValue. */
   paymentId: z.string().min(1),
   orderId: z.string().min(1),

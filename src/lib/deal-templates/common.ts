@@ -69,7 +69,7 @@ export type CleanValue = string | number | boolean | string[] | null | undefined
 
 export const SELLER_LEGAL_NAME = 'קניון אקספרס'
 export const SELLER_BUSINESS_ID = '033798513'
-export const VALIDITY_DAYS = ['30', '60', '90'] as const
+const VALIDITY_DAYS = ['30', '60', '90'] as const
 
 export const CANCELLATION_TEXT: Record<DealProductType, string> = {
   coupon:
@@ -82,7 +82,7 @@ export const RETURNS_TEXT =
   'החזרת המוצר מתבצעת באיסוף או במסירה לנקודת השירות של הספק. הזיכוי יבוצע באמצעי התשלום המקורי תוך 14 ימים מקבלת הודעת הביטול.'
 
 /** Shared by every deal. `category` options are filled at render time. */
-export const COMMON_BASICS: TemplateField[] = [
+const COMMON_BASICS: TemplateField[] = [
   { key: 'title', label: 'כותרת הדיל', type: 'text', required: true, min: 2, max: 120 },
   { key: 'short_description', label: 'תיאור קצר', type: 'textarea', max: 300 },
   { key: 'description', label: 'תיאור מלא', type: 'textarea', required: true, min: 20 },
@@ -90,7 +90,7 @@ export const COMMON_BASICS: TemplateField[] = [
   { key: 'tags', label: 'תגיות', type: 'list', help: 'תגית בכל שורה' },
 ]
 
-export const COMMON_PRICING: TemplateField[] = [
+const COMMON_PRICING: TemplateField[] = [
   { key: 'price', label: 'מחיר באתר (₪)', type: 'money', required: true, min: 1 },
   { key: 'compare_at_price', label: 'מחיר להשוואה (₪)', type: 'money' },
   {
@@ -105,7 +105,7 @@ export const COMMON_PRICING: TemplateField[] = [
   { key: 'cashback_percent', label: 'קאשבק (%)', type: 'percent' },
 ]
 
-export const COUPON_FIELDS: TemplateField[] = [
+const COUPON_FIELDS: TemplateField[] = [
   {
     key: 'validity_days',
     label: 'תוקף השובר (ימים מיום הרכישה)',
@@ -115,13 +115,13 @@ export const COUPON_FIELDS: TemplateField[] = [
   },
 ]
 
-export const PHYSICAL_FIELDS: TemplateField[] = [
+const PHYSICAL_FIELDS: TemplateField[] = [
   { key: 'shipping_price', label: 'מחיר משלוח (₪)', type: 'money' },
   { key: 'supplier_transfer_days', label: 'ימי העברה לספק', type: 'int', min: 0, max: 90 },
   { key: 'cancellation_window_days', label: 'חלון ביטול (ימים)', type: 'int', min: 0, max: 365 },
 ]
 
-export const SUPPLIER_FIELDS: TemplateField[] = [
+const SUPPLIER_FIELDS: TemplateField[] = [
   { key: 'supplier_name', label: 'שם בית העסק', type: 'text', required: true, min: 2, max: 80 },
   { key: 'supplier_city', label: 'עיר', type: 'text', required: true, max: 60 },
   { key: 'supplier_address', label: 'כתובת', type: 'text', max: 200 },
@@ -131,7 +131,7 @@ export const SUPPLIER_FIELDS: TemplateField[] = [
   { key: 'supplier_hours', label: 'שעות פעילות', type: 'textarea' },
 ]
 
-export function legalFields(type: DealProductType): TemplateField[] {
+function legalFields(type: DealProductType): TemplateField[] {
   const shared: TemplateField[] = [
     { key: 'seller_legal_name', label: 'שם המוכר', type: 'text', required: true },
     { key: 'seller_business_id', label: 'ח.פ / ע.מ', type: 'text', required: true },

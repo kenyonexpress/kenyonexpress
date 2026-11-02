@@ -8,7 +8,7 @@ export interface CacheInvalidationEvent {
 
 const invalidationQueue: CacheInvalidationEvent[] = []
 
-export function invalidateOnChange(event: CacheInvalidationEvent): void {
+function invalidateOnChange(event: CacheInvalidationEvent): void {
   invalidationQueue.push(event)
   processQueue()
 }

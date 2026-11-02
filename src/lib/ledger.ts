@@ -110,7 +110,7 @@ export function negateLines(lines: readonly JournalLine[]): JournalLine[] {
   return lines.map((line) => ({ ...line, amountAgorot: -line.amountAgorot }))
 }
 
-export function serializeLines(lines: readonly JournalLine[]): unknown[] {
+function serializeLines(lines: readonly JournalLine[]): unknown[] {
   return lines.map((line) => ({
     kind: line.kind,
     amount_agorot: line.amountAgorot,

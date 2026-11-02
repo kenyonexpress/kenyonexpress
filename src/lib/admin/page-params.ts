@@ -19,7 +19,7 @@ export const categoryListParamsSchema = z.object({
   edit: z.string().uuid().optional(),
 })
 
-export const userListParamsSchema = z.object({
+const userListParamsSchema = z.object({
   role: z.enum(['admin', 'content_uploader', 'vendor', 'customer', 'super_admin']).optional(),
 })
 

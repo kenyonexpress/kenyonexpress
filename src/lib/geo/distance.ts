@@ -176,7 +176,7 @@ export type WithDistance<T> = T & {
  * Zero would sort it to the top as the closest thing available, which is the
  * exact opposite of what "we don't know where this is" should do.
  */
-export function withDistances<T extends Locatable>(
+function withDistances<T extends Locatable>(
   items: readonly T[],
   origin: Coordinates | null,
 ): WithDistance<T>[] {

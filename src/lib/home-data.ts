@@ -12,7 +12,7 @@ import { cacheLife, cacheTag } from 'next/cache'
  * failing the page.
  */
 
-export const HOME_DEALS_PAGE_SIZE = 12
+const HOME_DEALS_PAGE_SIZE = 12
 
 const CARD_COLUMNS =
   'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, type, is_coupon_enabled, city, latitude, longitude, categories!products_category_id_fkey(name_he, slug)'
@@ -33,7 +33,7 @@ type CardRow = {
   categories: { name_he: string; slug: string } | { name_he: string; slug: string }[] | null
 }
 
-export function toCardProduct(row: CardRow): Product {
+function toCardProduct(row: CardRow): Product {
   const category = Array.isArray(row.categories) ? (row.categories[0] ?? null) : row.categories
   return {
     id: row.id,
