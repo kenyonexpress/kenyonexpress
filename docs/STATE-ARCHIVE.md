@@ -30805,3 +30805,9 @@ line only, and the full block for each goal is in the root file.
 המשך מ: M12-c316 DONE (2026-10-31): robots.txt re-verified production-safe, no change: robots.test.ts 8/8, live robots.txt matches src/app/robots.ts, sitemap.xml resolves 200 application/xml; no forbidden files touched
 המשך מ: M10-c317 DONE-DEFERRED (2026-10-31): migrations/pending still holds       73 files (migrations + preflights); applied state unverifiable: claude.ai Supabase MCP needs OAuth in non-interactive session, no valid service key (401 invalid key per c295/c297/c298/c302); db push forbidden; deferred until post-C51 Supabase recovery; no code change; no forbidden files touched
 המשך מ: M06-c318 DONE (2026-10-31): pnpm build passes on kenyonexpress-autopilot (HEAD a53fe69bd, env sourced from kenyonexpress-web/kenyonexpress/.env.local, not copied); all routes generated; working tree clean, no drift, no source fixes; no forbidden files touched
+
+## Archived 2026-11-02T21:59:18+07:00 after M18-c347 (3 lines from STATE.md)
+
+### 2026-11-02T08:24:37+07:00
+- item: C139
+- BLOCKED: lh-network

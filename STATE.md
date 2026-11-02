@@ -3,6 +3,10 @@ RESUME FROM: M18-c347
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-02T21:59:18+07:00
+- item: M18-c347
+- RESULT: DONE
+
 ### 2026-11-02T21:57:56+07:00
 - item: M17-c347
 - RESULT: DONE
@@ -98,10 +102,6 @@ RESUME FROM: M18-c347
 ### 2026-11-02T08:52:25+07:00
 - item: C140
 - RESULT: DONE
-
-### 2026-11-02T08:24:37+07:00
-- item: C139
-- BLOCKED: lh-network
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
