@@ -99,7 +99,9 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
     await expectHebrewRtl(page)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
-    await addOpenProductToCart(page)
+    // No add here: the one add is below, after the account's cart is emptied.
+    // A second add at 380 found the phone cart sheet of the first one covering
+    // the buy button and waited out the test (C142).
 
     const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
     const buyable = await buy.isVisible().catch(() => false)
