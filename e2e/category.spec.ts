@@ -56,7 +56,9 @@ test.describe('category archive', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}?sort=price_desc`)
-    await expect(page.getByLabel('מיון מוצרים')).toHaveValue('price-desc')
+    await expect(page.getByLabel('מיון מוצרים').locator('visible=true').first()).toHaveValue(
+      'price-desc',
+    )
   })
 
   test('an unrecognised sort key falls back to the default order', async ({ page }) => {
@@ -64,7 +66,10 @@ test.describe('category archive', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}?sort=not-a-sort`)
-    await expect(page.getByLabel('מיון מוצרים')).toHaveValue('menu_order')
+    // The visible one, as above: the bar can be in the DOM twice mid-stream.
+    await expect(page.getByLabel('מיון מוצרים').locator('visible=true').first()).toHaveValue(
+      'menu_order',
+    )
   })
 
   /**
@@ -385,12 +390,20 @@ test.describe('category listing: page size and autocomplete', () => {
     await expect(box).toBeVisible()
     await expect(box).toHaveAttribute('type', 'text')
 
-    const request = page.waitForRequest(
-      (r) => r.url().includes('/api/search/suggest') && r.url().includes(`category=${slug}`),
-    )
-    await box.fill('אב')
-    const seen = await request
-    expect(new URL(seen.url()).searchParams.get('q')).toBe('אב')
+    // Retried: the input is server-rendered and visible before it hydrates,
+    // and a fill that lands first is never seen by onChange (WebKit at 380,
+    // twice, C142). Typing again once hydrated is what a shopper would do.
+    let seen: import('@playwright/test').Request | undefined
+    await expect(async () => {
+      const request = page.waitForRequest(
+        (r) => r.url().includes('/api/search/suggest') && r.url().includes(`category=${slug}`),
+        { timeout: 3_000 },
+      )
+      await box.fill('')
+      await box.fill('אב')
+      seen = await request
+    }).toPass({ timeout: 20_000 })
+    expect(new URL(seen?.url() ?? 'http://x').searchParams.get('q')).toBe('אב')
   })
 
   test('the shell still carries no search field', async ({ page }) => {

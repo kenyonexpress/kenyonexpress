@@ -94,6 +94,9 @@ test.describe('no sideways scroll at 320px', () => {
     '/this-route-does-not-exist',
   ]) {
     test(`${path} fits 320px`, async ({ page }) => {
+      // 60 s: a full category archive on WebKit spent the default 30 s on the
+      // navigation alone under a three-worker run (C142).
+      test.setTimeout(60_000)
       await page.goto(path)
       await page.waitForLoadState('domcontentloaded')
       // The images below the fold decide the height, not the width, and waiting
