@@ -103,6 +103,14 @@ for (const width of WIDTHS) {
         timeout: DISCOVERY_TIMEOUT,
       })
 
+      // A guest arrives with an empty personal-details step (a signed-in
+      // fixture has them prefilled from its profile), and all four are
+      // required: without this the wizard stopped on "שדה חובה" x4.
+      await page.fill('#co-first-name', 'אורח')
+      await page.fill('#co-last-name', 'בדיקה')
+      await page.fill('#co-phone', '0501234567')
+      await page.fill('#co-email', 'guest-e2e@example.com')
+
       // Navigate through steps and submit
       // Guest checkout should create anonymous session automatically on pay press
       await submitCheckout(page)

@@ -35,6 +35,7 @@ import { resetTurnstile } from '@/lib/security/turnstile-client'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'
+import { FRAME_RETURN_MESSAGE } from './frame-return/FrameReturnBreakout'
 import { useCheckoutVariant } from './useCheckoutVariant'
 
 export type CheckoutAddressPrefill = {
@@ -236,9 +237,10 @@ export default function CheckoutForm({
   }
 
   const checkStep = (target: CheckoutStep): StepErrors => {
-    const errors: StepErrors = savedAddressAnswersFor.includes(target)
-      ? {}
-      : validateStep(target, readValues(), { requireComplete: verification.required })
+    const errors: StepErrors =
+      savedAddressAnswersFor.includes(target) || (target === 'address' && !needsAddress)
+        ? {}
+        : validateStep(target, readValues(), { requireComplete: verification.required })
     // The phone check is not a field, so it is not in `validateStep`: it is a
     // fact the server will re-read from the consumed code row.
     if (target === 'address' && phoneGateOpen && !phoneVerified) {
@@ -500,6 +502,24 @@ export default function CheckoutForm({
   // The hosted payment page, once beginCheckout has created it. Its presence is
   // what switches the page from "filling in a form" to "paying".
   const frame = state && 'frame' in state ? state.frame : null
+
+  // The framed /checkout/frame-return stub cannot move this tab itself (the
+  // iframe has no allow-top-navigation), so it asks; see FrameReturnBreakout.
+  // `replace`: back from the confirmation must not land on a checkout for an
+  // order that is already paid.
+  useEffect(() => {
+    if (!frame) return
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return
+      const data = event.data as { type?: unknown; url?: unknown } | null
+      if (data?.type !== FRAME_RETURN_MESSAGE || typeof data.url !== 'string') return
+      const url = new URL(data.url, window.location.origin)
+      if (url.origin !== window.location.origin || !url.pathname.startsWith('/checkout/')) return
+      window.location.replace(url.toString())
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [frame])
   const busy = isPending || googlePending
 
   return (
@@ -688,157 +708,166 @@ export default function CheckoutForm({
           </div>
 
           <div className="checkout-step" data-inactive={step !== 'address' ? '' : undefined}>
-            <section className="checkout-section" aria-label="כתובת למשלוח">
-              <h2 className="checkout-section__title">
-                <span>כתובת למשלוח</span>
-              </h2>
+            {/* Shipping address only for physical products (F42): a coupon-only
+                cart asks for none, which is what the server already decides via
+                needs_address / hasPhysical. */}
+            {needsAddress && (
+              <section className="checkout-section" aria-label="כתובת למשלוח">
+                <h2 className="checkout-section__title">
+                  <span>כתובת למשלוח</span>
+                </h2>
 
-              {useSavedAddress ? (
-                <p>
-                  {address.street} {address.street_number}, {address.city}
-                </p>
-              ) : (
-                <>
-                  <div className="checkout-fields-row checkout-fields-row--single">
-                    <div className="checkout-field">
-                      <label htmlFor="co-city">
-                        עיר <span className="checkout-field__required">*</span>
-                      </label>
-                      <input
-                        id="co-city"
-                        name="city"
-                        defaultValue={prefill.city}
-                        autoComplete="address-level2"
-                        onBlur={suggestZip}
-                        aria-invalid={errorFor('city') ? 'true' : undefined}
-                        aria-describedby={errorIdFor('city')}
-                      />
-                      {errorFor('city') && (
-                        <span id="co-err-city" className="checkout-field__error" role="alert">
-                          {errorFor('city')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="checkout-fields-row">
-                    <div className="checkout-field">
-                      <label htmlFor="co-street">
-                        רחוב <span className="checkout-field__required">*</span>
-                      </label>
-                      <input
-                        id="co-street"
-                        name="street"
-                        defaultValue={prefill.street}
-                        autoComplete="address-line1"
-                        onBlur={suggestZip}
-                        aria-invalid={errorFor('street') ? 'true' : undefined}
-                        aria-describedby={errorIdFor('street')}
-                      />
-                      {errorFor('street') && (
-                        <span id="co-err-street" className="checkout-field__error" role="alert">
-                          {errorFor('street')}
-                        </span>
-                      )}
-                    </div>
-                    <div className="checkout-field">
-                      <label htmlFor="co-number">
-                        מספר בית <span className="checkout-field__required">*</span>
-                      </label>
-                      <input
-                        id="co-number"
-                        name="street_number"
-                        defaultValue={prefill.street_number}
-                        onBlur={suggestZip}
-                        aria-invalid={errorFor('street_number') ? 'true' : undefined}
-                        aria-describedby={errorIdFor('street_number')}
-                      />
-                      {errorFor('street_number') && (
-                        <span
-                          id="co-err-street-number"
-                          className="checkout-field__error"
-                          role="alert"
-                        >
-                          {errorFor('street_number')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="checkout-fields-row">
-                    <div className="checkout-field">
-                      <label htmlFor="co-apartment">מספר דירה (אופציונלי)</label>
-                      <input
-                        id="co-apartment"
-                        name="apartment"
-                        defaultValue={prefill.apartment}
-                        autoComplete="address-line2"
-                      />
-                    </div>
-                    <div className="checkout-field">
-                      <label htmlFor="co-floor">קומה (אופציונלי)</label>
-                      <input id="co-floor" name="floor" defaultValue={prefill.floor} />
-                    </div>
-                  </div>
-
-                  <div className="checkout-fields-row">
-                    <div className="checkout-field">
-                      <label htmlFor="co-zip">
-                        {verification.required ? (
-                          <>
-                            מיקוד <span className="checkout-field__required">*</span>
-                          </>
-                        ) : (
-                          'מיקוד / תא דואר (אופציונלי)'
+                {useSavedAddress ? (
+                  <p>
+                    {address.street} {address.street_number}, {address.city}
+                  </p>
+                ) : (
+                  <>
+                    <div className="checkout-fields-row checkout-fields-row--single">
+                      <div className="checkout-field">
+                        <label htmlFor="co-city">
+                          עיר <span className="checkout-field__required">*</span>
+                        </label>
+                        <input
+                          id="co-city"
+                          name="city"
+                          defaultValue={prefill.city}
+                          autoComplete="address-level2"
+                          onBlur={suggestZip}
+                          aria-invalid={errorFor('city') ? 'true' : undefined}
+                          aria-describedby={errorIdFor('city')}
+                        />
+                        {errorFor('city') && (
+                          <span id="co-err-city" className="checkout-field__error" role="alert">
+                            {errorFor('city')}
+                          </span>
                         )}
-                      </label>
-                      <input
-                        id="co-zip"
-                        name="zip"
-                        defaultValue={prefill.zip}
-                        inputMode="numeric"
-                        autoComplete="postal-code"
-                        aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
-                        aria-describedby={
-                          zipError || errorFor('zip')
-                            ? 'co-zip-error'
-                            : zipHint
-                              ? 'co-zip-hint'
-                              : undefined
-                        }
-                        onBlur={(event) => handleZipBlur(event.currentTarget.value)}
-                        onChange={() => setZipHint(null)}
-                      />
-                      {(zipError || errorFor('zip')) && (
-                        <span className="checkout-field__error" id="co-zip-error" role="alert">
-                          {zipError ?? errorFor('zip')}
-                        </span>
-                      )}
-                      {/* Advice, announced politely: it never blocks the step. */}
-                      {!zipError && !errorFor('zip') && zipHint && (
-                        <span className="checkout-field__hint" id="co-zip-hint" aria-live="polite">
-                          {zipHint}
-                        </span>
-                      )}
+                      </div>
                     </div>
-                    <div />
-                  </div>
-                </>
-              )}
 
-              {phoneGateOpen && (
-                <ShippingPhoneVerification
-                  readPhone={readPhoneForVerification}
-                  verified={phoneVerified}
-                  onVerified={(phoneE164) => {
-                    setVerifiedPhone(phoneE164)
-                    setPhoneVerified(true)
-                    setStepErrors(({ phone_verified: _dropped, ...rest }) => rest)
-                  }}
-                  error={errorFor('phone_verified')}
-                />
-              )}
-            </section>
+                    <div className="checkout-fields-row">
+                      <div className="checkout-field">
+                        <label htmlFor="co-street">
+                          רחוב <span className="checkout-field__required">*</span>
+                        </label>
+                        <input
+                          id="co-street"
+                          name="street"
+                          defaultValue={prefill.street}
+                          autoComplete="address-line1"
+                          onBlur={suggestZip}
+                          aria-invalid={errorFor('street') ? 'true' : undefined}
+                          aria-describedby={errorIdFor('street')}
+                        />
+                        {errorFor('street') && (
+                          <span id="co-err-street" className="checkout-field__error" role="alert">
+                            {errorFor('street')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="checkout-field">
+                        <label htmlFor="co-number">
+                          מספר בית <span className="checkout-field__required">*</span>
+                        </label>
+                        <input
+                          id="co-number"
+                          name="street_number"
+                          defaultValue={prefill.street_number}
+                          onBlur={suggestZip}
+                          aria-invalid={errorFor('street_number') ? 'true' : undefined}
+                          aria-describedby={errorIdFor('street_number')}
+                        />
+                        {errorFor('street_number') && (
+                          <span
+                            id="co-err-street-number"
+                            className="checkout-field__error"
+                            role="alert"
+                          >
+                            {errorFor('street_number')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="checkout-fields-row">
+                      <div className="checkout-field">
+                        <label htmlFor="co-apartment">מספר דירה (אופציונלי)</label>
+                        <input
+                          id="co-apartment"
+                          name="apartment"
+                          defaultValue={prefill.apartment}
+                          autoComplete="address-line2"
+                        />
+                      </div>
+                      <div className="checkout-field">
+                        <label htmlFor="co-floor">קומה (אופציונלי)</label>
+                        <input id="co-floor" name="floor" defaultValue={prefill.floor} />
+                      </div>
+                    </div>
+
+                    <div className="checkout-fields-row">
+                      <div className="checkout-field">
+                        <label htmlFor="co-zip">
+                          {verification.required ? (
+                            <>
+                              מיקוד <span className="checkout-field__required">*</span>
+                            </>
+                          ) : (
+                            'מיקוד / תא דואר (אופציונלי)'
+                          )}
+                        </label>
+                        <input
+                          id="co-zip"
+                          name="zip"
+                          defaultValue={prefill.zip}
+                          inputMode="numeric"
+                          autoComplete="postal-code"
+                          aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
+                          aria-describedby={
+                            zipError || errorFor('zip')
+                              ? 'co-zip-error'
+                              : zipHint
+                                ? 'co-zip-hint'
+                                : undefined
+                          }
+                          onBlur={(event) => handleZipBlur(event.currentTarget.value)}
+                          onChange={() => setZipHint(null)}
+                        />
+                        {(zipError || errorFor('zip')) && (
+                          <span className="checkout-field__error" id="co-zip-error" role="alert">
+                            {zipError ?? errorFor('zip')}
+                          </span>
+                        )}
+                        {/* Advice, announced politely: it never blocks the step. */}
+                        {!zipError && !errorFor('zip') && zipHint && (
+                          <span
+                            className="checkout-field__hint"
+                            id="co-zip-hint"
+                            aria-live="polite"
+                          >
+                            {zipHint}
+                          </span>
+                        )}
+                      </div>
+                      <div />
+                    </div>
+                  </>
+                )}
+
+                {phoneGateOpen && (
+                  <ShippingPhoneVerification
+                    readPhone={readPhoneForVerification}
+                    verified={phoneVerified}
+                    onVerified={(phoneE164) => {
+                      setVerifiedPhone(phoneE164)
+                      setPhoneVerified(true)
+                      setStepErrors(({ phone_verified: _dropped, ...rest }) => rest)
+                    }}
+                    error={errorFor('phone_verified')}
+                  />
+                )}
+              </section>
+            )}
 
             <section className="checkout-section" aria-label="מידע נוסף">
               <h2 className="checkout-section__title">

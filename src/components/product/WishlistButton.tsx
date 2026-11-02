@@ -57,7 +57,17 @@ export default function WishlistButton({
         onClick={onToggle}
         disabled={isPending}
         aria-pressed={saved}
-        aria-label={saved ? 'הסר מרשימת המשאלות' : 'הוסף לרשימת המשאלות'}
+        aria-label={
+          // The inline variant shows a word, and its accessible name has to
+          // start with that word (WCAG 2.5.3, axe label-content-name-mismatch).
+          variant === 'inline'
+            ? saved
+              ? 'נשמר, הסר מרשימת המשאלות'
+              : 'שמירה, הוסף לרשימת המשאלות'
+            : saved
+              ? 'הסר מרשימת המשאלות'
+              : 'הוסף לרשימת המשאלות'
+        }
         className={
           variant === 'inline'
             ? 'inline-flex items-center gap-1.5 text-sm font-semibold text-heading transition-colors hover:text-price disabled:opacity-50'

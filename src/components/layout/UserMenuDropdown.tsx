@@ -13,13 +13,38 @@ import { useEffect, useState } from 'react'
 
 export default function UserMenuDropdown() {
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null)
+  // Guests keep the התחברות link. The dropdown (overview, orders, sign-out)
+  // used to replace it for EVERY visitor once mounted, so a guest lost the
+  // only login entry in the bar (C142). Same lazy client import as
+  // SentryUserSync: the Supabase client stays out of the storefront chunk.
+  const [signedIn, setSignedIn] = useState(false)
 
   useEffect(() => {
     const currentTheme = getTheme()
     setTheme(currentTheme)
   }, [])
 
-  if (theme === null) {
+  useEffect(() => {
+    let cancelled = false
+    let unsubscribe: (() => void) | null = null
+    void import('@/lib/supabase/client')
+      .then(({ createClient }) => {
+        if (cancelled) return
+        const {
+          data: { subscription },
+        } = createClient().auth.onAuthStateChange((_event, session) => {
+          setSignedIn(Boolean(session?.user))
+        })
+        unsubscribe = () => subscription.unsubscribe()
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+      unsubscribe?.()
+    }
+  }, [])
+
+  if (theme === null || !signedIn) {
     return (
       <Link
         href="/login"

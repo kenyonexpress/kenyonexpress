@@ -37,6 +37,12 @@ export async function signInWithEmail(
   password: string,
   nextPath?: string,
 ): Promise<void> {
+  // Fixture accounts only (see resetFixtureRateLimits): their small per-user
+  // buckets are shared by every worker and both runs of a 2x pass.
+  if (email.endsWith('@test.kenyonexpress.local')) {
+    const { resetFixtureRateLimits } = await import('./otp-seed')
+    await resetFixtureRateLimits(email)
+  }
   const loginUrl = nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'
   await page.goto(loginUrl)
   await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()

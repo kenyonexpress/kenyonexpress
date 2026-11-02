@@ -572,3 +572,11 @@
     display: none;
   }
 }
+
+/* The header cart total, hidden on the narrowest phones: at 320 it pushed the
+   icon row 11px past the inline-end edge (C142). The badge still counts. */
+@media (max-width: 359px) {
+  .cart-nav-total {
+    display: none;
+  }
+}

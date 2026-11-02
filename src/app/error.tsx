@@ -77,11 +77,13 @@ export default function AppError({
 
   return (
     <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-      {/* 500 in the brand yellow, matching not-found.tsx's 404. The two error
-          pages used to look like they came from different sites: the 404 painted
-          its numeral brand-primary while this one led with a grey emoji. A
-          customer who hits both in one session sees one storefront. */}
-      <p className="text-6xl font-black text-brand-primary" aria-hidden="true">
+      {/* 500 carries the brand yellow as an underline, not as the glyph colour:
+          yellow text on this white page is 1.4:1 and axe fails it (C142). The
+          404 can paint its numeral yellow because it sits on bg-brand-accent. */}
+      <p
+        className="text-6xl font-black text-heading underline decoration-brand-primary decoration-8 underline-offset-8"
+        aria-hidden="true"
+      >
         500
       </p>
       <h1 className="mt-4 text-2xl font-bold text-heading">משהו השתבש אצלנו</h1>

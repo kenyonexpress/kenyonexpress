@@ -95,7 +95,11 @@ function baseDirectives(nonce?: string) {
     IMG_SRC,
     "font-src 'self'",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
-    'frame-src https://secure.cardcom.solutions https://challenges.cloudflare.com',
+    // 'self' for the return leg: frame-src governs every navigation INSIDE the
+    // payment iframe, so Cardcom's redirect to /checkout/frame-return was
+    // blocked into chrome-error:// and the shopper never left the checkout
+    // after paying (measured 2026-11-02, C142).
+    "frame-src 'self' https://secure.cardcom.solutions https://challenges.cloudflare.com",
     "base-uri 'self'",
     "form-action 'self' https://secure.cardcom.solutions",
     "object-src 'none'",

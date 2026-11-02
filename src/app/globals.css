@@ -148,8 +148,10 @@ html[data-consent="decided"] [data-consent-banner] {
    banner at 320, 8rem reserved 112px for a 120px banner at 640. Measured on the
    production build 2026-10-21. 15.5rem is 217px, 9rem is 126px, 7.5rem is 105px
    for the 101.25px single-row banner from 768 up. */
+/* 22rem (308px) since the three buttons stack under the full disclosure copy:
+   measured 305.5px at 320 on the production build 2026-11-02 (C142). */
 html:not([data-consent="decided"]) {
-  --reserve-consent: 15.5rem;
+  --reserve-consent: 22rem;
 }
 
 @media (min-width: 640px) {

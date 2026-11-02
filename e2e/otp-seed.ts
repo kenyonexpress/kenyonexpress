@@ -80,3 +80,57 @@ export async function seedCheckoutPhoneOtp(
   if (insertError) throw new Error(`otp-seed insert: ${insertError.message}`)
   return true
 }
+
+const fixtureIds = new Map<string, string>()
+
+/**
+ * Clears every per-user rate-limit bucket of ONE fixture account, so the
+ * suite can run on all six projects twice inside the limiter's hour.
+ *
+ * The fixture customer is one user for every worker and project, and the
+ * per-user buckets are small by design: refund-request 5/h, begin_checkout
+ * 10/h, checkout-otp-verify 10/h, passkey-register 10/h. Two consecutive full
+ * runs spend each of them several times over, and the second half of the suite
+ * read 429 ("יותר מדי ניסיונות תשלום") where it asserted a purchase (measured
+ * 2026-11-02, C142). Only keys ending in this fixture's own user id are
+ * deleted; no other account's bucket is touched, and the per-IP buckets are
+ * already per worker (E2E_FORWARDED_FOR_PREFIX).
+ */
+export async function resetFixtureRateLimits(email: string): Promise<boolean> {
+  const env = loadEnv()
+  const url = env.NEXT_PUBLIC_SUPABASE_URL
+  const key = env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return false
+
+  const admin = createClient(url, key, { auth: { persistSession: false } })
+  let userId = fixtureIds.get(email.toLowerCase())
+  if (!userId) {
+    const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
+    if (error) throw new Error(`rate-limit reset listUsers: ${error.message}`)
+    userId = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase())?.id
+    if (!userId) return false
+    fixtureIds.set(email.toLowerCase(), userId)
+  }
+
+  const { error: deleteError } = await admin
+    .from('rate_limits' as never)
+    .delete()
+    .like('key', `%:${userId}`)
+  if (deleteError) throw new Error(`rate-limit reset: ${deleteError.message}`)
+
+  // The checkout velocity buckets (lib/fraud/velocity.ts) are keyed by the
+  // email and the delivery phone, 15 a day each, not by the user id. Only the
+  // fixture's own email and the two test numbers the specs type are cleared.
+  const { error: velocityError } = await admin
+    .from('rate_limits' as never)
+    .delete()
+    .in('key', [
+      `checkout-velocity-email:${email.toLowerCase()}`,
+      ...TEST_PHONES.map((phone) => `checkout-velocity-phone:${phone}`),
+    ])
+  if (velocityError) throw new Error(`velocity reset: ${velocityError.message}`)
+  return true
+}
+
+/** The fixture's saved-address phone and the one the guest specs type. */
+const TEST_PHONES = ['0521234567', '0501234567'] as const

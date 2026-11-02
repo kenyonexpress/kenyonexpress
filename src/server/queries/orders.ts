@@ -220,7 +220,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     await admin
       .from('orders')
       .select(
-        `id, order_number, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`,
+        // No order_number: `orders` has no such column (request-refund.ts says
+        // the same), and selecting it failed every order-detail read with
+        // 42703 (C142). The reference is derived from the id below.
+        `id, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`,
       )
       .eq('id', orderId)
       .eq('user_id', userId)
@@ -232,7 +235,6 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   const order = orderRow as unknown as
     | (Record<string, unknown> & {
         id: string
-        order_number: string
         status: OrderDetail['status']
         created_at: string
         paid_at: string | null
@@ -415,7 +417,8 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
 
   return {
     id: order.id,
-    orderNumber: order.order_number,
+    // The same reference the Cardcom page and the refund e-mail show.
+    orderNumber: order.id.slice(0, 8).toUpperCase(),
     status: order.status,
     settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
     createdAt: order.created_at,

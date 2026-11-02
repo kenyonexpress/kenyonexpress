@@ -14,7 +14,6 @@ import { getDealsPage } from '@/lib/home-data'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
-import '@/styles/home-sections.css'
 // home-handheld.css is imported by the root layout (see the note there): as a
 // page-level import it was a 125-byte stylesheet costing a full round trip.
 

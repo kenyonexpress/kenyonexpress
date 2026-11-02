@@ -149,7 +149,9 @@ test.describe('no sideways scroll at 320px', () => {
     // renders while loading.
     await expect(page.locator('#co-first-name')).toBeVisible()
     await expect(page.locator('.checkout-steps:visible')).toHaveCount(0)
-    await expect(page.locator('#co-city')).toBeVisible()
+    // The address section renders only for a physical line (F42); the
+    // purchasable product found first may well be a coupon.
+    const ships = (await page.locator('#co-city').count()) > 0
     await expect(page.locator('.checkout-pay-btn')).toBeVisible()
 
     // Filled fields, because Hebrew text in the inputs is what widens an RTL
@@ -158,9 +160,11 @@ test.describe('no sideways scroll at 320px', () => {
     await page.fill('#co-last-name', 'בדיקה')
     await page.fill('#co-phone', '0501234567')
     await page.fill('#co-email', 'qa@example.com')
-    await page.fill('#co-city', 'תל אביב')
-    await page.fill('#co-street', 'דיזנגוף')
-    await page.fill('#co-number', '10')
+    if (ships) {
+      await page.fill('#co-city', 'תל אביב')
+      await page.fill('#co-street', 'דיזנגוף')
+      await page.fill('#co-number', '10')
+    }
     await page.waitForTimeout(400)
 
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)

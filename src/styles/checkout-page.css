@@ -114,6 +114,9 @@
 
 .checkout-page__grid {
   display: grid;
+  /* minmax(0, 1fr), not the implicit auto track: auto sizes to the inputs'
+     min-content and the column came out 330px wide in a 320px viewport (C142). */
+  grid-template-columns: minmax(0, 1fr);
   gap: 34px;
   /* Layout containment isolates form element shifts. Reduces CLS. */
   contain: layout style;
@@ -165,13 +168,13 @@
    45 control, 25 to the next row. */
 .checkout-fields-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 30px;
   margin-bottom: 25px;
 }
 
 .checkout-fields-row--single {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .checkout-field {
@@ -192,6 +195,7 @@
 
 .checkout-field input,
 .checkout-field textarea {
+  min-width: 0;
   height: 45px;
   border: 1px solid #ddd;
   border-radius: 22px;

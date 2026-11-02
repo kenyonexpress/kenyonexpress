@@ -26,7 +26,7 @@ test('the manifest is served, and every icon it names loads', async ({ page, req
     display: string
     icons: { src: string; sizes: string; purpose?: string }[]
   }
-  expect(manifest.name).toBe('קניון אקספרס')
+  expect(manifest.name).toBe('קניון EXPRESS') // display name; the legal name is for invoices
   expect(manifest.start_url).toBe('/')
   expect(manifest.display).toBe('standalone')
   expect(manifest.icons.map((i) => i.sizes)).toEqual(expect.arrayContaining(['192x192', '512x512']))

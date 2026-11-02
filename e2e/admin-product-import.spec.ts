@@ -124,9 +124,9 @@ test.describe('admin product CSV import @admin', () => {
     await dryRunButton.click()
 
     // Error should appear
-    const errorAlert = page.getByRole('alert')
+    // Filtered by text: Next's route announcer is a second role="alert".
+    const errorAlert = page.getByRole('alert').filter({ hasText: /חסרה עמודה חובה/ })
     await expect(errorAlert).toBeVisible({ timeout: 10_000 })
-    await expect(errorAlert).toContainText(/חסרה עמודה חובה/)
 
     // No preview table
     const previewTable = page.locator('table')

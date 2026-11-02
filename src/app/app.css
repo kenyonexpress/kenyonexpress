@@ -18,5 +18,11 @@
 @import "../styles/cart-page.css";
 @import "../styles/home-handheld.css";
 @import "../styles/product-card-deals.css";
+/* Homepage sections (C130). Imported from (store)/page.tsx it was a second
+   render-blocking chunk on /; every selector is .home-* or scoped by [data-home]. */
+@import "../styles/home-sections.css";
+/* Newsletter form: written for UX12 and never imported, so the home band and
+   the footer form rendered unstyled with 21px-tall controls (C142). */
+@import "../styles/newsletter.css";
 @import "../styles/micro-interactions.css";
 @import "../styles/dark-mode.css";

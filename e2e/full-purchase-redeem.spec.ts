@@ -59,7 +59,8 @@ async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page)
     await page.getByRole('button', { name: 'המשך', exact: true }).click()
   }
 
-  // Step 2: address (required even for coupon-only carts).
+  // Step 2: the address section exists only for a physical line (F42), so a
+  // coupon-only cart walks past an address step that asks for nothing.
   if (
     await page
       .locator('#co-city')
@@ -69,8 +70,9 @@ async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page)
     await page.locator('#co-city').fill('תל אביב')
     await page.locator('#co-street').fill('הרצל')
     await page.locator('#co-number').fill('1')
-    await page.getByRole('button', { name: 'המשך', exact: true }).click()
   }
+  const toReview = page.getByRole('button', { name: 'המשך', exact: true })
+  if (await toReview.isVisible().catch(() => false)) await toReview.click()
 
   // Step 3: review asks nothing; move on to the confirm step.
   const toConfirm = page.getByRole('button', { name: 'המשך לאישור' })

@@ -56,6 +56,14 @@ export default function PullToRefresh({ onRefresh, children, enabled }: PullToRe
     startYRef.current = null
   }, [pullDistance, isLoading, onRefresh])
 
+  // The decision, readable from outside (e2e, devtools). Written after mount,
+  // never rendered, so the server and client trees stay identical.
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    container.dataset.pullToRefreshActive = String(!enabled || enabled(window.location.pathname))
+  }, [enabled])
+
   useEffect(() => {
     const container = containerRef.current
     if (!container) return

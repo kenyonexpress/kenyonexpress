@@ -6,6 +6,18 @@ import UserMenuDropdown from './UserMenuDropdown'
 
 vi.mock('@/lib/theme')
 
+let session: { user: { id: string } } | null = { user: { id: 'u1' } }
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      onAuthStateChange: (cb: (event: string, s: typeof session) => void) => {
+        cb('INITIAL_SESSION', session)
+        return { data: { subscription: { unsubscribe: () => {} } } }
+      },
+    },
+  }),
+}))
+
 describe('UserMenuDropdown', () => {
   beforeEach(() => {
     vi.mocked(themeModule.getTheme).mockReturnValue('light')
@@ -14,6 +26,15 @@ describe('UserMenuDropdown', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+    session = { user: { id: 'u1' } }
+  })
+
+  it('keeps the login link for a guest', async () => {
+    session = null
+    render(<UserMenuDropdown />)
+    await waitFor(() => expect(themeModule.getTheme).toHaveBeenCalled())
+    expect(screen.getByRole('link', { name: 'התחברות' })).toHaveAttribute('href', '/login')
+    expect(screen.queryByRole('button', { name: /תפריט/i })).not.toBeInTheDocument()
   })
 
   it('should load current theme on mount', async () => {

@@ -105,6 +105,18 @@
   color: var(--color-muted-2);
 }
 
+/* Every CardLabel that is a link (category, not a place) is a tap target on
+   every card variant, and some variants set no box on it: measured 143x14 at
+   380 (C142). 24px is WCAG 2.5.8's minimum. */
+a.card-label {
+  display: flex;
+  align-items: center;
+  min-block-size: 24px;
+}
+.p_con a.card-label {
+  justify-content: center;
+}
+
 .p_con__category:hover {
   color: var(--color-heading);
 }

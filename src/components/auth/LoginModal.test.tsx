@@ -42,7 +42,7 @@ describe('LoginModal', () => {
     expect(screen.getByText('כניסה לחשבון')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /אימייל/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /SMS/i })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /Passkey/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'מפתח גישה' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /קישור/i })).toBeInTheDocument()
   })
 
@@ -76,7 +76,7 @@ describe('LoginModal', () => {
     const user = userEvent.setup()
     render(<LoginModal phoneEnabled={true} />)
 
-    const passkeyTab = screen.getByRole('tab', { name: /Passkey/i })
+    const passkeyTab = screen.getByRole('tab', { name: 'מפתח גישה' })
     await user.click(passkeyTab)
 
     expect(screen.getByTestId('passkey-signin')).toBeInTheDocument()
@@ -127,7 +127,7 @@ describe('LoginModal', () => {
     const user = userEvent.setup()
     render(<LoginModal phoneEnabled={true} />)
 
-    const passkeyTab = screen.getByRole('tab', { name: /Passkey/i })
+    const passkeyTab = screen.getByRole('tab', { name: 'מפתח גישה' })
     await user.click(passkeyTab)
 
     expect(screen.getByTestId('passkey-signin')).toBeInTheDocument()

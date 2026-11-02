@@ -248,7 +248,7 @@ export default function LoginModal({
             </TabsTrigger>
           )}
           <TabsTrigger value="passkey" className="text-xs sm:text-sm">
-            Passkey
+            מפתח גישה
           </TabsTrigger>
           <TabsTrigger value="magic" className="text-xs sm:text-sm">
             קישור

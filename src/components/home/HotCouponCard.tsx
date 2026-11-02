@@ -88,7 +88,7 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
 
           {/* Supplier name if available */}
           {coupon.supplier?.name && (
-            <p className="text-xs text-muted-foreground mt-1">{coupon.supplier.name}</p>
+            <p className="text-xs text-muted mt-1">{coupon.supplier.name}</p>
           )}
 
           {/* Pricing info */}
@@ -97,11 +97,11 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
               <span className="text-lg font-bold text-brand-red">
                 {shekelsFromIls(offer.paidOnlineIls)}
               </span>
-              <span className="text-xs text-muted-foreground line-through">
+              <span className="text-xs text-muted line-through">
                 {shekelsFromIls(offer.fullPriceIls)}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted">
               + {shekelsFromIls(offer.balanceAtBusinessIls)} בחנות
             </p>
           </div>
@@ -118,12 +118,12 @@ export default function HotCouponCard({ coupon }: HotCouponCardProps) {
       </div>
 
       {/* Code section */}
-      <div className="mt-4 rounded-lg bg-muted p-3">
-        <p className="text-xs text-muted-foreground mb-2">קוד קופון:</p>
+      <div className="mt-4 rounded-lg bg-surface-hover p-3">
+        <p className="text-xs text-muted mb-2">קוד קופון:</p>
         <button
           type="button"
           onClick={copyCode}
-          className="w-full py-2 px-3 bg-white border border-border rounded-md font-mono font-bold text-center hover:bg-muted transition-colors text-sm"
+          className="w-full py-2 px-3 bg-white border border-border rounded-md font-mono font-bold text-center hover:bg-surface-hover transition-colors text-sm"
           title="לחץ להעתקה"
         >
           {couponCode}

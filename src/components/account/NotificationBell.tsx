@@ -190,7 +190,7 @@ export default function NotificationBell() {
       <button
         type="button"
         className="account-bell__button"
-        aria-label={unread > 0 ? `התראות, ${unread} שלא נקראו` : 'התראות'}
+        aria-label={unread > 0 ? `התראות, ${unread > 99 ? '99+' : unread} שלא נקראו` : 'התראות'}
         aria-expanded={open}
         onClick={toggle}
       >

@@ -75,11 +75,10 @@ test.describe('Mobile Gestures - Interaction Verification', () => {
     await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/product/e2e-test-physical')
 
+    // The wrapper renders on every route (display: contents, so it takes no
+    // box) and decides per path; the decision is what is asserted.
     const pullArea = page.locator('[data-pull-to-refresh]')
-    const isVisible = await pullArea.isVisible().catch(() => false)
-
-    // Pull-to-refresh should NOT be on product page
-    expect(isVisible).toBeFalsy()
+    await expect(pullArea).toHaveAttribute('data-pull-to-refresh-active', 'false')
   })
 
   test('pull-to-refresh IS on category page', async ({ page }) => {
@@ -87,6 +86,6 @@ test.describe('Mobile Gestures - Interaction Verification', () => {
     await page.goto('/category/home-and-garden')
 
     const pullArea = page.locator('[data-pull-to-refresh]')
-    await expect(pullArea).toBeVisible()
+    await expect(pullArea).toHaveAttribute('data-pull-to-refresh-active', 'true')
   })
 })

@@ -60,7 +60,9 @@ describe('the error pages look like the same storefront', () => {
     // brand-primary and the 500 led with a grey warning emoji. A customer who
     // hits both in one session should see one shop.
     expect(read('not-found.tsx')).toContain('text-brand-primary')
-    expect(read('error.tsx')).toContain('text-brand-primary')
+    // The 500 sits on white, where yellow glyphs are 1.4:1 and axe fails them,
+    // so it carries the yellow as the numeral's underline instead (C142).
+    expect(read('error.tsx')).toContain('decoration-brand-primary')
   })
 
   it('uses design tokens, not raw Tailwind greys, for text and borders', () => {

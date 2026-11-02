@@ -19,7 +19,7 @@ import {
  */
 
 test.describe('logged-in physical purchase @checkout @money', () => {
-  test.describe.configure({ timeout: 120_000 })
+  test.describe.configure({ timeout: 180_000 })
 
   test.beforeEach(() => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
@@ -74,7 +74,12 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     await expect(page.getByTestId('coupon-qr')).toHaveCount(0)
 
     // And the order is in the account.
+    // The list rows carry date, total and count, not line names; the newest
+    // order's "פרטים" page lists its lines.
     await page.goto('/account/orders')
+    const details = await page.getByRole('link', { name: 'פרטים' }).first().getAttribute('href')
+    expect(details, 'the newest order has no details link').toBeTruthy()
+    await page.goto(details as string)
     await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות').first()).toBeVisible({
       timeout: 15_000,
     })

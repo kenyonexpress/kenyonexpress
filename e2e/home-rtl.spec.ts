@@ -42,18 +42,20 @@ import { expect, test } from '@playwright/test'
  */
 const ANCHORS: ReadonlyArray<readonly [label: string, selector: string]> = [
   ['site header', 'header'],
-  ['logo link', 'a[aria-label="קניון אקספרס, לדף הבית"]'],
-  ['cart button', 'button[aria-label^="עגלת קניות"]'],
-  ['account and cart nav', 'nav[aria-label="פעולות חשבון ועגלה"]'],
+  ['logo link', 'a[aria-label="קניון EXPRESS, לדף הבית"]'],
+  // C137: the cart's name is content (sr-only run), not an aria-label.
+  ['cart button', 'button[data-mini-cart-trigger]'],
+  ['account nav', 'nav[aria-label="פעולות חשבון"]'],
   ['main landmark', 'main#main-content'],
   ['hero section', 'section[aria-label="אזור ראשי"]'],
   ['hero category sidebar', 'aside[aria-label="קטגוריות"]'],
   ['hero copy column', '.hero-copy-column'],
   ['hero headline', '.hero-copy-column h1'],
   ['hero slide dots', '[aria-label="ניווט שקופיות"]'],
-  ['hero category strip', 'section[aria-label="קטגוריות מובילות"]'],
-  ['benefit bar', '.benefit-bar__item'],
-  ['deals grid section', 'section[aria-label="מוצרים מובילים"]'],
+  // C130 home order: categories row, hot coupons and brands follow the hero.
+  ['categories row', 'section.home-section[aria-label="קטגוריות"]'],
+  ['hot coupons section', 'section[aria-label="קופונים חמים"]'],
+  ['featured products section', 'section[aria-label="מוצרים מומלצים"]'],
   ['first deal card', 'article.p_con'],
   ['first deal price row', '.p_con__footer'],
   ['newsletter form', 'footer form'],

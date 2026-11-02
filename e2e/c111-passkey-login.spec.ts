@@ -31,8 +31,20 @@ test.describe('passkey login @auth', () => {
     await page.goto('/account/security')
     const add = page.getByRole('button', { name: 'הוספת מפתח גישה' })
     test.skip(!(await add.isVisible().catch(() => false)), 'passkeys are switched off')
+    // The authenticator holds the credential BEFORE the page posts it to the
+    // server, so polling the authenticator and then clearing cookies raced the
+    // `verify` POST: the server never stored the passkey and sign-in answered
+    // unknown_passkey (C142). Wait for the server to accept it.
+    const stored = page.waitForResponse(
+      (r) =>
+        r.url().includes('/api/auth/passkey/register') &&
+        (r.request().postData() ?? '').includes('"verify"'),
+    )
     await add.click()
-    await expect(page.getByRole('alert')).toHaveCount(0)
+    expect((await stored).status(), 'the server refused the new passkey').toBe(200)
+    // With text: Next's route announcer is an always-present, empty
+    // role="alert", and counting it read as a failed registration (C126/C142).
+    await expect(page.getByRole('alert').filter({ hasText: /\S/ })).toHaveCount(0)
     await expect
       .poll(
         async () =>
@@ -42,6 +54,8 @@ test.describe('passkey login @auth', () => {
 
     await page.context().clearCookies()
     await page.goto('/login?next=%2Faccount')
+    // The login page is tabbed (LoginModal); passkey sign-in has its own tab.
+    await page.getByRole('tab', { name: 'מפתח גישה' }).click()
     await page.getByRole('button', { name: 'כניסה עם מפתח גישה' }).click()
     await page.waitForURL(/\/account/, { timeout: 20_000 })
     await expect(page).not.toHaveURL(/\/login/)

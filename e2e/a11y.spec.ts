@@ -45,7 +45,35 @@ async function scan(page: Page) {
     // If streaming timeout, continue anyway - page may be slow but visible
   })
   await settleToasts(page)
+  await settleEntranceAnimations(page)
   return new AxeBuilder({ page }).withTags(WCAG_AA).analyze()
+}
+
+/**
+ * THE SAME ARITHMETIC AS THE TOAST BELOW, FOR EVERY ENTRANCE FADE.
+ *
+ * Measured 2026-11-02 (C142): /account failed `color-contrast x9` on
+ * .account-subtitle and .wallet-balance__* in a full run and reported zero
+ * violations when the same scan waited 1.5s. Those blocks fade in, axe folds
+ * the in-flight opacity into the colour, and the settled page passes. Only
+ * finite animations are awaited, so a spinner or an autoplaying carousel
+ * cannot hold the scan.
+ */
+async function settleEntranceAnimations(page: Page) {
+  await page
+    .waitForFunction(
+      () =>
+        document
+          .getAnimations()
+          .every(
+            (a) =>
+              a.playState !== 'running' ||
+              a.effect?.getComputedTiming().endTime === Number.POSITIVE_INFINITY,
+          ),
+      undefined,
+      { timeout: 5_000 },
+    )
+    .catch(() => {})
 }
 
 /**
@@ -502,9 +530,12 @@ test.describe('the checkout wizard, step by step', () => {
       `address step\n  ${describe(address)}`,
     ).toEqual([])
 
-    await page.fill('#co-city', 'תל אביב')
-    await page.fill('#co-street', 'דיזנגוף')
-    await page.fill('#co-number', '10')
+    // Only a physical line has an address to fill (F42).
+    if ((await page.locator('#co-city').count()) > 0) {
+      await page.fill('#co-city', 'תל אביב')
+      await page.fill('#co-street', 'דיזנגוף')
+      await page.fill('#co-number', '10')
+    }
     await advance('ביקורת הזמנה')
 
     const review = await scan(page)

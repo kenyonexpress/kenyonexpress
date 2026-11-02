@@ -53,8 +53,10 @@ export default function CartNavLink() {
         </span>
       </span>
       {/* No "0 ₪" beside the cart (C137): the total shows only once there is one. */}
+      {/* Hidden under 360px: on a 320px phone the total pushed the icon row
+          11px past the inline-end edge (C142). The badge still counts items. */}
       {cart.subtotal > 0 && (
-        <span className="text-sm font-semibold text-black tabular-nums">
+        <span className="cart-nav-total text-sm font-semibold text-black tabular-nums">
           {shekelsRounded(cart.subtotal)}
         </span>
       )}

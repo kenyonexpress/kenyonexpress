@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import styles from './BrandsRow.module.css'
 
 interface Brand {
   id: string
@@ -21,23 +20,23 @@ export default function BrandsRow({ brands }: BrandsRowProps) {
   }
 
   return (
-    <section className={styles.container}>
-      <div className={styles.scrollWrapper}>
-        <div className={styles.grid}>
+    <section className="home-brands">
+      <div className="home-brands__scroll">
+        <div className="home-brands__grid">
           {brands.map((brand) => (
-            <div key={brand.id} className={styles.item}>
+            <div key={brand.id} className="home-brands__item">
               <Link
                 href={`/search?supplier=${brand.id}`}
-                className={styles.link}
+                className="home-brands__link"
                 aria-label={`${brand.name_he} products`}
               >
-                <div className={styles.imageWrapper}>
+                <div className="home-brands__image-wrap">
                   <Image
                     src={brand.logo_url}
                     alt={brand.name_he}
                     width={120}
                     height={80}
-                    className={styles.image}
+                    className="home-brands__image"
                     sizes="(max-width: 640px) 90px, (max-width: 1024px) 110px, 120px"
                     loading="lazy"
                   />

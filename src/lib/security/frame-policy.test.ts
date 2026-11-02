@@ -1,15 +1,12 @@
 import { REMOTE_IMAGE_PATTERNS } from '@/lib/images/remote-hosts'
 import { describe, expect, it } from 'vitest'
 import {
-  CSP_REPORT_GROUP,
   DEFAULT_CONTENT_SECURITY_POLICY,
   PAYMENT_FRAME_PATHS,
   contentSecurityPolicyFor,
   frameOptionsFor,
   isPaymentFramePath,
   permissionsPolicyFor,
-  reportingEndpointsHeader,
-  sentrySecurityEndpoint,
 } from './frame-policy'
 
 describe('isPaymentFramePath', () => {
@@ -78,7 +75,7 @@ describe('contentSecurityPolicyFor', () => {
 
   it('still allows Cardcom to be framed by us, which is the other half', () => {
     expect(contentSecurityPolicyFor('/checkout')).toContain(
-      'frame-src https://secure.cardcom.solutions https://challenges.cloudflare.com',
+      "frame-src 'self' https://secure.cardcom.solutions https://challenges.cloudflare.com",
     )
   })
 

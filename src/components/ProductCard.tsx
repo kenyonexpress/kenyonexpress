@@ -164,7 +164,7 @@ function DealsProductCard({ product }: { product: Product }) {
       />
 
       <div className="p_con__title-wrap">
-        <Link href={`/product/${product.slug}`} className="hover:underline">
+        <Link href={`/product/${product.slug}`} className="block min-h-target-min hover:underline">
           <h2 className="p_con__title text-product-title">{product.name_he}</h2>
         </Link>
       </div>
@@ -340,7 +340,7 @@ function DefaultProductCard({ product }: { product: Product }) {
 
         <Link
           href={`/product/${product.slug}`}
-          className="line-clamp-2 text-section-title text-link leading-snug hover:underline"
+          className="line-clamp-2 min-h-target-min text-section-title text-link leading-snug hover:underline"
         >
           {product.name_he}
         </Link>
@@ -421,7 +421,7 @@ function DefaultProductCard({ product }: { product: Product }) {
             price={price}
             originalPrice={hasDiscount ? old : undefined}
             showSavingsBadge={hasDiscount}
-            allowHebrewNumerals={true}
+            allowHebrewNumerals={false}
             className=""
             priceClassName="text-base font-bold text-price"
           />

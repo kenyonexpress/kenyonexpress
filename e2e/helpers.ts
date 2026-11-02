@@ -131,12 +131,15 @@ export async function openPurchasableProduct(page: Page): Promise<void> {
   const links = page.locator('a[href^="/product/"]')
   await expect(links.first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
 
-  const hrefs: string[] = []
-  const count = await links.count()
-  for (let i = 0; i < count; i += 1) {
-    const href = await links.nth(i).getAttribute('href')
-    if (href && !hrefs.includes(href)) hrefs.push(href)
-  }
+  // One round trip (see firstCategorySlug): the infinite grid holds enough
+  // cards that a getAttribute per link spent the whole test timeout.
+  const hrefs = [
+    ...new Set(
+      (await links.evaluateAll((els) => els.map((el) => el.getAttribute('href') ?? ''))).filter(
+        Boolean,
+      ),
+    ),
+  ]
 
   // Bounded: a seed where none of the first few is buyable is a seed problem,
   // and walking all of it would blow the per-test timeout instead of saying so.
@@ -378,7 +381,12 @@ export async function raiseInstallBanner(page: Page): Promise<Locator> {
   const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
   // The offer is made only after a first purchase, and the flag is read when
   // the component mounts, so it has to be there before a reload.
-  await page.evaluate(() => localStorage.setItem('ke:purchased', '1'))
+  // It also waits for the third page view (INSTALL_AT_VIEW in InstallPrompt),
+  // so the counter is pre-set one short and the reload below is view three.
+  await page.evaluate(() => {
+    localStorage.setItem('ke:purchased', '1')
+    localStorage.setItem('ke:views', '2')
+  })
   await page.reload({ waitUntil: 'domcontentloaded' })
   const fire = () =>
     page.evaluate(() => {
@@ -483,24 +491,38 @@ export async function emptyCart(page: Page): Promise<void> {
   // So the click is settled by the action's HTTP answer, and the result is
   // then read back from the server with a reload rather than trusted from
   // the store. The reload is what a shopper who refreshes would see.
-  const cleared = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'POST' &&
-      Boolean(response.request().headers()['next-action']) &&
-      new URL(response.url()).pathname === '/cart',
-    { timeout: CART_WRITE_TIMEOUT },
-  )
-  await clear.click()
-  expect((await cleared).status(), 'the clear-cart action answered').toBe(200)
-
-  const reread = page
-    .waitForResponse(
-      (response) => response.url().includes('/api/cart') && response.request().method() === 'GET',
+  // Up to three rounds, each settled by a re-read from the server. A
+  // `next-action` POST to /cart is not necessarily the clear (the page runs
+  // other actions on load), so a round could settle on the wrong answer,
+  // reload before the clear landed and find the lines still there (C142:
+  // a physical line left by a failed run survived one clear).
+  for (let round = 0; round < 3; round += 1) {
+    const cleared = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        Boolean(response.request().headers()['next-action']) &&
+        new URL(response.url()).pathname === '/cart',
       { timeout: CART_WRITE_TIMEOUT },
     )
-    .catch(() => null)
-  await page.reload()
-  await reread
+    await clear.click()
+    expect((await cleared).status(), 'the clear-cart action answered').toBe(200)
+    await page.waitForTimeout(1_000)
+
+    const reread = page
+      .waitForResponse(
+        (response) => response.url().includes('/api/cart') && response.request().method() === 'GET',
+        { timeout: CART_WRITE_TIMEOUT },
+      )
+      .catch(() => null)
+    await page.reload()
+    await reread
+    const emptied = await page
+      .getByText('סל הקניות שלך ריק כרגע')
+      .waitFor({ state: 'visible', timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false)
+    if (emptied) break
+  }
   await expect(page.getByText('סל הקניות שלך ריק כרגע')).toBeVisible({
     timeout: CART_WRITE_TIMEOUT,
   })
@@ -596,8 +618,13 @@ export async function submitCheckout(
   // navigation that could not come. Ask once here; the helper is a no-op
   // when the block is not on screen, and the loop asks again per step.
   await verifyShippingPhoneIfAsked(page, options.phoneVerification)
-  for (let step = 0; step < 3 && !(await pay.isVisible()); step += 1) {
+  // Five, not three: a press that lands while the phone gate is still
+  // settling (the "verified" state arrives with the verify response) leaves the
+  // wizard on the address step, and three presses then ran out one short of
+  // the pay button with every step valid (C142).
+  for (let step = 0; step < 5 && !(await pay.isVisible()); step += 1) {
     await verifyShippingPhoneIfAsked(page, options.phoneVerification)
+    await fillGatedPostalCode(page, options.phoneVerification)
     await expect(next, 'no next button and no pay button on the checkout').toBeVisible()
     await next.click()
     // The step swap is synchronous state, but the inactive step is hidden by
@@ -627,6 +654,23 @@ async function verifyShippingPhoneIfAsked(
   const block = page.getByTestId('shipping-phone-verification')
   if (!seed || !(await block.isVisible().catch(() => false))) return
 
+  // The SEND is answered here; the VERIFY below runs for real. Locally neither
+  // channel can deliver: Meta is unconfigured, and Resend refuses the
+  // fixture's `.local` address with a 400 (measured 2026-11-02, C142), so the
+  // route answered 502 and the code step never opened. The code the server
+  // would have sent is not needed anyway -- the test seeds its own row below.
+  await page.route('**/api/checkout/phone-otp/send', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        channel: 'whatsapp',
+        phone: seed.phoneE164,
+        masked: `${seed.phoneE164.slice(0, 6)}***${seed.phoneE164.slice(-2)}`,
+      }),
+    }),
+  )
   await block.getByRole('button', { name: 'שליחת קוד אימות בוואטסאפ' }).click()
   const codeInput = block.locator('#co-phone-code')
   await expect(codeInput, 'the code step never appeared').toBeVisible({
@@ -642,6 +686,24 @@ async function verifyShippingPhoneIfAsked(
   await codeInput.fill(code)
   await block.getByRole('button', { name: 'אימות' }).click()
   await expect(page.getByText('מספר הטלפון אומת')).toBeVisible({ timeout: CART_WRITE_TIMEOUT })
+}
+
+/**
+ * The same gate makes the postal code mandatory (validateAddressStep's
+ * requireComplete), and the fixture's typed address carries none: the wizard
+ * held on "מיקוד *: שדה חובה" with the phone already verified (C142). Filled
+ * only on the step where the field is on screen, and only for a gated journey.
+ */
+async function fillGatedPostalCode(
+  page: Page,
+  seed: { email: string; phoneE164: string } | undefined,
+): Promise<void> {
+  if (!seed) return
+  const zip = page.locator('#co-zip')
+  if (!(await zip.isVisible().catch(() => false))) return
+  if ((await zip.inputValue()) !== '') return
+  await zip.fill('6511101')
+  await zip.blur()
 }
 
 /**
@@ -810,7 +872,13 @@ export async function newSignedInContext(
   const file = path.join(AUTH_CACHE_DIR, `${role}.json`)
   const fresh =
     fs.existsSync(file) && Date.now() - fs.statSync(file).mtimeMs < AUTH_CACHE_MAX_AGE_MS
-  if (fresh) return newFixtureContext(browser, { storageState: file })
+  if (fresh) {
+    // signInWithEmail resets the fixture's per-user buckets; a cached session
+    // skips it, so reset here too (see resetFixtureRateLimits).
+    const { resetFixtureRateLimits } = await import('./otp-seed')
+    await resetFixtureRateLimits(ROLE_CREDENTIALS[role].email)
+    return newFixtureContext(browser, { storageState: file })
+  }
 
   const context = await newFixtureContext(browser)
   const page = await context.newPage()

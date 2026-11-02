@@ -9,6 +9,8 @@ import { firstCategorySlug } from './helpers'
  * in the header and again under the grid as `--bottom`.
  */
 const SETTLED_COUNT = '.category-page__count:not(.category-page__count--pending)'
+/** The category archive's count, printed inside its H1 (XD17). */
+const TITLE_COUNT = '.category-page__title-count'
 
 test.describe('category archive', () => {
   test('renders the title, result count, breadcrumb and a product grid', async ({ page }) => {
@@ -155,11 +157,9 @@ test.describe('category archive', () => {
     // must never happen is the empty state on a category that has products.
     const firstCard = page.locator('a[href^="/product/"]').first()
     await expect(firstCard).toBeVisible({ timeout: 15_000 })
-    // `.first()` and `:not(--pending)` are both load-bearing. The streaming
-    // placeholder carries the same class so it holds the same box open, and the
-    // archive prints the count TWICE, once in the header and once under the
-    // grid as `--bottom`. Either alone leaves strict mode with two matches.
-    await expect(page.locator(SETTLED_COUNT).first()).toBeVisible({ timeout: 15_000 })
+    // The category archive prints its count inside the H1 ("N מבצעים זמינים",
+    // XD17), not as a separate count line the way /products and /search do.
+    await expect(page.locator(TITLE_COUNT)).toHaveText(/\d+ מבצעים זמינים/, { timeout: 15_000 })
     await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
   })
 
@@ -193,9 +193,12 @@ test.describe('category archive', () => {
     const response = await page.goto(`/category/${slug}?min=0&max=1`)
     expect(response?.status()).toBe(200)
 
-    const grid = page.locator('a[href^="/product/"]').first()
+    const grid = page.locator('.category-page__main a[href^="/product/"]').first()
     const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
-    await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 })
+    // A narrow range can leave the grid empty while a card elsewhere on the
+    // page still links to a product, so the grid is scoped and the union
+    // takes its first match.
+    await expect(grid.or(empty).first()).toBeVisible({ timeout: 15_000 })
   })
 
   /**
@@ -226,7 +229,11 @@ test.describe('category archive', () => {
     // The thumbs are lazy, so a page that has merely loaded has decoded none of
     // them. Bring the first one into view and wait for the bytes, or the decode
     // half of this test measures the scroll position instead of the image.
-    await thumbs.first().scrollIntoViewIfNeeded()
+    // Retried: the archive streams and the infinite grid re-renders, so the
+    // first handle can detach between the query and the scroll.
+    await expect(async () => {
+      await thumbs.first().scrollIntoViewIfNeeded({ timeout: 2_000 })
+    }).toPass({ timeout: 15_000 })
     await expect
       .poll(() => thumbs.first().evaluate((el) => (el as HTMLImageElement).naturalWidth), {
         message: 'first catalog thumbnail never decoded',
@@ -322,26 +329,34 @@ test.describe('catalogue on a phone', () => {
  * field on the site, scoped to the archive it sits on.
  */
 test.describe('category listing: page size and autocomplete', () => {
-  test('never renders more than eight cards on a page, and page 2 links when there are more', async ({
+  test('never renders more than one page of cards, and ?paginate=1 links page 2 when there are more', async ({
     page,
   }) => {
     const slug = await firstCategorySlug(page)
     test.skip(!slug, 'catalog exposes no category links')
 
-    await page.goto(`/category/${slug}`)
-    await expect(page.locator(SETTLED_COUNT).first()).toBeVisible({ timeout: 15_000 })
+    // The archive's default is infinite scroll (UX22): the first response holds
+    // one page of CATEGORY_PAGE_SIZE (24) cards and appends from there.
+    // `?paginate=1` is the numbered-pages variant and still carries the links.
+    await page.goto(`/category/${slug}?paginate=1`)
+    await expect(page.locator(TITLE_COUNT)).toHaveText(/\d+ מבצעים זמינים/, { timeout: 15_000 })
+    const countText = (await page.locator(TITLE_COUNT).textContent()) ?? ''
+    const total = Number(/(\d+)/.exec(countText)?.[1] ?? '0')
 
-    const cards = page.locator('.category-products__item')
+    // Real cards only: the streaming skeleton reuses the item class.
+    const cards = page.locator(
+      '.category-page__main .category-products__item:has(a[href^="/product/"])',
+    )
+    await expect(cards.first()).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('.category-page__main [aria-label="טוען מוצרים"]')).toHaveCount(0)
     const count = await cards.count()
-    expect(count).toBeLessThanOrEqual(8)
+    expect(count).toBeLessThanOrEqual(24)
 
-    const countText = (await page.locator(SETTLED_COUNT).first().textContent()) ?? ''
-    const total = Number(/מתוך\s+(\d+)/.exec(countText)?.[1] ?? '0')
-    if (total > 8) {
-      expect(count).toBe(8)
+    if (total > 24) {
+      expect(count).toBe(24)
       await expect(page.getByRole('link', { name: 'העמוד הבא' })).toHaveAttribute(
         'href',
-        new RegExp(`/category/${slug}\\?page=2$`),
+        new RegExp(`/category/${slug}\\?.*page=2`),
       )
     }
   })
@@ -353,9 +368,10 @@ test.describe('category listing: page size and autocomplete', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}`)
-    await page.locator('.category-sidebar__summary').click()
 
-    const box = page.getByRole('combobox')
+    // The sidebar is open by default now (CategoryFilterSidebar); there is no
+    // summary to expand first.
+    const box = page.locator('.category-autocomplete').getByRole('combobox')
     await expect(box).toBeVisible()
     await expect(box).toHaveAttribute('type', 'text')
 

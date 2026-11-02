@@ -388,6 +388,9 @@
      under it; ours keeps live's PAINTED size and pads the hit area out to 44,
      so the pixel comparison sees live's button and a thumb gets the target. */
   --spacing-touch-min: 44px;
+  /* WCAG 2.5.8's floor for an inline target (e2e/touch-targets MIN_ANY). Px, not
+     a rem utility: the root is 14px, so min-h-6 is only 21px (C142). */
+  --spacing-target-min: 24px;
 
   /* The region menu ("בחר אזור"), live's `secondary-nav`. Read off the rendered
      page at 1440 on 2026-09-03: the nav row is 44.996px of line-height, and the

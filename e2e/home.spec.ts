@@ -123,7 +123,9 @@ test.describe('homepage', () => {
       .locator('.p_con__image')
       .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)))
 
-    expect(heights.length, 'no deal cards on the homepage to measure').toBeGreaterThan(10)
+    // C130's section order puts eight deal cards above the fold sections
+    // (featured, limit 8); the infinite grid below appends more on scroll.
+    expect(heights.length, 'no deal cards on the homepage to measure').toBeGreaterThanOrEqual(8)
     const offPin = heights.filter((h) => h !== 245)
     expect(
       offPin,
@@ -587,10 +589,12 @@ test.describe('homepage', () => {
    * drives it with a fixture pair, so it keeps working the day a real
    * photograph is registered.
    *
-   * WHEN TO REVERT: the day `HERO_SLIDER_IMAGES` is non-empty again. Then the
-   * still-then-swap assertions are the right ones and this is the stale test.
+   * REVERTED 2026-11-02 (C142): C130 gave all five slides real catalogue
+   * photographs (src/lib/hero-singlefile-data.ts), so the placeholder is gone
+   * and asserting it asserts a reversed decision. What still matters: the slot
+   * paints a named photograph, and no vendor raster comes back.
    */
-  test('the hero slot renders the branded placeholder, named, with no vendor raster', async ({
+  test('the hero slot renders a named catalogue photograph, with no vendor raster', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
@@ -600,19 +604,24 @@ test.describe('homepage', () => {
     // the fallback there are two sliders.
     await expect(page.locator('[data-hero-slider]')).toHaveCount(1)
 
-    const slot = page.locator('[data-hero-slider] [data-awaiting-photography]').first()
-    await expect(slot, 'the hero slot is empty rather than placeheld').toBeVisible()
+    // Decorative (alt=""): the slide's copy carries the meaning and the hero is
+    // the named region "אזור ראשי". What is asserted is that the photograph is
+    // a catalogue image, never an empty slot.
+    const photo = page.locator('[data-hero-slider] img').first()
+    await expect(photo, 'the hero slot paints no photograph').toBeVisible()
+    await expect(page.locator('section[aria-label="אזור ראשי"] [data-hero-slider]')).toHaveCount(1)
+    const src = await photo.evaluate((img: HTMLImageElement) => decodeURIComponent(img.currentSrc))
+    expect(src, 'the hero photograph is not a catalogue image').toMatch(/\/images\/products\//)
 
-    await expect(
-      slot.getByRole('img', { name: /התמונה טרם צולמה/ }),
-      'the placeholder does not say the photograph is still to be taken',
-    ).toBeVisible()
-
-    // The regression that actually matters: a vendor product shot reappearing.
-    // Named individually so the failure says which one came back.
-    const sources = await page.evaluate(() =>
-      [...document.images].map((i) => i.currentSrc || i.src),
-    )
+    // The regression that actually matters: a vendor product shot reappearing
+    // IN THE HERO. Scoped to the slider since C137 put real brand logos (the
+    // brands row, /images/hero/brands/) on the page, and a Tesla logo there is
+    // a brand, not an Electro demo photograph.
+    const sources = await page
+      .locator('[data-hero-slider] img')
+      .evaluateAll((imgs) =>
+        imgs.map((i) => (i as HTMLImageElement).currentSrc || (i as HTMLImageElement).src),
+      )
     for (const banned of ['iphone', 'airpod', 'ipad', 'macbook', 'tesla', 'redphone']) {
       expect(
         sources.filter((s) => s.toLowerCase().includes(banned)),

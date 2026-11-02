@@ -46,7 +46,7 @@ export default function PriceDisplay({
   price,
   originalPrice,
   showSavingsBadge = true,
-  allowHebrewNumerals = true,
+  allowHebrewNumerals = false,
   className = '',
   priceClassName = 'text-base font-bold text-price',
 }: PriceDisplayProps) {

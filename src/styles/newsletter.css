@@ -17,6 +17,7 @@
 }
 .ke-newsletter__input {
   flex: 1 1 auto;
+  min-block-size: 44px;
   min-inline-size: 0;
   border: 1px solid var(--color-border, #d4d4d4);
   border-radius: 0.5rem;
@@ -34,6 +35,7 @@
   border-color: var(--util-dc2626);
 }
 .ke-newsletter__button {
+  min-block-size: 44px;
   border-radius: 0.5rem;
   background: var(--util-000);
   color: var(--color-surface);
@@ -61,7 +63,9 @@
 }
 .ke-newsletter__consent {
   font-size: 0.75rem;
-  color: var(--util-666);
+  /* Inherits the band's ink: both hosts are the brand-yellow bar, where #666
+     is about 4.1:1 and axe fails it (C142). */
+  color: inherit;
   line-height: 1.5;
 }
 .ke-newsletter__error {
