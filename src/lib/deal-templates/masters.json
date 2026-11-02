@@ -1,0 +1,2979 @@
+[
+  {
+    "slug": "iphone",
+    "name_he": "אייפון",
+    "product_type": "physical",
+    "category_slug": "phones-computers",
+    "fields": [
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "select",
+        "options": [
+          "iPhone 13",
+          "iPhone 13 Pro",
+          "iPhone 14",
+          "iPhone 14 Pro",
+          "iPhone 15",
+          "iPhone 15 Pro",
+          "iPhone 15 Pro Max",
+          "iPhone 16",
+          "iPhone 16 Plus",
+          "iPhone 16 Pro",
+          "iPhone 16 Pro Max",
+          "iPhone 16e",
+          "iPhone 17",
+          "iPhone 17 Pro",
+          "iPhone 17 Pro Max",
+          "iPhone Air"
+        ],
+        "required": true
+      },
+      {
+        "key": "storage_gb",
+        "label": "נפח אחסון (GB)",
+        "type": "select",
+        "options": ["64", "128", "256", "512", "1024", "2048"],
+        "required": true
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "included_accessories",
+        "label": "אביזרים כלולים באריזה",
+        "type": "list"
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי",
+      "included_accessories": ["כבל USB-C"]
+    }
+  },
+  {
+    "slug": "android-phone",
+    "name_he": "טלפון אנדרואיד",
+    "product_type": "physical",
+    "category_slug": "phones-computers",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["Samsung", "Xiaomi", "Google Pixel", "OnePlus", "Motorola", "Oppo", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "storage_gb",
+        "label": "נפח אחסון (GB)",
+        "type": "select",
+        "options": ["64", "128", "256", "512", "1024", "2048"],
+        "required": true
+      },
+      {
+        "key": "ram_gb",
+        "label": "זיכרון RAM (GB)",
+        "type": "int",
+        "min": 1,
+        "max": 32
+      },
+      {
+        "key": "network",
+        "label": "דור רשת",
+        "type": "select",
+        "options": ["4G", "5G"],
+        "default": "5G"
+      },
+      {
+        "key": "dual_sim",
+        "label": "תמיכה בשני כרטיסי SIM",
+        "type": "bool"
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "included_accessories",
+        "label": "אביזרים כלולים באריזה",
+        "type": "list"
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "network": "5G",
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "laptop",
+    "name_he": "מחשב נייד",
+    "product_type": "physical",
+    "category_slug": "phones-computers",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["Apple", "Lenovo", "Dell", "HP", "Asus", "Acer", "MSI", "Microsoft", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "cpu",
+        "label": "מעבד",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "ram_gb",
+        "label": "זיכרון RAM (GB)",
+        "type": "int",
+        "min": 2,
+        "max": 256,
+        "required": true
+      },
+      {
+        "key": "storage_gb",
+        "label": "נפח אחסון (GB)",
+        "type": "select",
+        "options": ["64", "128", "256", "512", "1024", "2048"],
+        "required": true
+      },
+      {
+        "key": "storage_type",
+        "label": "סוג אחסון",
+        "type": "select",
+        "options": ["SSD", "HDD"],
+        "default": "SSD"
+      },
+      {
+        "key": "screen_inch",
+        "label": "גודל מסך (אינץ׳)",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "os",
+        "label": "מערכת הפעלה",
+        "type": "select",
+        "options": ["macOS", "Windows 11", "ChromeOS", "Linux", "ללא"]
+      },
+      {
+        "key": "hebrew_keyboard",
+        "label": "מקלדת עברית",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "storage_type": "SSD",
+      "hebrew_keyboard": true,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "tablet",
+    "name_he": "טאבלט",
+    "product_type": "physical",
+    "category_slug": "phones-computers",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["Apple", "Samsung", "Lenovo", "Xiaomi", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "storage_gb",
+        "label": "נפח אחסון (GB)",
+        "type": "select",
+        "options": ["64", "128", "256", "512", "1024", "2048"],
+        "required": true
+      },
+      {
+        "key": "screen_inch",
+        "label": "גודל מסך (אינץ׳)",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "connectivity",
+        "label": "קישוריות",
+        "type": "select",
+        "options": ["Wi-Fi", "Wi-Fi + סלולר"],
+        "required": true
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "included_accessories",
+        "label": "אביזרים כלולים באריזה",
+        "type": "list"
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "headphones",
+    "name_he": "אוזניות",
+    "product_type": "physical",
+    "category_slug": "electronics",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["Apple", "Sony", "Samsung", "JBL", "Bose", "Beats", "Sennheiser", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "form_factor",
+        "label": "סוג",
+        "type": "select",
+        "options": ["תוך אוזן", "על האוזן", "סביב האוזן"],
+        "required": true
+      },
+      {
+        "key": "connection",
+        "label": "חיבור",
+        "type": "select",
+        "options": ["Bluetooth", "חוטי", "Bluetooth + חוטי"],
+        "required": true
+      },
+      {
+        "key": "noise_cancelling",
+        "label": "סינון רעשים אקטיבי (ANC)",
+        "type": "bool"
+      },
+      {
+        "key": "battery_hours",
+        "label": "זמן סוללה (שעות)",
+        "type": "int",
+        "min": 0,
+        "max": 200
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "smartwatch",
+    "name_he": "שעון חכם",
+    "product_type": "physical",
+    "category_slug": "electronics",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["Apple", "Samsung", "Garmin", "Xiaomi", "Huawei", "Amazfit", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "case_size_mm",
+        "label": "גודל מארז (מ״מ)",
+        "type": "int",
+        "min": 20,
+        "max": 60
+      },
+      {
+        "key": "compatible_os",
+        "label": "תאימות",
+        "type": "select",
+        "options": ["iOS", "Android", "iOS ו-Android"],
+        "required": true
+      },
+      {
+        "key": "gps",
+        "label": "GPS מובנה",
+        "type": "bool"
+      },
+      {
+        "key": "water_resistance",
+        "label": "עמידות במים",
+        "type": "text"
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "speaker",
+    "name_he": "רמקול נייד",
+    "product_type": "physical",
+    "category_slug": "electronics",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["JBL", "Sony", "Bose", "Marshall", "Anker", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "power_watt",
+        "label": "הספק (ואט)",
+        "type": "int",
+        "min": 1,
+        "max": 2000
+      },
+      {
+        "key": "battery_hours",
+        "label": "זמן סוללה (שעות)",
+        "type": "int",
+        "min": 0,
+        "max": 200
+      },
+      {
+        "key": "water_resistance",
+        "label": "עמידות במים",
+        "type": "text"
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12,
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "gaming-console",
+    "name_he": "קונסולת משחקים",
+    "product_type": "physical",
+    "category_slug": "electronics",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["Sony PlayStation", "Microsoft Xbox", "Nintendo", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "edition",
+        "label": "גרסה",
+        "type": "select",
+        "options": ["עם כונן דיסקים", "דיגיטלית"],
+        "required": true
+      },
+      {
+        "key": "storage_gb",
+        "label": "נפח אחסון (GB)",
+        "type": "select",
+        "options": ["64", "128", "256", "512", "1024", "2048"],
+        "required": true
+      },
+      {
+        "key": "controllers_included",
+        "label": "בקרים כלולים",
+        "type": "int",
+        "min": 0,
+        "max": 4,
+        "default": 1
+      },
+      {
+        "key": "included_games",
+        "label": "משחקים כלולים",
+        "type": "list"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "controllers_included": 1,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "camera-drone",
+    "name_he": "מצלמה / רחפן",
+    "product_type": "physical",
+    "category_slug": "electronics",
+    "fields": [
+      {
+        "key": "product_kind",
+        "label": "סוג מוצר",
+        "type": "select",
+        "options": ["מצלמה", "מצלמת אקשן", "רחפן"],
+        "required": true
+      },
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["DJI", "GoPro", "Canon", "Sony", "Nikon", "Insta360", "אחר"],
+        "required": true
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "video_resolution",
+        "label": "רזולוציית וידאו",
+        "type": "select",
+        "options": ["Full HD", "2.7K", "4K", "5K", "8K"]
+      },
+      {
+        "key": "megapixels",
+        "label": "מגה פיקסל",
+        "type": "int",
+        "min": 1,
+        "max": 200
+      },
+      {
+        "key": "battery_minutes",
+        "label": "זמן סוללה / טיסה (דקות)",
+        "type": "int",
+        "min": 0,
+        "max": 600
+      },
+      {
+        "key": "included_accessories",
+        "label": "אביזרים כלולים באריזה",
+        "type": "list"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "power-accessories",
+    "name_he": "מטענים וסוללות ניידות",
+    "product_type": "physical",
+    "category_slug": "electronics",
+    "fields": [
+      {
+        "key": "accessory_type",
+        "label": "סוג",
+        "type": "select",
+        "options": ["סוללה ניידת", "מטען קיר", "מטען אלחוטי", "כבל", "מטען לרכב"],
+        "required": true
+      },
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "capacity_mah",
+        "label": "קיבולת (mAh)",
+        "type": "int",
+        "min": 0,
+        "max": 100000
+      },
+      {
+        "key": "output_watt",
+        "label": "הספק טעינה (ואט)",
+        "type": "int",
+        "min": 0,
+        "max": 500
+      },
+      {
+        "key": "connectors",
+        "label": "חיבורים",
+        "type": "multiselect",
+        "options": ["USB-C", "USB-A", "Lightning", "MagSafe", "Qi"]
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12
+    }
+  },
+  {
+    "slug": "computer-accessories",
+    "name_he": "ציוד היקפי למחשב",
+    "product_type": "physical",
+    "category_slug": "phones-computers",
+    "fields": [
+      {
+        "key": "accessory_type",
+        "label": "סוג",
+        "type": "select",
+        "options": ["מקלדת", "עכבר", "מסך", "מצלמת רשת", "תיק למחשב", "מעמד", "אחר"],
+        "required": true
+      },
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "connection",
+        "label": "חיבור",
+        "type": "select",
+        "options": ["USB", "Bluetooth", "אלחוטי 2.4GHz", "לא רלוונטי"]
+      },
+      {
+        "key": "keyboard_layout",
+        "label": "פריסת מקלדת",
+        "type": "select",
+        "options": ["עברית/אנגלית", "אנגלית בלבד", "לא רלוונטי"]
+      },
+      {
+        "key": "compatible_with",
+        "label": "תואם ל",
+        "type": "text"
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12
+    }
+  },
+  {
+    "slug": "home-kitchen",
+    "name_he": "כלי בית ומטבח",
+    "product_type": "physical",
+    "category_slug": "hot-deals",
+    "fields": [
+      {
+        "key": "product_kind",
+        "label": "סוג מוצר",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text"
+      },
+      {
+        "key": "material",
+        "label": "חומר",
+        "type": "text"
+      },
+      {
+        "key": "set_items",
+        "label": "מספר פריטים בסט",
+        "type": "int",
+        "min": 1,
+        "max": 200
+      },
+      {
+        "key": "dimensions_cm",
+        "label": "מידות (ס״מ)",
+        "type": "text"
+      },
+      {
+        "key": "dishwasher_safe",
+        "label": "מתאים למדיח",
+        "type": "bool"
+      },
+      {
+        "key": "induction_ready",
+        "label": "מתאים לכיריים אינדוקציה",
+        "type": "bool"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12
+    }
+  },
+  {
+    "slug": "home-textile",
+    "name_he": "מצעים וטקסטיל לבית",
+    "product_type": "physical",
+    "category_slug": "hot-deals",
+    "fields": [
+      {
+        "key": "product_kind",
+        "label": "סוג מוצר",
+        "type": "select",
+        "options": ["שמיכה", "סט מצעים", "כרית", "מגבות", "שטיח", "אחר"],
+        "required": true
+      },
+      {
+        "key": "size",
+        "label": "מידה",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "material",
+        "label": "בד / חומר",
+        "type": "text"
+      },
+      {
+        "key": "fill_material",
+        "label": "מילוי",
+        "type": "text"
+      },
+      {
+        "key": "washing_instructions",
+        "label": "הוראות כביסה",
+        "type": "text"
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5
+    }
+  },
+  {
+    "slug": "home-lighting",
+    "name_he": "תאורה לבית",
+    "product_type": "physical",
+    "category_slug": "hot-deals",
+    "fields": [
+      {
+        "key": "product_kind",
+        "label": "סוג מוצר",
+        "type": "select",
+        "options": ["מנורת שולחן", "מנורה עומדת", "גוף תאורה", "פס לד", "נורה חכמה"],
+        "required": true
+      },
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "power_watt",
+        "label": "הספק (ואט)",
+        "type": "int",
+        "min": 0,
+        "max": 1000
+      },
+      {
+        "key": "color_temperature_k",
+        "label": "גוון אור (קלווין)",
+        "type": "text"
+      },
+      {
+        "key": "dimmable",
+        "label": "ניתן לעמעום",
+        "type": "bool"
+      },
+      {
+        "key": "power_source",
+        "label": "מקור מתח",
+        "type": "select",
+        "options": ["חשמל", "סוללה נטענת", "USB"]
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12
+    }
+  },
+  {
+    "slug": "bags-fashion",
+    "name_he": "תיקים ואופנה",
+    "product_type": "physical",
+    "category_slug": "hot-deals",
+    "fields": [
+      {
+        "key": "product_kind",
+        "label": "סוג מוצר",
+        "type": "select",
+        "options": ["תיק יד", "תיק גב", "תיק למחשב", "ארנק", "מזוודה", "אחר"],
+        "required": true
+      },
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "material",
+        "label": "חומר",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "dimensions_cm",
+        "label": "מידות (ס״מ)",
+        "type": "text"
+      },
+      {
+        "key": "laptop_fit_inch",
+        "label": "מתאים למחשב עד (אינץ׳)",
+        "type": "int",
+        "min": 10,
+        "max": 18
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 6,
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 6
+    }
+  },
+  {
+    "slug": "gift-box",
+    "name_he": "מארז מתנה",
+    "product_type": "physical",
+    "category_slug": "hot-deals",
+    "fields": [
+      {
+        "key": "items_included",
+        "label": "מה במארז",
+        "type": "list",
+        "required": true
+      },
+      {
+        "key": "occasion",
+        "label": "מתאים ל",
+        "type": "select",
+        "options": ["לידה", "יום הולדת", "חג", "זוגיות", "תודה", "כללי"]
+      },
+      {
+        "key": "gift_wrap",
+        "label": "עטיפת מתנה כלולה",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "key": "greeting_card",
+        "label": "כרטיס ברכה אישי",
+        "type": "bool"
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "gift_wrap": true
+    }
+  },
+  {
+    "slug": "baby-gear",
+    "name_he": "ציוד לתינוקות",
+    "product_type": "physical",
+    "category_slug": "baby-kids",
+    "fields": [
+      {
+        "key": "product_kind",
+        "label": "סוג מוצר",
+        "type": "select",
+        "options": [
+          "עגלה",
+          "כיסא בטיחות לרכב",
+          "מיטה / עריסה",
+          "כיסא אוכל",
+          "מנשא",
+          "משאבת חלב",
+          "אחר"
+        ],
+        "required": true
+      },
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text"
+      },
+      {
+        "key": "age_range",
+        "label": "טווח גילאים",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "max_weight_kg",
+        "label": "משקל ילד מקסימלי (ק״ג)",
+        "type": "int",
+        "min": 0,
+        "max": 50
+      },
+      {
+        "key": "safety_standard",
+        "label": "תקן בטיחות",
+        "type": "text",
+        "default": "תקן ישראלי",
+        "required": true
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "safety_standard": "תקן ישראלי",
+      "warranty_months": 12,
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "baby-consumables",
+    "name_he": "חיתולים ומוצרי היגיינה לתינוק",
+    "product_type": "physical",
+    "category_slug": "baby-kids",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "select",
+        "options": ["Pampers", "Huggies", "טיטולים", "אחר"],
+        "required": true
+      },
+      {
+        "key": "product_line",
+        "label": "סדרה",
+        "type": "text"
+      },
+      {
+        "key": "size",
+        "label": "מידה",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "weight_range_kg",
+        "label": "טווח משקל (ק״ג)",
+        "type": "text"
+      },
+      {
+        "key": "units_per_pack",
+        "label": "יחידות באריזה",
+        "type": "int",
+        "min": 1,
+        "max": 1000,
+        "required": true
+      },
+      {
+        "key": "packs",
+        "label": "מספר אריזות",
+        "type": "int",
+        "min": 1,
+        "max": 50,
+        "default": 1
+      },
+      {
+        "key": "expiry_date",
+        "label": "תאריך תפוגה",
+        "type": "date"
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "packs": 1
+    }
+  },
+  {
+    "slug": "kids-toys",
+    "name_he": "צעצועים לילדים",
+    "product_type": "physical",
+    "category_slug": "baby-kids",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "age_min_years",
+        "label": "גיל מינימלי (שנים)",
+        "type": "int",
+        "min": 0,
+        "max": 18,
+        "required": true
+      },
+      {
+        "key": "age_max_years",
+        "label": "גיל מקסימלי (שנים)",
+        "type": "int",
+        "min": 0,
+        "max": 99
+      },
+      {
+        "key": "material",
+        "label": "חומר",
+        "type": "text"
+      },
+      {
+        "key": "pieces",
+        "label": "מספר חלקים",
+        "type": "int",
+        "min": 1,
+        "max": 10000
+      },
+      {
+        "key": "batteries_required",
+        "label": "דורש סוללות",
+        "type": "bool"
+      },
+      {
+        "key": "safety_standard",
+        "label": "תקן בטיחות",
+        "type": "text",
+        "default": "תקן ישראלי 562",
+        "required": true
+      },
+      {
+        "key": "small_parts_warning",
+        "label": "אזהרת חלקים קטנים (מתחת לגיל 3)",
+        "type": "bool"
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "safety_standard": "תקן ישראלי 562"
+    }
+  },
+  {
+    "slug": "pet-food",
+    "name_he": "מזון לחיות מחמד",
+    "product_type": "physical",
+    "category_slug": "pets",
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "animal",
+        "label": "מתאים ל",
+        "type": "select",
+        "options": ["כלב", "חתול", "ציפור", "מכרסם", "דגים", "אחר"],
+        "required": true
+      },
+      {
+        "key": "life_stage",
+        "label": "שלב חיים",
+        "type": "select",
+        "options": ["גור", "בוגר", "מבוגר", "כל הגילאים"],
+        "required": true
+      },
+      {
+        "key": "weight_kg",
+        "label": "משקל אריזה (ק״ג)",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "flavor",
+        "label": "טעם",
+        "type": "text"
+      },
+      {
+        "key": "special_diet",
+        "label": "תזונה מיוחדת",
+        "type": "multiselect",
+        "options": ["ללא דגנים", "היפואלרגני", "דל שומן", "מעוקרים", "רפואי"]
+      },
+      {
+        "key": "expiry_date",
+        "label": "תאריך תפוגה",
+        "type": "date"
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5
+    }
+  },
+  {
+    "slug": "pet-gear",
+    "name_he": "ציוד לחיות מחמד",
+    "product_type": "physical",
+    "category_slug": "pets",
+    "fields": [
+      {
+        "key": "product_kind",
+        "label": "סוג מוצר",
+        "type": "select",
+        "options": [
+          "מיטה",
+          "רצועה / קולר",
+          "כלוב / מנשא",
+          "צעצוע",
+          "קערה",
+          "טיפוח",
+          "חול לחתולים",
+          "אחר"
+        ],
+        "required": true
+      },
+      {
+        "key": "animal",
+        "label": "מתאים ל",
+        "type": "select",
+        "options": ["כלב", "חתול", "ציפור", "מכרסם", "דגים", "אחר"],
+        "required": true
+      },
+      {
+        "key": "size",
+        "label": "מידה",
+        "type": "select",
+        "options": ["XS", "S", "M", "L", "XL", "אחיד"]
+      },
+      {
+        "key": "material",
+        "label": "חומר",
+        "type": "text"
+      },
+      {
+        "key": "dimensions_cm",
+        "label": "מידות (ס״מ)",
+        "type": "text"
+      },
+      {
+        "key": "color",
+        "label": "צבע",
+        "type": "text"
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5
+    }
+  },
+  {
+    "slug": "general-physical",
+    "name_he": "מוצר פיזי כללי",
+    "product_type": "physical",
+    "category_slug": null,
+    "fields": [
+      {
+        "key": "brand",
+        "label": "מותג",
+        "type": "text"
+      },
+      {
+        "key": "model",
+        "label": "דגם",
+        "type": "text"
+      },
+      {
+        "key": "specs",
+        "label": "מפרט",
+        "type": "list"
+      },
+      {
+        "key": "warranty_months",
+        "label": "אחריות (חודשים)",
+        "type": "int",
+        "min": 0,
+        "max": 120,
+        "default": 12,
+        "required": true
+      },
+      {
+        "key": "condition",
+        "label": "מצב המוצר",
+        "type": "select",
+        "options": ["חדש", "מחודש", "משומש"],
+        "default": "חדש",
+        "required": true
+      },
+      {
+        "key": "import_type",
+        "label": "סוג יבוא",
+        "type": "select",
+        "options": ["יבואן רשמי", "יבוא מקביל", "לא רלוונטי"],
+        "default": "יבואן רשמי",
+        "required": true
+      }
+    ],
+    "defaults": {
+      "shipping_price_agorot": 0,
+      "supplier_transfer_days": 14,
+      "cancellation_window_days": 14,
+      "cashback_percent": 0,
+      "max_units_per_order": 5,
+      "warranty_months": 12,
+      "condition": "חדש",
+      "import_type": "יבואן רשמי"
+    }
+  },
+  {
+    "slug": "restaurant",
+    "name_he": "דיל מסעדה",
+    "product_type": "coupon",
+    "category_slug": "restaurants-cafes",
+    "fields": [
+      {
+        "key": "meal_type",
+        "label": "סוג הארוחה",
+        "type": "select",
+        "options": [
+          "ארוחת צהריים",
+          "ארוחת ערב",
+          "ארוחה עסקית",
+          "ארוחה זוגית",
+          "ארוחה משפחתית",
+          "ארוחת שף",
+          "בופה"
+        ],
+        "required": true
+      },
+      {
+        "key": "max_diners",
+        "label": "מספר סועדים",
+        "type": "int",
+        "min": 1,
+        "max": 30,
+        "default": 2,
+        "required": true
+      },
+      {
+        "key": "menu_includes",
+        "label": "מה כלול בתפריט",
+        "type": "list",
+        "required": true
+      },
+      {
+        "key": "kosher",
+        "label": "כשרות",
+        "type": "select",
+        "options": ["לא כשר", "כשר", "כשר למהדרין"],
+        "required": true
+      },
+      {
+        "key": "cuisine",
+        "label": "סוג מטבח",
+        "type": "select",
+        "options": ["בשרי", "חלבי", "דגים", "טבעוני", "איטלקי", "אסייתי", "ים תיכוני", "אחר"]
+      },
+      {
+        "key": "drinks_included",
+        "label": "שתייה כלולה",
+        "type": "bool"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "key": "valid_days",
+        "label": "ימים בהם השובר תקף",
+        "type": "multiselect",
+        "options": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "max_diners": 2,
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "cafe",
+    "name_he": "דיל בית קפה",
+    "product_type": "coupon",
+    "category_slug": "restaurants-cafes",
+    "fields": [
+      {
+        "key": "meal_type",
+        "label": "סוג הדיל",
+        "type": "select",
+        "options": ["ארוחת בוקר", "בראנץ׳", "קפה ומאפה", "ארוחת בוקר זוגית"],
+        "required": true
+      },
+      {
+        "key": "max_diners",
+        "label": "מספר סועדים",
+        "type": "int",
+        "min": 1,
+        "max": 10,
+        "default": 2,
+        "required": true
+      },
+      {
+        "key": "menu_includes",
+        "label": "מה כלול",
+        "type": "list",
+        "required": true
+      },
+      {
+        "key": "kosher",
+        "label": "כשרות",
+        "type": "select",
+        "options": ["לא כשר", "כשר", "כשר למהדרין"],
+        "required": true
+      },
+      {
+        "key": "valid_hours",
+        "label": "שעות מימוש",
+        "type": "text",
+        "default": "עד 12:00"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "key": "valid_days",
+        "label": "ימים בהם השובר תקף",
+        "type": "multiselect",
+        "options": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "max_diners": 2,
+      "valid_hours": "עד 12:00",
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "dessert-icecream",
+    "name_he": "גלידה וקינוחים",
+    "product_type": "coupon",
+    "category_slug": "restaurants-cafes",
+    "fields": [
+      {
+        "key": "package_kind",
+        "label": "סוג החבילה",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "servings",
+        "label": "מספר מנות",
+        "type": "int",
+        "min": 1,
+        "max": 50,
+        "required": true
+      },
+      {
+        "key": "flavors_choice",
+        "label": "בחירת טעמים",
+        "type": "text"
+      },
+      {
+        "key": "kosher",
+        "label": "כשרות",
+        "type": "select",
+        "options": ["לא כשר", "כשר", "כשר למהדרין"],
+        "required": true
+      },
+      {
+        "key": "takeaway",
+        "label": "אפשרות לקחת הביתה",
+        "type": "bool"
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10
+    }
+  },
+  {
+    "slug": "bar-cocktails",
+    "name_he": "בר וקוקטיילים",
+    "product_type": "coupon",
+    "category_slug": "restaurants-cafes",
+    "fields": [
+      {
+        "key": "drinks_count",
+        "label": "מספר משקאות",
+        "type": "int",
+        "min": 1,
+        "max": 20,
+        "required": true
+      },
+      {
+        "key": "max_guests",
+        "label": "מספר אורחים",
+        "type": "int",
+        "min": 1,
+        "max": 20,
+        "default": 2,
+        "required": true
+      },
+      {
+        "key": "includes_food",
+        "label": "כולל מנה / נשנושים",
+        "type": "bool"
+      },
+      {
+        "key": "min_age",
+        "label": "גיל מינימום",
+        "type": "int",
+        "min": 0,
+        "max": 99,
+        "default": 18,
+        "required": true
+      },
+      {
+        "key": "valid_hours",
+        "label": "שעות מימוש",
+        "type": "text"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "key": "valid_days",
+        "label": "ימים בהם השובר תקף",
+        "type": "multiselect",
+        "options": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "max_guests": 2,
+      "min_age": 18,
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "massage",
+    "name_he": "עיסוי",
+    "product_type": "coupon",
+    "category_slug": "beauty-health",
+    "fields": [
+      {
+        "key": "duration_min",
+        "label": "משך הטיפול (דקות)",
+        "type": "select",
+        "options": ["30", "45", "60", "75", "90", "120"],
+        "default": "60",
+        "required": true
+      },
+      {
+        "key": "treatment_type",
+        "label": "סוג העיסוי",
+        "type": "select",
+        "options": [
+          "שוודי",
+          "רקמות עמוק",
+          "תאילנדי",
+          "אבנים חמות",
+          "רפואי",
+          "ספורט",
+          "הריון",
+          "שיאצו",
+          "לבחירה"
+        ],
+        "required": true
+      },
+      {
+        "key": "couple",
+        "label": "עיסוי זוגי",
+        "type": "bool"
+      },
+      {
+        "key": "therapist_gender",
+        "label": "מטפל/ת",
+        "type": "select",
+        "options": ["לבחירה", "מטפל", "מטפלת"],
+        "default": "לבחירה"
+      },
+      {
+        "key": "what_to_bring",
+        "label": "מה להביא",
+        "type": "textarea"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "duration_min": "60",
+      "therapist_gender": "לבחירה",
+      "booking_required": true,
+      "what_to_bring": "בגדים נוחים. מגבות וחלוק מסופקים במקום."
+    }
+  },
+  {
+    "slug": "spa",
+    "name_he": "יום ספא",
+    "product_type": "coupon",
+    "category_slug": "beauty-health",
+    "fields": [
+      {
+        "key": "package_name",
+        "label": "שם החבילה",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "duration_min",
+        "label": "משך הטיפול (דקות)",
+        "type": "select",
+        "options": ["30", "45", "60", "75", "90", "120"],
+        "default": "120",
+        "required": true
+      },
+      {
+        "key": "treatments_included",
+        "label": "טיפולים כלולים",
+        "type": "list",
+        "required": true
+      },
+      {
+        "key": "facilities",
+        "label": "מתקנים",
+        "type": "multiselect",
+        "options": ["בריכה", "ג׳קוזי", "סאונה יבשה", "סאונה רטובה", "חמאם", "חדר מנוחה", "חדר כושר"]
+      },
+      {
+        "key": "couple",
+        "label": "חבילה זוגית",
+        "type": "bool"
+      },
+      {
+        "key": "meal_included",
+        "label": "כולל ארוחה / כיבוד",
+        "type": "bool"
+      },
+      {
+        "key": "min_age",
+        "label": "גיל מינימום",
+        "type": "int",
+        "min": 0,
+        "max": 99,
+        "default": 16
+      },
+      {
+        "key": "what_to_bring",
+        "label": "מה להביא",
+        "type": "textarea"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "duration_min": "120",
+      "min_age": 16,
+      "booking_required": true,
+      "what_to_bring": "בגד ים וכפכפים. חלוק ומגבת מסופקים במקום."
+    }
+  },
+  {
+    "slug": "beauty-treatment",
+    "name_he": "טיפול יופי",
+    "product_type": "coupon",
+    "category_slug": "beauty-health",
+    "fields": [
+      {
+        "key": "treatment_type",
+        "label": "סוג הטיפול",
+        "type": "select",
+        "options": [
+          "טיפול פנים",
+          "מניקור",
+          "פדיקור",
+          "עיצוב גבות",
+          "הרמת ריסים",
+          "איפור",
+          "פילינג",
+          "אחר"
+        ],
+        "required": true
+      },
+      {
+        "key": "duration_min",
+        "label": "משך הטיפול (דקות)",
+        "type": "select",
+        "options": ["30", "45", "60", "75", "90", "120"],
+        "default": "60",
+        "required": true
+      },
+      {
+        "key": "sessions",
+        "label": "מספר טיפולים",
+        "type": "int",
+        "min": 1,
+        "max": 20,
+        "default": 1
+      },
+      {
+        "key": "products_used",
+        "label": "מוצרים בשימוש",
+        "type": "text"
+      },
+      {
+        "key": "suitable_for",
+        "label": "מתאים ל",
+        "type": "text"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "duration_min": "60",
+      "sessions": 1,
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "laser-hair-removal",
+    "name_he": "הסרת שיער בלייזר",
+    "product_type": "coupon",
+    "category_slug": "beauty-health",
+    "fields": [
+      {
+        "key": "treatment_areas",
+        "label": "אזורי טיפול",
+        "type": "multiselect",
+        "options": ["פנים", "בית שחי", "ידיים", "רגליים", "מפשעה", "גב", "בטן", "גוף מלא"],
+        "required": true
+      },
+      {
+        "key": "sessions",
+        "label": "מספר טיפולים",
+        "type": "int",
+        "min": 1,
+        "max": 30,
+        "default": 6,
+        "required": true
+      },
+      {
+        "key": "device_type",
+        "label": "סוג המכשיר",
+        "type": "text"
+      },
+      {
+        "key": "gender",
+        "label": "מתאים ל",
+        "type": "select",
+        "options": ["נשים", "גברים", "נשים וגברים"]
+      },
+      {
+        "key": "consultation_included",
+        "label": "פגישת ייעוץ ובדיקת רגישות כלולה",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "sessions": 6,
+      "consultation_included": true,
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "hair-barber",
+    "name_he": "מספרה וברבר",
+    "product_type": "coupon",
+    "category_slug": "beauty-health",
+    "fields": [
+      {
+        "key": "service_type",
+        "label": "שירות",
+        "type": "multiselect",
+        "options": ["תספורת גבר", "תספורת אישה", "תספורת ילד", "סידור זקן", "צבע", "פן", "החלקה"],
+        "required": true
+      },
+      {
+        "key": "duration_min",
+        "label": "משך (דקות)",
+        "type": "int",
+        "min": 10,
+        "max": 300
+      },
+      {
+        "key": "stylist_level",
+        "label": "רמת הספר/ית",
+        "type": "select",
+        "options": ["ספר/ית", "ספר/ית בכיר/ה", "בעל/ת המספרה"]
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "alternative-medicine",
+    "name_he": "רפואה משלימה",
+    "product_type": "coupon",
+    "category_slug": "beauty-health",
+    "fields": [
+      {
+        "key": "therapy_type",
+        "label": "סוג הטיפול",
+        "type": "select",
+        "options": [
+          "רפלקסולוגיה",
+          "נטורופתיה",
+          "תזונה הוליסטית",
+          "דיקור סיני",
+          "שיאצו",
+          "הומאופתיה",
+          "אחר"
+        ],
+        "required": true
+      },
+      {
+        "key": "duration_min",
+        "label": "משך הטיפול (דקות)",
+        "type": "select",
+        "options": ["30", "45", "60", "75", "90", "120"],
+        "default": "60",
+        "required": true
+      },
+      {
+        "key": "sessions",
+        "label": "מספר מפגשים",
+        "type": "int",
+        "min": 1,
+        "max": 20,
+        "default": 1
+      },
+      {
+        "key": "includes_diagnosis",
+        "label": "כולל אבחון",
+        "type": "bool"
+      },
+      {
+        "key": "practitioner_certification",
+        "label": "הסמכת המטפל/ת",
+        "type": "text"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "duration_min": "60",
+      "sessions": 1,
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "fitness-yoga",
+    "name_he": "כושר ויוגה",
+    "product_type": "coupon",
+    "category_slug": "beauty-health",
+    "fields": [
+      {
+        "key": "class_type",
+        "label": "סוג האימון",
+        "type": "select",
+        "options": ["יוגה", "פילאטיס", "אימון אישי", "סטודיו", "חדר כושר", "אחר"],
+        "required": true
+      },
+      {
+        "key": "format",
+        "label": "מתכונת",
+        "type": "select",
+        "options": ["פרטי", "קבוצתי", "זוגי"],
+        "required": true
+      },
+      {
+        "key": "duration_min",
+        "label": "משך הטיפול (דקות)",
+        "type": "select",
+        "options": ["30", "45", "60", "75", "90", "120"],
+        "default": "60",
+        "required": true
+      },
+      {
+        "key": "sessions",
+        "label": "מספר מפגשים",
+        "type": "int",
+        "min": 1,
+        "max": 100,
+        "default": 1
+      },
+      {
+        "key": "level",
+        "label": "רמה",
+        "type": "select",
+        "options": ["מתחילים", "מתקדמים", "כל הרמות"],
+        "default": "כל הרמות"
+      },
+      {
+        "key": "equipment_provided",
+        "label": "ציוד מסופק",
+        "type": "bool"
+      },
+      {
+        "key": "what_to_bring",
+        "label": "מה להביא",
+        "type": "textarea"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "duration_min": "60",
+      "sessions": 1,
+      "level": "כל הרמות",
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "tzimmer",
+    "name_he": "צימר",
+    "product_type": "coupon",
+    "category_slug": "vacation",
+    "fields": [
+      {
+        "key": "nights",
+        "label": "מספר לילות",
+        "type": "int",
+        "min": 1,
+        "max": 14,
+        "default": 1,
+        "required": true
+      },
+      {
+        "key": "max_guests",
+        "label": "מספר אורחים מקסימלי",
+        "type": "int",
+        "min": 1,
+        "max": 20,
+        "default": 2,
+        "required": true
+      },
+      {
+        "key": "checkin_checkout",
+        "label": "שעות כניסה ויציאה",
+        "type": "text",
+        "default": "כניסה 15:00, יציאה 11:00",
+        "required": true
+      },
+      {
+        "key": "amenities",
+        "label": "מתקנים",
+        "type": "multiselect",
+        "options": [
+          "ג׳קוזי",
+          "בריכה פרטית",
+          "בריכה משותפת",
+          "סאונה",
+          "מטבחון",
+          "מנגל",
+          "Wi-Fi",
+          "חניה",
+          "נוף",
+          "נגיש"
+        ],
+        "required": true
+      },
+      {
+        "key": "weekend_price",
+        "label": "מחיר לסוף שבוע (₪)",
+        "type": "money",
+        "required": true
+      },
+      {
+        "key": "breakfast_included",
+        "label": "ארוחת בוקר כלולה",
+        "type": "bool"
+      },
+      {
+        "key": "region",
+        "label": "אזור",
+        "type": "select",
+        "options": [
+          "צפון",
+          "גליל וגולן",
+          "מרכז",
+          "שרון",
+          "ירושלים והסביבה",
+          "דרום",
+          "ים המלח",
+          "אילת"
+        ]
+      },
+      {
+        "key": "pets_allowed",
+        "label": "מותר עם חיות מחמד",
+        "type": "bool"
+      },
+      {
+        "key": "kosher",
+        "label": "כשרות",
+        "type": "select",
+        "options": ["לא כשר", "כשר", "כשר למהדרין"],
+        "required": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "nights": 1,
+      "max_guests": 2,
+      "checkin_checkout": "כניסה 15:00, יציאה 11:00"
+    }
+  },
+  {
+    "slug": "hotel",
+    "name_he": "מלון",
+    "product_type": "coupon",
+    "category_slug": "vacation",
+    "fields": [
+      {
+        "key": "stars",
+        "label": "דירוג כוכבים",
+        "type": "select",
+        "options": ["3", "4", "5"],
+        "required": true
+      },
+      {
+        "key": "nights",
+        "label": "מספר לילות",
+        "type": "int",
+        "min": 1,
+        "max": 30,
+        "default": 1,
+        "required": true
+      },
+      {
+        "key": "max_guests",
+        "label": "מספר אורחים בחדר",
+        "type": "int",
+        "min": 1,
+        "max": 10,
+        "default": 2,
+        "required": true
+      },
+      {
+        "key": "board_basis",
+        "label": "בסיס אירוח",
+        "type": "select",
+        "options": ["לינה בלבד", "לינה וארוחת בוקר", "חצי פנסיון", "פנסיון מלא", "הכל כלול"],
+        "default": "לינה וארוחת בוקר",
+        "required": true
+      },
+      {
+        "key": "room_type",
+        "label": "סוג חדר",
+        "type": "text"
+      },
+      {
+        "key": "checkin_checkout",
+        "label": "שעות כניסה ויציאה",
+        "type": "text",
+        "default": "כניסה 15:00, יציאה 11:00",
+        "required": true
+      },
+      {
+        "key": "amenities",
+        "label": "מתקנים",
+        "type": "multiselect",
+        "options": ["בריכה", "ספא", "חדר כושר", "חוף פרטי", "מועדון ילדים", "Wi-Fi", "חניה", "נגיש"]
+      },
+      {
+        "key": "weekend_price",
+        "label": "מחיר לסוף שבוע (₪)",
+        "type": "money"
+      },
+      {
+        "key": "region",
+        "label": "אזור",
+        "type": "select",
+        "options": [
+          "צפון",
+          "גליל וגולן",
+          "מרכז",
+          "שרון",
+          "ירושלים והסביבה",
+          "דרום",
+          "ים המלח",
+          "אילת"
+        ]
+      },
+      {
+        "key": "kosher",
+        "label": "כשרות",
+        "type": "select",
+        "options": ["לא כשר", "כשר", "כשר למהדרין"],
+        "required": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "nights": 1,
+      "max_guests": 2,
+      "board_basis": "לינה וארוחת בוקר",
+      "checkin_checkout": "כניסה 15:00, יציאה 11:00"
+    }
+  },
+  {
+    "slug": "vacation-package",
+    "name_he": "חבילת נופש בחו״ל",
+    "product_type": "coupon",
+    "category_slug": "vacation",
+    "fields": [
+      {
+        "key": "destination",
+        "label": "יעד",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "nights",
+        "label": "מספר לילות",
+        "type": "int",
+        "min": 1,
+        "max": 60,
+        "required": true
+      },
+      {
+        "key": "travelers",
+        "label": "מספר נוסעים",
+        "type": "int",
+        "min": 1,
+        "max": 10,
+        "default": 2,
+        "required": true
+      },
+      {
+        "key": "flights_included",
+        "label": "טיסות כלולות",
+        "type": "bool",
+        "default": true,
+        "required": true
+      },
+      {
+        "key": "departure_airport",
+        "label": "שדה המראה",
+        "type": "text",
+        "default": "נתב״ג"
+      },
+      {
+        "key": "hotel_name",
+        "label": "שם המלון",
+        "type": "text"
+      },
+      {
+        "key": "hotel_stars",
+        "label": "דירוג המלון",
+        "type": "select",
+        "options": ["3", "4", "5"]
+      },
+      {
+        "key": "board_basis",
+        "label": "בסיס אירוח",
+        "type": "select",
+        "options": ["לינה בלבד", "לינה וארוחת בוקר", "חצי פנסיון", "פנסיון מלא", "הכל כלול"],
+        "required": true
+      },
+      {
+        "key": "luggage_kg",
+        "label": "כבודה (ק״ג)",
+        "type": "int",
+        "min": 0,
+        "max": 50
+      },
+      {
+        "key": "departure_dates",
+        "label": "תאריכי יציאה",
+        "type": "list"
+      },
+      {
+        "key": "transfers_included",
+        "label": "העברות משדה התעופה",
+        "type": "bool"
+      },
+      {
+        "key": "insurance_included",
+        "label": "ביטוח נסיעות כלול",
+        "type": "bool"
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "travelers": 2,
+      "flights_included": true,
+      "departure_airport": "נתב״ג"
+    }
+  },
+  {
+    "slug": "flight",
+    "name_he": "טיסה",
+    "product_type": "coupon",
+    "category_slug": "vacation",
+    "fields": [
+      {
+        "key": "destination",
+        "label": "יעד",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "trip_type",
+        "label": "סוג",
+        "type": "select",
+        "options": ["הלוך ושוב", "כיוון אחד"],
+        "required": true
+      },
+      {
+        "key": "airline",
+        "label": "חברת תעופה",
+        "type": "text"
+      },
+      {
+        "key": "departure_airport",
+        "label": "שדה המראה",
+        "type": "text",
+        "default": "נתב״ג"
+      },
+      {
+        "key": "passengers",
+        "label": "מספר נוסעים",
+        "type": "int",
+        "min": 1,
+        "max": 10,
+        "default": 1,
+        "required": true
+      },
+      {
+        "key": "luggage_kg",
+        "label": "כבודה (ק״ג)",
+        "type": "int",
+        "min": 0,
+        "max": 50
+      },
+      {
+        "key": "departure_dates",
+        "label": "תאריכי יציאה",
+        "type": "list"
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "departure_airport": "נתב״ג",
+      "passengers": 1
+    }
+  },
+  {
+    "slug": "organized-tour",
+    "name_he": "טיול מאורגן",
+    "product_type": "coupon",
+    "category_slug": "vacation",
+    "fields": [
+      {
+        "key": "destination",
+        "label": "יעד",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "days",
+        "label": "מספר ימים",
+        "type": "int",
+        "min": 1,
+        "max": 60,
+        "required": true
+      },
+      {
+        "key": "group_size",
+        "label": "גודל קבוצה מקסימלי",
+        "type": "int",
+        "min": 1,
+        "max": 100
+      },
+      {
+        "key": "guide_language",
+        "label": "שפת ההדרכה",
+        "type": "text",
+        "default": "עברית"
+      },
+      {
+        "key": "includes",
+        "label": "מה כלול",
+        "type": "list",
+        "required": true
+      },
+      {
+        "key": "flights_included",
+        "label": "טיסות כלולות",
+        "type": "bool"
+      },
+      {
+        "key": "departure_dates",
+        "label": "תאריכי יציאה",
+        "type": "list"
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "guide_language": "עברית"
+    }
+  },
+  {
+    "slug": "attraction-tickets",
+    "name_he": "כרטיסים לאטרקציות",
+    "product_type": "coupon",
+    "category_slug": "hot-deals",
+    "fields": [
+      {
+        "key": "attraction_type",
+        "label": "סוג",
+        "type": "select",
+        "options": ["פארק מים", "פארק שעשועים", "קולנוע", "הופעה", "מוזיאון", "אחר"],
+        "required": true
+      },
+      {
+        "key": "tickets_count",
+        "label": "מספר כרטיסים",
+        "type": "int",
+        "min": 1,
+        "max": 20,
+        "default": 1,
+        "required": true
+      },
+      {
+        "key": "age_restrictions",
+        "label": "הגבלות גיל",
+        "type": "text"
+      },
+      {
+        "key": "includes",
+        "label": "כולל",
+        "type": "list"
+      },
+      {
+        "key": "valid_days",
+        "label": "ימים בהם השובר תקף",
+        "type": "multiselect",
+        "options": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "tickets_count": 1,
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "experience-tour",
+    "name_he": "חוויה וסיור",
+    "product_type": "coupon",
+    "category_slug": "restaurants-cafes",
+    "fields": [
+      {
+        "key": "experience_type",
+        "label": "סוג החוויה",
+        "type": "select",
+        "options": ["סיור במזקקה", "טעימות יין", "סיור קולינרי", "סדנה", "אתגר / אקסטרים", "אחר"],
+        "required": true
+      },
+      {
+        "key": "duration_min",
+        "label": "משך הטיפול (דקות)",
+        "type": "select",
+        "options": ["30", "45", "60", "75", "90", "120"],
+        "default": "90",
+        "required": true
+      },
+      {
+        "key": "max_guests",
+        "label": "מספר משתתפים",
+        "type": "int",
+        "min": 1,
+        "max": 50,
+        "default": 2,
+        "required": true
+      },
+      {
+        "key": "tasting_items",
+        "label": "מספר טעימות",
+        "type": "int",
+        "min": 0,
+        "max": 50
+      },
+      {
+        "key": "min_age",
+        "label": "גיל מינימום",
+        "type": "int",
+        "min": 0,
+        "max": 99,
+        "default": 18
+      },
+      {
+        "key": "language",
+        "label": "שפה",
+        "type": "text",
+        "default": "עברית"
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "duration_min": "90",
+      "max_guests": 2,
+      "min_age": 18,
+      "language": "עברית",
+      "booking_required": true
+    }
+  },
+  {
+    "slug": "workshop-course",
+    "name_he": "סדנה וקורס",
+    "product_type": "coupon",
+    "category_slug": "courses",
+    "fields": [
+      {
+        "key": "topic",
+        "label": "נושא",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "format",
+        "label": "מתכונת",
+        "type": "select",
+        "options": ["פרונטלי", "אונליין", "משולב"],
+        "required": true
+      },
+      {
+        "key": "sessions",
+        "label": "מספר מפגשים",
+        "type": "int",
+        "min": 1,
+        "max": 100,
+        "default": 1,
+        "required": true
+      },
+      {
+        "key": "duration_min",
+        "label": "משך מפגש (דקות)",
+        "type": "int",
+        "min": 15,
+        "max": 600
+      },
+      {
+        "key": "max_participants",
+        "label": "משתתפים מקסימום",
+        "type": "int",
+        "min": 1,
+        "max": 500
+      },
+      {
+        "key": "materials_included",
+        "label": "חומרים כלולים",
+        "type": "bool"
+      },
+      {
+        "key": "certificate",
+        "label": "תעודה בסיום",
+        "type": "bool"
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "sessions": 1
+    }
+  },
+  {
+    "slug": "professional-service",
+    "name_he": "שירות מקצועי",
+    "product_type": "coupon",
+    "category_slug": "professionals",
+    "fields": [
+      {
+        "key": "service_type",
+        "label": "סוג השירות",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "scope",
+        "label": "היקף השירות",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "delivery_days",
+        "label": "זמן ביצוע (ימים)",
+        "type": "int",
+        "min": 0,
+        "max": 365
+      },
+      {
+        "key": "service_area",
+        "label": "אזור שירות",
+        "type": "multiselect",
+        "options": [
+          "צפון",
+          "גליל וגולן",
+          "מרכז",
+          "שרון",
+          "ירושלים והסביבה",
+          "דרום",
+          "ים המלח",
+          "אילת"
+        ]
+      },
+      {
+        "key": "includes",
+        "label": "מה כלול",
+        "type": "list"
+      },
+      {
+        "key": "revisions",
+        "label": "מספר תיקונים",
+        "type": "int",
+        "min": 0,
+        "max": 50
+      },
+      {
+        "key": "license_number",
+        "label": "מספר רישיון / תעודה",
+        "type": "text"
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10
+    }
+  },
+  {
+    "slug": "store-voucher",
+    "name_he": "שובר קנייה בחנות",
+    "product_type": "coupon",
+    "category_slug": "hot-deals",
+    "fields": [
+      {
+        "key": "voucher_value",
+        "label": "שווי השובר (₪)",
+        "type": "money",
+        "required": true
+      },
+      {
+        "key": "store_type",
+        "label": "סוג החנות",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "branches",
+        "label": "סניפים",
+        "type": "list"
+      },
+      {
+        "key": "exclusions",
+        "label": "החרגות",
+        "type": "textarea"
+      },
+      {
+        "key": "partial_use",
+        "label": "ניתן לממש בחלקים",
+        "type": "bool"
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10
+    }
+  },
+  {
+    "slug": "general-coupon",
+    "name_he": "שובר כללי",
+    "product_type": "coupon",
+    "category_slug": null,
+    "fields": [
+      {
+        "key": "includes",
+        "label": "מה כלול",
+        "type": "list"
+      },
+      {
+        "key": "max_guests",
+        "label": "מספר משתתפים",
+        "type": "int",
+        "min": 1,
+        "max": 50
+      },
+      {
+        "key": "booking_required",
+        "label": "נדרש תיאום מראש",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "key": "valid_days",
+        "label": "ימים בהם השובר תקף",
+        "type": "multiselect",
+        "options": ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+      }
+    ],
+    "defaults": {
+      "validity_days": 90,
+      "cashback_percent": 0,
+      "max_units_per_order": 10,
+      "booking_required": true
+    }
+  }
+]

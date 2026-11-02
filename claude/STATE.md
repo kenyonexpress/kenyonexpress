@@ -1,3 +1,4 @@
+המשך מ: C148 DONE (2026-11-02): deal_templates table (migration 328 applied via supabase db query --linked, 44 masters: 22 coupon + 22 physical, RLS on, anon/auth revoked); /admin/products/new 2-step wizard (searchable masters + clone-from-closest, Hebrew form from master, R2 upload, live preview, publish via upsertProductNoRedirect, attributes jsonb); 17/17 new tests, admin 380/380, tsc 0; compare home 380 44.85% unchanged (locked bands); docs/C148-templates.md
 המשך מ: C131 DONE (2026-11-02): supabase db query --linked "select 'DB-OK'" printed DB-OK, exit 0; docs/C131-db.md
 המשך מ: M09-c345 DONE (2026-11-02): knip: 0 unused runtime deps, @capacitor/android kept (cap sync), 260 dead exports left (scripts/types/generated); no code changes; docs/M09-c345.md | prev C128 BLOCKED
 המשך מ: C128 BLOCKED (2026-11-01): C121-C126 not DONE (hydration/type-check, compare 25-46%, LH, supabase CLI hang, money grep 346, e2e/migrations); no tag/push/LAUNCH.flag; docs/C128-launch.md
