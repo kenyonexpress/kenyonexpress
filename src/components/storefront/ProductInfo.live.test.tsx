@@ -176,12 +176,12 @@ describe('the three slots beside the price', () => {
 
   it('carries the wishlist heart and toggles it through the action', async () => {
     render(<ProductInfo {...BASE} />)
-    const heart = await screen.findByRole('button', { name: 'הוסף לרשימת המשאלות' })
+    const heart = await screen.findByRole('button', { name: 'שמירה, הוסף לרשימת המשאלות' })
     expect(heart).toHaveAttribute('aria-pressed', 'false')
     await act(async () => {
       fireEvent.click(heart)
     })
-    expect(await screen.findByRole('button', { name: 'הסר מרשימת המשאלות' })).toHaveAttribute(
+    expect(await screen.findByRole('button', { name: 'נשמר, הסר מרשימת המשאלות' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
