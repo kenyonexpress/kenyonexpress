@@ -10,13 +10,6 @@
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { R2_CONFIG, isR2Enabled } from './optimizer'
 
-export interface ImageMigrationStats {
-  total: number
-  successful: number
-  failed: number
-  errors: string[]
-}
-
 /**
  * Check if R2 is properly configured for migration.
  *
@@ -77,35 +70,6 @@ export async function uploadToR2(
       error: message,
     }
   }
-}
-
-/**
- * Batch migrate product images to R2.
- *
- * Scans the database for product images and uploads them to R2.
- * Currently returns a placeholder response.
- *
- * @returns Migration statistics
- */
-export async function migrateProductImagesToR2(): Promise<ImageMigrationStats> {
-  const stats: ImageMigrationStats = {
-    total: 0,
-    successful: 0,
-    failed: 0,
-    errors: [],
-  }
-
-  if (!canMigrateToR2()) {
-    stats.errors.push('R2 not properly configured')
-    return stats
-  }
-
-  // TODO: Query database for all product images
-  // TODO: Batch upload to R2
-  // TODO: Update product.images URLs to point to R2
-  // TODO: Verify uploads and delete from source
-
-  return stats
 }
 
 /**
