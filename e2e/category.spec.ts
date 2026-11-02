@@ -281,9 +281,17 @@ test.describe('category archive', () => {
     // same height whether its image arrived, failed, or is a 600x408 landscape
     // - otherwise the card shrinks under the bytes and everything below it
     // jumps, which measured as CLS 0.36 on this page.
+    // Laid-out boxes only. The archive streams: a segment React has not
+    // revealed yet sits in a `hidden` container with the same class names and
+    // no layout box at all (C151: one height-0 read in three full runs). A
+    // rendered box that collapsed still has a client rect, so it still fails.
     const boxes = await page
       .locator('.category-card__thumb')
-      .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)))
+      .evaluateAll((els) =>
+        els
+          .filter((el) => !el.closest('[hidden]') && el.getClientRects().length > 0)
+          .map((el) => Math.round(el.getBoundingClientRect().height)),
+      )
     for (const h of boxes) {
       expect(h, 'thumb box height depends on the image that loaded').toBe(186)
     }
