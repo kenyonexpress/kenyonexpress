@@ -52,6 +52,14 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
     try {
       const formData = new FormData(e.currentTarget)
       const res = await fetch('/api/auth/login', { method: 'POST', body: formData })
+      // A successful sign-in ends in redirect(), which the route answers with a
+      // 303. fetch follows it, so success arrives as the destination PAGE, not
+      // JSON: parsing it threw, the form showed "שגיאת רשת" and never navigated
+      // (C151, WebKit sat on /login for 45 s). The session cookie is already set.
+      if (res.redirected) {
+        window.location.href = res.url
+        return
+      }
       const data = await res.json()
 
       if (res.ok && data.redirect) {

@@ -25,6 +25,12 @@ export default function SignupForm({ next }: Props) {
       const formData = new FormData(form)
       if (phone) formData.set('phone', phone)
       const res = await fetch('/api/auth/signup', { method: 'POST', body: formData })
+      // Success ends in redirect('/signup/confirm'), a 303 that fetch follows:
+      // the answer is that page, not JSON. Same defect as LoginForm (C151).
+      if (res.redirected) {
+        window.location.href = res.url
+        return
+      }
       const data = await res.json()
 
       if (res.ok && data.redirect) {
