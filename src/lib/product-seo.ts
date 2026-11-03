@@ -35,6 +35,7 @@ export async function getProductSeoBySlug(slug: string): Promise<ProductSeoRow |
         'name_he, description_he, short_description_he, seo_title, seo_description, images, status, deleted_at',
       )
       .eq('slug', slug)
+      .eq('is_demo', false)
       .maybeSingle(),
     'product_seo.read_failed',
     { slug },

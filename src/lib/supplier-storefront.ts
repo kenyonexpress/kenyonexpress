@@ -94,6 +94,7 @@ export async function loadSupplierStorefrontProducts(
       .select(SUPPLIER_STOREFRONT_PRODUCT_COLUMNS, { count: 'exact' })
       .eq('supplier_id', supplierId)
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       .order('name_he', { ascending: true })
       .range(from, from + SUPPLIER_PAGE_SIZE - 1),

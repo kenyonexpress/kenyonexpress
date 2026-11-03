@@ -69,6 +69,7 @@ export async function loadProductBySlug(slug: string) {
       )
       .eq('slug', slug)
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       .maybeSingle(),
     'product_detail.read_failed',
@@ -270,6 +271,7 @@ export async function listProductSlugsForPrerender(limit = 200): Promise<string[
       .from('products')
       .select('slug')
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(limit),

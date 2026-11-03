@@ -202,6 +202,7 @@ async function readCatalogue(): Promise<ProductDocument[]> {
          stock_quantity, category_id, supplier_id, created_at, categories(name_he, slug)`,
       )
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       .order('id', { ascending: true })
       .range(from, from + PAGE_SIZE - 1)
@@ -278,6 +279,7 @@ export async function syncCatalogue(): Promise<SyncResult> {
     .from('products')
     .select('id, type, is_coupon_enabled')
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
   if (error) throw new Error(`products id read failed: ${error.message}`)
   const catalogueIds = new Set((rows ?? []).map((row) => row.id))

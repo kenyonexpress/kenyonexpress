@@ -371,6 +371,7 @@ async function newestProductIds(
       .from('products')
       .select('id')
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(limit),
@@ -455,6 +456,7 @@ export async function getCategoryProducts(opts: {
       { count: 'exact' },
     )
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   if (collection) {
@@ -589,6 +591,7 @@ export async function getShopProducts(opts: {
       { count: 'exact' },
     )
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
     .gt('stock_quantity', 0)
 
@@ -671,6 +674,7 @@ export async function getCategoryPriceBounds(categoryId: string): Promise<{
     .select('kenyon_price')
     .eq('category_id', categoryId)
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   if (error || !data || data.length === 0) {
@@ -706,6 +710,7 @@ export async function getCategorySuppliersFilter(
     .select('supplier_id, suppliers(name)', { count: 'exact' })
     .eq('category_id', categoryId)
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   if (error) {
@@ -761,6 +766,7 @@ export async function getCategoryTagsFilter(
       .select('tags')
       .eq('category_id', categoryId)
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null),
     'catalogue.category_tags_products_failed',
     { category_id: categoryId },

@@ -11,6 +11,7 @@ import {
   type SearchProductsArgs,
   callSearchProductsRpc,
   pendingSearchRpc,
+  withoutDemoRows,
 } from '@/lib/supabase/pending-search'
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
@@ -191,7 +192,10 @@ async function searchFts(
     return { results: [], total: 0, engine: 'database-fts' }
   }
 
-  const results = outcome.rows.map(ftsRowToProduct)
+  const rows = await withoutDemoRows(outcome.rows, (ids) =>
+    supabase.from('products').select('id').eq('is_demo', true).in('id', ids),
+  )
+  const results = rows.map(ftsRowToProduct)
   return { results, total: results.length, engine: 'database-fts' }
 }
 
@@ -217,6 +221,7 @@ async function searchDb(
       },
     )
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   if (categorySlug) query = query.eq('categories.slug', categorySlug)

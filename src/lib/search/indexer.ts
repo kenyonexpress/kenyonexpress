@@ -65,7 +65,7 @@ export async function runSearchIndexJob(job: SearchIndexJob): Promise<string> {
     .from('products')
     .select(
       `id, slug, name_he, name_en, brand, short_description_he, description_he, sku,
-       type, status, deleted_at, is_coupon_enabled, kenyon_price, full_price, images,
+       type, status, deleted_at, is_demo, is_coupon_enabled, kenyon_price, full_price, images,
        stock_quantity, category_id, supplier_id, created_at, categories(name_he, slug)`,
     )
     .eq('id', job.productId)
@@ -74,7 +74,7 @@ export async function runSearchIndexJob(job: SearchIndexJob): Promise<string> {
 
   // The fresh row is the truth. If the product vanished or fell out of the
   // public predicate between enqueue and run, the upsert becomes a delete.
-  if (!row || row.deleted_at != null || row.status !== 'active') {
+  if (!row || row.deleted_at != null || row.status !== 'active' || row.is_demo) {
     await meiliRequest(`/indexes/${PRODUCTS_INDEX}/documents/${job.productId}`, 'DELETE')
     return `deleted ${job.productId} (stale upsert)`
   }

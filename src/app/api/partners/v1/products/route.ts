@@ -63,6 +63,7 @@ async function handleGET(req: NextRequest) {
       )
       .eq('approved', true)
       .eq('active', true)
+      .eq('is_demo', false)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 

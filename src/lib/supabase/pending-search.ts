@@ -94,3 +94,24 @@ function isMissingSearchRpc(error: { code?: string; message?: string } | null): 
     (message.includes('does not exist') || message.includes('schema cache'))
   )
 }
+
+/**
+ * Drops demo deals (`products.is_demo`, migration 329) from RPC rows.
+ *
+ * `search_products` returns what RLS lets the caller see, and RLS does not
+ * know about `is_demo`, so the RPC hands demo rows back. C198: a demo deal
+ * must never reach a public search. Fails closed: if the lookup errors, no
+ * row is returned rather than one that might be a demo.
+ */
+export async function withoutDemoRows<T extends { id: string }>(
+  rows: T[],
+  demoIdsAmong: (
+    ids: string[],
+  ) => PromiseLike<{ data: { id: string }[] | null; error: { message?: string } | null }>,
+): Promise<T[]> {
+  if (rows.length === 0) return rows
+  const { data, error } = await demoIdsAmong(rows.map((row) => row.id))
+  if (error) return []
+  const demo = new Set((data ?? []).map((row) => row.id))
+  return rows.filter((row) => !demo.has(row.id))
+}

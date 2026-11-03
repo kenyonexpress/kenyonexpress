@@ -73,6 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // products.
       .select('slug, updated_at, category_id, city')
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       .not('slug', 'is', null)
       // Google caps a single sitemap file at 50,000 URLs; staying well inside

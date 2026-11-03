@@ -2397,6 +2397,7 @@ export type Database = {
           id: string
           images: Json
           is_coupon_enabled: boolean
+          is_demo: boolean
           is_featured: boolean
           kenyon_price: number | null
           kenyon_price_agorot: number | null
@@ -2488,6 +2489,7 @@ export type Database = {
           id?: string
           images?: Json
           is_coupon_enabled?: boolean
+          is_demo?: boolean
           is_featured?: boolean
           kenyon_price?: number | null
           kenyon_price_agorot?: number | null
@@ -2579,6 +2581,7 @@ export type Database = {
           id?: string
           images?: Json
           is_coupon_enabled?: boolean
+          is_demo?: boolean
           is_featured?: boolean
           kenyon_price?: number | null
           kenyon_price_agorot?: number | null

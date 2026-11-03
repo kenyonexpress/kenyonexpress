@@ -24,6 +24,8 @@ let recorded: Recorded
  * ILIKE test below is exercising the real fallback branch, not a shortcut.
  */
 let rpcResponse: { data: unknown; error: { code?: string; message?: string } | null }
+/** What the `is_demo` lookup after the RPC answers: the demo ids among the rows. */
+let demoLookup: { data: { id: string }[] | null; error: { message: string } | null }
 
 function fakeQuery() {
   const self = {
@@ -46,6 +48,7 @@ function fakeQuery() {
       limit(n)
       return Promise.resolve({ data: [], count: 0 })
     },
+    in: (_col: string, _values: unknown[]) => Promise.resolve(demoLookup),
   }
   return self
 }
@@ -64,6 +67,7 @@ const { searchProductsServer } = await import('./search-server')
 
 beforeEach(() => {
   recorded = { orGroups: [], eqPairs: [] }
+  demoLookup = { data: [], error: null }
   vi.clearAllMocks()
   rpcResponse = {
     data: null,
@@ -226,6 +230,26 @@ describe('the search_products FTS path (migration 171)', () => {
     const outcome = await searchProductsServer('אוזניות')
 
     expect(outcome.results[0]?.category).toBeNull()
+  })
+
+  it('drops demo deals from the RPC rows (C198)', async () => {
+    rpcResponse = { data: [row, { ...row, id: 'demo1', slug: 'demo-iphone' }], error: null }
+    demoLookup = { data: [{ id: 'demo1' }], error: null }
+
+    const outcome = await searchProductsServer('אייפון')
+
+    expect(outcome.results.map((r) => r.id)).toEqual(['p1'])
+    expect(outcome.total).toBe(1)
+    expect(recorded.eqPairs).toContainEqual(['is_demo', true])
+  })
+
+  it('fails closed when the demo lookup errors (C198)', async () => {
+    rpcResponse = { data: [row], error: null }
+    demoLookup = { data: null, error: { message: 'boom' } }
+
+    const outcome = await searchProductsServer('אוזניות')
+
+    expect(outcome.results).toEqual([])
   })
 
   /**

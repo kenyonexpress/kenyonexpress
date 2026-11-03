@@ -58,6 +58,7 @@ function activeProducts(select: string) {
       .from('products')
       .select(select)
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       // A card with no photograph is a grey box on the home page; the automated
       // test products are the ones without one.

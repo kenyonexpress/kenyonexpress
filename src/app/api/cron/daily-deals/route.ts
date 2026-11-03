@@ -112,6 +112,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     .from('products')
     .select('id, slug, name_he, status, stock_quantity, kenyon_price_agorot, full_price_agorot')
     .is('deleted_at', null)
+    .eq('is_demo', false)
     .limit(MAX_PRODUCTS)
   if (error) {
     log.error('daily_deals.products_read_failed', { reason: error.message })

@@ -24,6 +24,7 @@ async function handleGET(_request: NextRequest, { params }: { params: Promise<{ 
     .select('id, slug, name_he, description_he, price_agorot, image_url, supplier_id')
     .eq('slug', slug)
     .eq('status', 'active')
+    .eq('is_demo', false)
     .single()
 
   if (error || !data) {

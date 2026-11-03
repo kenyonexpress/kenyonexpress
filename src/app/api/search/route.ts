@@ -2,7 +2,11 @@ import { CacheControl } from '@/lib/cache/http'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
-import { callSearchProductsRpc, pendingSearchRpc } from '@/lib/supabase/pending-search'
+import {
+  callSearchProductsRpc,
+  pendingSearchRpc,
+  withoutDemoRows,
+} from '@/lib/supabase/pending-search'
 import type { SearchProductsArgs } from '@/lib/supabase/pending-search'
 import { createClient } from '@/lib/supabase/server'
 import { getClientIp } from '@/lib/utils/rate-limit'
@@ -69,7 +73,10 @@ async function handleGET(request: NextRequest) {
     supabase.rpc(pendingSearchRpc('search_products'), args as never),
   )
   if (fts.ok) {
-    const results: SearchResult[] = fts.rows.map((row) => ({
+    const rows = await withoutDemoRows(fts.rows, (ids) =>
+      supabase.from('products').select('id').eq('is_demo', true).in('id', ids),
+    )
+    const results: SearchResult[] = rows.map((row) => ({
       id: row.id,
       slug: row.slug,
       name_he: row.name_he,
@@ -97,6 +104,7 @@ async function handleGET(request: NextRequest) {
       'id, slug, name_he, kenyon_price, full_price, images, categories!products_category_id_fkey(name_he, slug)',
     )
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
     .or(`name_he.ilike.%${q}%,description_he.ilike.%${q}%`)
     .limit(limit)

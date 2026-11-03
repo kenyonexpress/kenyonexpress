@@ -23,6 +23,7 @@ export async function getCityProducts(cityName: string) {
     )
     .eq('city', cityName)
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
     .order('name_he', { ascending: true })
     .limit(CITY_PAGE_LIMIT)

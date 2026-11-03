@@ -61,7 +61,7 @@ const PRODUCTS = [
 function productsRead(result: { data?: unknown; error?: unknown }) {
   const c: Record<string, unknown> = {}
   const p = Promise.resolve({ data: result.data ?? null, error: result.error ?? null })
-  for (const m of ['select', 'is', 'limit']) c[m] = () => c
+  for (const m of ['select', 'is', 'eq', 'limit']) c[m] = () => c
   // biome-ignore lint/suspicious/noThenProperty: the Supabase query builder IS a thenable; the stub must be awaitable like the real one
   c.then = p.then.bind(p)
   return c

@@ -164,6 +164,7 @@ export async function getFeedProducts(limit = 200): Promise<FeedProduct[]> {
       .from('products')
       .select(SELECT)
       .eq('status', 'active')
+      .eq('is_demo', false)
       .is('deleted_at', null)
       .not('slug', 'is', null)
       .order('published_at', { ascending: false, nullsFirst: false })

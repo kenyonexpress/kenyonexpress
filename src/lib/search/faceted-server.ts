@@ -198,6 +198,7 @@ async function searchDbFaceted(params: FacetedSearchParams): Promise<FacetedOutc
        categories!products_category_id_fkey(name_he, slug)`,
     )
     .eq('status', 'active')
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   // Every word must match, the same rule search-server.ts documents: a phrase
