@@ -31129,3 +31129,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T14:04:05+07:00
 - item: C192
 - BLOCKED: prod Turnstile rejects headless sign-in by design and a 2172-test pass takes ~6h on this link, so 2x consecutive green is not producible
+
+## Archived 2026-11-03T18:22:55+07:00 after M06-c350 (3 lines from STATE.md)
+
+### 2026-11-03T14:05:34+07:00
+- item: C193
+- BLOCKED: C193 cardcom live charge never run (C191 gate HOLD 1 and 2)

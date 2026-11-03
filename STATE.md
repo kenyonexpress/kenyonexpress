@@ -1,7 +1,11 @@
-RESUME FROM: M06-c350
+RESUME FROM: M07-c350
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T18:22:55+07:00
+- item: M06-c350
+- RESULT: DONE
 
 ### 2026-11-03T18:20:53+07:00
 - item: M05-c350
@@ -98,10 +102,6 @@ RESUME FROM: M06-c350
 ### 2026-11-03T16:40:40+07:00
 - item: C194
 - RESULT: DONE
-
-### 2026-11-03T14:05:34+07:00
-- item: C193
-- BLOCKED: C193 cardcom live charge never run (C191 gate HOLD 1 and 2)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
