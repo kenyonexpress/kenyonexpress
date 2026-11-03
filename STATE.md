@@ -1,7 +1,11 @@
-RESUME FROM: M18-c349
+RESUME FROM: M02-c350
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T18:02:42+07:00
+- item: M01-c350
+- BLOCKED: home-380-content-floor
 
 ### 2026-11-03T17:52:58+07:00
 - item: M18-c349
@@ -98,10 +102,6 @@ RESUME FROM: M18-c349
 ### 2026-11-03T12:47:11+07:00
 - item: C189
 - BLOCKED: C189 R2 not enabled on Cloudflare account, no R2 credential or SUPABASE_DB_URL secret, so the daily snapshot cron cannot write a dump
-
-### 2026-11-03T12:28:42+07:00
-- item: C188
-- BLOCKED: C188 live-site copy has no clean source (pets/courses have none, other categories would duplicate live real rows)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
