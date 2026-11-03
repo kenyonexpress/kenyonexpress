@@ -31057,3 +31057,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T08:27:45+07:00
 - item: C180
 - BLOCKED: supabase-rest-down, served proof for home/product/category/sitemap pending
+
+## Archived 2026-11-03T17:32:19+07:00 after M12-c349 (3 lines from STATE.md)
+
+### 2026-11-03T10:04:44+07:00
+- item: C181
+- BLOCKED: cart/checkout SEO 69 is the deliberate robots.txt disallow (C152); signed-in perf on cart 1440, checkout, account 1440 is bound by 0.8-2.7s Supabase RTT from this host while prod DB is down
