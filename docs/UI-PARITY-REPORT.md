@@ -568,3 +568,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-11-03 03:59 | category | 380 | 3.79% | PASS | `b0d450c6f-dirty` | ref everything loaded; overall 31.43% (reference blank 11.59%, ours blank 16.06%) |
 | 2026-11-03 04:01 | category | 768 | 4.89% | PASS | `b0d450c6f-dirty` | ref everything loaded; overall 32.92% (reference blank 11.54%, ours blank 16.49%) |
 | 2026-11-03 04:02 | category | 1440 | 1.37% | PASS | `b0d450c6f-dirty` | ref everything loaded; overall 21.09% (reference blank 8.08%, ours blank 11.64%) |
+| 2026-11-03 09:42 | home | 380 | 13.35% | **FAIL** | `6971569cb` | ref everything loaded; overall 43.31% (reference blank 15.35%, ours blank 14.62%) |
+| 2026-11-03 09:44 | home | 768 | 8.20% | PASS | `6971569cb-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
+| 2026-11-03 09:46 | home | 1440 | 6.55% | PASS | `6971569cb-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |
+| 2026-11-03 09:48 | home | 380 | 13.35% | **FAIL** | `6971569cb-dirty` | ref everything loaded; overall 43.31% (reference blank 15.35%, ours blank 14.62%) |
