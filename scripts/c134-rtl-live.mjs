@@ -10,19 +10,30 @@
  * Elements inside the locked hero (data-hero / .hero) are counted apart.
  *
  * Usage: BASE=http://localhost:3134 PRODUCT=/product/<slug> node scripts/c134-rtl-live.mjs
+ * WAIT=load for production: its long-lived requests never reach networkidle.
  */
 import { chromium } from '@playwright/test'
 
 const BASE = process.env.BASE ?? 'http://localhost:3134'
 const ROUTES = ['/', process.env.PRODUCT ?? '/product/barbecue']
 const WIDTHS = [380, 768, 1440]
+const WAIT = process.env.WAIT ?? 'networkidle'
 
 const browser = await chromium.launch()
 let total = 0
 for (const route of ROUTES) {
   for (const width of WIDTHS) {
     const page = await browser.newPage({ viewport: { width, height: 900 } })
-    const res = await page.goto(BASE + encodeURI(route), { waitUntil: 'networkidle' })
+    const res = await page.goto(BASE + encodeURI(route), { waitUntil: WAIT, timeout: 60000 })
+    // Scroll so lazy below-the-fold sections mount before the scan.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.documentElement.scrollHeight; y += 600) {
+        window.scrollTo(0, y)
+        await new Promise((r) => setTimeout(r, 150))
+      }
+      window.scrollTo(0, 0)
+    })
+    await page.waitForTimeout(1500)
     const r = await page.evaluate(() => {
       const HE = /[֐-׿]/
       const ownText = (el) =>
