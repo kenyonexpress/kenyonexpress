@@ -3,6 +3,10 @@ RESUME FROM: M18-c349
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-03T17:52:58+07:00
+- item: M18-c349
+- RESULT: DONE
+
 ### 2026-11-03T17:51:48+07:00
 - item: M17-c349
 - RESULT: DONE
@@ -98,10 +102,6 @@ RESUME FROM: M18-c349
 ### 2026-11-03T12:28:42+07:00
 - item: C188
 - BLOCKED: C188 live-site copy has no clean source (pets/courses have none, other categories would duplicate live real rows)
-
-### 2026-11-03T11:30:33+07:00
-- item: C187
-- BLOCKED: C187 Cardcom sandbox creds missing
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

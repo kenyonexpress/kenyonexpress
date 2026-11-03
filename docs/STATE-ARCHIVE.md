@@ -31093,3 +31093,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T11:28:23+07:00
 - item: C186
 - RESULT: DONE
+
+## Archived 2026-11-03T17:52:58+07:00 after M18-c349 (3 lines from STATE.md)
+
+### 2026-11-03T11:30:33+07:00
+- item: C187
+- BLOCKED: C187 Cardcom sandbox creds missing
