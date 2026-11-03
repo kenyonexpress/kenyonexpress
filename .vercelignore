@@ -49,7 +49,7 @@
 /shots/
 /.image-staging/
 /docs/*
-!/docs/redirects.map
+!/docs/redirects.map.ts
 /logs/
 /playwright-report/
 /test-results/

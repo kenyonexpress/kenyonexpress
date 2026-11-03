@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -10,7 +10,7 @@ import { afterAll, describe, expect, it } from 'vitest'
  * Measured 2026-11-03 (C192). `.vercelignore` had gained `/refs/` and `/docs/`
  * to shrink a 745 MB upload, and both directories hold a file the build
  * imports: `refs/electro-checkout-text.json` (checkout copy) and
- * `docs/redirects.map` (legacy WordPress redirects). Every deploy from then on
+ * `docs/redirects.map.ts` (legacy WordPress redirects). Every deploy from then on
  * failed with module-not-found, while `pnpm build` stayed green locally because
  * the files are on disk. Production kept serving a day-old build and nothing
  * here noticed.
@@ -32,13 +32,20 @@ function sourceFiles(dir: string): string[] {
   })
 }
 
+/** The file an extensionless specifier resolves to, as the bundler would. */
+function withExtension(target: string): string {
+  if (existsSync(target) && statSync(target).isFile()) return target
+  const hit = ['.ts', '.tsx', '.mjs', '.js', '.json'].map((ext) => target + ext).find(existsSync)
+  return hit ?? target
+}
+
 /** Repo-relative paths of every relative import that leaves src/. */
 function crossTreeImports(): string[] {
   const found = new Set<string>()
   for (const file of sourceFiles(src)) {
     const text = readFileSync(file, 'utf8')
     for (const match of text.matchAll(/(?:from|import)\s*\(?\s*['"](\.\.?\/[^'"]+)['"]/g)) {
-      const target = resolve(dirname(file), match[1] as string)
+      const target = withExtension(resolve(dirname(file), match[1] as string))
       const rel = relative(root, target)
       if (!rel.startsWith('src/') && !rel.startsWith('..')) found.add(rel)
     }
@@ -76,7 +83,7 @@ describe('.vercelignore', () => {
 
   it('finds the known cross-tree imports, so the scan itself works', () => {
     expect(imports).toEqual(
-      expect.arrayContaining(['refs/electro-checkout-text.json', 'docs/redirects.map']),
+      expect.arrayContaining(['refs/electro-checkout-text.json', 'docs/redirects.map.ts']),
     )
   })
 
