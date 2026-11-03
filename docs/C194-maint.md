@@ -208,3 +208,20 @@ Local, fresh build, `E2E_PAID_FLOW=0`, `-g "consent banner does not cover|accoun
   4 skipped
   3 passed (7.0s)
 ```
+
+## CI after the fifth push (fdbe39453): all green
+```
+run 41608911593
+success
+success Unit tests + money coverage floors
+success Diff-scoped lint gates
+success Secret scan (gitleaks)
+success E2E against the PR preview
+success Typecheck (changed files)
+success Build
+success E2E without a database
+success Pixel parity (380 / 768 / 1440)
+success E2E (Playwright)
+success Bundle budget and migration lint
+```
+First fully green CI run on closeout/v1-final in this window (red since at least 2026-11-02T23:54Z).
