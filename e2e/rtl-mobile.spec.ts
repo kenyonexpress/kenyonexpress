@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import {
+  DISCOVERY_TIMEOUT,
   addOpenProductToCart,
   expectHebrewRtl,
   firstProductHref,
@@ -150,7 +151,13 @@ test.describe('no sideways scroll at 320px', () => {
     // claim was never "exactly one stepper exists"; it is "no stepper is on
     // screen at this width", which stays true however many the layer above
     // renders while loading.
-    await expect(page.locator('#co-first-name')).toBeVisible()
+    //
+    // The field itself has the same window: while React swaps a streamed
+    // segment in, the finished form also sits in its hidden `S:` container, so
+    // `#co-first-name` resolved to two inputs (C197, webkit-768 on a slow link).
+    await expect(page.locator('#co-first-name:visible')).toBeVisible({
+      timeout: DISCOVERY_TIMEOUT,
+    })
     await expect(page.locator('.checkout-steps:visible')).toHaveCount(0)
     // The address section renders only for a physical line (F42); the
     // purchasable product found first may well be a coupon.

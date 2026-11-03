@@ -8,6 +8,7 @@ import {
 } from './auth-session'
 import {
   BUY_BUTTON,
+  DISCOVERY_TIMEOUT,
   PAY_RETURN_TIMEOUT,
   addOpenProductToCart,
   emptyCart,
@@ -190,7 +191,11 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     // scanner with a paid voucher: a click on a button that is not there ran
     // the test out of its 120 s with the code already typed.
     await scanPage.getByRole('button', { name: 'בדוק שובר' }).click()
-    await expect(scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ })).toBeVisible()
+    // "בדוק שובר" is a server round trip; on a slow link (C197) the button
+    // still read "בודק..." when the 5 s default ran out.
+    await expect(scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ })).toBeVisible({
+      timeout: DISCOVERY_TIMEOUT,
+    })
     await scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ }).click()
 
     await expect(scanPage.getByText('השובר מומש בהצלחה')).toBeVisible({ timeout: 20_000 })
