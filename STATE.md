@@ -1,7 +1,11 @@
-RESUME FROM: M18-c351
+RESUME FROM: M02-c352
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-04T03:50:54+07:00
+- item: M01-c352
+- RESULT: DONE
 
 ### 2026-11-04T03:42:47+07:00
 - item: M18-c351
@@ -98,10 +102,6 @@ RESUME FROM: M18-c351
 ### 2026-11-03T19:15:30+07:00
 - item: M01-c351
 - BLOCKED: home-380-content-floor (hero is a locked file, remaining gap needs non-wp_import imagery)
-
-### 2026-11-03T19:07:22+07:00
-- item: M18-c350
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
