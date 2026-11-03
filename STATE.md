@@ -1,7 +1,11 @@
-RESUME FROM: M11-c352
+RESUME FROM: M12-c352
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-04T04:25:43+07:00
+- item: M11-c352
+- RESULT: DONE
 
 ### 2026-11-04T04:21:18+07:00
 - item: M10-c352
@@ -98,10 +102,6 @@ RESUME FROM: M11-c352
 ### 2026-11-03T19:56:04+07:00
 - item: M11-c351
 - RESULT: DONE
-
-### 2026-11-03T19:52:46+07:00
-- item: M10-c351
-- BLOCKED: pending 319 needs affiliate tables restored first, 324 breaks 23 FKs into orders
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
