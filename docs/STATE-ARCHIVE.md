@@ -31111,3 +31111,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T12:47:11+07:00
 - item: C189
 - BLOCKED: C189 R2 not enabled on Cloudflare account, no R2 credential or SUPABASE_DB_URL secret, so the daily snapshot cron cannot write a dump
+
+## Archived 2026-11-03T18:17:00+07:00 after M03-c350 (3 lines from STATE.md)
+
+### 2026-11-03T12:51:12+07:00
+- item: C190
+- RESULT: DONE
