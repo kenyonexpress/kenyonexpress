@@ -1,5 +1,52 @@
 # Launch Checklist
 
+## C191 LAUNCH GATE (2026-11-03): HOLD
+
+Measured on closeout/v1-final at 33b057fb5. Raw output: docs/C191-launch.md.
+Everything older below this section is history. Read this section first.
+
+### PUSH NOW: verified green, already serving or safe to ship
+
+| Area | Evidence | Source |
+|---|---|---|
+| Site live | www 200, apex 308 to www, `/api/health` `{"ok":true,"database":"ok"}` | C191 |
+| Production DB | health API db + rest ACTIVE_HEALTHY, `db query` returns 126 products; the 03.11 outage is over | C191 |
+| DB disk | 468 MB of 2077 MB used (22.5%), DB 115 MB; disk was not the outage cause | C191 |
+| Supabase secret key | local `sb_secret_` key answers REST 200 and is not in the compromised-hash list, so the rotation item is closed | C191 |
+| Unit tests | `pnpm test` 9671 passed, 0 failed; tsc 0, lint 0 | C190 |
+| Security | `pnpm audit --prod` high 0, critical 0; secrets scan rc=0 over 5158 tracked files | C190 |
+| Accessibility | axe 0 violations, 198 passed, 0 failed | C182 |
+| Observability | Sentry ingest 3/3 HTTP 200; PostHog funnel wired | C184 |
+| Hardening | rate limits on auth, checkout and apply flows, measured live | C185 |
+| PWA | manifest, sw.js, offline page, icons all 200 on www; push subscribe fixed | C186 |
+| Lighthouse, public pages | home, category and product all four categories at 90 or above at 380 and 1440 | C181 |
+| DR drill | prod to staging branch restore, 7/7 tables md5-identical | C189 |
+
+### HOLD: blocks the launch tag
+
+| # | Item | Why it holds | Owner |
+|---|---|---|---|
+| 1 | Cardcom live payment | Vercel Production has the TERMINAL_NUMBER, API_NAME and API_PASSWORD names (set 30 days ago), but nobody has confirmed they are the live terminal, that `CARDCOM_USE_MOCK` and `CARDCOM_SANDBOX` are off, or run a 1 ILS charge and refund (C187) | Ofir, see docs/MANUAL.md H1 |
+| 2 | Supabase outage ticket | prod Postgres was UNHEALTHY 03.11 from 04:20 +07 to past 08:26, now healthy. The root cause is unknown and disk is ruled out. Only Supabase support can say whether it will recur | Ofir, see docs/MANUAL.md H2 |
+| 3 | Home parity gate | compare.mjs home is above 11% at 380, 768 and 1440 (C137, C145). The excess is in the TopBar, Header and Hero bands, which are locked files | locked-component, needs Ofir to unlock |
+| 4 | Heebo preload | lives only in `src/app/layout.tsx`, a locked file (C183) | locked-component |
+| 5 | Off-site backups | R2 is not enabled and no R2 credential exists, so `db-backup.yml` skips and 0 off-site dumps exist; PITR off (~$115/mo) (C189) | Ofir, see docs/MANUAL.md H3 |
+| 6 | Signed-in Lighthouse | cart 1440 70, checkout 87-89, account 1440 84, tracking 0.8-2.7 s Supabase RTT from this host (C181) | re-measure from a stable network |
+| 7 | Demo deal copy | 44 demo deals keep C149 copy; there is no old-site source for pets/courses (C188) | Ofir decides keep or remove |
+
+### To release once HOLD 1 and 2 are clear
+
+```bash
+git tag v2.1.0 && git push origin v2.1.0
+git ls-remote --tags origin | grep v2.1.0
+touch ~/ke-goals/LAUNCH.flag
+curl -d "hey LAUNCH" ntfy.sh/kenyon-ofir-limit
+```
+
+Items 3 to 7 are known gaps the owner can accept for launch. Items 1 and 2 are not: a payment path nobody has charged against, and a database that went down for four hours with no known cause.
+
+---
+
 ## C93 FINAL VERDICT (2026-10-30): HOLD, not PUSH-NOW
 
 Run on `main` @ 11c1392f7, clean tree. No tag, no LAUNCH.flag, no hey LAUNCH.

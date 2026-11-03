@@ -41,8 +41,8 @@ Second pattern pass over tracked files (sb_secret_, sk_live_, AKIA, PEM private 
 src/lib/auth/challenge-cookie.test.ts:5:  SUPABASE_SECRET_KEY: 'sb_secret_test_key_long_enough',
 src/lib/env-probe.test.ts:19:  SUPABASE_SECRET_KEY: 'sb_secret_opaque_and_well_formed',
 src/lib/env-probe.test.ts:80:      SUPABASE_SECRET_KEY: 'sb_secret_your-service-role-key',
-src/lib/wallet/config.test.ts:10:const KEY = '-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----'
-src/lib/wallet/notify.test.ts:11:const KEY = '-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----'
+src/lib/wallet/config.test.ts:10:const KEY = '<PEM PRIVATE KEY block, body MIIE>'
+src/lib/wallet/notify.test.ts:11:const KEY = '<PEM PRIVATE KEY block, body MIIE>'
 src/server/auth/wa-otp.test.ts:6:  SUPABASE_SECRET_KEY: 'sb_secret_test_key_long_enough',
 src/styles/electro-icons.css:3:  src: url(data:application/font-woff;base64,d09GRgABAAAAAEMsAAsAAAAAQuAAAQAAAA
 ```

@@ -1,5 +1,54 @@
 # Manual Actions - Items Only Ofir Can Complete
 
+## C191 human-only items (2026-11-03)
+
+These need an account login, a phone, a bank, or a decision only the owner can make. No agent can do them. The raw evidence is in docs/C191-launch.md, and the launch verdict is in docs/LAUNCH-CHECKLIST.md.
+
+### H1. Cardcom production credentials (blocks launch)
+
+The current state, measured: the Vercel project `kenyonexpress` (prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP) has `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME` and `CARDCOM_API_PASSWORD` in Production, set 30 days ago. Locally, `.env.local` holds stubs with `CARDCOM_USE_MOCK=true`. No real charge has ever run.
+
+1. In the Cardcom merchant panel, confirm the terminal number and API user are the **live** terminal, not the sandbox.
+2. Check the Production values. `CARDCOM_USE_MOCK` and `CARDCOM_SANDBOX` must be unset or `false`:
+   ```bash
+   cd /Users/ofir/kenyonexpress-web/kenyonexpress
+   vercel env ls production | grep CARDCOM
+   ```
+   If a value is wrong, `vercel env rm <NAME> production` then `vercel env add <NAME> production`, and redeploy.
+3. Nothing to set for the webhook in the panel: the code sends `IndicatorUrl` with every payment request (`src/lib/payments/cardcom.ts`), and it points to `/api/payments/cardcom/webhook`. Cardcom does not sign the callback, so `CARDCOM_WEBHOOK_SECRET` must be set in Production. It is, as of 64 days ago.
+4. Buy one physical product at 1 ILS with a real card. Check that the order is `paid`, the invoice is issued, and the email arrives. Then refund it from admin and check that the refund reaches the card.
+5. Done when step 4 passes. Then the release commands at the end of the HOLD section in docs/LAUNCH-CHECKLIST.md can run.
+
+### H2. Supabase outage ticket (blocks launch)
+
+On 03.11 production Postgres (`ixvwfbuvfxxsjiywhbbb`) was UNHEALTHY from about 04:20 +07. REST answered 503 PGRST002 until after 08:26. By 12:51 +07 it was ACTIVE_HEALTHY, REST 200, and `/api/health` reported `database: ok`. Disk is **not** the cause: 468 MB of 2077 MB used. Supabase support is behind the account login, so only the owner can open or close the ticket.
+
+1. Open a ticket from the Supabase dashboard, under Support, for project `ixvwfbuvfxxsjiywhbbb`, or reply on the one already open. Ask for the root cause of the 03.11 04:20-08:30 +07 outage and whether the Nano compute size played a part.
+2. If they say compute: moving up from Nano is a billing decision for the owner.
+3. Done when support gives a cause and either a fix or confirms nothing needs to change. Record their answer in docs/C191-launch.md.
+
+Health check you can run any time:
+```bash
+export SUPABASE_ACCESS_TOKEN="$(grep -m1 ^export\ SUPABASE_ACCESS_TOKEN= ~/.zshrc | cut -d= -f2- | tr -d '"')"
+curl -s -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" "https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/health?services=db&services=rest"
+```
+
+### H3. Off-site backups (does not block launch, recommended)
+
+R2 is not enabled on the Cloudflare account, and no R2 credential exists in GitHub secrets, `.env.local` or `~/.zshrc` (C189). Pick one:
+- Enable R2 in Cloudflare and add `BACKUP_R2_*` and `SUPABASE_DB_URL` as GitHub repo secrets. The 03:00 UTC `db-backup.yml` then starts producing dumps.
+- Or enable PITR in Supabase (about $115/mo).
+
+### H4. Unlock decision for locked header and hero files (does not block launch)
+
+The home parity gate stays above 11% because the TopBar, Header and Hero bands are in files agents may not edit. The Heebo preload is in `src/app/layout.tsx`, which is also locked. To close it, either unlock those files for one item or accept the gap.
+
+### H5. Demo deals (does not block launch)
+
+44 demo deals carry placeholder copy, because the old site had no products in pets or courses (C188). Keep them, or remove them before real traffic.
+
+---
+
 **Last Updated:** 2026-10-25  
 **Status:** Pre-Launch & Post-Launch Milestones
 
