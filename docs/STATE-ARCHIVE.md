@@ -31863,3 +31863,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 - המשך מ: M16-c351 DONE (2026-11-04): production sitemap 90 /product/ URLs == 90 active DB products; probe PASS 90 FAIL 0 (Product+Offer ILS+BreadcrumbList 3 items, 0 parse errors); json-ld.test 26/26; prod still on pre-StrikethroughPrice build (59 hp=Y); proof docs/M16-c351.md
 - המשך מ: M17-c351 DONE (2026-11-04): production / + /product/demo-baby-gear + /product/עיסוי-מפנק at 380/768/1440, lang=he dir=rtl 12/12, 0 LTR Hebrew, 0 left-aligned Hebrew, 0 LTR placeholders, 0px overflow; static scan 210 files 0 physical hits, 5 Latin isolates ok; latin-field-direction 3/3; no code change; proof docs/M17-c351.md
 - המשך מ: M18-c351 DONE (2026-11-04): STATE.md 234 lines, claude/STATE.md 155, both under 300; state-log.mjs archives to docs/STATE-ARCHIVE.md on every RESULT (M13 to M17 sections present); state-log.test 23/23; no trim needed; proof docs/M18-c351.md
+
+## Archived 2026-11-04T06:05:26+07:00 after M18-c353 (3 lines from STATE.md)
+
+### 2026-11-04T04:29:06+07:00
+- item: M13-c352
+- RESULT: DONE
