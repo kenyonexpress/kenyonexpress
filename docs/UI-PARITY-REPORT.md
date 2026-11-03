@@ -628,3 +628,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-11-03 14:44 | home | 380 | 9.86% | PASS | `0745ded50-dirty` | ref everything loaded; overall 37.68% (reference blank 13.22%, ours blank 14.6%) |
 | 2026-11-03 14:46 | home | 768 | 8.20% | PASS | `0745ded50-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
 | 2026-11-03 14:48 | home | 1440 | 6.55% | PASS | `0745ded50-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |
+| 2026-11-03 20:45 | home | 380 | 10.71% | PASS | `1d7bc5d03` | ref everything loaded; overall 39.03% (reference blank 14.72%, ours blank 13.59%) |
+| 2026-11-03 20:47 | home | 768 | 9.29% | PASS | `1d7bc5d03-dirty` | ref everything loaded; overall 40.59% (reference blank 16.93%, ours blank 14.37%) |
+| 2026-11-03 20:48 | home | 1440 | 7.16% | PASS | `1d7bc5d03-dirty` | ref everything loaded; overall 27.56% (reference blank 12.03%, ours blank 8.37%) |
