@@ -1,7 +1,11 @@
-RESUME FROM: M15-c352
+RESUME FROM: M16-c352
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-04T04:36:44+07:00
+- item: M15-c352
+- RESULT: DONE
 
 ### 2026-11-04T04:29:59+07:00
 - item: M14-c352
@@ -98,10 +102,6 @@ RESUME FROM: M15-c352
 ### 2026-11-04T02:35:50+07:00
 - item: C198
 - RESULT: DONE
-
-### 2026-11-04T02:09:29+07:00
-- item: C197
-- BLOCKED: C171 network
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
