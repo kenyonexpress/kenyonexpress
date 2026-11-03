@@ -13,6 +13,3 @@ export const updateCartItemSchema = z.object({
   variant_id: uuid.nullable().default(null),
   quantity: z.number().int().min(0, 'כמות לא תקינה').max(99, 'כמות מקסימלית: 99'),
 })
-
-export type AddToCartInput = z.infer<typeof addToCartSchema>
-export type UpdateCartItemInput = z.infer<typeof updateCartItemSchema>

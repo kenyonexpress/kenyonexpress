@@ -14,8 +14,6 @@ export const baseListParamsSchema = z.object({
   dir: z.enum(['asc', 'desc']).catch('desc'),
 })
 
-export type BaseListParams = z.infer<typeof baseListParamsSchema>
-
 export function listRange(params: { page: number; per: number }): {
   from: number
   to: number

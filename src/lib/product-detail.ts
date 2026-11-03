@@ -46,8 +46,6 @@ import { cacheLife, cacheTag } from 'next/cache'
  * and checkout reads it again. Same trade-off the archive cards already make.
  */
 
-export type ProductDetail = NonNullable<Awaited<ReturnType<typeof loadProductBySlug>>>
-
 export async function loadProductBySlug(slug: string) {
   'use cache'
   cacheLife('hours')

@@ -16,8 +16,6 @@ const rejectSchema = z.object({
   reason: z.string().min(2, 'נדרשת סיבת דחייה').max(500),
 })
 
-export type ApprovalActionState = { error: string } | { success: string } | null
-
 async function runApproveProduct(id: string): Promise<{ error?: string }> {
   let session: AdminSessionInfo
   try {

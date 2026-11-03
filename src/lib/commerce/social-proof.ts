@@ -30,8 +30,6 @@ export const PAID_ORDER_STATUSES = [
   'platform_settled',
 ] as const
 
-export type PaidOrderStatus = (typeof PAID_ORDER_STATUSES)[number]
-
 /** Start of the trailing window, ISO, for the `paid_at >= ?` predicate. */
 export function weekWindowStart(now: Date = new Date()): string {
   return new Date(now.getTime() - WEEK_MS).toISOString()

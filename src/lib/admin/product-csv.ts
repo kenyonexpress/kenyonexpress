@@ -50,8 +50,6 @@ export const PRODUCT_CSV_COLUMNS = [
 /** CSV spellings stored under another form field name. */
 const COLUMN_ALIASES: Record<string, string> = { lat: 'latitude', lng: 'longitude' }
 
-export type ProductCsvColumn = (typeof PRODUCT_CSV_COLUMNS)[number]
-
 export type ParsedCsv = { header: string[]; rows: string[][] }
 
 /** RFC 4180: quoted fields, doubled quotes, CRLF or LF, optional BOM. */

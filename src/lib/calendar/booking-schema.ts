@@ -10,8 +10,6 @@ import { z } from 'zod'
 
 const bookingStatusSchema = z.enum(['pending', 'confirmed', 'cancelled', 'completed'])
 
-export type BookingStatus = z.infer<typeof bookingStatusSchema>
-
 const createBookingSchema = z.object({
   productId: z.string().uuid(),
   userId: z.string().uuid(),

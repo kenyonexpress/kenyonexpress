@@ -23,7 +23,4 @@ const userListParamsSchema = z.object({
   role: z.enum(['admin', 'content_uploader', 'vendor', 'customer', 'super_admin']).optional(),
 })
 
-export type ProductListParams = z.infer<typeof productListParamsSchema>
-export type CouponListParams = z.infer<typeof couponListParamsSchema>
-export type CategoryListParams = z.infer<typeof categoryListParamsSchema>
 export type UserListParams = z.infer<typeof userListParamsSchema>

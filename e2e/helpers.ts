@@ -553,22 +553,6 @@ export async function presetConsent(page: Page, decision: 'granted' | 'denied' =
 }
 
 /**
- * Answers the consent banner with "לא תודה" when it is up, and waits for it to
- * go. The banner is fixed to the bottom of every page and sits OVER whatever
- * is there (a sticky buy bar, the cart's clear button at the end of a long
- * list), so a click on those retries against "subtree intercepts pointer
- * events" until the test times out. The decision is a server action that
- * redirects back, which is why the banner's absence is awaited and not just
- * the click.
- */
-export async function dismissConsentBanner(page: Page): Promise<void> {
-  const banner = page.locator('[data-consent-banner]')
-  if (!(await banner.isVisible().catch(() => false))) return
-  await banner.getByRole('button', { name: 'לא תודה' }).click()
-  await expect(banner).toBeHidden({ timeout: DISCOVERY_TIMEOUT })
-}
-
-/**
  * Walks the checkout to the pay press and presses it.
  *
  * THE CHECKOUT IS A FOUR-STEP WIZARD FROM 992px UP AND ONE LONG PAGE BELOW.

@@ -64,8 +64,6 @@ export const CacheControl = {
   private: 'private, no-store',
 } as const
 
-export type CacheControlPolicy = (typeof CacheControl)[keyof typeof CacheControl]
-
 /**
  * Parsed directives, lower-cased, value-less ones as `true`. For tests and
  * for the coverage ratchet, which needs to ask "is this policy public" without

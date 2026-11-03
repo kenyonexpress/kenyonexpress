@@ -195,14 +195,10 @@ export const calculateSplitInputSchema = z.object({
   idempotencyKey: z.string().min(1),
 })
 
-const createOrderInputSchema = beginCheckoutInputSchema
-
 export type CheckoutCustomer = z.infer<typeof checkoutCustomerSchema>
 export type CheckoutAddress = z.infer<typeof checkoutAddressSchema>
-export type BeginCheckoutInput = z.infer<typeof beginCheckoutInputSchema>
 export type BeginCheckoutOutput = z.infer<typeof beginCheckoutOutputSchema>
 export type CalculateSplitInput = z.infer<typeof calculateSplitInputSchema>
-export type CreateOrderInput = z.infer<typeof createOrderInputSchema>
 
 export type CheckoutActionErrorCode =
   | 'UNAUTHENTICATED'

@@ -13,8 +13,6 @@ const utmSchema = z
   })
   .strict()
 
-export type Utm = z.infer<typeof utmSchema>
-
 // props is deliberately loose (jsonb on the other side) but never free-form: it
 // must be a flat-ish object, size-capped, and PII-free by convention. The 4KB
 // cap here mirrors the ingest function so an oversized event is rejected before

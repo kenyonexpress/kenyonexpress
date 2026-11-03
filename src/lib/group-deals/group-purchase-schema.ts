@@ -10,8 +10,6 @@ import { z } from 'zod'
 
 const groupDealStatusSchema = z.enum(['active', 'completed', 'cancelled', 'expired'])
 
-export type GroupDealStatus = z.infer<typeof groupDealStatusSchema>
-
 const discountTierSchema = z.object({
   minQuantity: z.number().int().positive(),
   discountPercent: z.number().min(0).max(100),

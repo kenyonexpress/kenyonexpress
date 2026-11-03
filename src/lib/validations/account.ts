@@ -13,8 +13,6 @@ export const profileDetailsSchema = z.object({
   phone: phoneSchema,
 })
 
-export type ProfileDetailsInput = z.infer<typeof profileDetailsSchema>
-
 export const addressSchema = z.object({
   id: z.string().uuid().optional(),
   full_name: z.string().trim().min(2, 'יש להזין שם מלא').max(80, 'השם ארוך מדי'),
@@ -29,8 +27,6 @@ export const addressSchema = z.object({
   notes_for_courier: z.string().trim().max(200, 'ההערה ארוכה מדי').optional().or(z.literal('')),
   is_default: z.coerce.boolean().optional(),
 })
-
-export type AddressInput = z.infer<typeof addressSchema>
 
 export const idSchema = z.object({ id: z.string().uuid('מזהה לא תקין') })
 

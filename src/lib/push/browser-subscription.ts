@@ -12,5 +12,3 @@ export const browserSubscriptionSchema = z.object({
     auth: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/),
   }),
 })
-
-export type BrowserSubscriptionInput = z.infer<typeof browserSubscriptionSchema>

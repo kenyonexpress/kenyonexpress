@@ -74,8 +74,6 @@ export const newPasswordSchema = z
     path: ['confirm_password'],
   })
 
-export type LoginInput = z.infer<typeof loginSchema>
-export type SignupInput = z.infer<typeof signupSchema>
 /**
  * The phone the customer typed, before normalisation. Kept permissive on
  * purpose: the shape check that matters is `isSmsCapableIsraeli`, which knows
@@ -95,9 +93,6 @@ export const phoneVerifySchema = z.object({
     .trim()
     .regex(/^\d{4,10}$/, 'הקוד מורכב מספרות בלבד'),
 })
-
-export type PhoneOtpInput = z.infer<typeof phoneOtpSchema>
-export type PhoneVerifyInput = z.infer<typeof phoneVerifySchema>
 
 /**
  * The six-digit code from the login mail, typed instead of clicking the link.
@@ -140,9 +135,4 @@ export const changePasswordSchema = z
     path: ['password'],
   })
 
-export type EmailOtpVerifyInput = z.infer<typeof emailOtpVerifySchema>
-export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
-
-export type MagicLinkInput = z.infer<typeof magicLinkSchema>
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>
-export type NewPasswordInput = z.infer<typeof newPasswordSchema>

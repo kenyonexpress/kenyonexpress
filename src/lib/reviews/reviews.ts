@@ -25,5 +25,3 @@ export const reviewSchema = z.object({
   // changes here never need a migration.
   body: z.string().trim().max(1000, 'עד 1000 תווים').optional(),
 })
-
-export type ReviewInput = z.infer<typeof reviewSchema>

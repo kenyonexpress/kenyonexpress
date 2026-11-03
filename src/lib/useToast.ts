@@ -64,5 +64,3 @@ export const useToast = () => {
     },
   }
 }
-
-export type UseToastReturn = ReturnType<typeof useToast>
