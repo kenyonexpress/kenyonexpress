@@ -1,7 +1,11 @@
-RESUME FROM: C192
+RESUME FROM: C193
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T14:04:05+07:00
+- item: C192
+- BLOCKED: prod Turnstile rejects headless sign-in by design and a 2172-test pass takes ~6h on this link, so 2x consecutive green is not producible
 
 ### 2026-11-03T13:01:19+07:00
 - item: C191
@@ -98,10 +102,6 @@ RESUME FROM: C192
 ### 2026-11-03T04:17:04+07:00
 - item: C151
 - BLOCKED: network (iPhone hotspot 172.20.10.1, Supabase 1.1-3.7 s/ping); run 7 green 2362/0, runs 9-10 lost to page-load timeouts
-
-### 2026-11-02T22:31:10+07:00
-- item: C150
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
