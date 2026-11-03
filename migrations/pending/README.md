@@ -1139,3 +1139,4 @@ site. The two have to change together.
 - `329_is_demo.sql` - products.is_demo and suppliers.is_demo, default false (C149). APPLIED to production 2026-11-02 via supabase db query --linked; proof in docs/C149-demo.md.
 - `330_demo_deals.sql` - generated idempotent seed of one demo deal per C148 master, built by scripts/demo/build-demo-deals.ts (C149). APPLIED to production 2026-11-02 via supabase db query --linked; proof in docs/C149-demo.md.
 - 2026-11-02 (M05-c347): 328, 329 and 330 moved to `migrations/applied/` (applied by C148/C149); both builders now write there.
+- `331_demo_untraced_images.sql` - drops the two demo gallery images that do not trace to wp_import (demo-laptop hero/slide-2.jpg, demo-store-voucher ke-live-deal-4.avif); demo rows only (C188). APPLIED to production 2026-11-03 via supabase db query --linked; proof in docs/C188-demo.md.

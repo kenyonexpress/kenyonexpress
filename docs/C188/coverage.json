@@ -1,0 +1,410 @@
+[
+  {
+    "slug": "hot-deals",
+    "width": 380,
+    "status": 200,
+    "products": 10,
+    "demo": 9,
+    "first": "/product/demo-general-coupon",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "ארוחת סטייק ויין לזוג",
+      "img": true,
+      "price": "⁦520 ₪⁩ | ⁦349 ₪⁩ | ⁦349 ₪⁩ | ⁦171 ₪⁩ | ⁦520 ₪⁩ | ⁦449 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "hot-deals",
+    "width": 1440,
+    "status": 200,
+    "products": 10,
+    "demo": 9,
+    "first": "/product/demo-general-coupon",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "ארוחת סטייק ויין לזוג",
+      "img": true,
+      "price": "⁦520 ₪⁩ | ⁦349 ₪⁩ | ⁦349 ₪⁩ | ⁦171 ₪⁩ | ⁦520 ₪⁩ | ⁦449 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "under-99",
+    "width": 380,
+    "status": 200,
+    "products": 13,
+    "demo": 4,
+    "first": "/product/demo-attraction-tickets",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "כרטיס כניסה לפארק מים",
+      "img": true,
+      "price": "⁦139 ₪⁩ | ⁦89 ₪⁩ | ⁦89 ₪⁩ | ⁦50 ₪⁩ | ⁦139 ₪⁩ | ⁦139 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "under-99",
+    "width": 1440,
+    "status": 200,
+    "products": 13,
+    "demo": 4,
+    "first": "/product/demo-attraction-tickets",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "כרטיס כניסה לפארק מים",
+      "img": true,
+      "price": "⁦139 ₪⁩ | ⁦89 ₪⁩ | ⁦89 ₪⁩ | ⁦50 ₪⁩ | ⁦139 ₪⁩ | ⁦139 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "new",
+    "width": 380,
+    "status": 200,
+    "products": 24,
+    "demo": 24,
+    "first": "/product/demo-iphone",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "iPhone 15 128GB יבואן רשמי",
+      "img": true,
+      "price": "⁦3,890 ₪⁩ | מחיר בקניון: ⁦3,290 ₪⁩ | ⁦3,290 ₪⁩ | ⁦3,890 ₪⁩ | ⁦3,790 ₪⁩ | ⁦3,190 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "new",
+    "width": 1440,
+    "status": 200,
+    "products": 24,
+    "demo": 24,
+    "first": "/product/demo-iphone",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "iPhone 15 128GB יבואן רשמי",
+      "img": true,
+      "price": "⁦3,890 ₪⁩ | מחיר בקניון: ⁦3,290 ₪⁩ | ⁦3,290 ₪⁩ | ⁦3,890 ₪⁩ | ⁦3,790 ₪⁩ | ⁦3,190 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "restaurants-cafes",
+    "width": 380,
+    "status": 200,
+    "products": 8,
+    "demo": 5,
+    "first": "/product/demo-cafe",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "ארוחת בוקר זוגית בבית קפה",
+      "img": true,
+      "price": "⁦178 ₪⁩ | ⁦119 ₪⁩ | ⁦119 ₪⁩ | ⁦59 ₪⁩ | ⁦178 ₪⁩ | ⁦189 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "restaurants-cafes",
+    "width": 1440,
+    "status": 200,
+    "products": 8,
+    "demo": 5,
+    "first": "/product/demo-cafe",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "ארוחת בוקר זוגית בבית קפה",
+      "img": true,
+      "price": "⁦178 ₪⁩ | ⁦119 ₪⁩ | ⁦119 ₪⁩ | ⁦59 ₪⁩ | ⁦178 ₪⁩ | ⁦189 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "beauty-health",
+    "width": 380,
+    "status": 200,
+    "products": 15,
+    "demo": 7,
+    "first": "/product/demo-beauty-treatment",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "טיפול פנים מעמיק 75 דקות",
+      "img": true,
+      "price": "⁦350 ₪⁩ | ⁦199 ₪⁩ | ⁦199 ₪⁩ | ⁦151 ₪⁩ | ⁦350 ₪⁩ | ⁦350 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "beauty-health",
+    "width": 1440,
+    "status": 200,
+    "products": 15,
+    "demo": 7,
+    "first": "/product/demo-beauty-treatment",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "טיפול פנים מעמיק 75 דקות",
+      "img": true,
+      "price": "⁦350 ₪⁩ | ⁦199 ₪⁩ | ⁦199 ₪⁩ | ⁦151 ₪⁩ | ⁦350 ₪⁩ | ⁦350 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "phones-computers",
+    "width": 380,
+    "status": 200,
+    "products": 9,
+    "demo": 5,
+    "first": "/product/demo-iphone",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "iPhone 15 128GB יבואן רשמי",
+      "img": true,
+      "price": "⁦3,890 ₪⁩ | מחיר בקניון: ⁦3,290 ₪⁩ | ⁦3,290 ₪⁩ | ⁦3,890 ₪⁩ | ⁦3,790 ₪⁩ | ⁦3,190 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "phones-computers",
+    "width": 1440,
+    "status": 200,
+    "products": 9,
+    "demo": 5,
+    "first": "/product/demo-iphone",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "iPhone 15 128GB יבואן רשמי",
+      "img": true,
+      "price": "⁦3,890 ₪⁩ | מחיר בקניון: ⁦3,290 ₪⁩ | ⁦3,290 ₪⁩ | ⁦3,890 ₪⁩ | ⁦3,790 ₪⁩ | ⁦3,190 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "baby-kids",
+    "width": 380,
+    "status": 200,
+    "products": 5,
+    "demo": 3,
+    "first": "/product/demo-baby-consumables",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "חיתולי פמפרס מידה 4, מארז חודשי",
+      "img": true,
+      "price": "⁦279 ₪⁩ | מחיר בקניון: ⁦199 ₪⁩ | ⁦199 ₪⁩ | ⁦279 ₪⁩ | ⁦1,690 ₪⁩ | ⁦1,290 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "baby-kids",
+    "width": 1440,
+    "status": 200,
+    "products": 5,
+    "demo": 3,
+    "first": "/product/demo-baby-consumables",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "חיתולי פמפרס מידה 4, מארז חודשי",
+      "img": true,
+      "price": "⁦279 ₪⁩ | מחיר בקניון: ⁦199 ₪⁩ | ⁦199 ₪⁩ | ⁦279 ₪⁩ | ⁦1,690 ₪⁩ | ⁦1,290 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "vacation",
+    "width": 380,
+    "status": 200,
+    "products": 11,
+    "demo": 5,
+    "first": "/product/demo-vacation-package",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "חבילת נופש למלדיביים 7 לילות",
+      "img": true,
+      "price": "⁦23,900 ₪⁩ | ⁦18,900 ₪⁩ | ⁦18,900 ₪⁩ | ⁦5,000 ₪⁩ | ⁦23,900 ₪⁩ | ⁦1,290 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "vacation",
+    "width": 1440,
+    "status": 200,
+    "products": 11,
+    "demo": 5,
+    "first": "/product/demo-vacation-package",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "חבילת נופש למלדיביים 7 לילות",
+      "img": true,
+      "price": "⁦23,900 ₪⁩ | ⁦18,900 ₪⁩ | ⁦18,900 ₪⁩ | ⁦5,000 ₪⁩ | ⁦23,900 ₪⁩ | ⁦1,290 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "pets",
+    "width": 380,
+    "status": 200,
+    "products": 2,
+    "demo": 2,
+    "first": "/product/demo-pet-food",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "מזון יבש לכלבים בוגרים 12 ק״ג",
+      "img": true,
+      "price": "⁦319 ₪⁩ | מחיר בקניון: ⁦239 ₪⁩ | ⁦239 ₪⁩ | ⁦319 ₪⁩ | ⁦269 ₪⁩ | ⁦179 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "pets",
+    "width": 1440,
+    "status": 200,
+    "products": 2,
+    "demo": 2,
+    "first": "/product/demo-pet-food",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "מזון יבש לכלבים בוגרים 12 ק״ג",
+      "img": true,
+      "price": "⁦319 ₪⁩ | מחיר בקניון: ⁦239 ₪⁩ | ⁦239 ₪⁩ | ⁦319 ₪⁩ | ⁦269 ₪⁩ | ⁦179 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "professionals",
+    "width": 380,
+    "status": 200,
+    "products": 2,
+    "demo": 1,
+    "first": "/product/demo-professional-service",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "עוזרת אישית וירטואלית, 10 שעות",
+      "img": true,
+      "price": "⁦1,000 ₪⁩ | ⁦690 ₪⁩ | ⁦690 ₪⁩ | ⁦310 ₪⁩ | ⁦1,000 ₪⁩ | ⁦949 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "professionals",
+    "width": 1440,
+    "status": 200,
+    "products": 2,
+    "demo": 1,
+    "first": "/product/demo-professional-service",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "עוזרת אישית וירטואלית, 10 שעות",
+      "img": true,
+      "price": "⁦1,000 ₪⁩ | ⁦690 ₪⁩ | ⁦690 ₪⁩ | ⁦310 ₪⁩ | ⁦1,000 ₪⁩ | ⁦949 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "electronics",
+    "width": 380,
+    "status": 200,
+    "products": 6,
+    "demo": 6,
+    "first": "/product/demo-gaming-console",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "PlayStation 5 Slim עם בקר",
+      "img": true,
+      "price": "⁦2,490 ₪⁩ | מחיר בקניון: ⁦2,190 ₪⁩ | ⁦2,190 ₪⁩ | ⁦2,490 ₪⁩ | ⁦2,390 ₪⁩ | ⁦1,990 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "electronics",
+    "width": 1440,
+    "status": 200,
+    "products": 6,
+    "demo": 6,
+    "first": "/product/demo-gaming-console",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "PlayStation 5 Slim עם בקר",
+      "img": true,
+      "price": "⁦2,490 ₪⁩ | מחיר בקניון: ⁦2,190 ₪⁩ | ⁦2,190 ₪⁩ | ⁦2,490 ₪⁩ | ⁦2,390 ₪⁩ | ⁦1,990 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "courses",
+    "width": 380,
+    "status": 200,
+    "products": 1,
+    "demo": 1,
+    "first": "/product/demo-workshop-course",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "קורס אקסל מתקדם אונליין",
+      "img": true,
+      "price": "⁦690 ₪⁩ | ⁦390 ₪⁩ | ⁦390 ₪⁩ | ⁦300 ₪⁩ | ⁦690 ₪⁩ | ⁦3,890 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  },
+  {
+    "slug": "courses",
+    "width": 1440,
+    "status": 200,
+    "products": 1,
+    "demo": 1,
+    "first": "/product/demo-workshop-course",
+    "cardImg": true,
+    "pdp": {
+      "status": 200,
+      "h1": "קורס אקסל מתקדם אונליין",
+      "img": true,
+      "price": "⁦690 ₪⁩ | ⁦390 ₪⁩ | ⁦390 ₪⁩ | ⁦300 ₪⁩ | ⁦690 ₪⁩ | ⁦3,890 ₪⁩",
+      "wholeShekels": true
+    },
+    "pass": true
+  }
+]

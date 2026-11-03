@@ -261,6 +261,7 @@ describe('the pending migration inventory', () => {
       '328_deal_templates.sql',
       '329_is_demo.sql',
       '330_demo_deals.sql',
+      '331_demo_untraced_images.sql',
     ])
   })
 

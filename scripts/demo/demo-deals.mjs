@@ -120,7 +120,7 @@ export const DEALS = [
       import_type: 'יבואן רשמי',
     },
     supplier: { name: 'מחשבים בקליק', city: 'תל אביב', address: 'אלנבי 76' },
-    img: ['9c169daa0f', '/images/hero/slide-2.jpg'],
+    img: ['9c169daa0f'],
   },
   {
     master: 'tablet',
@@ -1121,7 +1121,7 @@ export const DEALS = [
       address: 'ויצמן 88',
       hours: 'א׳-ה׳ 08:00-20:00, ו׳ 07:00-15:00',
     },
-    img: ['6d7d385e7f', '/images/products/ke-live-deal-4.avif'],
+    img: ['6d7d385e7f'],
   },
   {
     master: 'general-coupon',
