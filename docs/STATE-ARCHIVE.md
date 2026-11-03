@@ -31015,3 +31015,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T05:16:24+07:00
 - item: C173
 - BLOCKED: supabase-rest-down C173
+
+## Archived 2026-11-03T17:13:05+07:00 after M05-c349 (3 lines from STATE.md)
+
+### 2026-11-03T05:30:45+07:00
+- item: C174
+- BLOCKED: supabase-down C174
