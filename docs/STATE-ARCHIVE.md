@@ -31417,3 +31417,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T19:52:46+07:00
 - item: M10-c351
 - BLOCKED: pending 319 needs affiliate tables restored first, 324 breaks 23 FKs into orders
+
+## Archived 2026-11-04T04:27:32+07:00 after M12-c352 (3 lines from STATE.md)
+
+### 2026-11-03T19:56:04+07:00
+- item: M11-c351
+- RESULT: DONE
