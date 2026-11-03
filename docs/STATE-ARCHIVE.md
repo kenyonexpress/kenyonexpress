@@ -31069,3 +31069,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T10:24:55+07:00
 - item: C182
 - RESULT: DONE
+
+## Archived 2026-11-03T17:34:41+07:00 after M14-c349 (3 lines from STATE.md)
+
+### 2026-11-03T11:05:41+07:00
+- item: C183
+- BLOCKED: locked-component C183 Heebo preload lives only in src/app/layout.tsx
