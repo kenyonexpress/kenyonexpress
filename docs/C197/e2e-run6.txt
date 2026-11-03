@@ -1,0 +1,26 @@
+ba732d484 Poll for the dark class instead of reading it once (C197)
+Wed Nov  4 01:54:03 +07 2026
+$ E2E_PORT=3417 E2E_WEB_COMMAND="pnpm start" TURNSTILE_SECRET_KEY= E2E_WORKERS=3 E2E_FORWARDED_FOR_PREFIX=10.197.66 npx playwright test --reporter=line
+10 packets transmitted, 10 packets received, 0.0% packet loss
+10 packets transmitted, 10 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 226.203/237.324/262.238/9.923 ms
+  1) [chromium-380] › e2e/category.spec.ts:20:7 › category archive › renders the title, result count, breadcrumb and a product grid 
+  2) [chromium-380] › e2e/cart.spec.ts:218:7 › shopping cart (guest) › the page scrolls behind the desktop dropdown and not behind the phone sheet 
+  3) [chromium-380] › e2e/cart.spec.ts:271:7 › the cart sheet and the keyboard › the phone sheet takes focus, keeps it, and gives it back on Escape 
+  4) [chromium-380] › e2e/category.spec.ts:109:7 › category archive › a real category still streams a prerendered shell 
+  5) [chromium-380] › e2e/category.spec.ts:64:7 › category archive › an unrecognised sort key falls back to the default order 
+  6) [chromium-380] › e2e/category.spec.ts:159:7 › category archive › an out-of-range page number clamps to the last page 
+  7) [chromium-380] › e2e/checkout.spec.ts:26:7 › checkout gate (guest) › an anonymous visitor with a populated cart reaches the checkout form 
+  8) [chromium-380] › e2e/checkout.spec.ts:43:7 › checkout gate (guest) › the cart CTA hands a guest straight to checkout 
+  9) [chromium-380] › e2e/coupons.spec.ts:30:7 › (main) group on a phone › the sidebars are absent rather than stacked above the content 
+  10) [chromium-380] › e2e/full-purchase-redeem.spec.ts:94:7 › full purchase to redeem @checkout @redeem @money › guest coupon cart → guest checkout → email sign-in at pay → mock pay → voucher → supplier redeem 
+  11) [chromium-380] › e2e/guest-checkout-widths.spec.ts:74:9 › checkout at 380px › guest completes checkout with mock payment provider (anonymous session) 
+  12) [chromium-380] › e2e/guest-checkout-widths.spec.ts:74:9 › checkout at 1440px › guest completes checkout with mock payment provider (anonymous session) 
+  13) [chromium-380] › e2e/guest-checkout-widths.spec.ts:74:9 › checkout at 768px › guest completes checkout with mock payment provider (anonymous session) 
+  14) [chromium-380] › e2e/guest-upgrade.spec.ts:84:7 › Guest upgrade on thank-you page › thank-you page shows order details for authenticated user 
+  11 failed
+  3 interrupted
+  11 skipped
+  2387 did not run
+  150 passed (12.0m)
+  150 passed (12.0m)

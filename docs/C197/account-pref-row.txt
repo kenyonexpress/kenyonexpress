@@ -1,0 +1,4 @@
+      "channel": "in_app",
+      "enabled": true,
+      "kind": "all",
+      "updated_at": "2026-11-03 18:37:08.246+00"

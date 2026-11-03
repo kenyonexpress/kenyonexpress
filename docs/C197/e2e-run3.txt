@@ -1,0 +1,9 @@
+a0dc31fa1 Scope two e2e waits to slow-link timing (C197)
+Tue Nov  3 22:56:13 +07 2026
+$ E2E_PORT=3417 E2E_WEB_COMMAND="pnpm start" TURNSTILE_SECRET_KEY= E2E_WORKERS=3 E2E_FORWARDED_FOR_PREFIX=10.197.33 npx playwright test --reporter=line
+  1) [webkit-768] › e2e/rtl-mobile.spec.ts:97:9 › no sideways scroll at 320px › /checkout fits 320px 
+  1 failed
+  109 skipped
+  2452 passed (58.5m)
+exit=1
+Tue Nov  3 23:54:46 +07 2026

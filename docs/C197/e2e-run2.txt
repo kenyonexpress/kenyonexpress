@@ -1,0 +1,16 @@
+7b3c886a9 Fix 380 hero price contrast, re-click a pre-hydration add in e2e (C197)
+Tue Nov  3 21:50:05 +07 2026
+$ E2E_PORT=3417 E2E_WEB_COMMAND="pnpm start" TURNSTILE_SECRET_KEY= E2E_WORKERS=3 E2E_FORWARDED_FOR_PREFIX=10.197.22 npx playwright test --reporter=line
+  1) [chromium-380] › e2e/cancel-refund.spec.ts:56:7 › customer cancel and refund @money › a paid order is cancelled from the account, once 
+  2) [chromium-768] › e2e/cancel-refund.spec.ts:56:7 › customer cancel and refund @money › a paid order is cancelled from the account, once 
+  3) [webkit-380] › e2e/a11y.spec.ts:189:7 › category page has no WCAG A/AA violations ─────────────
+  4) [webkit-380] › e2e/production-smoke.spec.ts:51:7 › production smoke: guest cart to checkout › a guest can put a real product in the cart and reach the checkout form 
+  5) [webkit-768] › e2e/a11y.spec.ts:189:7 › category page has no WCAG A/AA violations ─────────────
+  6) [webkit-768] › e2e/full-purchase-redeem.spec.ts:93:7 › full purchase to redeem @checkout @redeem @money › guest coupon cart → guest checkout → email sign-in at pay → mock pay → voucher → supplier redeem 
+  7) [webkit-768] › e2e/rtl-mobile.spec.ts:128:7 › no sideways scroll at 320px › the seeded single-page checkout fits 320px, every section at once 
+  8) [webkit-1440] › e2e/a11y.spec.ts:189:7 › category page has no WCAG A/AA violations ────────────
+  8 failed
+  109 skipped
+  2445 passed (59.8m)
+exit=1
+Tue Nov  3 22:49:54 +07 2026

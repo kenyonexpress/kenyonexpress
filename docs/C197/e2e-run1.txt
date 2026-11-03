@@ -1,0 +1,20 @@
+0745ded50 Restore compare reference guard, confirm cart seed, list cities in sitemap (C197)
+Tue Nov  3 21:31:11 +07 2026
+$ E2E_PORT=3417 E2E_WEB_COMMAND="pnpm start" TURNSTILE_SECRET_KEY= E2E_WORKERS=3 E2E_FORWARDED_FOR_PREFIX=10.197.11 npx playwright test --reporter=line
+  1) [chromium-380] › e2e/a11y-minimal.spec.ts:34:7 › IS 5568 - Core Page Types › home page has no WCAG A/AA violations 
+  2) [chromium-380] › e2e/a11y.spec.ts:189:7 › home has no WCAG A/AA violations ────────────────────
+  3) [chromium-380] › e2e/a11y.spec.ts:633:5 › the install banner has no WCAG A/AA violations ──────
+  4) [chromium-380] › e2e/a11y.spec.ts:317:5 › every control in the seeded checkout is reachable by keyboard 
+  5) [chromium-380] › e2e/cancel-refund.spec.ts:56:7 › customer cancel and refund @money › a paid order is cancelled from the account, once 
+  6) [chromium-380] › e2e/cancel-refund.spec.ts:95:7 › customer cancel and refund @money › the API files one notice and ignores a ground chosen by the caller 
+  7) [chromium-768] › e2e/a11y.spec.ts:435:7 › the checkout with a seeded cart › cart and checkout have no WCAG A/AA violations 
+  8) [chromium-768] › e2e/cancel-refund.spec.ts:56:7 › customer cancel and refund @money › a paid order is cancelled from the account, once 
+  9) [chromium-768] › e2e/full-purchase-redeem.spec.ts:202:7 › full purchase to redeem @checkout @redeem @money › the identity ask sits on the pay leg: guest reaches the form, Google leads on /login 
+  10) [chromium-768] › e2e/guest-checkout-widths.spec.ts:74:9 › checkout at 380px › guest completes checkout with mock payment provider (anonymous session) 
+  11) [chromium-768] › e2e/full-purchase-redeem.spec.ts:93:7 › full purchase to redeem @checkout @redeem @money › guest coupon cart → guest checkout → email sign-in at pay → mock pay → voucher → supplier redeem 
+  8 failed
+  3 interrupted
+  24 skipped
+  1971 did not run
+  556 passed (12.4m)
+  556 passed (12.4m)

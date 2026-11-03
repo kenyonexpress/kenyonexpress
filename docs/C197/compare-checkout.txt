@@ -1,0 +1,182 @@
+  reference ok: 92 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+  reference ok: 92 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+refs/.run-9962-live.png written (file:///Users/ofir/kenyonexpress-web/kenyonexpress/refs/localized/ke_live_checkout.html)
+refs/.run-9962-mine.png written (http://localhost:3311/checkout)
+=== compare --page=checkout ===
+  reference: 101 failed to load (65 script, 34 stylesheet, 1 image, 1 xhr)
+  ours     : 2 failed to load (2 document)
+live: 688x4710  mine: 380x2829
+compared: 380x2600
+OVERALL first 2600px: 22.48%
+  of which: reference blank 8.36%  ours blank 13.63%  both painted 0.48%
+
+!! HEIGHT RATIO 0.60x — the percentage above is NOT a pixel gate.
+!! These are structurally different pages, not the same page styled differently.
+!! Most likely causes, in the order they have actually happened here:
+!!   1. a stale `next start` holding the port and serving an older build
+!!      (check: is the server older than .next/BUILD_ID?)
+!!   2. the local page failed to load its data and rendered a fallback
+!!      (check the server log for supabase.admin_key_invalid)
+!! Fix the server, then re-measure. Do not chase the bands.
+worst bands:
+  y 1100-1200  96.5%
+  y  900-1000  96.4%
+  y 1000-1100  94.3%
+  y 2400-2500  52.6%
+  y  800-900   44%
+  y 1200-1300  31.8%
+  y 2200-2300  31.6%
+  y  300-400   29.3%
+  y  200-300   24%
+  y 2500-2600  9.5%
+  y 2100-2200  7.6%
+  y    0-100   7.5%
+all bands:
+  y    0    7.5%  ####
+  y  100    5.7%  ###
+  y  200     24%  ############
+  y  300   29.3%  ###############
+  y  400    3.4%  ##
+  y  500    1.6%  #
+  y  600    2.6%  #
+  y  700    3.3%  ##
+  y  800     44%  ######################
+  y  900   96.4%  ################################################
+  y 1000   94.3%  ###############################################
+  y 1100   96.5%  ################################################
+  y 1200   31.8%  ################
+  y 1300    4.6%  ##
+  y 1400    3.6%  ##
+  y 1500      1%  #
+  y 1600    3.6%  ##
+  y 1700    6.5%  ###
+  y 1800      7%  ####
+  y 1900    4.1%  ##
+  y 2000    6.2%  ###
+  y 2100    7.6%  ####
+  y 2200   31.6%  ################
+  y 2300    6.3%  ###
+  y 2400   52.6%  ##########################
+  y 2500    9.5%  #####
+  reference ok: 92 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+  reference ok: 92 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+refs/.run-11174-live.png written (file:///Users/ofir/kenyonexpress-web/kenyonexpress/refs/localized/ke_live_checkout.html)
+refs/.run-11174-mine.png written (http://localhost:3311/checkout)
+=== compare --page=checkout ===
+  reference: 101 failed to load (65 script, 34 stylesheet, 1 image, 1 xhr)
+  ours     : 2 failed to load (2 document)
+live: 768x4644  mine: 768x2654
+compared: 768x2600
+OVERALL first 2600px: 24.23%
+  of which: reference blank 10.61%  ours blank 11.92%  both painted 1.7%
+
+!! HEIGHT RATIO 0.57x — the percentage above is NOT a pixel gate.
+!! These are structurally different pages, not the same page styled differently.
+!! Most likely causes, in the order they have actually happened here:
+!!   1. a stale `next start` holding the port and serving an older build
+!!      (check: is the server older than .next/BUILD_ID?)
+!!   2. the local page failed to load its data and rendered a fallback
+!!      (check the server log for supabase.admin_key_invalid)
+!! Fix the server, then re-measure. Do not chase the bands.
+worst bands:
+  y 2500-2600  99.2%
+  y 1100-1200  76.2%
+  y 1000-1100  74.6%
+  y  900-1000  72.1%
+  y  200-300   55.3%
+  y  800-900   44%
+  y 2300-2400  39.7%
+  y 2100-2200  34.3%
+  y 2200-2300  23.4%
+  y 1700-1800  13.1%
+  y 1200-1300  12%
+  y  100-200   10.3%
+all bands:
+  y    0    9.8%  #####
+  y  100   10.3%  #####
+  y  200   55.3%  ############################
+  y  300    5.8%  ###
+  y  400    6.9%  ###
+  y  500    4.9%  ##
+  y  600    1.8%  #
+  y  700    4.1%  ##
+  y  800     44%  ######################
+  y  900   72.1%  ####################################
+  y 1000   74.6%  #####################################
+  y 1100   76.2%  ######################################
+  y 1200     12%  ######
+  y 1300    4.4%  ##
+  y 1400      4%  ##
+  y 1500    6.1%  ###
+  y 1600    6.9%  ###
+  y 1700   13.1%  #######
+  y 1800    6.6%  ###
+  y 1900    3.5%  ##
+  y 2000    6.6%  ###
+  y 2100   34.3%  #################
+  y 2200   23.4%  ############
+  y 2300   39.7%  ####################
+  y 2400    4.3%  ##
+  y 2500   99.2%  ##################################################
+  reference ok: 92 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+  reference ok: 92 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+refs/.run-12362-live.png written (file:///Users/ofir/kenyonexpress-web/kenyonexpress/refs/localized/ke_live_checkout.html)
+refs/.run-12362-mine.png written (http://localhost:3311/checkout)
+=== compare --page=checkout ===
+  reference: 101 failed to load (65 script, 34 stylesheet, 1 image, 1 xhr)
+  ours     : 2 failed to load (2 document)
+  WARNING: OURS 1444px wide at 1440 (overflow)
+live: 1440x4622  mine: 1444x2600
+compared: 1440x2600
+OVERALL first 2600px: 11.51%
+  of which: reference blank 4.14%  ours blank 5.78%  both painted 1.6%
+
+!! HEIGHT RATIO 0.56x — the percentage above is NOT a pixel gate.
+!! These are structurally different pages, not the same page styled differently.
+!! Most likely causes, in the order they have actually happened here:
+!!   1. a stale `next start` holding the port and serving an older build
+!!      (check: is the server older than .next/BUILD_ID?)
+!!   2. the local page failed to load its data and rendered a fallback
+!!      (check the server log for supabase.admin_key_invalid)
+!! Fix the server, then re-measure. Do not chase the bands.
+worst bands:
+  y  900-1000  57.9%
+  y 1000-1100  57.5%
+  y  300-400   48%
+  y 1100-1200  40.8%
+  y  800-900   23.8%
+  y    0-100   9.2%
+  y  100-200   7.2%
+  y 1200-1300  6.4%
+  y  400-500   6.2%
+  y 1600-1700  5.2%
+  y  500-600   4.1%
+  y  700-800   3.6%
+all bands:
+  y    0    9.2%  #####
+  y  100    7.2%  ####
+  y  200    3.5%  ##
+  y  300     48%  ########################
+  y  400    6.2%  ###
+  y  500    4.1%  ##
+  y  600    2.5%  #
+  y  700    3.6%  ##
+  y  800   23.8%  ############
+  y  900   57.9%  #############################
+  y 1000   57.5%  #############################
+  y 1100   40.8%  ####################
+  y 1200    6.4%  ###
+  y 1300      3%  ##
+  y 1400      2%  #
+  y 1500    2.3%  #
+  y 1600    5.2%  ###
+  y 1700    3.3%  ##
+  y 1800    0.9%  
+  y 1900    0.9%  
+  y 2000    1.4%  #
+  y 2100    1.3%  #
+  y 2200    1.9%  #
+  y 2300    1.9%  #
+  y 2400    1.1%  #
+  y 2500    3.3%  ##
+exit 0

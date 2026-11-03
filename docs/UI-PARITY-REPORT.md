@@ -610,3 +610,21 @@ the tree had uncommitted changes when it was measured.
 | 2026-11-03 13:35 | home | 380 | 9.86% | PASS | `e09b72392-dirty` | ref everything loaded; overall 37.68% (reference blank 13.22%, ours blank 14.6%) |
 | 2026-11-03 13:37 | home | 768 | 8.20% | PASS | `e09b72392-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
 | 2026-11-03 13:39 | home | 1440 | 6.55% | PASS | `e09b72392-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |
+| 2026-11-03 13:46 | home | 1440 | n/a | **UNMEASURED** | `3d16bb89b` | screenshot failed: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/ Call log: [2m - navigating to "http://localhost:3000/", waiting until "domc |
+| 2026-11-03 13:48 | category | 380 | 3.79% | PASS | `3d16bb89b-dirty` | ref everything loaded; overall 31.43% (reference blank 11.59%, ours blank 16.06%) |
+| 2026-11-03 13:49 | category | 768 | 4.89% | PASS | `3d16bb89b-dirty` | ref everything loaded; overall 32.92% (reference blank 11.54%, ours blank 16.49%) |
+| 2026-11-03 13:51 | category | 1440 | 1.38% | PASS | `3d16bb89b-dirty` | ref everything loaded; overall 21.09% (reference blank 8.08%, ours blank 11.63%) |
+| 2026-11-03 13:53 | product | 380 | 4.67% | PASS | `3d16bb89b-dirty` | ref everything loaded; overall 39.51% (reference blank 27.5%, ours blank 7.33%) |
+| 2026-11-03 13:54 | product | 768 | 5.64% | PASS | `3d16bb89b-dirty` | ref everything loaded; overall 36.27% (reference blank 24.28%, ours blank 6.35%) |
+| 2026-11-03 13:56 | product | 1440 | 2.45% | PASS | `3d16bb89b-dirty` | ref everything loaded; overall 21.89% (reference blank 13.77%, ours blank 5.67%) |
+| 2026-11-03 14:00 | cart | 380 | 0.64% | PASS | `3d16bb89b-dirty` | ref 85 failed to load (54 script, 31 stylesheet); overall 17.54% (reference blank 9.84%, ours blank 7.06%) |
+| 2026-11-03 14:09 | checkout | 380 | 0.48% | PASS | `3d16bb89b-dirty` | ref 101 failed to load (65 script, 34 stylesheet, 1 image, 1 xhr); overall 22.48% (reference blank 8.36%, ours blank 13.63%) |
+| 2026-11-03 14:12 | cart | 380 | 0.64% | PASS | `3d16bb89b-dirty` | ref 85 failed to load (54 script, 31 stylesheet); overall 17.54% (reference blank 9.84%, ours blank 7.06%) |
+| 2026-11-03 14:14 | cart | 768 | 1.46% | PASS | `3d16bb89b-dirty` | ref 85 failed to load (54 script, 31 stylesheet); overall 26.84% (reference blank 8.15%, ours blank 17.22%) |
+| 2026-11-03 14:17 | cart | 1440 | 1.34% | PASS | `3d16bb89b-dirty` | OURS 1444px wide at 1440 (overflow); ref 85 failed to load (54 script, 31 stylesheet); overall 16.04% (reference blank 3.22%, ours blank 11.48%) |
+| 2026-11-03 14:19 | checkout | 380 | 0.48% | PASS | `3d16bb89b-dirty` | ref 101 failed to load (65 script, 34 stylesheet, 1 image, 1 xhr); overall 22.48% (reference blank 8.36%, ours blank 13.63%) |
+| 2026-11-03 14:22 | checkout | 768 | 1.70% | PASS | `3d16bb89b-dirty` | ref 101 failed to load (65 script, 34 stylesheet, 1 image, 1 xhr); overall 24.23% (reference blank 10.61%, ours blank 11.92%) |
+| 2026-11-03 14:25 | checkout | 1440 | 1.60% | PASS | `3d16bb89b-dirty` | OURS 1444px wide at 1440 (overflow); ref 101 failed to load (65 script, 34 stylesheet, 1 image, 1 xhr); overall 11.51% (reference blank 4.14%, ours blank 5.78%) |
+| 2026-11-03 14:44 | home | 380 | 9.86% | PASS | `0745ded50-dirty` | ref everything loaded; overall 37.68% (reference blank 13.22%, ours blank 14.6%) |
+| 2026-11-03 14:46 | home | 768 | 8.20% | PASS | `0745ded50-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
+| 2026-11-03 14:48 | home | 1440 | 6.55% | PASS | `0745ded50-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |

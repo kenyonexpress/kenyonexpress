@@ -1,0 +1,57 @@
+200 /
+  ld+json: Organization, WebSite
+  og:title=קניון EXPRESS | קופונים ומבצעים | og:image=http://localhost:3417/opengraph-image?d4f91b2122f4c517
+  twitter:card=summary_large_image | twitter:title=קניון EXPRESS | קופונים ומבצעים | twitter:image=http://localhost:3417/opengraph-image?d4f91b2122f4c517
+200 /product/אבחון-ואבחוןטיפול-רפסולוגי
+  ld+json: Product, BreadcrumbList
+  og:title=אבחון וטיפול רפסולוגי | og:image=http://localhost:3417/product/%D7%90%D7%91%D7%97%D7%95%D7%9F-%D7%95%D7%90%D7%91%D7%97%D7%95%D7%9F%D7%98%D7%99%D7%A4%D7%95%D7%9C-%D7%A8%D7%A4%D7%A1%D7%95%D7%9C%D7%95%D7%92%D7%99/opengraph-image-1r2n5f?876dc2a61ce5cab8
+  twitter:card=summary_large_image | twitter:title=אבחון וטיפול רפסולוגי | twitter:image=http://localhost:3417/product/%D7%90%D7%91%D7%97%D7%95%D7%9F-%D7%95%D7%90%D7%91%D7%97%D7%95%D7%9F%D7%98%D7%99%D7%A4%D7%95%D7%9C-%D7%A8%D7%A4%D7%A1%D7%95%D7%9C%D7%95%D7%92%D7%99/opengraph-image-1r2n5f?876dc2a61ce5cab8
+200 /c
+  ld+json: BreadcrumbList
+  og:title=דילים לפי עיר | og:image=http://localhost:3417/opengraph-image
+  twitter:card=summary_large_image | twitter:title=דילים לפי עיר | twitter:image=http://localhost:3417/opengraph-image
+200 /c/tel-aviv
+  ld+json: BreadcrumbList, ItemList
+  og:title=דילים בתל אביב | og:image=http://localhost:3417/opengraph-image
+  twitter:card=summary_large_image | twitter:title=דילים בתל אביב | twitter:image=http://localhost:3417/opengraph-image
+200 /category/electronics
+  ld+json: BreadcrumbList, ItemList
+  og:title=6 מבצעים זמינים | og:image=http://localhost:3417/opengraph-image
+  twitter:card=summary_large_image | twitter:title=6 מבצעים זמינים | twitter:image=http://localhost:3417/opengraph-image
+200 /faq
+  ld+json: FAQPage
+  og:title=שאלות נפוצות | og:image=http://localhost:3417/opengraph-image
+  twitter:card=summary_large_image | twitter:title=שאלות נפוצות | twitter:image=http://localhost:3417/opengraph-image
+
+200 /robots.txt
+  User-Agent: *
+  Allow: /
+  Sitemap: http://localhost:3417/sitemap.xml
+
+200 /sitemap.xml  urls=170
+  /product/: 90
+  /category/: 11
+  /c/: 15
+  /blog: 2
+  /faq: 1
+
+old WordPress paths:
+  301 /shop -> 200 /products
+  308 /shop/ -> 301 /shop -> 200 /products
+  308 /my-account/ -> 301 /my-account -> 307 /account
+  308 /contact-us/ -> 301 /contact-us -> 200 /contact
+  308 /about-us/ -> 301 /about-us -> 200 /about
+  308 /home/ -> 301 /home -> 200 /
+  308 /cart-2/ -> 301 /cart-2 -> 200 /cart
+  308 /checkout-2/ -> 301 /checkout-2 -> 200 /checkout
+  301 /terms-and-conditions -> 200 /terms
+  308 /terms-and-conditions/ -> 301 /terms-and-conditions -> 200 /terms
+  308 /privacy-policy/ -> 301 /privacy-policy -> 200 /privacy
+  308 /refund_returns/ -> 301 /refund_returns -> 200 /returns
+  308 /cancellation-policy/ -> 301 /cancellation-policy -> 200 /returns
+  301 /product-category/electronics -> 200 /category/electronics
+  308 /product-category/electronics/ -> 301 /product-category/electronics -> 200 /category/electronics
+  308 /product-tag/sale/ -> 301 /product-tag/sale -> 200 /search?q=sale
+
+SEO VERIFY: all checks pass
+exit 0

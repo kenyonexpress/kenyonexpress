@@ -1,0 +1,151 @@
+refs/.run-94266-live.png copied from refs/electro_shop_380.png (frozen baseline, not a fresh shot of the archive)
+refs/.run-94266-mine.png written (http://localhost:3311/category/hot-deals)
+category: frozen capture, live grid not counted; the local page shows 10 product card(s).
+=== compare --page=category ===
+  reference: everything loaded
+  ours     : everything loaded
+live: 380x5041  mine: 380x3895
+compared: 380x2600
+OVERALL first 2600px: 31.43%
+  of which: reference blank 11.59%  ours blank 16.06%  both painted 3.79%
+worst bands:
+  y    0-100   60.1%
+  y 1300-1400  57.4%
+  y 2100-2200  54.5%
+  y  900-1000  49.4%
+  y  500-600   48.9%
+  y 2200-2300  48.7%
+  y 1700-1800  48.5%
+  y 1800-1900  44%
+  y 1500-1600  35.6%
+  y 1200-1300  35.4%
+  y 1000-1100  34.6%
+  y  200-300   33%
+all bands:
+  y    0   60.1%  ##############################
+  y  100   16.3%  ########
+  y  200     33%  #################
+  y  300     33%  #################
+  y  400   22.4%  ###########
+  y  500   48.9%  ########################
+  y  600   17.9%  #########
+  y  700   28.1%  ##############
+  y  800    6.7%  ###
+  y  900   49.4%  #########################
+  y 1000   34.6%  #################
+  y 1100   11.4%  ######
+  y 1200   35.4%  ##################
+  y 1300   57.4%  #############################
+  y 1400     17%  #########
+  y 1500   35.6%  ##################
+  y 1600    7.3%  ####
+  y 1700   48.5%  ########################
+  y 1800     44%  ######################
+  y 1900    6.8%  ###
+  y 2000     28%  ##############
+  y 2100   54.5%  ###########################
+  y 2200   48.7%  ########################
+  y 2300   31.1%  ################
+  y 2400   13.3%  #######
+  y 2500   27.8%  ##############
+refs/.run-95043-live.png copied from refs/electro_shop_768.png (frozen baseline, not a fresh shot of the archive)
+refs/.run-95043-mine.png written (http://localhost:3311/category/hot-deals)
+category: frozen capture, live grid not counted; the local page shows 10 product card(s).
+=== compare --page=category ===
+  reference: everything loaded
+  ours     : everything loaded
+live: 768x4389  mine: 768x3235
+compared: 768x2600
+OVERALL first 2600px: 32.92%
+  of which: reference blank 11.54%  ours blank 16.49%  both painted 4.89%
+worst bands:
+  y  400-500   69.4%
+  y 1200-1300  68.2%
+  y  800-900   64.6%
+  y    0-100   57.9%
+  y  500-600   48.6%
+  y  300-400   45.4%
+  y 2100-2200  45.1%
+  y 1500-1600  43.7%
+  y 2500-2600  41.7%
+  y 1800-1900  41.2%
+  y 1100-1200  40.2%
+  y 2400-2500  35.9%
+all bands:
+  y    0   57.9%  #############################
+  y  100    5.2%  ###
+  y  200   19.1%  ##########
+  y  300   45.4%  #######################
+  y  400   69.4%  ###################################
+  y  500   48.6%  ########################
+  y  600    5.6%  ###
+  y  700   15.9%  ########
+  y  800   64.6%  ################################
+  y  900   32.1%  ################
+  y 1000    9.4%  #####
+  y 1100   40.2%  ####################
+  y 1200   68.2%  ##################################
+  y 1300   23.3%  ############
+  y 1400   22.3%  ###########
+  y 1500   43.7%  ######################
+  y 1600   26.7%  #############
+  y 1700   18.5%  #########
+  y 1800   41.2%  #####################
+  y 1900     11%  ######
+  y 2000   29.3%  ###############
+  y 2100   45.1%  #######################
+  y 2200   27.7%  ##############
+  y 2300    8.1%  ####
+  y 2400   35.9%  ##################
+  y 2500   41.7%  #####################
+refs/.run-95780-live.png copied from refs/electro_shop_1440.png (frozen baseline, not a fresh shot of the archive)
+refs/.run-95780-mine.png written (http://localhost:3311/category/hot-deals)
+category: frozen capture, live grid not counted; the local page shows 10 product card(s).
+=== compare --page=category ===
+  reference: everything loaded
+  ours     : everything loaded
+live: 1440x3806  mine: 1440x2600
+compared: 1440x2600
+OVERALL first 2600px: 21.09%
+  of which: reference blank 8.08%  ours blank 11.63%  both painted 1.38%
+worst bands:
+  y  900-1000  60.6%
+  y  100-200   49.1%
+  y 1200-1300  43.6%
+  y 1300-1400  41.8%
+  y  500-600   39.4%
+  y 2000-2100  36.3%
+  y 1700-1800  32.5%
+  y  400-500   31.7%
+  y 1900-2000  27.6%
+  y 1800-1900  21.6%
+  y 1000-1100  20.3%
+  y 1400-1500  19.8%
+all bands:
+  y    0   12.4%  ######
+  y  100   49.1%  #########################
+  y  200    8.4%  ####
+  y  300   14.1%  #######
+  y  400   31.7%  ################
+  y  500   39.4%  ####################
+  y  600   15.9%  ########
+  y  700    7.2%  ####
+  y  800   16.6%  ########
+  y  900   60.6%  ##############################
+  y 1000   20.3%  ##########
+  y 1100   15.6%  ########
+  y 1200   43.6%  ######################
+  y 1300   41.8%  #####################
+  y 1400   19.8%  ##########
+  y 1500    9.7%  #####
+  y 1600    7.8%  ####
+  y 1700   32.5%  ################
+  y 1800   21.6%  ###########
+  y 1900   27.6%  ##############
+  y 2000   36.3%  ##################
+  y 2100    4.1%  ##
+  y 2200    3.9%  ##
+  y 2300    2.6%  #
+  y 2400    2.4%  #
+  y 2500    3.4%  ##
+exit 0

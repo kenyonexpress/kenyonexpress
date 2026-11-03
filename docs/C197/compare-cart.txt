@@ -1,0 +1,155 @@
+  reference ok: 83 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+  reference ok: 83 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+refs/.run-6023-live.png written (file:///Users/ofir/kenyonexpress-web/kenyonexpress/refs/localized/ke_live_cart.html)
+refs/.run-6023-mine.png written (http://localhost:3311/cart)
+=== compare --page=cart ===
+  reference: 85 failed to load (54 script, 31 stylesheet)
+  ours     : everything loaded
+live: 951x4099  mine: 380x2600
+compared: 380x2600
+OVERALL first 2600px: 17.54%
+  of which: reference blank 9.84%  ours blank 7.06%  both painted 0.64%
+worst bands:
+  y 1700-1800  99%
+  y 1800-1900  51.9%
+  y 1200-1300  46.9%
+  y 1100-1200  33.7%
+  y  900-1000  32.9%
+  y 1000-1100  32.5%
+  y 2300-2400  26.7%
+  y 2200-2300  22.6%
+  y 2400-2500  20.9%
+  y 2500-2600  19%
+  y  800-900   15%
+  y 2100-2200  14.7%
+all bands:
+  y    0    7.5%  ####
+  y  100    3.9%  ##
+  y  200    4.3%  ##
+  y  300    1.7%  #
+  y  400    1.4%  #
+  y  500    2.6%  #
+  y  600    0.7%  
+  y  700    2.4%  #
+  y  800     15%  ########
+  y  900   32.9%  ################
+  y 1000   32.5%  ################
+  y 1100   33.7%  #################
+  y 1200   46.9%  #######################
+  y 1300      3%  ##
+  y 1400    2.7%  #
+  y 1500    2.3%  #
+  y 1600    6.2%  ###
+  y 1700     99%  ##################################################
+  y 1800   51.9%  ##########################
+  y 1900      0%  
+  y 2000    1.8%  #
+  y 2100   14.7%  #######
+  y 2200   22.6%  ###########
+  y 2300   26.7%  #############
+  y 2400   20.9%  ##########
+  y 2500     19%  ##########
+  reference ok: 83 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+  reference ok: 83 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+refs/.run-7656-live.png written (file:///Users/ofir/kenyonexpress-web/kenyonexpress/refs/localized/ke_live_cart.html)
+refs/.run-7656-mine.png written (http://localhost:3311/cart)
+=== compare --page=cart ===
+  reference: 85 failed to load (54 script, 31 stylesheet)
+  ours     : everything loaded
+live: 951x4077  mine: 768x2600
+compared: 768x2600
+OVERALL first 2600px: 26.84%
+  of which: reference blank 8.15%  ours blank 17.22%  both painted 1.46%
+worst bands:
+  y 1400-1500  99.8%
+  y 1000-1100  76.5%
+  y  900-1000  71.1%
+  y 1100-1200  65.3%
+  y 2200-2300  61.8%
+  y 2300-2400  59.5%
+  y 2100-2200  55.9%
+  y 2400-2500  48.2%
+  y 1300-1400  46.1%
+  y  800-900   44.8%
+  y 1200-1300  11.7%
+  y  300-400   10.5%
+all bands:
+  y    0    6.6%  ###
+  y  100    4.9%  ##
+  y  200    6.1%  ###
+  y  300   10.5%  #####
+  y  400    1.3%  #
+  y  500    1.7%  #
+  y  600    2.7%  #
+  y  700    3.5%  ##
+  y  800   44.8%  ######################
+  y  900   71.1%  ####################################
+  y 1000   76.5%  ######################################
+  y 1100   65.3%  #################################
+  y 1200   11.7%  ######
+  y 1300   46.1%  #######################
+  y 1400   99.8%  ##################################################
+  y 1500    9.3%  #####
+  y 1600    1.2%  #
+  y 1700    2.6%  #
+  y 1800      1%  #
+  y 1900      0%  
+  y 2000    2.9%  #
+  y 2100   55.9%  ############################
+  y 2200   61.8%  ###############################
+  y 2300   59.5%  ##############################
+  y 2400   48.2%  ########################
+  y 2500    2.6%  #
+  reference ok: 83 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+  reference ok: 83 wp-content/wp-includes stylesheet or script reference(s), woocommerce body class, generator "WordPress 6.8.1"
+refs/.run-8818-live.png written (file:///Users/ofir/kenyonexpress-web/kenyonexpress/refs/localized/ke_live_cart.html)
+refs/.run-8818-mine.png written (http://localhost:3311/cart)
+=== compare --page=cart ===
+  reference: 85 failed to load (54 script, 31 stylesheet)
+  ours     : everything loaded
+  WARNING: OURS 1444px wide at 1440 (overflow)
+live: 1440x4033  mine: 1444x2600
+compared: 1440x2600
+OVERALL first 2600px: 16.04%
+  of which: reference blank 3.22%  ours blank 11.48%  both painted 1.34%
+worst bands:
+  y 1100-1200  64.8%
+  y 2200-2300  42.1%
+  y 2300-2400  40.2%
+  y 1000-1100  39.7%
+  y  900-1000  38.3%
+  y 2100-2200  36.9%
+  y  800-900   35.4%
+  y 1200-1300  24.6%
+  y 2400-2500  15.8%
+  y 2000-2100  15.2%
+  y    0-100   9.2%
+  y  300-400   7.6%
+all bands:
+  y    0    9.2%  #####
+  y  100    7.3%  ####
+  y  200      4%  ##
+  y  300    7.6%  ####
+  y  400    5.9%  ###
+  y  500    3.6%  ##
+  y  600    1.4%  #
+  y  700    1.9%  #
+  y  800   35.4%  ##################
+  y  900   38.3%  ###################
+  y 1000   39.7%  ####################
+  y 1100   64.8%  ################################
+  y 1200   24.6%  ############
+  y 1300    2.1%  #
+  y 1400    2.7%  #
+  y 1500    4.6%  ##
+  y 1600    5.2%  ###
+  y 1700    3.3%  ##
+  y 1800    0.9%  
+  y 1900    1.5%  #
+  y 2000   15.2%  ########
+  y 2100   36.9%  ##################
+  y 2200   42.1%  #####################
+  y 2300   40.2%  ####################
+  y 2400   15.8%  ########
+  y 2500    2.9%  #
+exit 0

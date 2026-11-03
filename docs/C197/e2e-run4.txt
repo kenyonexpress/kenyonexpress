@@ -1,0 +1,10 @@
+067846447 Survive the /checkout to /cart redirect in the 320px width read (C197)
+Tue Nov  3 23:55:48 +07 2026
+$ E2E_PORT=3417 E2E_WEB_COMMAND="pnpm start" TURNSTILE_SECRET_KEY= E2E_WORKERS=3 E2E_FORWARDED_FOR_PREFIX=10.197.44 npx playwright test --reporter=line
+10 packets transmitted, 10 packets received, 0.0% packet loss
+10 packets transmitted, 10 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 234.520/276.862/319.082/32.959 ms
+  109 skipped
+  2453 passed (58.1m)
+exit=0
+Wed Nov  4 00:54:00 +07 2026

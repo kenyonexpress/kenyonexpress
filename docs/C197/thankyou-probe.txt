@@ -1,0 +1,12 @@
+Running 1 test using 1 worker
+[1/1] [chromium-380] › e2e/zz-c197-probe.spec.ts:7:5 › C197 thank-you and order page show the 8-digit code and supplier wa.me
+[chromium-380] › e2e/zz-c197-probe.spec.ts:7:5 › C197 thank-you and order page show the 8-digit code and supplier wa.me
+return code: קוד מימוש בן 8 ספרות: 1194-9957
+return wa.me count: 1
+return wa.me href: https://wa.me/97230000000?text=%D7%94%D7%96%D7%9E%D7%A0%D7%94%20EDFC7668
+return qr count: 1
+return invoice links: 1
+order page code: קוד מימוש בן 8 ספרות: 1194-9957
+order page invoice links: 1
+order page wa.me links: 3
+  1 passed (8.7s)

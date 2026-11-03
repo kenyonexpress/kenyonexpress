@@ -1,0 +1,3 @@
+compare: --page=account requires --baseline (no default reference exists).
+Example: --baseline=wayback_account_380.png --live-url=http://localhost:3311/account
+exit 2

@@ -1,0 +1,5 @@
+/c/electronics   HTTP/1.1 307 Temporary Redirect location: /category/electronics 
+/c/pets          HTTP/1.1 307 Temporary Redirect location: /category/pets 
+/c/hot-deals     HTTP/1.1 307 Temporary Redirect location: /category/hot-deals 
+/c/tel-aviv      HTTP/1.1 200 OK 
+/c               HTTP/1.1 200 OK 

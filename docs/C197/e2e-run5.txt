@@ -1,0 +1,13 @@
+067846447 Survive the /checkout to /cart redirect in the 320px width read (C197)
+Wed Nov  4 00:54:00 +07 2026
+$ E2E_PORT=3417 E2E_WEB_COMMAND="pnpm start" TURNSTILE_SECRET_KEY= E2E_WORKERS=3 E2E_FORWARDED_FOR_PREFIX=10.197.45 npx playwright test --reporter=line
+10 packets transmitted, 9 packets received, 10.0% packet loss
+10 packets transmitted, 9 packets received, 10.0% packet loss
+round-trip min/avg/max/stddev = 232.073/256.975/323.555/30.548 ms
+  1) [webkit-380] › e2e/dark-mode-ux30.spec.ts:68:7 › UX30: Dark mode toggle with localStorage persistence › should persist theme preference across browser restarts 
+  2) [webkit-768] › e2e/dark-mode-ux30.spec.ts:38:7 › UX30: Dark mode toggle with localStorage persistence › should support dark mode across multiple pages 
+  2 failed
+  111 skipped
+  2449 passed (59.1m)
+exit=1
+Wed Nov  4 01:53:13 +07 2026

@@ -1,0 +1,15 @@
+Running 1 test using 1 worker
+[1/1] [chromium-380] › e2e/zz-c197-account.spec.ts:5:5 › C197 account area renders and the all-in-app switch saves
+[chromium-380] › e2e/zz-c197-account.spec.ts:5:5 › C197 account area renders and the all-in-app switch saves
+/account -> 200 /account h1="האזור האישי"
+/account/orders -> 200 /account/orders h1="ההזמנות שלי"
+/account/coupons -> 200 /account/coupons h1="הקופונים שלי"
+/account/vouchers -> 200 /account/coupons h1="הקופונים שלי"
+/account/my-vouchers -> 200 /account/coupons h1="הקופונים שלי"
+/account/wallet -> 200 /account/wallet h1="הארנק שלי"
+/account/details -> 200 /account/details h1="הפרטים שלי"
+/account/security -> 200 /account/security h1="אבטחת החשבון"
+/account/privacy -> 200 /account/privacy h1="פרטיות ונתונים"
+/account/notifications -> 200 /account/notifications h1="התראות"
+switch before=false after-reload=true
+  1 passed (35.0s)
