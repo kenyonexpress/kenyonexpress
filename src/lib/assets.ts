@@ -8,7 +8,6 @@
  * `-light` is the white-ink variant for the dark footer bar.
  */
 export const LOGO = '/images/logo.svg'
-export const LOGO_FOOTER = '/images/logo.svg'
 export const LOGO_PNG = {
   dark: ['/images/logo.png', '/images/logo@2x.png', '/images/logo@3x.png'],
   light: ['/images/logo-light.png', '/images/logo-light@2x.png', '/images/logo-light@3x.png'],

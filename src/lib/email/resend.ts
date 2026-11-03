@@ -86,8 +86,3 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     return { ok: false, reason: 'network' }
   }
 }
-
-/** Test seam. Never called by application code. */
-export function __resetEmailWarning(): void {
-  missingKeyReported = false
-}

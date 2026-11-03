@@ -101,13 +101,6 @@ export type WebPushOutcome =
   | { kind: 'rejected'; status: number; reason: string }
 
 /**
- * The push service's own ceiling, from RFC 8291. It applies to the ENCRYPTED
- * body, which is larger than the plaintext by the AES-GCM tag and the record
- * header, so a plaintext close to the limit is over it.
- */
-export const PUSH_PAYLOAD_LIMIT_BYTES = 4096
-
-/**
  * Deliberately well under the limit. The encryption overhead is a fixed 103
  * bytes plus padding, and a body that squeaks under 4096 in a test squeaks over
  * it the first time a supplier has a long name.

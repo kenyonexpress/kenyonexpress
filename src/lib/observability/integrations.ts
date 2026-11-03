@@ -41,7 +41,7 @@ export interface UnifiedObservability {
  * Fetch Sentry error statistics via Sentry API
  * Requires: SENTRY_AUTH_TOKEN environment variable
  */
-export async function fetchSentryStats(): Promise<SentryStats | null> {
+async function fetchSentryStats(): Promise<SentryStats | null> {
   try {
     const sentryToken = process.env.SENTRY_AUTH_TOKEN
     const sentryOrg = process.env.NEXT_PUBLIC_SENTRY_ORG || 'kenyonexpress'

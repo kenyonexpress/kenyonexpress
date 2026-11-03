@@ -14,9 +14,6 @@ import { z } from 'zod'
 /** PostgREST: relation does not exist. The table ships in pending/154. */
 export const TABLE_MISSING = 'PGRST205'
 
-/** RLS refusal -- the policy said this purchase does not back this review. */
-export const NOT_VERIFIED = '42501'
-
 /** UNIQUE(order_item_id) -- this purchase already has its review. */
 export const ALREADY_REVIEWED = '23505'
 

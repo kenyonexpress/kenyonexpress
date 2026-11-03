@@ -1,9 +1,5 @@
 import { type Agorot, agorot, sumAgorot } from '@/lib/money'
-import {
-  EVERY_FIFTH_PURCHASE_CASHBACK_BP,
-  FIRST_PURCHASE_CASHBACK_BP,
-  cashbackRateBp,
-} from './engine'
+import { FIRST_PURCHASE_CASHBACK_BP, cashbackRateBp } from './engine'
 import { CASHBACK_LIFETIME_MONTHS, cashbackExpiresAt } from './expiry'
 
 /**
@@ -89,9 +85,6 @@ export function nextBonus(paidOrderCount: number): NextBonus {
     progressPercent: Math.round((done * 100) / BONUS_EVERY_N_PURCHASES),
   }
 }
-
-/** Engine rate for a bonus purchase, exported so the page can name it. */
-export const BONUS_RATE_BP = EVERY_FIFTH_PURCHASE_CASHBACK_BP
 
 export interface ExpiringCredit {
   /** Integer agorot of this credit still unconsumed by later debits. */
