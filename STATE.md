@@ -1,7 +1,11 @@
-RESUME FROM: C194
+RESUME FROM: M02-c349
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T16:51:18+07:00
+- item: M01-c349
+- BLOCKED: home-380-content-floor (both painted 13.35%; 768 and 1440 pass)
 
 ### 2026-11-03T16:40:40+07:00
 - item: C194
@@ -98,10 +102,6 @@ RESUME FROM: C194
 ### 2026-11-03T05:00:51+07:00
 - item: C171
 - BLOCKED: network: production Supabase UNHEALTHY and 923 ms average RTT, E2E retry skipped
-
-### 2026-11-03T04:58:40+07:00
-- item: C170
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

@@ -30991,3 +30991,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T04:57:26+07:00
 - item: C152
 - BLOCKED: supabase-outage (production Postgres UNHEALTHY, build cannot collect page data, 0 Lighthouse runs possible)
+
+## Archived 2026-11-03T16:51:18+07:00 after M01-c349 (3 lines from STATE.md)
+
+### 2026-11-03T04:58:40+07:00
+- item: C170
+- RESULT: DONE
