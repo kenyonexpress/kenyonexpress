@@ -1,14 +1,10 @@
 'use client'
 
+import { urlBase64ToUint8Array } from '@/lib/push/vapid'
+import { savePushSubscription } from '@/server/actions/push'
 import { useEffect, useState } from 'react'
 
 const DISMISS_KEY = 'ke_push_prompt_dismissed'
-
-function base64UrlToUint8Array(value: string): Uint8Array {
-  const padded = `${value}${'='.repeat((4 - (value.length % 4)) % 4)}`
-  const raw = atob(padded.replace(/-/g, '+').replace(/_/g, '/'))
-  return Uint8Array.from(raw, (c) => c.charCodeAt(0))
-}
 
 /**
  * Offered once a purchase has gone through: reminders before a coupon
@@ -50,16 +46,29 @@ export default function PushPrompt() {
       const registration =
         (await navigator.serviceWorker.getRegistration()) ??
         (await navigator.serviceWorker.register('/sw.js'))
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: base64UrlToUint8Array(vapid as string) as BufferSource,
+      const subscription =
+        (await registration.pushManager.getSubscription()) ??
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapid as string).buffer as ArrayBuffer,
+        }))
+      // The cookie-authed action, not /api/push/subscribe: that route takes a
+      // Bearer token this page does not have, so every save from here was a
+      // 401 and the shopper saw "could not enable" after granting permission.
+      // A guest buyer is an anonymous Supabase user, which the action accepts.
+      const json = subscription.toJSON()
+      const saved = await savePushSubscription({
+        endpoint: json.endpoint ?? '',
+        keys: { p256dh: json.keys?.p256dh ?? '', auth: json.keys?.auth ?? '' },
       })
-      const response = await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(subscription.toJSON()),
-      })
-      setState(response.ok ? 'done' : 'error')
+      if ('error' in saved) {
+        // Browser subscribed with no stored row is unreachable and also stops
+        // the next attempt from asking again; undo it.
+        await subscription.unsubscribe()
+        setState('error')
+        return
+      }
+      setState('done')
     } catch {
       setState('error')
     }

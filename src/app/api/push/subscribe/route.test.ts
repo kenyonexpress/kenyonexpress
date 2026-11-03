@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { POST } from './route'
 
+const upsert = vi.hoisted(() => vi.fn(async (..._args: unknown[]) => ({ error: null })))
+
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
     auth: {
@@ -10,7 +12,7 @@ vi.mock('@supabase/supabase-js', () => ({
       })),
     },
     from: vi.fn((_table) => ({
-      upsert: vi.fn(async () => ({ error: null })),
+      upsert,
     })),
   })),
 }))
@@ -63,5 +65,22 @@ describe('POST /api/push/subscribe', () => {
 
     const response = await POST(request as any)
     expect(response.status).toBe(200)
+  })
+  it('writes the live column names and conflicts on endpoint', async () => {
+    // 290's table has p256dh/auth and a unique endpoint. keys_p256dh/keys_auth
+    // and (user_id, endpoint) match nothing there and answered 500.
+    const request = new Request('http://localhost/api/push/subscribe', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer valid-token' },
+      body: JSON.stringify({
+        endpoint: 'https://fcm.googleapis.com/x',
+        keys: { p256dh: 'k', auth: 's' },
+      }),
+    })
+    await POST(request as any)
+    expect(upsert).toHaveBeenCalledWith(
+      { user_id: 'user-123', endpoint: 'https://fcm.googleapis.com/x', p256dh: 'k', auth: 's' },
+      { onConflict: 'endpoint' },
+    )
   })
 })

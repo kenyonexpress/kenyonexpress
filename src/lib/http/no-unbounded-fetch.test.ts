@@ -68,8 +68,6 @@ const ALLOWED: Record<string, string> = {
 
   'app/error.tsx':
     'Browser error boundary: probes our own /api/health to tell the visitor whether the site is down, and a hung probe costs the page nothing.',
-  'components/account/BrowserPushToggle.tsx':
-    'Browser, to our own /api/push/subscribe, fired by a user click on a toggle that shows its busy state; a hang costs the page nothing.',
   'components/auth/PasskeyBanner.tsx':
     'Browser, to our own passkey routes, inside a WebAuthn ceremony the browser already bounds with its own prompt timeout.',
   'components/auth/PasskeyManager.tsx':
@@ -92,8 +90,6 @@ const ALLOWED: Record<string, string> = {
     'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
   'components/storefront/SupplierLeadForm.tsx':
     'Browser call to our own origin from a form that shows its own pending state; the server side of the route is rate limited and bounded.',
-  'components/push/PushPrompt.tsx':
-    'Browser, fire-and-forget subscribe to our own origin after the permission prompt; a hang costs the page nothing.',
   'lib/offline/sync.ts':
     'Browser replay of the offline queue to our own origin; a stalled item stays queued and is retried with backoff, which is its own ceiling.',
 

@@ -1,12 +1,8 @@
 'use client'
 
+import { urlBase64ToUint8Array } from '@/lib/push/vapid'
+import { removePushSubscription, savePushSubscription } from '@/server/actions/push'
 import { useEffect, useState } from 'react'
-
-function base64UrlToUint8Array(value: string): Uint8Array {
-  const padded = `${value}${'='.repeat((4 - (value.length % 4)) % 4)}`
-  const raw = atob(padded.replace(/-/g, '+').replace(/_/g, '/'))
-  return Uint8Array.from(raw, (c) => c.charCodeAt(0))
-}
 
 /**
  * Per-browser push switch (rc5 F14). On subscribes this browser through the
@@ -37,16 +33,21 @@ export default function BrowserPushToggle() {
     const registration =
       (await navigator.serviceWorker.getRegistration()) ??
       (await navigator.serviceWorker.register('/sw.js'))
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: base64UrlToUint8Array(vapid as string) as BufferSource,
+    const subscription =
+      (await registration.pushManager.getSubscription()) ??
+      (await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapid as string).buffer as ArrayBuffer,
+      }))
+    // Server actions, not /api/push/subscribe: that route wants a Bearer token
+    // this page never sends (every save was a 401) and exports no DELETE (every
+    // off was a 405 that left the row behind).
+    const json = subscription.toJSON()
+    const saved = await savePushSubscription({
+      endpoint: json.endpoint ?? '',
+      keys: { p256dh: json.keys?.p256dh ?? '', auth: json.keys?.auth ?? '' },
     })
-    const response = await fetch('/api/push/subscribe', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(subscription.toJSON()),
-    })
-    if (!response.ok) {
+    if ('error' in saved) {
       await subscription.unsubscribe()
       throw new Error('store_failed')
     }
@@ -56,12 +57,9 @@ export default function BrowserPushToggle() {
     const registration = await navigator.serviceWorker.getRegistration()
     const subscription = await registration?.pushManager.getSubscription()
     if (!subscription) return
-    await fetch('/api/push/subscribe', {
-      method: 'DELETE',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ endpoint: subscription.endpoint }),
-    })
+    const endpoint = subscription.endpoint
     await subscription.unsubscribe()
+    await removePushSubscription(endpoint)
   }
 
   async function toggle() {

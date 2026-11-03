@@ -28,14 +28,18 @@ async function handlePOST(request: NextRequest): Promise<Response> {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Column names and conflict target are the live table's (290): `p256dh`,
+    // `auth`, unique on `endpoint`. The old `keys_*` names and a
+    // (user_id, endpoint) target matched no column and no index, so every
+    // authorised call answered 500.
     const { error } = await supabase.from('push_subscriptions').upsert(
       {
         user_id: data.user.id,
         endpoint: subscription.endpoint,
-        keys_p256dh: subscription.keys.p256dh,
-        keys_auth: subscription.keys.auth,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
       },
-      { onConflict: 'user_id,endpoint' },
+      { onConflict: 'endpoint' },
     )
 
     if (error) {
