@@ -303,6 +303,21 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
   await expect(addButton).toBeVisible()
   await expect(addButton).toBeEnabled()
   await addButton.click()
+  // A CLICK BEFORE HYDRATION IS LOST. The button is server-rendered, visible
+  // and enabled before React attaches its handler, and on a slow link
+  // (C197, 2026-11-03: 280 ms RTT, Supabase reads at 1.5-2.6 s) the click
+  // landed first and the badge stayed at `before` with no request sent. A
+  // handled click raises the optimistic count within milliseconds, so if it
+  // has not moved in 5 s the click was never handled and one more is safe.
+  const handled = await expect
+    .poll(async () => (await headerCartCount(page)) > before, { timeout: 5_000 })
+    .toBe(true)
+    .then(() => true)
+    .catch(() => false)
+  if (!handled) {
+    await page.waitForLoadState('load')
+    await addButton.click()
+  }
   try {
     await expect
       .poll(async () => (await addButton.isEnabled()) && (await headerCartCount(page)) > before, {

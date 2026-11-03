@@ -40,7 +40,7 @@ export default function HeroMobile() {
               )}
               {s.promo_large && (
                 <span className="text-sm font-bold">
-                  {s.promo_small} <span className="text-price">{s.promo_large}</span>
+                  {s.promo_small} <span>{s.promo_large}</span>
                 </span>
               )}
             </span>
