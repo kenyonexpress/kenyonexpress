@@ -31123,3 +31123,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T13:01:19+07:00
 - item: C191
 - RESULT: DONE
+
+## Archived 2026-11-03T18:20:53+07:00 after M05-c350 (3 lines from STATE.md)
+
+### 2026-11-03T14:04:05+07:00
+- item: C192
+- BLOCKED: prod Turnstile rejects headless sign-in by design and a 2172-test pass takes ~6h on this link, so 2x consecutive green is not producible
