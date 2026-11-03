@@ -56,6 +56,10 @@ const config = {
     noEmit: true,
     incremental: false,
     plugins: [],
+    // tsconfig's `types: ['vitest/globals']` stops automatic @types inclusion.
+    // The full project still gets node's types transitively; a handful of
+    // changed test files importing `node:fs` does not, and failed TS2307.
+    types: ['vitest/globals', 'node'],
   },
   files: roots,
   include: [],

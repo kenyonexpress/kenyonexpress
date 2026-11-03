@@ -1160,4 +1160,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '332',
+    file: '332_sms_definer_lockdown.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

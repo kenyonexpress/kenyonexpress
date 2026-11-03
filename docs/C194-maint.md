@@ -150,3 +150,12 @@ INF no leaks found
 
 ## ntfy
 `scripts/run-m-cycle-loop.sh` posted `M-Cycle #N: Critical failures detected`, outside the 4-string whitelist. Removed; test now asserts no curl to ntfy. No ntfy sent by this item.
+
+## CI after the first push (36a108c58), and the follow-up
+Run 41600504719: gitleaks success, unit tests `1 failed | 875 passed | 3 skipped (879)`, the one being
+`run pnpm migrations:manifest and commit the result` (332 added); typecheck (changed files) 13 x
+`TS2307: Cannot find module 'node:fs'`. Root cause: the temp tsconfig inherits `types: ['vitest/globals']`,
+and only a gitignored `next-env.d.ts` (absent in CI, which does not build) brought node's types in.
+Reproduced locally by hiding next-env.d.ts: original script 13 errors, fixed script
+`typecheck-changed: tsc --strict clean on changed files`. Manifest regenerated:
+`migration manifest: 191 files -> src/lib/admin/migration-manifest.ts`.
