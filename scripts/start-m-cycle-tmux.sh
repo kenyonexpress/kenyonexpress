@@ -46,6 +46,17 @@ if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     echo "[START-M-CYCLE] To attach: tmux attach -t $SESSION_NAME"
     exit 0
   else
+    # send-keys types into whatever owns the pane. On 2026-11-03 (C194) that
+    # was ~/ke-goals/run-final.sh, the queue runner (it requeues the M-cycle
+    # itself), and the command landed in its terminal input. Only type into an
+    # idle shell: a pane whose shell has a child process is busy.
+    pane_pid="$(tmux list-panes -t "$SESSION_NAME" -F '#{pane_pid}' | head -1)"
+    if pgrep -P "$pane_pid" >/dev/null 2>&1; then
+      echo "[START-M-CYCLE] Session $SESSION_NAME is busy (pane pid $pane_pid has children):"
+      ps -o pid,command -p "$(pgrep -P "$pane_pid" | head -1)" | tail -1 | cut -c1-120
+      echo "[START-M-CYCLE] Not typing into it. Use another session name or stop that process."
+      exit 1
+    fi
     echo "[START-M-CYCLE] Session exists but M-Cycle not running. Starting M-Cycle..."
     tmux send-keys -t "$SESSION_NAME" "cd $PROJECT_ROOT && ./scripts/run-m-cycle-loop.sh" C-m
   fi

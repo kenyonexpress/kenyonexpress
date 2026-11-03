@@ -225,3 +225,11 @@ success E2E (Playwright)
 success Bundle budget and migration lint
 ```
 First fully green CI run on closeout/v1-final in this window (red since at least 2026-11-02T23:54Z).
+
+## The 2h loop
+`ke-final` is not idle: its pane runs `~/ke-goals/run-final.sh`, the queue runner, which already requeues the M-cycle (`MAINT CYCLE N QUEUED`). So no second loop was started. `scripts/start-m-cycle-tmux.sh` had typed `cd ... && ./scripts/run-m-cycle-loop.sh` into that runner's terminal; the line was flushed from /dev/ttys000 input (`termios.tcflush TCIFLUSH`, `flushed`), and `pgrep -fl run-m-cycle-loop` finds nothing. The launcher now refuses a pane whose shell has children:
+```
+[START-M-CYCLE] Session ke-final is busy (pane pid 9682 has children):
+ 9685 tee -a /Users/ofir/ke-goals/final.log
+[START-M-CYCLE] Not typing into it. Use another session name or stop that process.
+```
