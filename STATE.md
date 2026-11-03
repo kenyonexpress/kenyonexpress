@@ -1,7 +1,11 @@
-RESUME FROM: C193
+RESUME FROM: C194
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T14:05:34+07:00
+- item: C193
+- BLOCKED: C193 cardcom live charge never run (C191 gate HOLD 1 and 2)
 
 ### 2026-11-03T14:04:05+07:00
 - item: C192
@@ -98,10 +102,6 @@ RESUME FROM: C193
 ### 2026-11-03T04:57:26+07:00
 - item: C152
 - BLOCKED: supabase-outage (production Postgres UNHEALTHY, build cannot collect page data, 0 Lighthouse runs possible)
-
-### 2026-11-03T04:17:04+07:00
-- item: C151
-- BLOCKED: network (iPhone hotspot 172.20.10.1, Supabase 1.1-3.7 s/ping); run 7 green 2362/0, runs 9-10 lost to page-load timeouts
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

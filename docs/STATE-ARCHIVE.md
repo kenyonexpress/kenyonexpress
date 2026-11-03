@@ -30979,3 +30979,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T22:31:10+07:00
 - item: C150
 - RESULT: DONE
+
+## Archived 2026-11-03T14:05:34+07:00 after C193 (3 lines from STATE.md)
+
+### 2026-11-03T04:17:04+07:00
+- item: C151
+- BLOCKED: network (iPhone hotspot 172.20.10.1, Supabase 1.1-3.7 s/ping); run 7 green 2362/0, runs 9-10 lost to page-load timeouts
