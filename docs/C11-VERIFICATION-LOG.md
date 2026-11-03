@@ -42,7 +42,7 @@ Created automated verification script (`scripts/verify-web-push.mjs`) that:
 ### Production VAPID Keys Status
 
 Verified in Vercel project `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`:
-- ✅ `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = `BIFSj640ppK2HfjDhK8bMt2St8qJSwQ2v4YgNy1Plk17k3vec7YARdh4Ybdg3if8W2_cEVcPVYjvK-Q-fmQSuSA`
+- ✅ `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = `[VAPID public key, see NEXT_PUBLIC_VAPID_PUBLIC_KEY]`
 - ✅ `VAPID_PRIVATE_KEY` = [SENSITIVE - confirmed set]
 
 ### Test Suite Results

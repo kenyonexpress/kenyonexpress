@@ -40,7 +40,7 @@ const backups = readdirSync(BACKUP_DIR)
     const match = filename.match(/kenyonexpress-backup-(\d{4})-(\d{2})-(\d{2})-(\d{4})/)
     const backupDate = match
       ? new Date(
-          `${match[1]}-${match[2]}-${match[3]}T${match[4].slice(0, 2)}:${match[4].slice(2, 4)}:00Z`,
+          `${match[1]}-${match[2]}-${match[3]}T${match[4].slice(0, 2)}:${match[4].slice(2, 4)}:00`,
         ).getTime()
       : 0
 

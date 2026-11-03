@@ -44,20 +44,21 @@ const TASKS = {
   },
   M04: {
     name: 'E2E Health',
-    script: 'parse-e2e-results.mjs',
-    timeout: 10000,
+    script: 'm-cycle-e2e-health.mjs',
+    timeout: 60000,
     critical: false,
   },
   M05: {
     name: 'DB Performance',
-    script: 'db-performance-monitor.mjs',
+    // reads NEXT_PUBLIC_SUPABASE_URL / ANON_KEY, which only .env.local holds
+    cmd: 'node --env-file-if-exists=.env.local scripts/db-performance-monitor.mjs',
     timeout: 30000,
     critical: false,
   },
   M06: {
     name: 'Lighthouse Smoke',
-    script: 'lighthouse-smoke.mjs',
-    timeout: 60000,
+    script: 'm-cycle-lighthouse.mjs',
+    timeout: 540000,
     critical: false,
   },
   M07: {
@@ -99,14 +100,14 @@ const TASKS = {
   },
   M13: {
     name: 'Money Constraints',
-    script: 'audit-money-constraints.mjs',
-    timeout: 15000,
+    cmd: 'node scripts/m-cycle-linked-audit.mjs audit-money-constraints.mjs',
+    timeout: 150000,
     critical: true,
   },
   M14: {
     name: 'Role Separation',
-    script: 'audit-role-separation.mjs',
-    timeout: 15000,
+    cmd: 'node scripts/m-cycle-linked-audit.mjs audit-role-separation.mjs',
+    timeout: 150000,
     critical: false,
   },
   M15: {

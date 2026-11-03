@@ -203,13 +203,13 @@ describe('M-Cycle System', () => {
   })
 
   describe('Integration', () => {
-    it('should reference correct ntfy.sh endpoint', () => {
+    it('should not post to ntfy (whitelist: LAUNCH / BLOCKED / LOOP dead / STALL only)', () => {
       const scriptContent = fs.readFileSync(
         path.join(projectRoot, 'scripts', 'run-m-cycle-loop.sh'),
         'utf8',
       )
 
-      expect(scriptContent).toContain('ntfy.sh/kenyon-ofir-limit')
+      expect(scriptContent).not.toMatch(/curl[^\n]*ntfy\.sh/)
     })
 
     it('should write to docs/M-CYCLE-STATUS.md', () => {

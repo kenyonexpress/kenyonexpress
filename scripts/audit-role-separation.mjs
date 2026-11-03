@@ -98,6 +98,16 @@ const IDENTITY_ARG_ALLOWED = new Map([
   ['is_supplier_owner', 'same shape as is_supplier_member'],
   ['is_supplier_order', 'takes an order id and joins it to the caller membership'],
   ['is_supplier_shipping_order', 'same shape as is_supplier_order'],
+  // Read from production 2026-11-03 (C194).
+  ['fn_check_api_rate_limit', 'raises unless auth.jwt() role is service_role; takes a key id'],
+  [
+    'fn_record_search_click',
+    'anonymous search analytics by design; takes a product id, not a user',
+  ],
+  [
+    'product_rating_summary',
+    'public aggregate of approved reviews; takes a product id, not a user',
+  ],
 ])
 
 /**

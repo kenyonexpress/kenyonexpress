@@ -1,0 +1,16 @@
+# gitleaks reads this from the scanned source root (CI: /repo).
+# Default rules stay on; only these paths are skipped, each one read on
+# 2026-11-03 (C194) and found to hold fixtures, not credentials.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "test fixtures and an icon font"
+paths = [
+  # Unit tests build fake keys, tokens and PEM blocks inline.
+  '''\.test\.(ts|tsx|mjs)$''',
+  # Fake push subscription used to exercise web-push locally.
+  '''(^|/)scripts/test-push-delivery\.mjs$''',
+  # Base64 font data that happens to match the AWS key pattern.
+  '''(^|/)src/styles/electro-icons\.css$''',
+]

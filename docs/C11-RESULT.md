@@ -24,7 +24,7 @@ Deploy Web Push notification system with VAPID keys in Vercel, subscription endp
 
 **Confirmed in Vercel Production** (project: `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`):
 ```
-NEXT_PUBLIC_VAPID_PUBLIC_KEY = BIFSj640ppK2HfjDhK8bMt2St8qJSwQ2v4YgNy1Plk17k3vec7YARdh4Ybdg3if8W2_cEVcPVYjvK-Q-fmQSuSA
+NEXT_PUBLIC_VAPID_PUBLIC_KEY = [VAPID public key, see NEXT_PUBLIC_VAPID_PUBLIC_KEY]
 VAPID_PRIVATE_KEY = [SENSITIVE - already set]
 VAPID_SUBJECT = mailto:support@kenyonexpress.co.il (default)
 ```
@@ -187,7 +187,7 @@ Event (order paid)
    navigator.serviceWorker.ready.then(async (reg) => {
      const sub = await reg.pushManager.subscribe({
        userVisibleOnly: true,
-       applicationServerKey: 'BIFSj640ppK2HfjDhK8bMt2St8qJSwQ2v4YgNy1Plk17k3vec7YARdh4Ybdg3if8W2_cEVcPVYjvK-Q-fmQSuSA'
+       applicationServerKey: '[VAPID public key, see NEXT_PUBLIC_VAPID_PUBLIC_KEY]'
      });
      await fetch('/api/push/subscribe', {
        method: 'POST',

@@ -96,6 +96,15 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   //
   // CLASSIFIED 2026-09-10, with the migration.
   fn_next_invoice_number: ['src/server/payments/invoices.ts'],
+  // `332_sms_definer_lockdown.sql` revokes PUBLIC/anon/authenticated and grants
+  // service_role. Each has one caller, and both build the client with
+  // `createAdminClient()`: the broadcasts route behind `validateAdminRequest`,
+  // the Twilio webhook behind its signature check. Before the revoke an anon
+  // PostgREST call could create a broadcast or forge an unsubscribe event.
+  //
+  // CLASSIFIED 2026-11-03 (C194), with the migration.
+  fn_create_sms_broadcast: ['src/app/api/sms/broadcasts/route.ts'],
+  fn_process_sms_delivery_event: ['src/app/api/webhooks/twilio/route.ts'],
 }
 
 // Both migration directories. 143-145 were applied through MCP on 2026-09-03

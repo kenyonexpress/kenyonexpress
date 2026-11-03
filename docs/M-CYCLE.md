@@ -96,11 +96,9 @@ Updated after each cycle with:
 
 ### Notifications
 
-Critical failures trigger ntfy.sh notifications:
-```
-Endpoint: https://ntfy.sh/kenyon-ofir-limit
-Message: "M-Cycle #N: Critical failures detected"
-```
+None. `kenyon-ofir-limit` takes only `hey LAUNCH`, `hey BLOCKED <item> <reason>`,
+`hey LOOP dead` and `hey STALL` (whitelist, 23.10.2026), so a failed gate is
+read from `docs/M-CYCLE-STATUS.md` and is not pushed. Removed in C194.
 
 ## Architecture
 
@@ -148,7 +146,7 @@ The M-cycle complements the existing eternal operations system documented in `do
 
 - **Spawner independence**: M-cycle runs in its own tmux session (`ke-final`), separate from the main autopilot spawner (`kenyon-loop.sh`)
 - **No conflict**: M-cycle does not modify code or run commits, only monitors health
-- **Shared ntfy**: Uses same notification channel as the main loop
+- **No ntfy**: the loop sends nothing (see Notifications)
 
 ### With Existing Maintenance Loops
 
@@ -198,16 +196,6 @@ tmux capture-pane -t ke-final -p | tail -30
 
 # Restart
 ./scripts/start-m-cycle-tmux.sh
-```
-
-### Critical Failures Not Notifying
-
-```bash
-# Test notification manually
-curl -d "Test M-Cycle notification" https://ntfy.sh/kenyon-ofir-limit
-
-# Check if curl is available
-command -v curl
 ```
 
 ### Stop Flag Not Working

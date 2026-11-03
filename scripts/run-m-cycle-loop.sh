@@ -58,10 +58,8 @@ while true; do
     # We continue the loop but log the failure
     if [ $exit_code -eq 1 ]; then
       echo "[M-CYCLE-LOOP] ⚠️  CRITICAL FAILURES DETECTED - Check docs/M-CYCLE-STATUS.md"
-      # Send notification
-      if command -v curl &> /dev/null; then
-        curl -d "M-Cycle #$cycle_count: Critical failures detected" https://ntfy.sh/kenyon-ofir-limit 2>/dev/null || true
-      fi
+      # No ntfy here: kenyon-ofir-limit takes only LAUNCH / BLOCKED / LOOP dead /
+      # STALL (whitelist, 23.10.2026). A failed gate is read from the report.
     elif [ $exit_code -eq 2 ]; then
       echo "[M-CYCLE-LOOP] ❌ SCRIPT ERROR - Stopping loop"
       exit 2

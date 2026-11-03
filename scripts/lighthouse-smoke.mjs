@@ -54,6 +54,9 @@ const result = spawnSync(
     '--output=json',
     `--output-path=${out}`,
     '--quiet',
+    // LH_THROTTLING=devtools applies the same 4x CPU / 150ms RTT for real
+    // instead of modelling it; the honest local number (m-cycle-lighthouse.mjs).
+    ...(process.env.LH_THROTTLING ? [`--throttling-method=${process.env.LH_THROTTLING}`] : []),
   ],
   { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
 )

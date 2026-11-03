@@ -99,7 +99,12 @@ if (PRINT_SQL) {
 function report(rows) {
   const have = new Map()
   for (const r of rows) {
-    const cols = Array.isArray(r.columns) ? r.columns : String(r.columns ?? '').split(',')
+    // `supabase db query --linked` returns the array as Postgres text, `{a,b}`.
+    const cols = Array.isArray(r.columns)
+      ? r.columns
+      : String(r.columns ?? '')
+          .replace(/^\{|\}$/g, '')
+          .split(',')
     const key = `${r.table_name}:${cols
       .map((c) => String(c).trim())
       .sort()

@@ -15,12 +15,12 @@ Configured password protection for preview deployments on Vercel to secure all p
 
 **Deployment Type:** `preview`  
 **Protection Level:** Password-based authentication required for all preview deployments  
-**Password:** `1INDobK37FEZbBM8HRom00Ez` (24 characters, URL-safe)
+**Password:** `[REDACTED-C194]` (24 characters, URL-safe)
 
 ### 2. Automation Bypass Secret
 
 **Purpose:** Allow CI/CD pipelines and automated tools to access preview deployments without manual password entry  
-**Secret:** `e7e91a84e6193bf399ad417c8fafeb15` (32 characters, hex)  
+**Secret:** `[REDACTED-C194]` (32 characters, hex)  
 **Environment Variable:** Automatically set as `VERCEL_AUTOMATION_BYPASS_SECRET`  
 **Note:** "CI/CD automation bypass for preview deployments"  
 **Created At:** 2026-10-25 02:30:16 UTC
@@ -32,7 +32,7 @@ Configured password protection for preview deployments on Vercel to secure all p
 When accessing a preview deployment URL (e.g., `kenyonexpress-git-feature-branch-xyz.vercel.app`):
 
 1. Vercel presents a password prompt
-2. Enter the deployment protection password: `1INDobK37FEZbBM8HRom00Ez`
+2. Enter the deployment protection password: `[REDACTED-C194]`
 3. Access is granted for the session
 
 ### For Automated Tools (CI/CD, Tests, Monitoring)
@@ -41,13 +41,13 @@ Automated requests can bypass the password prompt using the automation bypass se
 
 **Method 1: HTTP Header**
 ```bash
-curl -H "x-vercel-protection-bypass: e7e91a84e6193bf399ad417c8fafeb15" \
+curl -H "x-vercel-protection-bypass: [REDACTED-C194]" \
   https://kenyonexpress-git-feature-xyz.vercel.app
 ```
 
 **Method 2: Query Parameter**
 ```bash
-curl "https://kenyonexpress-git-feature-xyz.vercel.app?x-vercel-protection-bypass=e7e91a84e6193bf399ad417c8fafeb15"
+curl "https://kenyonexpress-git-feature-xyz.vercel.app?x-vercel-protection-bypass=[REDACTED-C194]"
 ```
 
 **Method 3: Environment Variable (Automatic)**
@@ -96,7 +96,7 @@ echo "{\"passwordProtection\":{\"deploymentType\":\"preview\",\"password\":\"${N
 
 ```bash
 # Revoke old secret and generate new one
-OLD_SECRET="e7e91a84e6193bf399ad417c8fafeb15"
+OLD_SECRET="[REDACTED-C194]"
 NEW_SECRET=$(node -e "console.log(require('crypto').randomBytes(16).toString('hex'))")
 
 echo "{\"revoke\":{\"secret\":\"${OLD_SECRET}\",\"regenerate\":true},\"generate\":{\"secret\":\"${NEW_SECRET}\",\"note\":\"CI/CD automation bypass for preview deployments\"}}" | \
@@ -113,7 +113,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.PREVIEW_URL,
     extraHTTPHeaders: {
-      'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET || 'e7e91a84e6193bf399ad417c8fafeb15'
+      'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET || '[REDACTED-C194]'
     }
   }
 });
@@ -145,7 +145,7 @@ module.exports = {
       url: process.env.PREVIEW_URL,
       settings: {
         extraHeaders: JSON.stringify({
-          'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET || 'e7e91a84e6193bf399ad417c8fafeb15'
+          'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET || '[REDACTED-C194]'
         })
       }
     }
@@ -244,8 +244,8 @@ vercel api /v9/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP | \
 
 | Purpose | Type | Value | Location |
 |---------|------|-------|----------|
-| Preview Password | Deployment Protection | `1INDobK37FEZbBM8HRom00Ez` | Vercel Project Settings |
-| Automation Bypass | API Secret | `e7e91a84e6193bf399ad417c8fafeb15` | Vercel Environment Variable |
+| Preview Password | Deployment Protection | `[REDACTED-C194]` | Vercel Project Settings |
+| Automation Bypass | API Secret | `[REDACTED-C194]` | Vercel Environment Variable |
 
 **Storage Recommendations:**
 - Add to password manager (1Password, LastPass, etc.)

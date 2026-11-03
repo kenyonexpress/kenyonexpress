@@ -24,7 +24,10 @@ const projectRoot = path.resolve(__dirname, '..')
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const SLOW_QUERY_THRESHOLD_MS = 500
-const CONNECTION_TIMEOUT_MS = 2000
+// A timeout means "could not connect". From this host a cold TLS handshake to
+// eu-north-1 alone measured 1.2-1.7 s (2026-11-03), so 2 s read RTT as an outage.
+// Slowness is reported separately against SLOW_QUERY_THRESHOLD_MS.
+const CONNECTION_TIMEOUT_MS = 10000
 const TEST_TIMEOUT_MS = 10000
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
@@ -90,7 +93,8 @@ async function monitorDatabasePerformance() {
     {
       name: 'coupons-active',
       table: 'coupons',
-      filters: [{ col: 'status', op: 'eq', val: 'active' }],
+      // production has no coupons.status; activity is the is_active boolean
+      filters: [{ col: 'is_active', op: 'eq', val: true }],
       limit: 20,
     },
     { name: 'products-count', table: 'products', filters: [], limit: 1, countExact: true },

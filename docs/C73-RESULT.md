@@ -82,7 +82,7 @@ Configure Vercel preview deployment protection password via API, including the `
 
 Navigate to a preview deployment URL and enter the password when prompted:
 ```
-Password: 1INDobK37FEZbBM8HRom00Ez
+Password: [REDACTED-C194]
 ```
 
 ### For Automated Access
@@ -90,13 +90,13 @@ Password: 1INDobK37FEZbBM8HRom00Ez
 **Playwright Tests:**
 ```typescript
 extraHTTPHeaders: {
-  'x-vercel-protection-bypass': 'e7e91a84e6193bf399ad417c8fafeb15'
+  'x-vercel-protection-bypass': '[REDACTED-C194]'
 }
 ```
 
 **cURL:**
 ```bash
-curl -H "x-vercel-protection-bypass: e7e91a84e6193bf399ad417c8fafeb15" \
+curl -H "x-vercel-protection-bypass: [REDACTED-C194]" \
   https://preview-url.vercel.app
 ```
 
@@ -117,7 +117,7 @@ curl -H "x-vercel-protection-bypass: e7e91a84e6193bf399ad417c8fafeb15" \
 ```json
 {
   "protectionBypass": {
-    "e7e91a84e6193bf399ad417c8fafeb15": {
+    "[REDACTED-C194]": {
       "scope": "automation-bypass",
       "isEnvVar": true,
       "note": "CI/CD automation bypass for preview deployments",

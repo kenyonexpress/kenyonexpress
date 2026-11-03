@@ -27,7 +27,7 @@
 ### ❌ Could Not Verify
 
 1. **Password Value**
-   - The password `1INDobK37FEZbBM8HRom00Ez` was sent in PATCH request
+   - The password `[REDACTED-C194]` was sent in PATCH request
    - Vercel API accepted the request without error (200 OK)
    - **However:** The password is never returned in responses
    - **Conclusion:** Cannot programmatically verify the exact password is set
@@ -39,7 +39,7 @@
      ```json
      {
        "protectionBypass": {
-         "e7e91a84e6193bf399ad417c8fafeb15": {
+         "[REDACTED-C194]": {
            "scope": "automation-bypass",
            "isEnvVar": true,
            "note": "CI/CD automation bypass for preview deployments"
@@ -111,7 +111,7 @@
 3. Wait for Vercel to create preview deployment
 4. Access the preview URL (e.g., `kenyonexpress-git-test-verify-protection-xyz.vercel.app`)
 5. **Expected:** Password prompt should appear
-6. **Test:** Enter password `1INDobK37FEZbBM8HRom00Ez`
+6. **Test:** Enter password `[REDACTED-C194]`
 7. **Expected:** Access granted
 
 ### Test 2: Automation Bypass Works
@@ -119,14 +119,14 @@
 **Via curl:**
 ```bash
 PREVIEW_URL="<preview-deployment-url>"
-curl -H "x-vercel-protection-bypass: e7e91a84e6193bf399ad417c8fafeb15" "$PREVIEW_URL"
+curl -H "x-vercel-protection-bypass: [REDACTED-C194]" "$PREVIEW_URL"
 ```
 
 **Expected:** Page loads without password prompt
 
 **Alternative (query param):**
 ```bash
-curl "${PREVIEW_URL}?x-vercel-protection-bypass=e7e91a84e6193bf399ad417c8fafeb15"
+curl "${PREVIEW_URL}?x-vercel-protection-bypass=[REDACTED-C194]"
 ```
 
 ### Test 3: Environment Variable Set
@@ -137,7 +137,7 @@ curl "${PREVIEW_URL}?x-vercel-protection-bypass=e7e91a84e6193bf399ad417c8fafeb15
 echo $VERCEL_AUTOMATION_BYPASS_SECRET
 ```
 
-**Expected:** Should output `e7e91a84e6193bf399ad417c8fafeb15` (if bypass was configured with `isEnvVar: true`)
+**Expected:** Should output `[REDACTED-C194]` (if bypass was configured with `isEnvVar: true`)
 
 ## Recommendation
 
@@ -158,7 +158,7 @@ cat > /tmp/reapply-password.json << 'EOF'
 {
   "passwordProtection": {
     "deploymentType": "preview",
-    "password": "1INDobK37FEZbBM8HRom00Ez"
+    "password": "[REDACTED-C194]"
   }
 }
 EOF
@@ -171,7 +171,7 @@ vercel api /v9/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP --method PATCH --input 
 cat > /tmp/regenerate-bypass.json << 'EOF'
 {
   "generate": {
-    "secret": "e7e91a84e6193bf399ad417c8fafeb15",
+    "secret": "[REDACTED-C194]",
     "note": "CI/CD automation bypass for preview deployments"
   }
 }

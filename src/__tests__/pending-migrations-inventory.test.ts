@@ -262,6 +262,7 @@ describe('the pending migration inventory', () => {
       '329_is_demo.sql',
       '330_demo_deals.sql',
       '331_demo_untraced_images.sql',
+      '332_sms_definer_lockdown.sql',
     ])
   })
 

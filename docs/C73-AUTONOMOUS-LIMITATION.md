@@ -38,14 +38,14 @@
 1. **Password Protection PATCH**
    ```bash
    vercel api /v9/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP --method PATCH
-   # Body: {"passwordProtection": {"deploymentType": "preview", "password": "1INDobK37FEZbBM8HRom00Ez"}}
+   # Body: {"passwordProtection": {"deploymentType": "preview", "password": "[REDACTED-C194]"}}
    # Response: 200 OK (but password field not in response)
    ```
 
 2. **Automation Bypass PATCH**
    ```bash
    vercel api /v1/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP/protection-bypass --method PATCH
-   # Body: {"generate": {"secret": "e7e91a84e6193bf399ad417c8fafeb15", ...}}
+   # Body: {"generate": {"secret": "[REDACTED-C194]", ...}}
    # Response: 200 OK with protectionBypass data
    # But: GET to same endpoint returns 404
    ```
@@ -110,14 +110,14 @@ vercel ls --scope kenyonexpress-projects
 open <preview-url>
 
 # Expected: Password prompt appears
-# Action: Enter password "1INDobK37FEZbBM8HRom00Ez"
+# Action: Enter password "[REDACTED-C194]"
 # Expected: Access granted
 ```
 
 ### Step 3: Test Automation Bypass
 ```bash
 # Test via curl with bypass header
-curl -H "x-vercel-protection-bypass: e7e91a84e6193bf399ad417c8fafeb15" <preview-url>
+curl -H "x-vercel-protection-bypass: [REDACTED-C194]" <preview-url>
 
 # Expected: Page content (no password form)
 ```

@@ -185,7 +185,11 @@ describe('cost cap logic', () => {
 })
 
 describe('upload-r2.mjs dry-run', () => {
-  it('runs without errors in dry-run mode', async () => {
+  // The script reads refs/live-assets/manifest.json, which is gitignored
+  // (refs/ is a capture artefact), so a CI checkout never has it.
+  const hasManifest = existsSync(join(process.cwd(), 'refs/live-assets/manifest.json'))
+
+  it.skipIf(!hasManifest)('runs without errors in dry-run mode', async () => {
     const { execSync } = await import('node:child_process')
     const output = execSync('node scripts/upload-r2.mjs --dry-run', {
       cwd: process.cwd(),
