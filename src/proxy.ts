@@ -21,6 +21,7 @@ import {
 } from '@/lib/security/maintenance'
 import { maintenanceFlagOn } from '@/lib/security/maintenance-flag'
 import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
+import { cityAliasTarget } from '@/lib/seo/city-alias'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { wpLegacyTarget } from '@/lib/seo/wp-legacy'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
@@ -208,6 +209,15 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
       // would produce duplicate URLs for one page.
       url.search = targetQuery ? `?${targetQuery}` : ''
       return withRequestId(NextResponse.redirect(url, 301), requestId, pathname, nonce)
+    }
+
+    // `/c/<category>` is an alias for `/category/<category>`; see city-alias.ts
+    // for why the page's own redirect() is not enough. 307, as redirect() was.
+    const alias = cityAliasTarget(pathname)
+    if (alias) {
+      const url = request.nextUrl.clone()
+      url.pathname = alias
+      return withRequestId(NextResponse.redirect(url, 307), requestId, pathname, nonce)
     }
   }
 

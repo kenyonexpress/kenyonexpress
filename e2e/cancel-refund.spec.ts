@@ -2,6 +2,7 @@ import { type Page, test as base, expect } from '@playwright/test'
 import { E2E_COUPON_SLUG, paidFlowEnabled } from './auth-session'
 import {
   BUY_BUTTON,
+  DISCOVERY_TIMEOUT,
   PAY_RETURN_TIMEOUT,
   addOpenProductToCart,
   emptyCart,
@@ -65,8 +66,16 @@ test.describe('customer cancel and refund @money', () => {
     await expect(cancelLink).toBeVisible({ timeout: 20_000 })
     await cancelLink.click()
 
+    // The cancel page is server-rendered off several order reads, which ran past
+    // the 5 s default on a slow link (C197, 2026-11-03); the list was still on
+    // screen when the heading assertion gave up.
+    await page.waitForURL(new RegExp(`/account/orders/${orderId}/cancel$`), {
+      timeout: DISCOVERY_TIMEOUT,
+    })
     // The cancel page states the statutory terms and the estimate before commit.
-    await expect(page.getByRole('heading', { name: 'ביטול הזמנה' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'ביטול הזמנה' })).toBeVisible({
+      timeout: DISCOVERY_TIMEOUT,
+    })
     await expect(page.getByText('14 ימים')).toBeVisible()
     await expect(page.getByText('הערכת ההחזר')).toBeVisible()
 
