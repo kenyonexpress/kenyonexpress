@@ -120,3 +120,4 @@
 - המשך מ: M05-c350 DONE (2026-11-03): pnpm test exit 0 at e22174637, 877 files / 9698 tests pass, 0 failures, no drift to fix; proof docs/M05-c350.md; no code changes, no forbidden files touched
 - המשך מ: M06-c350 DONE (2026-11-03): pnpm build exit 0 at 8237d3f90, compiled + TypeScript + 367/367 static pages, tree clean after build; 42 db.query_failed are prerender-cutoff on dynamic routes, Sentry 401 placeholder token non-fatal; proof docs/M06-c350.md; no code changes, no forbidden files touched
 - המשך מ: M07-c350 DONE (2026-11-03): 2 TODO(cardcom) markers, both >7 days, already filed as docs/BACKLOG.md #1 #2; no new markers; proof docs/M07-c350.md; no code changes, no forbidden files touched
+- המשך מ: M08-c350 DONE (2026-11-03): Lighthouse mobile on build i-4jo0Kb65kLGn26TU9wY, simulate medians / 81, /product/barbecue 82; devtools / 98, product 99; TBT <=30 ms, CLS <=0.078; proof docs/M08-c350.md; no code changes, no forbidden files touched
