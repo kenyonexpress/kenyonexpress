@@ -119,3 +119,4 @@
 - המשך מ: M04-c350 DONE (2026-11-03): pnpm type-check (tsc --noEmit) exit 0 on clean tree at 40d164c4c, no drift to fix; proof docs/M04-c350.md; no code changes, no forbidden files touched
 - המשך מ: M05-c350 DONE (2026-11-03): pnpm test exit 0 at e22174637, 877 files / 9698 tests pass, 0 failures, no drift to fix; proof docs/M05-c350.md; no code changes, no forbidden files touched
 - המשך מ: M06-c350 DONE (2026-11-03): pnpm build exit 0 at 8237d3f90, compiled + TypeScript + 367/367 static pages, tree clean after build; 42 db.query_failed are prerender-cutoff on dynamic routes, Sentry 401 placeholder token non-fatal; proof docs/M06-c350.md; no code changes, no forbidden files touched
+המשך מ: M07-c350 DONE (2 TODO(cardcom) markers, both >7 days, already filed as docs/BACKLOG.md #1 #2; no new markers; proof docs/M07-c350.md)
