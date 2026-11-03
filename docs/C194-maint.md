@@ -159,3 +159,24 @@ and only a gitignored `next-env.d.ts` (absent in CI, which does not build) broug
 Reproduced locally by hiding next-env.d.ts: original script 13 errors, fixed script
 `typecheck-changed: tsc --strict clean on changed files`. Manifest regenerated:
 `migration manifest: 191 files -> src/lib/admin/migration-manifest.ts`.
+
+## CI after the second push (c5b4b8120): money coverage floor
+Run 41601807893: typecheck (changed) success, lint success, gitleaks success, unit `876 passed | 3 skipped (879)`, then the floors, enforced for the first time since the provider crashed:
+```
+ERROR: Coverage for lines (87.85%) does not meet "src/lib/money.ts" threshold (95%)
+ERROR: Coverage for functions (86.95%) does not meet "src/lib/money.ts" threshold (95%)
+ERROR: Coverage for statements (83.46%) does not meet "src/lib/money.ts" threshold (95%)
+ERROR: Coverage for branches (69.4%) does not meet "src/lib/money.ts" threshold (95%)
+```
+Floor kept; `src/lib/money-boundaries.test.ts` (24 tests) covers every C141 boundary branch:
+```
+Statements   : 100% ( 127/127 )
+Branches     : 100% ( 134/134 )
+Functions    : 100% ( 23/23 )
+Lines        : 100% ( 107/107 )
+```
+Local `pnpm test:coverage`, exit 0:
+```
+ Test Files  877 passed | 3 skipped (880)
+      Tests  9698 passed | 39 skipped (9737)
+```
