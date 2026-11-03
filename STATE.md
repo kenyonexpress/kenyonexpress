@@ -3,6 +3,10 @@ RESUME FROM: C194
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
 
+### 2026-11-03T16:40:40+07:00
+- item: C194
+- RESULT: DONE
+
 ### 2026-11-03T14:05:34+07:00
 - item: C193
 - BLOCKED: C193 cardcom live charge never run (C191 gate HOLD 1 and 2)
@@ -98,10 +102,6 @@ RESUME FROM: C194
 ### 2026-11-03T04:58:40+07:00
 - item: C170
 - RESULT: DONE
-
-### 2026-11-03T04:57:26+07:00
-- item: C152
-- BLOCKED: supabase-outage (production Postgres UNHEALTHY, build cannot collect page data, 0 Lighthouse runs possible)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 

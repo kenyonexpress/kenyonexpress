@@ -30985,3 +30985,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T04:17:04+07:00
 - item: C151
 - BLOCKED: network (iPhone hotspot 172.20.10.1, Supabase 1.1-3.7 s/ping); run 7 green 2362/0, runs 9-10 lost to page-load timeouts
+
+## Archived 2026-11-03T16:40:40+07:00 after C194 (3 lines from STATE.md)
+
+### 2026-11-03T04:57:26+07:00
+- item: C152
+- BLOCKED: supabase-outage (production Postgres UNHEALTHY, build cannot collect page data, 0 Lighthouse runs possible)
