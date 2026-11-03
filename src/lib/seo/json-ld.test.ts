@@ -44,12 +44,18 @@ describe('buildProductJsonLd, physical', () => {
     expect(offer.priceCurrency).toBe('ILS')
   })
 
-  it('carries the sticker price as highPrice only when it is actually higher', () => {
-    expect((buildProductJsonLd(physical).offers as Record<string, unknown>).highPrice).toBe(
-      '999.00',
-    )
+  it('carries the sticker price as a strikethrough only when it is actually higher', () => {
+    const offer = buildProductJsonLd(physical).offers as Record<string, unknown>
+    expect(offer.priceSpecification).toEqual({
+      '@type': 'UnitPriceSpecification',
+      priceType: 'https://schema.org/StrikethroughPrice',
+      price: '999.00',
+      priceCurrency: 'ILS',
+    })
+    // schema.org defines highPrice on AggregateOffer only.
+    expect(offer.highPrice).toBeUndefined()
     const noDiscount = buildProductJsonLd({ ...physical, fullPriceIls: 799 })
-    expect((noDiscount.offers as Record<string, unknown>).highPrice).toBeUndefined()
+    expect((noDiscount.offers as Record<string, unknown>).priceSpecification).toBeUndefined()
   })
 
   it('names the business as the brand, not the platform', () => {
@@ -104,7 +110,7 @@ describe('buildProductJsonLd, coupon', () => {
   it('advertises what is paid online, with the sticker price alongside', () => {
     const offer = buildProductJsonLd(couponProduct).offers as Record<string, unknown>
     expect(offer.price).toBe('20.00')
-    expect(offer.highPrice).toBe('200.00')
+    expect((offer.priceSpecification as Record<string, unknown>).price).toBe('200.00')
   })
 
   it('carries the offer deadline as a date, not the voucher expiry', () => {
@@ -123,7 +129,7 @@ describe('buildProductJsonLd, coupon', () => {
       .offers as Record<string, unknown>
     expect(offer.availability).toContain('OutOfStock')
     expect(offer.price).toBeUndefined()
-    expect(offer.highPrice).toBeUndefined()
+    expect(offer.priceSpecification).toBeUndefined()
   })
 
   it('takes the coupon price from the offer object and never from priceIls', () => {

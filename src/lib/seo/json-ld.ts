@@ -17,7 +17,9 @@ import type { CouponOffer } from '@/lib/commerce/coupon-offer'
  * A coupon that advertised the sticker price would put a number in search
  * results that nobody is ever charged, and a coupon that advertised only the
  * online amount without context would promise a whole meal for the deposit.
- * Both appear: `price` is what is paid here, `highPrice` is the sticker.
+ * Both appear: `price` is what is paid here, and the sticker rides in a
+ * `StrikethroughPrice` specification. Not `highPrice`: schema.org defines that
+ * on `AggregateOffer` only, and validators reject it on a plain `Offer`.
  *
  * A coupon that cannot be sold gets NO offer node at all rather than an offer
  * priced at zero. `availability: OutOfStock` with no price is the honest
@@ -108,6 +110,15 @@ export function buildProductJsonLd(input: ProductJsonLdInput): JsonLdNode {
   return node
 }
 
+function strikethrough(ils: number): JsonLdNode {
+  return {
+    '@type': 'UnitPriceSpecification',
+    priceType: 'https://schema.org/StrikethroughPrice',
+    price: price(ils),
+    priceCurrency: 'ILS',
+  }
+}
+
 function buildOfferNode(input: ProductJsonLdInput, url: string): JsonLdNode | null {
   const seller = input.supplierName
     ? { '@type': 'Organization', name: input.supplierName }
@@ -134,7 +145,7 @@ function buildOfferNode(input: ProductJsonLdInput, url: string): JsonLdNode | nu
       ...(seller ? { seller } : {}),
     }
     if (input.couponOffer.fullPriceIls > input.couponOffer.paidOnlineIls) {
-      offer.highPrice = price(input.couponOffer.fullPriceIls)
+      offer.priceSpecification = strikethrough(input.couponOffer.fullPriceIls)
     }
     // The offer's own deadline, not the issued voucher's. They differ, and the
     // one a search result should carry is how long the price stands.
@@ -160,7 +171,7 @@ function buildOfferNode(input: ProductJsonLdInput, url: string): JsonLdNode | nu
     ...(seller ? { seller } : {}),
   }
   if (input.fullPriceIls !== null && input.fullPriceIls > input.priceIls) {
-    offer.highPrice = price(input.fullPriceIls)
+    offer.priceSpecification = strikethrough(input.fullPriceIls)
   }
   return offer
 }
