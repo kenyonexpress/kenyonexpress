@@ -31309,3 +31309,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T18:35:47+07:00
 - item: M10-c350
 - BLOCKED: M10-c350 pending 319 (affiliate_links missing) and 324 (23 FKs into orders) unapplied, unsafe as written
+
+## Archived 2026-11-04T03:28:46+07:00 after M12-c351 (3 lines from STATE.md)
+
+### 2026-11-03T18:39:38+07:00
+- item: M11-c350
+- RESULT: DONE
