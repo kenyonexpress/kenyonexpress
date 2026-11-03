@@ -31027,3 +31027,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T06:20:06+07:00
 - item: C175
 - BLOCKED: supabase-down, prod db+rest UNHEALTHY 05:31-06:19 +07, no build so no cart/checkout compare
+
+## Archived 2026-11-03T17:15:46+07:00 after M07-c349 (3 lines from STATE.md)
+
+### 2026-11-03T06:25:44+07:00
+- item: C176
+- BLOCKED: supabase-rest-down
