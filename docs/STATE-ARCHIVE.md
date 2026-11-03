@@ -31249,3 +31249,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T17:52:58+07:00
 - item: M18-c349
 - RESULT: DONE
+
+## Archived 2026-11-03T19:44:18+07:00 after M08-c351 (3 lines from STATE.md)
+
+### 2026-11-03T18:02:42+07:00
+- item: M01-c350
+- BLOCKED: home-380-content-floor
