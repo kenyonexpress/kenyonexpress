@@ -1,7 +1,11 @@
-RESUME FROM: M08-c350
+RESUME FROM: M09-c350
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T18:28:25+07:00
+- item: M08-c350
+- RESULT: DONE
 
 ### 2026-11-03T18:23:57+07:00
 - item: M07-c350
@@ -98,10 +102,6 @@ RESUME FROM: M08-c350
 ### 2026-11-03T16:58:42+07:00
 - item: M02-c349
 - RESULT: DONE
-
-### 2026-11-03T16:51:18+07:00
-- item: M01-c349
-- BLOCKED: home-380-content-floor (both painted 13.35%; 768 and 1440 pass)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
