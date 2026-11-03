@@ -587,3 +587,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-11-03 11:11 | category | 380 | 3.79% | PASS | `e6c29eb45` | baseline refs/electro_shop_380.png (frozen PNG, 2026-09-04T05:02:46.545Z), not a fresh archive shot; overall 31.43% (reference blank 11.59%, ours blank 16.06%) |
 | 2026-11-03 11:13 | category | 768 | 4.89% | PASS | `e6c29eb45-dirty` | baseline refs/electro_shop_768.png (frozen PNG, 2026-09-04T05:02:47.380Z), not a fresh archive shot; overall 32.92% (reference blank 11.54%, ours blank 16.49%) |
 | 2026-11-03 11:14 | category | 1440 | 1.38% | PASS | `e6c29eb45-dirty` | baseline refs/electro_shop_1440.png (frozen PNG, 2026-09-04T05:02:48.261Z), not a fresh archive shot; overall 21.09% (reference blank 8.08%, ours blank 11.63%) |
+| 2026-11-03 12:10 | home | 380 | 13.35% | **FAIL** | `4fd75597a` | ref everything loaded; overall 43.31% (reference blank 15.35%, ours blank 14.62%) |
+| 2026-11-03 12:11 | home | 768 | 8.20% | PASS | `4fd75597a-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
+| 2026-11-03 12:13 | home | 1440 | 6.55% | PASS | `4fd75597a-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |
