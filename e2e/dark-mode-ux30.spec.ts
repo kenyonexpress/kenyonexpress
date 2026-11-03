@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test'
 
+// ThemeProvider adds the class in a client effect, i.e. after hydration, so a
+// one-shot read right after a navigation can run first. Measured C197: webkit-380
+// read "w9oXea_variable h-full antialiased" on /products with ke_theme=dark set.
+// toHaveClass retries; a single getAttribute does not.
+const DARK = /(^|\s)dark(\s|$)/
+const THEME_TIMEOUT = 15_000
+
 test.describe('UX30: Dark mode toggle with localStorage persistence', () => {
   test('should apply dark mode class to html element', async ({ page }) => {
     await page.goto('/')
@@ -13,9 +20,7 @@ test.describe('UX30: Dark mode toggle with localStorage persistence', () => {
     await page.reload()
 
     // Check that html has dark class
-    const htmlElement = page.locator('html')
-    const classList = await htmlElement.getAttribute('class')
-    expect(classList).toContain('dark')
+    await expect(page.locator('html')).toHaveClass(DARK, { timeout: THEME_TIMEOUT })
   })
 
   test('should apply light mode class to html element', async ({ page }) => {
@@ -44,17 +49,13 @@ test.describe('UX30: Dark mode toggle with localStorage persistence', () => {
     await page.reload()
 
     // Verify dark mode is set
-    let htmlElement = page.locator('html')
-    let classList = await htmlElement.getAttribute('class')
-    expect(classList).toContain('dark')
+    await expect(page.locator('html')).toHaveClass(DARK, { timeout: THEME_TIMEOUT })
 
     // Navigate to category page
     await page.goto('/products')
 
     // Verify dark mode persists
-    htmlElement = page.locator('html')
-    classList = await htmlElement.getAttribute('class')
-    expect(classList).toContain('dark')
+    await expect(page.locator('html')).toHaveClass(DARK, { timeout: THEME_TIMEOUT })
 
     // Navigate to account page (if authenticated)
     // Note: This test may be limited without auth setup, but the key is that
@@ -74,9 +75,7 @@ test.describe('UX30: Dark mode toggle with localStorage persistence', () => {
     await page.reload()
 
     // Verify dark mode is active
-    let htmlElement = page.locator('html')
-    let classList = await htmlElement.getAttribute('class')
-    expect(classList).toContain('dark')
+    await expect(page.locator('html')).toHaveClass(DARK, { timeout: THEME_TIMEOUT })
 
     // Close and reopen (simulated by goto with fresh context)
     // The localStorage should persist
@@ -87,9 +86,7 @@ test.describe('UX30: Dark mode toggle with localStorage persistence', () => {
     await page.goto('/products')
 
     // Verify dark mode still active
-    htmlElement = page.locator('html')
-    classList = await htmlElement.getAttribute('class')
-    expect(classList).toContain('dark')
+    await expect(page.locator('html')).toHaveClass(DARK, { timeout: THEME_TIMEOUT })
   })
 
   test('should have smooth color transitions in dark mode', async ({ page }) => {
