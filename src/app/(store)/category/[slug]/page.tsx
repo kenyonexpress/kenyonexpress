@@ -57,9 +57,8 @@ function parsePrice(raw: string | string[] | undefined): number | undefined {
  * these exact two columns behind the same `is_active` filter, so this is the
  * same answer off the same cache entry the body below reads.
  */
-export async function generateMetadata({ params, searchParams: spPromise }: Props) {
+export async function generateMetadata({ params }: Pick<Props, 'params'>) {
   const { slug } = await params
-  const sp = await spPromise
   const category = await getCategoryBySlug(slug)
 
   // A slug nobody has: the body calls notFound(), which emits noindex through
@@ -81,29 +80,23 @@ export async function generateMetadata({ params, searchParams: spPromise }: Prop
   // the page already shows, rather than invented marketing copy.
   const description = category.description_he?.trim() || categoryMetaDescription(category.name_he)
 
-  // Fetch product count for og:title to match H1 format: "N מבצעים זמינים"
-  const sort = parseSort(sp.sort)
-  const page = parsePage(sp.page)
-  const priceMin = parsePrice(sp.min)
-  const priceMax = parsePrice(sp.max)
-  const productType = parseProductType(sp.type)
-  const supplierId = typeof sp.supplier === 'string' ? sp.supplier : undefined
-  const tag = typeof sp.tag === 'string' ? sp.tag : undefined
-
-  const args: QueryArgs = {
+  // Product count for og:title, to match the H1 format "N מבצעים זמינים".
+  //
+  // UNFILTERED, AND THAT IS WHAT KEEPS THE DESCRIPTION IN <head>. This used to
+  // await `searchParams` for sort, page and filters, and under cacheComponents
+  // that one await deferred the whole of generateMetadata to request time, so
+  // Next streamed <title> and <meta name="description"> into <body>. Lighthouse
+  // (C181) read no description on every category page, and so does any crawler
+  // that does not run JS. The canonical (alternatesFor below) never carried the
+  // query string anyway, so a filtered count described a URL the page does not
+  // claim to be.
+  const { total } = await getCategoryProductsCached({
     categoryId: category.id,
     category: { name_he: category.name_he, slug: category.slug },
-    sort,
-    page,
-    priceMin,
-    priceMax,
-    productType,
-    supplierId,
-    tag,
+    sort: parseSort(undefined),
+    page: 1,
     collection: collectionRule(category.slug),
-  }
-
-  const { total } = await getCategoryProductsCached(args)
+  })
   const ogTitle = total > 0 ? `${total} מבצעים זמינים` : category.name_he
 
   return {

@@ -553,3 +553,9 @@ the tree had uncommitted changes when it was measured.
 | 2026-11-02 15:21 | product | 380 | 6.40% | PASS | `6fe8c0ca5-dirty` | baseline refs/electro_product_380.png (frozen PNG, 2026-09-25T09:29:11.197Z), not a fresh archive shot; overall 36.89% (reference blank 24.94%, ours blank 5.55% |
 | 2026-11-02 15:23 | product | 768 | 4.22% | PASS | `6fe8c0ca5-dirty` | baseline refs/electro_product_768.png (frozen PNG, 2026-09-25T09:29:12.169Z), not a fresh archive shot; overall 31.41% (reference blank 21.15%, ours blank 6.04% |
 | 2026-11-02 15:25 | product | 1440 | 3.25% | PASS | `6fe8c0ca5-dirty` | baseline refs/electro_product_1440.png (frozen PNG, 2026-09-25T09:29:13.262Z), not a fresh archive shot; overall 22.23% (reference blank 14.16%, ours blank 4.83 |
+| 2026-11-03 02:52 | category | 380 | 2.86% | PASS | `694004cdc-dirty` | ref everything loaded; overall 30.2% (reference blank 10.18%, ours blank 17.16%) |
+| 2026-11-03 02:54 | category | 768 | 1.86% | PASS | `694004cdc-dirty` | ref everything loaded; overall 29.9% (reference blank 8.32%, ours blank 19.71%) |
+| 2026-11-03 02:55 | category | 1440 | 1.12% | PASS | `694004cdc-dirty` | ref everything loaded; overall 16.75% (reference blank 3.88%, ours blank 11.75%) |
+| 2026-11-03 02:57 | home | 380 | 12.94% | **FAIL** | `694004cdc-dirty` | ref everything loaded; overall 43.83% (reference blank 17.36%, ours blank 13.53%) |
+| 2026-11-03 02:59 | home | 768 | 8.27% | PASS | `694004cdc-dirty` | ref everything loaded; overall 36.44% (reference blank 13.56%, ours blank 14.61%) |
+| 2026-11-03 03:01 | home | 1440 | 7.09% | PASS | `694004cdc-dirty` | ref everything loaded; overall 26.99% (reference blank 11.63%, ours blank 8.27%) |

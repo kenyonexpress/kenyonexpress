@@ -1464,3 +1464,14 @@
   background: var(--cat-brand-hover);
   border-color: var(--cat-brand-hover);
 }
+
+/* The sidebar search's submit button had no rule at all, so its hit area was
+   its 14px glyph. Lighthouse target-size (WCAG 2.5.8) failed it at 380 and
+   1440 (C181). 24px is the minimum; the glyph stays 14px, centred. */
+.category-autocomplete__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 24px;
+  min-block-size: 24px;
+}

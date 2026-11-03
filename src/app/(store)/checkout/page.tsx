@@ -3,6 +3,7 @@ import TierBadge from '@/components/club/TierBadge'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { NO_VERIFICATION, type ShippingVerification } from '@/lib/checkout/verified-shipping'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -25,6 +26,10 @@ export const metadata: Metadata = {
   // beside this file already carry the meta; three pages in the same directory
   // did not, which is why there is now a gate.
   robots: { index: false, follow: false },
+  // Self-canonical. Without one the page inherits the root layout's
+  // `canonical: '/'`, which tells a crawler this URL is a copy of the home
+  // page; Lighthouse's canonical audit failed it (C181).
+  alternates: alternatesFor('/checkout'),
 }
 
 const EMPTY_ADDRESS: CheckoutAddressPrefill = {
@@ -109,47 +114,59 @@ async function CheckoutPageBody({
   // merged into the account by /auth/callback on the way back. Sending an
   // anonymous visitor back to /cart, as this page used to, made the login the
   // first thing asked and the address the second.
-  const cart = await getCart()
+  //
+  // ONE ROUND OF READS, NOT THREE. The cart, the tier and the three account rows
+  // used to be awaited one after another, and none of them needs another's
+  // answer: only the redirect below needs the cart. In series they were three
+  // trips to Supabase in front of the first byte of the form, which put a
+  // signed-in checkout's TTFB at 1.4-2.3 s in Lighthouse against 3 ms for a
+  // static page (C181). An empty cart now also pays for the account reads it
+  // throws away; that page is a redirect, so nobody waits on it.
+  const admin = user ? createAdminClient() : null
+  const [cart, tier, accountRows] = await Promise.all([
+    getCart(),
+    user && user.is_anonymous !== true ? getMyTier() : null,
+    user && admin
+      ? Promise.all([
+          // Probed rather than named. The comment that stood here said
+          // `balance_agorot` was correct since 059 and that the old name had
+          // failed with 42703; the hosted project never received 059, so it was
+          // the new name that failed there, and the effect described was exactly
+          // the one being caused: the money was there and could never be spent.
+          readWalletAccountAgorot(
+            (select, ids) =>
+              admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
+            user.id,
+          ),
+          admin
+            .from('user_addresses')
+            .select('id, full_name, phone, city, street, street_number, apartment, floor, zip')
+            .eq('user_id', user.id)
+            .is('deleted_at', null)
+            .order('is_default', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          admin
+            .from('payment_tokens')
+            .select('id, last_4, card_brand, expiry_month, expiry_year, is_default')
+            .eq('profile_id', user.id)
+            .order('is_default', { ascending: false })
+            .order('created_at', { ascending: false }),
+        ])
+      : null,
+  ])
   if (cart.items.length === 0) redirect('/cart')
   const validation = validateCartView(cart)
 
   let address = EMPTY_ADDRESS
   let verification: ShippingVerification = NO_VERIFICATION
   let walletBalance = 0
-  const tier = user && user.is_anonymous !== true ? await getMyTier() : null
   let savedCards: { id: string; last4: string | null; brand: string | null; isDefault: boolean }[] =
     []
 
-  if (user) {
-    const admin = createAdminClient()
-    const [wallet, { data: defaultAddress }, { data: tokens }] = await Promise.all([
-      // Probed rather than named. The comment that stood here said
-      // `balance_agorot` was correct since 059 and that the old name had
-      // failed with 42703; the hosted project never received 059, so it was
-      // the new name that failed there, and the effect described was exactly
-      // the one being caused: the money was there and could never be spent.
-      readWalletAccountAgorot(
-        (select, ids) =>
-          admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
-        user.id,
-      ),
-      admin
-        .from('user_addresses')
-        .select('id, full_name, phone, city, street, street_number, apartment, floor, zip')
-        .eq('user_id', user.id)
-        .is('deleted_at', null)
-        .order('is_default', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      admin
-        .from('payment_tokens')
-        .select('id, last_4, card_brand, expiry_month, expiry_year, is_default')
-        .eq('profile_id', user.id)
-        .order('is_default', { ascending: false })
-        .order('created_at', { ascending: false }),
-    ])
-
+  if (user && admin && accountRows) {
+    const [wallet, { data: defaultAddress }, { data: tokens }] = accountRows
     address = {
       id: defaultAddress?.id ?? null,
       full_name: defaultAddress?.full_name ?? user.user_metadata?.full_name ?? '',

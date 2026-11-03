@@ -1,9 +1,18 @@
 import LoginModal from '@/components/auth/LoginModal'
 import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
+import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
-export const metadata: Metadata = { title: 'כניסה — KenyonExpress' }
+export const metadata: Metadata = {
+  // The root template appends "| קניון EXPRESS"; the Latin "KenyonExpress"
+  // here printed the brand twice, once off-brand.
+  title: 'כניסה',
+  // Self-canonical. Without one the page inherits the root layout's
+  // `canonical: '/'`, which tells a crawler this URL is a copy of the home
+  // page; Lighthouse's canonical audit failed it (C181).
+  alternates: alternatesFor('/login'),
+}
 
 /**
  * The fallback is null rather than a copy of the form at its defaults, and that

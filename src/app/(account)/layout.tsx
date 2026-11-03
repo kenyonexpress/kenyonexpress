@@ -66,7 +66,9 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
       <CartBootstrap />
       <div className="min-h-screen flex flex-col bg-white">
         <SiteHeader />
-        <main className="flex-1 w-full">
+        {/* The root layout's skip link points here; without the id it had no
+          target on every /account page (Lighthouse skip-link, C181). */}
+        <main id="main-content" tabIndex={-1} className="flex-1 w-full focus:outline-none">
           <div className="account-page">
             <div className="account-page__inner">
               <div className="account-topline">
@@ -94,7 +96,11 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                     so each one is request-time work. One boundary here covers
                     all ten rather than ten boundaries in ten files. */}
                 <div className="account-content">
-                  <Suspense fallback={null}>{children}</Suspense>
+                  <Suspense
+                    fallback={<div className="account-content--pending" aria-hidden="true" />}
+                  >
+                    {children}
+                  </Suspense>
                 </div>
               </div>
             </div>

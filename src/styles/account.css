@@ -72,8 +72,47 @@
  * when the nav arrives - and on the single-column mobile layout that moves the
  * page content, not just the footer.
  */
+/*
+ * C181 RE-MEASURE: the nav has grown since. Logged in as the e2e customer on a
+ * build of 03.11 it is 767px in the 260px column (1440) and 747.5px full-width
+ * (380), and the stale 401.5px let the real nav push the streamed page down:
+ * a 0.09 shift of .account-content at 380, most of the route's CLS.
+ */
 .account-nav--pending {
-  min-height: 401.5px;
+  min-height: 767px;
+}
+
+@media (max-width: 900px) {
+  .account-nav--pending {
+    min-height: 747.5px;
+  }
+}
+
+/*
+ * The crumb and the notification bell share one row. Neither class had a
+ * rule, so the bell - client-only, null until the session is confirmed -
+ * arrived as a 41px block under the crumb and moved the whole shell down
+ * (0.036 at 380, 0.019 at 1440; C181). The row reserves the bell's height so
+ * its arrival changes nothing below it.
+ */
+.account-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-block-size: 41px;
+}
+
+/*
+ * The page's own box while it streams. The fallback used to be null, so the
+ * shell painted the footer straight under the side nav, inside the first
+ * viewport, and every /account page then pushed it down when its rows arrived:
+ * footer shift 0.07 at 380 and 0.16 under real throttling, the whole of the
+ * route's CLS (C181). One viewport keeps the footer below the fold until the
+ * content is there.
+ */
+.account-content--pending {
+  min-block-size: 100vh;
 }
 
 .account-nav__head {
