@@ -30961,3 +30961,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T21:59:18+07:00
 - item: M18-c347
 - RESULT: DONE
+
+## Archived 2026-11-03T12:51:12+07:00 after C190 (3 lines from STATE.md)
+
+### 2026-11-02T22:17:46+07:00
+- item: M01-c348
+- BLOCKED: locked-component M01-c348 home 44.16/36.73/23.88 vs <11, header/topbar/hero bands dominate
