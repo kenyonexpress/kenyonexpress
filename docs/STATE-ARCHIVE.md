@@ -30913,3 +30913,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-02T21:38:43+07:00
 - item: M10-c347
 - BLOCKED: M10-c347 319 parent affiliate tables missing in prod; 324 stale (23 live FKs vs 19 in file)
+
+## Archived 2026-11-03T10:24:55+07:00 after C182 (3 lines from STATE.md)
+
+### 2026-11-02T21:40:12+07:00
+- item: M11-c347
+- RESULT: DONE
