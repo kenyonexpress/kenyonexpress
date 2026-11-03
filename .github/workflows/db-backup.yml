@@ -64,12 +64,5 @@ jobs:
           PGRESTORE: /usr/lib/postgresql/17/bin/pg_restore
         run: node scripts/dr/pg-dump-to-r2.mjs
 
-      - name: Notify on failure
-        if: failure()
-        env:
-          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC }}
-        run: |
-          [ -n "$NTFY_TOPIC" ] || exit 0
-          curl -sS -H "Title: KE DB backup FAILED" \
-            -d "Daily pg_dump to R2 failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            "ntfy.sh/${NTFY_TOPIC}" || true
+      # C189: no ntfy here. The 23.10 whitelist forbids paging on cron
+      # failures; a red run in the Actions tab is the signal.

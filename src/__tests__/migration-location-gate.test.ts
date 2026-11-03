@@ -61,6 +61,9 @@ const GRANDFATHERED_APPLIED = new Set([
   '187_category_name_shekel_order.sql',
   '215_cashback_expiry.sql',
   '322_rls_suppliers_column_grants.sql',
+  // C188 (52ce8f8fd): applied from an uncommitted pending/ copy, so git never
+  // saw it there; production already has it (docs/C188-demo.md).
+  '331_demo_untraced_images.sql',
 ])
 
 /**

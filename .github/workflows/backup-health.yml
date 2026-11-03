@@ -57,5 +57,6 @@ jobs:
           BACKUP_R2_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
           BACKUP_R2_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
           BACKUP_R2_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
-          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC }}
+          # NTFY_TOPIC deliberately unset (C189): the 23.10 ntfy whitelist has
+          # no backup string, so this reports through exit status and summary.
         run: node scripts/dr/backup-health.mjs

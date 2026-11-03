@@ -15,7 +15,7 @@
 # months to learn the dumps are bad). Gated on the same DB_BACKUP_ENABLED
 # variable as the backup itself: a drill without backups can only fail.
 #
-# Notifies ntfy on BOTH outcomes: a drill nobody hears about did not happen.
+# No ntfy (C189, whitelist 23.10): the job summary and run status report it.
 name: DB restore drill
 
 on:
@@ -92,13 +92,3 @@ jobs:
             echo "- restored into: postgres:17-alpine service container"
             echo "- gate: scripts/dr/verify-restore.sql (see step log for row counts)"
           } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Notify result
-        if: always()
-        env:
-          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC }}
-        run: |
-          [ -n "$NTFY_TOPIC" ] || exit 0
-          curl -sS -H "Title: KE restore drill ${{ job.status }}" \
-            -d "Quarterly DB restore drill: ${{ job.status }}. ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            "ntfy.sh/${NTFY_TOPIC}" || true

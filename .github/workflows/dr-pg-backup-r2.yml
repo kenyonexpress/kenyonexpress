@@ -1,9 +1,11 @@
 name: DR - PostgreSQL Backup to R2
 
+# C189: manual only. The daily dump is db-backup.yml (same 03:00 slot,
+# BACKUP_R2_* secrets, gated on DB_BACKUP_ENABLED). This C39 duplicate ran
+# ungated, died every day on `apt-get install awscli` (no candidate on
+# ubuntu-24.04; the runner image already ships aws), and paged a
+# non-whitelisted ntfy string each time.
 on:
-  schedule:
-    # Run daily at 03:00 UTC (10:00 UTC+7)
-    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       manual_run:
@@ -28,7 +30,7 @@ jobs:
       - name: Install PostgreSQL client and tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client awscli
+          sudo apt-get install -y postgresql-client
 
           # Verify installations
           pg_dump --version
@@ -70,21 +72,3 @@ jobs:
           echo "Verifying backup for ${DAY}..."
           aws s3 ls "s3://${R2_BUCKET}/postgres/${DAY}/" \
             --endpoint-url "${R2_ENDPOINT}"
-
-      - name: Notify on failure
-        if: failure()
-        run: |
-          curl -sS -H "Title: KenyonExpress PostgreSQL Backup FAILED" \
-            -H "Priority: urgent" \
-            -H "Tags: warning,backup,database" \
-            -d "Daily PostgreSQL backup to R2 failed. Run ID: ${{ github.run_id }}" \
-            "https://ntfy.sh/${{ secrets.NTFY_TOPIC || 'kenyon-ofir-limit' }}" || true
-
-      - name: Notify on success
-        if: success()
-        run: |
-          DAY=$(date -u +%Y-%m-%d)
-          curl -sS -H "Title: PostgreSQL Backup Complete" \
-            -H "Tags: white_check_mark,backup,database" \
-            -d "Daily backup to R2 completed successfully for ${DAY}" \
-            "https://ntfy.sh/${{ secrets.NTFY_TOPIC || 'kenyon-ofir-limit' }}" || true
