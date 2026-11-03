@@ -1,7 +1,11 @@
-RESUME FROM: C189
+RESUME FROM: C190
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T12:47:11+07:00
+- item: C189
+- BLOCKED: C189 R2 not enabled on Cloudflare account, no R2 credential or SUPABASE_DB_URL secret, so the daily snapshot cron cannot write a dump
 
 ### 2026-11-03T12:28:42+07:00
 - item: C188
@@ -98,10 +102,6 @@ RESUME FROM: C189
 ### 2026-11-02T22:17:46+07:00
 - item: M01-c348
 - BLOCKED: locked-component M01-c348 home 44.16/36.73/23.88 vs <11, header/topbar/hero bands dominate
-
-### 2026-11-02T21:59:18+07:00
-- item: M18-c347
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
