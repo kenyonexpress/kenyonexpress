@@ -31357,3 +31357,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T19:07:22+07:00
 - item: M18-c350
 - RESULT: DONE
+
+## Archived 2026-11-04T03:57:07+07:00 after M02-c352 (3 lines from STATE.md)
+
+### 2026-11-03T19:15:30+07:00
+- item: M01-c351
+- BLOCKED: home-380-content-floor (hero is a locked file, remaining gap needs non-wp_import imagery)
