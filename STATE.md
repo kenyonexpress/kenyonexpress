@@ -1,7 +1,11 @@
-RESUME FROM: C180
+RESUME FROM: C181
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T08:27:45+07:00
+- item: C180
+- BLOCKED: supabase-rest-down, served proof for home/product/category/sitemap pending
 
 ### 2026-11-03T06:54:47+07:00
 - item: C179
@@ -98,10 +102,6 @@ RESUME FROM: C180
 ### 2026-11-02T21:38:43+07:00
 - item: M10-c347
 - BLOCKED: M10-c347 319 parent affiliate tables missing in prod; 324 stale (23 live FKs vs 19 in file)
-
-### 2026-11-02T21:34:02+07:00
-- item: M09-c347
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
