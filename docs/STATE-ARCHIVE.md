@@ -31051,3 +31051,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T06:54:47+07:00
 - item: C179
 - RESULT: DONE
+
+## Archived 2026-11-03T17:30:21+07:00 after M11-c349 (3 lines from STATE.md)
+
+### 2026-11-03T08:27:45+07:00
+- item: C180
+- BLOCKED: supabase-rest-down, served proof for home/product/category/sitemap pending
