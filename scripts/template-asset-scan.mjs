@@ -26,7 +26,7 @@
  * `BrandPlaceholder` until real photography exists.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 
 const ROOT = process.cwd()
@@ -158,11 +158,4 @@ export function scanTemplateAssets() {
 
 export function formatTemplateAssets(offenders) {
   return offenders.map((o) => `  ${o.where}: ${o.asset} (${o.why})`).join('\n')
-}
-
-/** Bytes under public/images, so the gate can also report what was recovered. */
-export function imageBytes() {
-  return walk(resolve(ROOT, 'public/images'))
-    .filter((f) => IMAGE_EXT.test(f))
-    .reduce((total, f) => total + statSync(resolve(ROOT, f)).size, 0)
 }
