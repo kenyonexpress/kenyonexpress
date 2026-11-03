@@ -1,7 +1,11 @@
-RESUME FROM: C181
+RESUME FROM: C182
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T10:04:44+07:00
+- item: C181
+- BLOCKED: cart/checkout SEO 69 is the deliberate robots.txt disallow (C152); signed-in perf on cart 1440, checkout, account 1440 is bound by 0.8-2.7s Supabase RTT from this host while prod DB is down
 
 ### 2026-11-03T08:27:45+07:00
 - item: C180
@@ -98,10 +102,6 @@ RESUME FROM: C181
 ### 2026-11-02T21:40:12+07:00
 - item: M11-c347
 - RESULT: DONE
-
-### 2026-11-02T21:38:43+07:00
-- item: M10-c347
-- BLOCKED: M10-c347 319 parent affiliate tables missing in prod; 324 stale (23 live FKs vs 19 in file)
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
