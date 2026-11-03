@@ -1,7 +1,11 @@
-RESUME FROM: M02-c350
+RESUME FROM: M03-c350
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T18:10:11+07:00
+- item: M02-c350
+- RESULT: DONE
 
 ### 2026-11-03T18:02:42+07:00
 - item: M01-c350
@@ -98,10 +102,6 @@ RESUME FROM: M02-c350
 ### 2026-11-03T12:51:12+07:00
 - item: C190
 - RESULT: DONE
-
-### 2026-11-03T12:47:11+07:00
-- item: C189
-- BLOCKED: C189 R2 not enabled on Cloudflare account, no R2 credential or SUPABASE_DB_URL secret, so the daily snapshot cron cannot write a dump
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
