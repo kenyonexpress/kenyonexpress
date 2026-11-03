@@ -1,5 +1,6 @@
 import { LEGAL_DOCS, legalDocPath } from '@/app/(legal)/_content'
 import { sortedPosts } from '@/content/blog'
+import { CITIES } from '@/data/cities'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { newestTimestamp } from '@/lib/seo/lastmod'
@@ -67,9 +68,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [productsRead, categoriesRead, suppliersRead] = await Promise.all([
     supabase
       .from('products')
-      // `category_id` costs nothing here and saves a second query: it is what
-      // lets the category entries below drop the archives that have no products.
-      .select('slug, updated_at, category_id')
+      // `category_id` and `city` cost nothing here and save two queries: they
+      // let the category and city entries below drop the archives that have no
+      // products.
+      .select('slug, updated_at, category_id, city')
       .eq('status', 'active')
       .is('deleted_at', null)
       .not('slug', 'is', null)
@@ -150,6 +152,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     [...(products ?? []), ...(categories ?? [])].map((row) => row.updated_at),
   )
 
+  // Same rule for the city pages: `/c/<slug>` filters on `products.city`, and
+  // a city with no active product renders an empty grid with a 200.
+  const citiesWithProducts = new Set(
+    (products ?? []).map((p) => p.city).filter((name): name is string => Boolean(name)),
+  )
+  const cityEntries: MetadataRoute.Sitemap = CITIES.filter((c) =>
+    citiesWithProducts.has(c.name),
+  ).map((c) => ({
+    url: `${base}/c/${c.slug}`,
+    lastModified: catalogueTouched,
+    changeFrequency: 'daily' as const,
+    priority: 0.7,
+  }))
+
   const staticEntries: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: catalogueTouched, changeFrequency: 'daily', priority: 1 },
     {
@@ -157,6 +173,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: catalogueTouched,
       changeFrequency: 'daily',
       priority: 0.9,
+    },
+    {
+      url: `${base}/c`,
+      lastModified: catalogueTouched,
+      changeFrequency: 'daily',
+      priority: 0.8,
     },
     {
       url: `${base}/coupons`,
@@ -197,5 +219,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]
 
-  return [...staticEntries, ...categoryEntries, ...productEntries, ...supplierEntries]
+  return [
+    ...staticEntries,
+    ...categoryEntries,
+    ...cityEntries,
+    ...productEntries,
+    ...supplierEntries,
+  ]
 }

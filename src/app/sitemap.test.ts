@@ -95,7 +95,7 @@ describe('empty category archives stay out of the sitemap', () => {
 
   it('builds that set from the products query rather than a second round trip', () => {
     // `category_id` rides along on a read the sitemap already performs.
-    expect(src).toContain("select('slug, updated_at, category_id')")
+    expect(src).toContain("select('slug, updated_at, category_id, city')")
     expect(src).toContain("select('id, slug, updated_at')")
   })
 
@@ -111,5 +111,15 @@ describe('empty category archives stay out of the sitemap', () => {
     // The filter must be on emptiness, not on anything else: a narrower
     // predicate here would silently drop live archives.
     expect(src).not.toMatch(/\.filter\(\(c\) => c\.(is_active|status)/)
+  })
+})
+
+describe('the city pages are in the sitemap', () => {
+  it('lists /c and every city that has an active product', () => {
+    // seo-verify.mjs picks a /c/<slug> URL from the served sitemap; with none
+    // listed the city index and its pages were invisible to a crawler.
+    expect(src).toContain('`${base}/c`')
+    expect(src).toContain('citiesWithProducts.has(c.name)')
+    expect(src).toContain('...cityEntries')
   })
 })

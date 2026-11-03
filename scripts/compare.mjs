@@ -5,6 +5,11 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 import { parseCompareArgs } from './compare-args.mjs'
+import {
+  REFERENCE as WOOCOMMERCE_REFERENCE,
+  classifyReference,
+  refusalMessage,
+} from './live-reference.mjs'
 import { loadShortfall, ownSideCaveat } from './load-shortfall.mjs'
 import { defaultBaselineFor, recaptureHint } from './parity-baseline.mjs'
 import { appendParityFailure } from './parity-log.mjs'
@@ -394,9 +399,26 @@ const seedCart = async (target) => {
       })
       const atc = p.locator('.pdp-buy__atc').first()
       await atc.waitFor({ state: 'visible', timeout: 45000 })
-      await atc.click({ timeout: 30000 })
-      // The add is a server action; give it a round trip before moving on.
-      await p.waitForTimeout(5000)
+      // WAIT FOR THE ADD TO BE CONFIRMED, NOT FOR A FIXED TIME. Measured
+      // 03.11.2026 (C197): a click at first paint lands before hydration and
+      // does nothing, and with production queries at 1.5-2.6 s the action's
+      // round trip outlived the old fixed 5 s, so the page closed under it and
+      // /checkout redirected to an empty /cart. The cart store's success toast
+      // ("<name> נוסף לעגלה", src/lib/cart/store.ts) is the confirmation. Two
+      // attempts, because the first can be the pre-hydration one.
+      const added = p.getByText(/נוסף לעגלה/).first()
+      let confirmed = false
+      for (let attempt = 0; attempt < 2 && !confirmed; attempt++) {
+        await p.waitForLoadState('load', { timeout: 30000 }).catch(() => {})
+        await atc.click({ timeout: 30000 })
+        confirmed = await added
+          .waitFor({ state: 'visible', timeout: 30000 })
+          .then(() => true)
+          .catch(() => false)
+      }
+      if (!confirmed) console.log('  WARNING: local add-to-cart was never confirmed')
+      // The toast is optimistic; give the server action time to settle.
+      await p.waitForTimeout(3000)
     }
   } finally {
     await p.close()
@@ -464,6 +486,95 @@ const presetConsentDecided = async (url) => {
       path: '/',
     },
   ])
+}
+
+/** A `file:` archive or the old host: the two shapes the reference has ever had. */
+const isExternal = (url) => url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+// WHICH SIDE A PAGE IS ON IS DECIDED BY THE CALLER, NOT BY ITS HOSTNAME.
+//
+// shoot() used to derive the side from isExternal(url), which worked only while
+// the right-hand side was always localhost. Measured 05.10.2026 (L07): running
+// the gate with the right-hand side on https://www.kenyonexpress.co.il/ -- the
+// deployed build, against the frozen August capture -- classified OUR side as
+// the reference by hostname, ran enforceReference() on it and refused with exit
+// 5 ("is not the reference"). It is not the reference; it was never meant to be.
+// It is the page under test, and the hostname says nothing about that. The
+// reference guard, the shorter settle, and every per-side bookkeeping slot
+// (cartEmptiness, heroImages, pendingImages, heroStability, gridCounts) now key
+// off the side the caller names, and isExternal() is left for the one question
+// it answers well: does this URL point at the old host or an archive.
+
+/**
+ * Read in the page. Kept as one function so the pre-seeding probe and the shot
+ * itself cannot drift into asking two different questions.
+ */
+const READ_REFERENCE_MARKERS = () => {
+  const urlsOf = (sel, attr) =>
+    Array.from(document.querySelectorAll(sel))
+      .map((el) => el.getAttribute(attr) ?? '')
+      .filter(Boolean)
+  // Stylesheets and scripts only. Our own catalogue still serves product photos
+  // from wp-content paths, so counting IMAGES here would classify our own build
+  // as the reference -- the exact miss this guard exists to prevent.
+  const wpAssets = [
+    ...urlsOf('link[rel~="stylesheet"][href]', 'href'),
+    ...urlsOf('script[src]', 'src'),
+  ].filter((u) => /wp-content|wp-includes/i.test(u))
+  const nextAssets = [...urlsOf('script[src]', 'src'), ...urlsOf('link[href]', 'href')].filter(
+    (u) => u.includes('/_next/'),
+  )
+  return {
+    wpStyleOrScript: wpAssets.length,
+    wooBodyClass: /woocommerce|wordpress/i.test(document.body?.className ?? ''),
+    generator: document.querySelector('meta[name="generator"]')?.getAttribute('content') ?? null,
+    nextAssets: nextAssets.length,
+    nextRuntime: Boolean(
+      document.querySelector('#__next, next-route-announcer, script#__NEXT_DATA__'),
+    ),
+  }
+}
+
+/**
+ * EVERY OTHER REFUSAL IN THIS FILE CATCHES A NUMBER THAT WOULD COME OUT TOO
+ * HIGH. A 404, two catalogues, a carousel mid-spin: all of them score badly and
+ * a bad score gets investigated. This one catches the opposite, and that is why
+ * it matters more than the rest of them put together.
+ *
+ * Measured 2026-09-09. `https://kenyonexpress.co.il/cart/` follows to
+ * `www.kenyonexpress.co.il/cart` and answers 200 with ZERO woocommerce markers,
+ * 125 `_next` references and our own Hebrew title. DNS was cut over to Vercel,
+ * so every `LIVE_*` constant at the top of this file now names OUR build. A run
+ * against it photographs this project twice and reports a near-zero diff, and
+ * nobody investigates a pass. `scripts/live-reference.mjs` holds the rule and
+ * the wording; `docs/PARITY-REFERENCE.md` holds what it costs and what would
+ * lift it.
+ *
+ * THIS GUARD ANSWERS IDENTITY AND NOTHING ELSE, ON PURPOSE. The obvious next
+ * question -- does the reference still RENDER -- was written here first and
+ * removed, because the version that inferred it from `document.styleSheets`
+ * passed `refs/ke_live_home.html`, which does not render. Measured 2026-09-09
+ * at 380px: 143 subresources failed, every one of them to
+ * `file://kenyonexpress.co.il/...`, because the capture saved its URLs
+ * protocol-relative and `//host/x` under `file:` is a host called
+ * kenyonexpress.co.il; its one real stylesheet answers 403; and Chromium keeps
+ * the failed sheet in `document.styleSheets` anyway, so the probe read it as
+ * loaded. An inference that green-lights a page with no images on it is worse
+ * than no check. What such an archive costs is written down in
+ * docs/PARITY-REFERENCE.md instead, where it can be read before somebody points
+ * `--live=` at one.
+ *
+ * @param {string} url
+ * @param {object} markers  from READ_REFERENCE_MARKERS
+ */
+const enforceReference = async (url, markers) => {
+  const verdict = classifyReference(markers)
+  if (verdict.kind !== WOOCOMMERCE_REFERENCE) {
+    console.error(refusalMessage({ url, ...verdict }))
+    appendParityFailure({ page, width: VIEW.width, reason: `live side is ${verdict.kind}` })
+    await b.close()
+    process.exit(5)
+  }
+  console.log(`  reference ok: ${verdict.why}`)
 }
 
 const shoot = async (url, out, side = null) => {
@@ -614,8 +725,9 @@ const shoot = async (url, out, side = null) => {
   }
   // Same rule as the not-found guard above, for the redirect this page has:
   // an empty cart is sent to /cart on both sides, and two cart screenshots
-  // score as an excellent checkout.
-  if (page === 'checkout' && !p.url().includes('/checkout')) {
+  // score as an excellent checkout. A `file:` archive cannot redirect, and its
+  // name (`ke_live_checkout.html`) has no `/checkout` in it, so it is exempt.
+  if (page === 'checkout' && !url.startsWith('file:') && !p.url().includes('/checkout')) {
     console.error(`REFUSING to measure: ${url} redirected to ${p.url()} (cart did not stick).`)
     process.exit(3)
   }
