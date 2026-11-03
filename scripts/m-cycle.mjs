@@ -208,7 +208,10 @@ function runTask(taskId, task) {
 }
 
 function writeCycleReport(results) {
-  const reportPath = path.join(projectRoot, 'docs', 'M-CYCLE-STATUS.md')
+  // M_CYCLE_REPORT lets the unit tests write elsewhere: every `pnpm test`
+  // ran --dry-run here and replaced the real report with 18 SKIPs (C194).
+  const reportPath =
+    process.env.M_CYCLE_REPORT || path.join(projectRoot, 'docs', 'M-CYCLE-STATUS.md')
   const timestamp = new Date().toISOString()
   const passed = results.filter((r) => r.result.status === 'pass').length
   const failed = results.filter((r) => r.result.status === 'fail').length

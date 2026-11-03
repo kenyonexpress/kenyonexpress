@@ -233,3 +233,11 @@ First fully green CI run on closeout/v1-final in this window (red since at least
  9685 tee -a /Users/ofir/ke-goals/final.log
 [START-M-CYCLE] Not typing into it. Use another session name or stop that process.
 ```
+
+## Why the status file read DRY-RUN
+`scripts/m-cycle.test.mjs` runs `m-cycle.mjs --dry-run` four times, and every `pnpm test` therefore replaced `docs/M-CYCLE-STATUS.md` with 18 SKIPs (it was dry-run at the start of this item and again at 08:24). `M_CYCLE_REPORT` now redirects the report; the tests write to a temp dir. md5 of docs/M-CYCLE-STATUS.md before and after the test run: `6af43cf072cc9498de17fdedd4765c51` both. Real cycle after:
+```
+**Mode:** LIVE
+**Result:** ⚠️ NON-CRITICAL FAILURES
+M-Cycle complete: 15 pass, 3 fail (0 critical)     (WARN M10, M15, M17 as decided above)
+```

@@ -8,12 +8,19 @@
 
 import { execSync } from 'node:child_process'
 import * as fs from 'node:fs'
+import { tmpdir } from 'node:os'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(__dirname, '..')
+// Dry runs must not overwrite the real cycle report in docs/.
+const reportFile = path.join(
+  fs.mkdtempSync(path.join(tmpdir(), 'm-cycle-test-')),
+  'M-CYCLE-STATUS.md',
+)
+const testEnv = { ...process.env, M_CYCLE_REPORT: reportFile }
 
 describe('M-Cycle System', () => {
   describe('m-cycle.mjs script', () => {
@@ -29,6 +36,7 @@ describe('M-Cycle System', () => {
     it('should run in dry-run mode without errors', () => {
       const result = execSync('node scripts/m-cycle.mjs --dry-run', {
         cwd: projectRoot,
+        env: testEnv,
         encoding: 'utf8',
         timeout: 30000,
       })
@@ -41,10 +49,11 @@ describe('M-Cycle System', () => {
     it('should generate M-CYCLE-STATUS.md report', () => {
       execSync('node scripts/m-cycle.mjs --dry-run', {
         cwd: projectRoot,
+        env: testEnv,
         timeout: 30000,
       })
 
-      const reportPath = path.join(projectRoot, 'docs', 'M-CYCLE-STATUS.md')
+      const reportPath = reportFile
       expect(fs.existsSync(reportPath)).toBe(true)
 
       const report = fs.readFileSync(reportPath, 'utf8')
@@ -58,6 +67,7 @@ describe('M-Cycle System', () => {
     it('should accept --task filter', () => {
       const result = execSync('node scripts/m-cycle.mjs --task=M01 --dry-run', {
         cwd: projectRoot,
+        env: testEnv,
         encoding: 'utf8',
         timeout: 30000,
       })
@@ -69,6 +79,7 @@ describe('M-Cycle System', () => {
     it('should exit 0 on dry-run success', () => {
       const exitCode = execSync('node scripts/m-cycle.mjs --dry-run; echo $?', {
         cwd: projectRoot,
+        env: testEnv,
         encoding: 'utf8',
         timeout: 30000,
         shell: '/bin/bash',
