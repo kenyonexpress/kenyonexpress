@@ -1,7 +1,11 @@
-RESUME FROM: M04-c350
+RESUME FROM: M05-c350
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T18:17:49+07:00
+- item: M04-c350
+- RESULT: DONE
 
 ### 2026-11-03T18:17:00+07:00
 - item: M03-c350
@@ -98,10 +102,6 @@ RESUME FROM: M04-c350
 ### 2026-11-03T14:04:05+07:00
 - item: C192
 - BLOCKED: prod Turnstile rejects headless sign-in by design and a 2172-test pass takes ~6h on this link, so 2x consecutive green is not producible
-
-### 2026-11-03T13:01:19+07:00
-- item: C191
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
