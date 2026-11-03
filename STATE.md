@@ -1,7 +1,11 @@
-RESUME FROM: M08-c349
+RESUME FROM: M09-c349
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T17:20:08+07:00
+- item: M08-c349
+- RESULT: DONE
 
 ### 2026-11-03T17:15:46+07:00
 - item: M07-c349
@@ -98,10 +102,6 @@ RESUME FROM: M08-c349
 ### 2026-11-03T06:47:30+07:00
 - item: C178
 - RESULT: DONE
-
-### 2026-11-03T06:37:03+07:00
-- item: C177
-- BLOCKED: supabase-rest-down
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
