@@ -136,3 +136,4 @@
 - המשך מ: M04-c351 DONE (2026-11-03): pnpm type-check (tsc --noEmit) exit 0 at HEAD 492bda7f2 on a clean tree, no drift to fix; proof docs/M04-c351.md; no code changes, no forbidden files touched
 - המשך מ: M05-c351 DONE (2026-11-03): pnpm test exit 0 at HEAD f05510af6, 877 files / 9698 tests passed, 0 failed, identical to c350, no drift to fix; proof docs/M05-c351.md; no code changes, no forbidden files touched
 - המשך מ: M06-c351 DONE (2026-11-03): pnpm build exit 0 at HEAD ba0fceabc, compiled, 367/367 static pages, 42 db.query_failed all prerender-cutoff (identical to c350), no drift to fix; proof docs/M06-c351.md; no code changes, no forbidden files touched
+- המשך מ: M07-c351 DONE (2026-11-03): 2 TODO(cardcom) markers, both >7 days, already filed as docs/BACKLOG.md #1 #2; no new markers; proof docs/M07-c351.md; no code changes, no forbidden files touched
