@@ -572,3 +572,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-11-03 09:44 | home | 768 | 8.20% | PASS | `6971569cb-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
 | 2026-11-03 09:46 | home | 1440 | 6.55% | PASS | `6971569cb-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |
 | 2026-11-03 09:48 | home | 380 | 13.35% | **FAIL** | `6971569cb-dirty` | ref everything loaded; overall 43.31% (reference blank 15.35%, ours blank 14.62%) |
+| 2026-11-03 09:52 | product | 380 | 6.40% | PASS | `cd2d1bedb` | baseline refs/electro_product_380.png (frozen PNG, 2026-09-25T09:29:11.197Z), not a fresh archive shot; overall 36.89% (reference blank 24.94%, ours blank 5.55% |
+| 2026-11-03 09:54 | product | 768 | 4.22% | PASS | `cd2d1bedb-dirty` | baseline refs/electro_product_768.png (frozen PNG, 2026-09-25T09:29:12.169Z), not a fresh archive shot; overall 31.41% (reference blank 21.15%, ours blank 6.04% |
+| 2026-11-03 09:56 | product | 1440 | 3.25% | PASS | `cd2d1bedb-dirty` | baseline refs/electro_product_1440.png (frozen PNG, 2026-09-25T09:29:13.262Z), not a fresh archive shot; overall 22.23% (reference blank 14.16%, ours blank 4.83 |
