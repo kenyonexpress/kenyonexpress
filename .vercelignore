@@ -38,12 +38,18 @@
 # Without these the upload was 745MB and failed mid-stream with `fetch failed`
 # (C135). Anchored for the same reason as above.
 /.claude/
-/refs/
+# refs/ and docs/ each hold ONE file the build imports, so they are `/dir/*`
+# plus a negation: a `/dir/` rule drops the directory itself and cannot be
+# un-ignored. Without these two lines every deploy failed with module-not-found
+# (C192): src/lib/checkout/electro-content.ts and src/lib/seo/wp-legacy.ts.
+/refs/*
+!/refs/electro-checkout-text.json
 /wp_import/
 /.lighthouseci/
 /shots/
 /.image-staging/
-/docs/
+/docs/*
+!/docs/redirects.map
 /logs/
 /playwright-report/
 /test-results/
