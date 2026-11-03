@@ -31693,3 +31693,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 ### 2026-11-04T04:21:18+07:00
 - item: M10-c352
 - BLOCKED: pending 319 parent table affiliate_links absent in prod; 324 would break 23 FKs into orders
+
+## Archived 2026-11-04T06:00:20+07:00 after M16-c353 (3 lines from STATE.md)
+
+### 2026-11-04T04:25:43+07:00
+- item: M11-c352
+- RESULT: DONE
