@@ -165,6 +165,24 @@ const PAGES: Array<{ name: string; path: string }> = [
   { name: 'legal privacy', path: '/privacy' },
   { name: 'legal returns', path: '/returns' },
   { name: 'legal accessibility', path: '/accessibility' },
+  // C182 (2026-11-03): every remaining public route that renders without a
+  // session or a token. Fifteen of them had never been scanned, which is the
+  // same scope bug the 08-19 sweep above describes, one generation later.
+  { name: 'category index', path: '/c' },
+  { name: 'category page', path: '/c/electronics' },
+  { name: 'category list', path: '/category' },
+  { name: 'about', path: '/about' },
+  { name: 'faq', path: '/faq' },
+  { name: 'blog', path: '/blog' },
+  { name: 'club', path: '/club' },
+  { name: 'gift card', path: '/gift-card' },
+  { name: 'affiliate', path: '/affiliate' },
+  { name: 'developers', path: '/developers' },
+  { name: 'supplier apply', path: '/suppliers/apply' },
+  { name: 'compare', path: '/products/compare' },
+  { name: 'forgot password', path: '/forgot-password' },
+  { name: 'signup confirm', path: '/signup/confirm' },
+  { name: 'cookie policy', path: '/cookie-policy' },
 ]
 
 for (const { name, path } of PAGES) {

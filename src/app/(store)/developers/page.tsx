@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function DevelopersPage() {
   return (
-    <div dir="rtl" className="min-h-screen bg-muted py-12 px-4">
+    <div dir="rtl" className="min-h-screen bg-surface-hover py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-12">
@@ -72,8 +72,11 @@ export default function DevelopersPage() {
             All API requests must include your API key in the Authorization header:
           </p>
 
-          <div className="bg-foreground text-background rounded-lg p-4 mb-6 font-mono text-sm overflow-x-auto">
-            <pre>{'Authorization: Bearer ke_abc123...xyz789'}</pre>
+          <div className="bg-foreground text-background rounded-lg p-4 mb-6 font-mono text-sm">
+            {/* biome-ignore lint/a11y/noNoninteractiveTabindex: a scroller a keyboard cannot reach hides the end of every long line (WCAG 2.1.1). */}
+            <pre tabIndex={0} aria-label="Code sample" className="overflow-x-auto">
+              {'Authorization: Bearer ke_abc123...xyz789'}
+            </pre>
           </div>
 
           <p className="text-muted-foreground">
@@ -89,13 +92,17 @@ export default function DevelopersPage() {
           <p className="text-muted-foreground mb-8">
             Each API key has specific scopes that determine what data it can access. Scopes follow
             the format:
-            <code className="bg-muted px-2 py-1 rounded ms-2 font-mono">resource:action</code>
+            <code className="bg-surface-hover px-2 py-1 rounded ms-2 font-mono">
+              resource:action
+            </code>
           </p>
 
           <div className="space-y-4">
             {Object.entries(PUBLIC_SCOPE_DESCRIPTIONS).map(([scope, description]) => (
               <div key={scope} className="border-l-4 border-yellow-400 ps-4 py-2">
-                <code className="text-sm font-mono bg-muted px-2 py-1 rounded">{scope}</code>
+                <code className="text-sm font-mono bg-surface-hover px-2 py-1 rounded">
+                  {scope}
+                </code>
                 <p className="text-muted-foreground text-sm mt-1">{description}</p>
               </div>
             ))}
@@ -123,7 +130,7 @@ export default function DevelopersPage() {
               page (max 100).
             </p>
 
-            <div className="bg-muted rounded p-4 mb-4">
+            <div className="bg-surface-hover rounded p-4 mb-4">
               <h4 className="font-semibold text-foreground mb-3">Query Parameters</h4>
               <dl className="space-y-3 text-sm">
                 <div>
@@ -139,15 +146,21 @@ export default function DevelopersPage() {
               </dl>
             </div>
 
-            <div className="bg-foreground text-background rounded-lg p-4 font-mono text-sm overflow-x-auto mb-4">
-              <pre>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
+            <div className="bg-foreground text-background rounded-lg p-4 font-mono text-sm mb-4">
+              <pre
+                // biome-ignore lint/a11y/noNoninteractiveTabindex: a scroller a keyboard cannot reach hides the end of every long line (WCAG 2.1.1).
+                tabIndex={0}
+                aria-label="Code sample"
+                className="overflow-x-auto"
+              >{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
   "https://www.kenyonexpress.co.il/api/partners/v1/products?page=1&limit=20"`}</pre>
             </div>
 
-            <div className="bg-muted rounded p-4">
+            <div className="bg-surface-hover rounded p-4">
               <h4 className="font-semibold text-foreground mb-3">Response</h4>
-              <div className="bg-foreground text-background rounded p-3 font-mono text-xs overflow-x-auto">
-                <pre>{`{
+              <div className="bg-foreground text-background rounded p-3 font-mono text-xs">
+                {/* biome-ignore lint/a11y/noNoninteractiveTabindex: a scroller a keyboard cannot reach hides the end of every long line (WCAG 2.1.1). */}
+                <pre tabIndex={0} aria-label="Code sample" className="overflow-x-auto">{`{
   "status": "success",
   "data": [
     {
@@ -172,7 +185,7 @@ export default function DevelopersPage() {
 
             <div className="mt-4 text-sm text-muted-foreground">
               <strong>Required Scope:</strong>{' '}
-              <code className="font-mono bg-muted px-2">products:read</code>
+              <code className="font-mono bg-surface-hover px-2">products:read</code>
             </div>
           </div>
 
@@ -186,15 +199,21 @@ export default function DevelopersPage() {
             </div>
             <p className="text-muted-foreground mb-4">List all active product categories.</p>
 
-            <div className="bg-foreground text-background rounded-lg p-4 font-mono text-sm overflow-x-auto mb-4">
-              <pre>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
+            <div className="bg-foreground text-background rounded-lg p-4 font-mono text-sm mb-4">
+              <pre
+                // biome-ignore lint/a11y/noNoninteractiveTabindex: a scroller a keyboard cannot reach hides the end of every long line (WCAG 2.1.1).
+                tabIndex={0}
+                aria-label="Code sample"
+                className="overflow-x-auto"
+              >{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
   "https://www.kenyonexpress.co.il/api/partners/v1/categories"`}</pre>
             </div>
 
-            <div className="bg-muted rounded p-4 mb-4">
+            <div className="bg-surface-hover rounded p-4 mb-4">
               <h4 className="font-semibold text-foreground mb-3">Response</h4>
-              <div className="bg-foreground text-background rounded p-3 font-mono text-xs overflow-x-auto">
-                <pre>{`{
+              <div className="bg-foreground text-background rounded p-3 font-mono text-xs">
+                {/* biome-ignore lint/a11y/noNoninteractiveTabindex: a scroller a keyboard cannot reach hides the end of every long line (WCAG 2.1.1). */}
+                <pre tabIndex={0} aria-label="Code sample" className="overflow-x-auto">{`{
   "status": "success",
   "data": [
     {
@@ -212,7 +231,7 @@ export default function DevelopersPage() {
 
             <div className="mt-4 text-sm text-muted-foreground">
               <strong>Required Scope:</strong>{' '}
-              <code className="font-mono bg-muted px-2">categories:read</code>
+              <code className="font-mono bg-surface-hover px-2">categories:read</code>
             </div>
           </div>
         </section>
@@ -226,7 +245,7 @@ export default function DevelopersPage() {
             hour per key.
           </p>
 
-          <div className="bg-muted rounded p-4 mb-6">
+          <div className="bg-surface-hover rounded p-4 mb-6">
             <h3 className="font-semibold text-foreground mb-4">Rate Limit Headers</h3>
             <dl className="space-y-3 text-sm font-mono">
               <div>
