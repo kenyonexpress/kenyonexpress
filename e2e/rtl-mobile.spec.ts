@@ -104,7 +104,22 @@ test.describe('no sideways scroll at 320px', () => {
       // for them here only makes the gate slower and flakier.
       await page.waitForTimeout(600)
 
-      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+      // `/checkout` with an empty cart redirects to `/cart` from the streamed
+      // response, and on a slow WebKit run (C197) that navigation landed inside
+      // this read: "Execution context was destroyed". Read again on the page it
+      // went to; whichever page is on screen is the one that must fit.
+      let scrollWidth = 0
+      for (let attempt = 0; ; attempt++) {
+        try {
+          scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+          break
+        } catch (error) {
+          if (attempt >= 2 || !String(error).includes('Execution context was destroyed'))
+            throw error
+          await page.waitForLoadState('domcontentloaded')
+          await page.waitForTimeout(600)
+        }
+      }
       expect(
         scrollWidth,
         `${path} is ${scrollWidth}px wide in a 320px viewport`,
