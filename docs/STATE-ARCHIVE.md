@@ -31063,3 +31063,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T10:04:44+07:00
 - item: C181
 - BLOCKED: cart/checkout SEO 69 is the deliberate robots.txt disallow (C152); signed-in perf on cart 1440, checkout, account 1440 is bound by 0.8-2.7s Supabase RTT from this host while prod DB is down
+
+## Archived 2026-11-03T17:33:46+07:00 after M13-c349 (3 lines from STATE.md)
+
+### 2026-11-03T10:24:55+07:00
+- item: C182
+- RESULT: DONE
