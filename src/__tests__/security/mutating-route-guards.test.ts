@@ -23,7 +23,7 @@ const API_DIR = resolve(process.cwd(), 'src/app/api')
 const MUTATING = /export\s+(?:const|async\s+function)\s+(POST|PUT|PATCH|DELETE)\b/
 const GATES = [
   /checkRateLimit|enforceRateLimit|\brateLimit\(/, // human callers
-  /timingSafeEqual|bearerMatches|secretEquals|twilioSignatureValid|verifyQstashSignature/, // machine callers
+  /timingSafeEqual|bearerMatches|secretEquals|twilioSignatureValid|verifyQstashSignature|verifySvixSignature/, // machine callers (Svix: Resend webhook)
 ]
 
 function routeFiles(dir: string): string[] {

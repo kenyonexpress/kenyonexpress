@@ -95,6 +95,11 @@ const SECRET_AUTHENTICATED: { path: string; guard: RegExp; reason: string }[] = 
     guard: /x-twilio-signature/,
     reason: 'Twilio request signature, keyed with the auth token',
   },
+  {
+    path: 'src/app/api/webhooks/resend/route.ts',
+    guard: /verifySvixSignature/,
+    reason: 'Svix signature with timestamp tolerance, keyed with RESEND_WEBHOOK_SECRET',
+  },
 ]
 
 const FILES = routeFiles(API_ROOT).map((path) => ({

@@ -67,3 +67,38 @@ function CHECKOUT_VARIANT_PROPERTY_NAME(): string {
 export function purchaseFunnelEventNames(): string[] {
   return PURCHASE_FUNNEL.map((step) => step.event)
 }
+
+/**
+ * The C184 business funnel: view, add, checkout, paid. The four commerce steps
+ * of PURCHASE_FUNNEL without $pageview, which counts every browse and drowns
+ * the conversion rate the dashboard exists to show.
+ */
+export const VIEW_ADD_CHECKOUT_PAID = [
+  'view_item',
+  'add_to_cart',
+  'begin_checkout',
+  'purchase',
+] as const
+
+/**
+ * The PostHog FunnelsQuery for that sequence, as the insights API takes it.
+ * `scripts/c184-obs-smoke.mjs` posts it when a personal API key is present;
+ * the window is 14 days because a voucher is often bought days after the
+ * first view.
+ */
+export function viewAddCheckoutPaidQuery() {
+  return {
+    kind: 'InsightVizNode',
+    source: {
+      kind: 'FunnelsQuery',
+      series: VIEW_ADD_CHECKOUT_PAID.map((event) => ({ kind: 'EventsNode', event, name: event })),
+      dateRange: { date_from: '-30d' },
+      funnelsFilter: {
+        funnelVizType: 'steps',
+        funnelOrderType: 'ordered',
+        funnelWindowInterval: 14,
+        funnelWindowIntervalUnit: 'day',
+      },
+    },
+  }
+}

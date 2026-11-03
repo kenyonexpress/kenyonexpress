@@ -6,7 +6,9 @@ import { SERVER_EVENT_NAMES } from './events'
 import {
   COHORT_PERSON_PROPERTIES,
   PURCHASE_FUNNEL,
+  VIEW_ADD_CHECKOUT_PAID,
   purchaseFunnelEventNames,
+  viewAddCheckoutPaidQuery,
 } from './posthog-funnel'
 
 /**
@@ -49,5 +51,25 @@ describe('the purchase funnel taxonomy', () => {
 
   it('locks the cohort person properties to the module that writes them', () => {
     expect(COHORT_PERSON_PROPERTIES).toContain(CASHBACK_TIER_PROPERTY)
+  })
+})
+
+describe('the view-add-checkout-paid funnel (C184)', () => {
+  it('is the purchase funnel minus $pageview, in order', () => {
+    expect([...VIEW_ADD_CHECKOUT_PAID]).toEqual(
+      purchaseFunnelEventNames().filter((name) => name !== '$pageview'),
+    )
+  })
+
+  it('builds an ordered FunnelsQuery over exactly those four events', () => {
+    const query = viewAddCheckoutPaidQuery()
+    expect(query.source.kind).toBe('FunnelsQuery')
+    expect(query.source.funnelsFilter.funnelOrderType).toBe('ordered')
+    expect(query.source.series.map((step) => step.event)).toEqual([
+      'view_item',
+      'add_to_cart',
+      'begin_checkout',
+      'purchase',
+    ])
   })
 })
