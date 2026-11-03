@@ -31147,3 +31147,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T16:51:18+07:00
 - item: M01-c349
 - BLOCKED: home-380-content-floor (both painted 13.35%; 768 and 1440 pass)
+
+## Archived 2026-11-03T18:33:59+07:00 after M09-c350 (3 lines from STATE.md)
+
+### 2026-11-03T16:58:42+07:00
+- item: M02-c349
+- RESULT: DONE
