@@ -1,7 +1,11 @@
-RESUME FROM: M16-c350
+RESUME FROM: M17-c350
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-03T19:01:43+07:00
+- item: M16-c350
+- RESULT: DONE
 
 ### 2026-11-03T18:55:10+07:00
 - item: M15-c350
@@ -98,10 +102,6 @@ RESUME FROM: M16-c350
 ### 2026-11-03T17:27:02+07:00
 - item: M10-c349
 - BLOCKED: M10-c349 pending 319 (affiliate_links missing in prod) and 324 (23 FKs into orders) unapplied, not safely applicable as written
-
-### 2026-11-03T17:25:23+07:00
-- item: M09-c349
-- RESULT: DONE
 
 ## Session: Wed 28 Oct 2026 14:31 Bangkok — HANDOFF
 
