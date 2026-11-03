@@ -180,3 +180,10 @@ Local `pnpm test:coverage`, exit 0:
  Test Files  877 passed | 3 skipped (880)
       Tests  9698 passed | 39 skipped (9737)
 ```
+
+## CI after the third push (cbf12ddf3)
+Run 41603926217, with unit green the downstream jobs ran for the first time in this window:
+Build success, E2E (Playwright) success, Pixel parity (380 / 768 / 1440) success, unit + money floors success. Two reds:
+- `E2E without a database`: `Error: Project(s) "chromium" not found. Available projects: "chromium-380", "chromium-768", "chromium-1440", ...`. The projects were renamed; `scripts/e2e-no-database.mjs` and the preview smoke step still passed `--project=chromium`. Now `chromium-1440` (Desktop Chrome, nearest to the old default). Local `--list --project=chromium-1440 e2e/home.spec.ts`: `Total: 23 tests in 1 file`.
+- `Migration lint`: `migration-lint: 59 files, 2 hard, 115 soft`, both in pending `324_orders_monthly_partitioning.sql` (CREATE TABLE/INDEX without IF NOT EXISTS). Added IF NOT EXISTS; semantics unchanged (the DO block renames the old table and frees its index names first; partitions are already guarded by to_regclass). After: `migration-lint: 59 files, 0 hard, 115 soft`. 324 is NOT applied.
+Bundle gates (skipped behind the lint) run locally on the HEAD build: `shared first-load 171.1 KB gz across 7 chunks, budget 260 KB -- ok`, `/checkout 237.2 KB 18 chunks budget 240 ok`.

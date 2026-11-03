@@ -63,6 +63,6 @@ describe('e2e-no-database runner', () => {
   })
 
   it('pins the browser project, so a local config cannot widen the lane silently', () => {
-    expect(code).toContain("'--project=chromium'")
+    expect(code).toContain("'--project=chromium-1440'")
   })
 })

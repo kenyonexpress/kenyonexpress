@@ -158,7 +158,7 @@ BEGIN
       v_from_ts := v_month::timestamp AT TIME ZONE 'utc';
       v_to_ts   := ((v_month + interval '1 month')::date)::timestamp AT TIME ZONE 'utc';
       EXECUTE format(
-        'CREATE TABLE public.%I PARTITION OF public.orders FOR VALUES FROM (%L) TO (%L)',
+        'CREATE TABLE IF NOT EXISTS public.%I PARTITION OF public.orders FOR VALUES FROM (%L) TO (%L)',
         v_name, v_from_ts, v_to_ts
       );
       -- Supabase default privileges would expose the new partition through
@@ -334,7 +334,7 @@ BEGIN
 
   -- 3.3 The partitioned parent, same shape: columns, defaults, generated
   -- agorot twins, CHECK constraints and comments all copied.
-  CREATE TABLE public.orders (
+  CREATE TABLE IF NOT EXISTS public.orders (
     LIKE public.orders_prepartition_legacy
       INCLUDING DEFAULTS INCLUDING GENERATED INCLUDING CONSTRAINTS INCLUDING COMMENTS
   ) PARTITION BY RANGE (created_at);
@@ -351,16 +351,16 @@ BEGIN
 
   -- 3.4 Indexes, verbatim from the old table (they become partitioned
   -- indexes and propagate to every partition, present and future).
-  CREATE INDEX idx_orders_paid_at_paid ON public.orders (paid_at DESC)
+  CREATE INDEX IF NOT EXISTS idx_orders_paid_at_paid ON public.orders (paid_at DESC)
     WHERE paid_at IS NOT NULL AND deleted_at IS NULL;
-  CREATE INDEX idx_orders_user_status ON public.orders (user_id, status);
-  CREATE INDEX idx_orders_created_at ON public.orders (created_at DESC);
-  CREATE INDEX orders_created_at_idx ON public.orders (created_at);
-  CREATE INDEX idx_orders_invoice_number ON public.orders (invoice_number);
-  CREATE INDEX orders_user_id_idx ON public.orders (user_id);
-  CREATE INDEX idx_orders_pending_expiry ON public.orders (expires_at)
+  CREATE INDEX IF NOT EXISTS idx_orders_user_status ON public.orders (user_id, status);
+  CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders (created_at DESC);
+  CREATE INDEX IF NOT EXISTS orders_created_at_idx ON public.orders (created_at);
+  CREATE INDEX IF NOT EXISTS idx_orders_invoice_number ON public.orders (invoice_number);
+  CREATE INDEX IF NOT EXISTS orders_user_id_idx ON public.orders (user_id);
+  CREATE INDEX IF NOT EXISTS idx_orders_pending_expiry ON public.orders (expires_at)
     WHERE paid_at IS NULL;
-  CREATE INDEX idx_orders_address_id ON public.orders (address_id);
+  CREATE INDEX IF NOT EXISTS idx_orders_address_id ON public.orders (address_id);
 
   -- 3.5 Partitions: from the oldest existing row's month through +12.
   SELECT date_trunc('month', min(created_at) AT TIME ZONE 'utc')::date

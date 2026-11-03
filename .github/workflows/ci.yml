@@ -943,7 +943,7 @@ jobs:
           # unprotected preview.
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
-          pnpm exec playwright test --project=chromium \
+          pnpm exec playwright test --project=chromium-1440 \
             e2e/home.spec.ts \
             e2e/product.spec.ts \
             e2e/category.spec.ts \

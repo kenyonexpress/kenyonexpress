@@ -33,7 +33,7 @@ console.log(`e2e-no-database: ${specs.length} spec file(s), no database required
 // last and the failures scrolled off above it. Observed here on a run that
 // failed once and passed twice.
 try {
-  execFileSync('pnpm', ['exec', 'playwright', 'test', ...specs, '--project=chromium'], {
+  execFileSync('pnpm', ['exec', 'playwright', 'test', ...specs, '--project=chromium-1440'], {
     stdio: 'inherit',
   })
 } catch (error) {
