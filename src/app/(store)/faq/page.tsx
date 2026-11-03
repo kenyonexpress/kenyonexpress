@@ -1,14 +1,19 @@
 import { FAQ_UPDATED_AT, faqEntries } from '@/content/legal/faq'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { jsonLdScript } from '@/lib/seo/json-ld'
+import { socialMetadata } from '@/lib/seo/social'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+const FAQ_TITLE = 'שאלות נפוצות'
+const FAQ_DESCRIPTION =
+  'שאלות נפוצות על קניון EXPRESS: איך עובד קופון, מה משלמים בבית העסק, תוקף, ביטולים, החזרים, ארנק וחשבוניות.'
+
 export const metadata: Metadata = {
-  title: 'שאלות נפוצות',
-  description:
-    'שאלות נפוצות על קניון EXPRESS: איך עובד קופון, מה משלמים בבית העסק, תוקף, ביטולים, החזרים, ארנק וחשבוניות.',
+  title: FAQ_TITLE,
+  description: FAQ_DESCRIPTION,
   alternates: alternatesFor('/faq'),
+  ...socialMetadata({ title: FAQ_TITLE, description: FAQ_DESCRIPTION, path: '/faq' }),
 }
 
 /**

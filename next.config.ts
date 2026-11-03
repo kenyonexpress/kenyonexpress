@@ -260,12 +260,14 @@ const nextConfig: NextConfig = {
       // /terms, /privacy, /returns, /accessibility. The WordPress-era URLs are
       // what old links, old footers and indexed search results point at, and
       // two routes rendering one policy is how they drift until the site
-      // states two different cancellation terms. 308 keeps one canonical.
-      { source: '/terms-and-conditions', destination: '/terms', permanent: true },
-      { source: '/privacy-policy', destination: '/privacy', permanent: true },
-      { source: '/refund_returns', destination: '/returns', permanent: true },
-      { source: '/cancellation-policy', destination: '/returns', permanent: true },
-      { source: '/cookies', destination: '/cookie-policy', permanent: true },
+      // states two different cancellation terms. C180: 301, not `permanent`'s
+      // 308, so these match the proxy's WordPress-shape 301s (wp-legacy.ts);
+      // config redirects run before the proxy, so these rows answer first.
+      { source: '/terms-and-conditions', destination: '/terms', statusCode: 301 },
+      { source: '/privacy-policy', destination: '/privacy', statusCode: 301 },
+      { source: '/refund_returns', destination: '/returns', statusCode: 301 },
+      { source: '/cancellation-policy', destination: '/returns', statusCode: 301 },
+      { source: '/cookies', destination: '/cookie-policy', statusCode: 301 },
       // C103: the short addresses from the brief for the affiliate screens.
       { source: '/u/affiliate', destination: '/account/affiliate', permanent: false },
       { source: '/admin/affiliate', destination: '/admin/affiliates', permanent: false },

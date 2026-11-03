@@ -2,15 +2,20 @@ import CategoryBreadcrumb from '@/components/category/CategoryBreadcrumb'
 import { CITIES } from '@/data/cities'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { socialMetadata } from '@/lib/seo/social'
 import { siteUrl } from '@/lib/site-url'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import '@/styles/category-page.css'
 
+const TITLE = 'דילים לפי עיר'
+const DESCRIPTION = 'כל הערים שבהן יש דילים בקניון EXPRESS.'
+
 export const metadata: Metadata = {
-  title: 'דילים לפי עיר',
-  description: 'כל הערים שבהן יש דילים בקניון EXPRESS.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: alternatesFor('/c'),
+  ...socialMetadata({ title: TITLE, description: DESCRIPTION, path: '/c' }),
 }
 
 export default function CitiesIndexPage() {

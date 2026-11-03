@@ -10,6 +10,7 @@ import { getCategoryBySlug } from '@/lib/category-page'
 import { getCityProducts } from '@/lib/city-page'
 import { alternatesFor } from '@/lib/seo/alternates'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { socialMetadata } from '@/lib/seo/social'
 import { siteUrl } from '@/lib/site-url'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
@@ -32,20 +33,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Try city first
   const city = cityBySlugName(slug)
   if (city) {
+    const title = `דילים ב${city.name}`
+    const description = `קופונים ומבצעים מבתי עסק ב${city.name}. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.`
     return {
-      title: `דילים ב${city.name}`,
-      description: `קופונים ומבצעים מבתי עסק ב${city.name}. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.`,
+      title,
+      description,
       alternates: alternatesFor(`/c/${city.slug}`),
+      ...socialMetadata({ title, description, path: `/c/${city.slug}` }),
     }
   }
 
   // Try category
   const category = await getCategoryBySlug(slug)
   if (category) {
+    const description = category.description_he || `מבצעים בקטגוריית ${category.name_he}`
+    const path = `/c/${encodeURIComponent(category.slug)}`
     return {
       title: category.name_he,
-      description: category.description_he || `מבצעים בקטגוריית ${category.name_he}`,
-      alternates: alternatesFor(`/c/${encodeURIComponent(category.slug)}`),
+      description,
+      alternates: alternatesFor(path),
+      ...socialMetadata({ title: category.name_he, description, path }),
     }
   }
 

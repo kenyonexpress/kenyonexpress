@@ -35,18 +35,19 @@ const ALIASES: ReadonlyArray<[string, string]> = [
 describe('legal route aliases', () => {
   it.each(ALIASES)('%s redirects to %s', (source, destination) => {
     const pattern = new RegExp(
-      `source:\\s*'${source}'\\s*,\\s*destination:\\s*'${destination}'\\s*,\\s*permanent:\\s*true`,
+      `source:\\s*'${source}'\\s*,\\s*destination:\\s*'${destination}'\\s*,\\s*statusCode:\\s*301`,
     )
     expect(config).toMatch(pattern)
   })
 
   it('keeps them permanent, so the canonical stays on the real path', () => {
     // A temporary redirect would leave both URLs indexable and split the
-    // policy's search presence across two addresses.
+    // policy's search presence across two addresses. C180: 301, matching the
+    // proxy's WordPress-shape redirects, rather than `permanent`'s 308.
     for (const [source] of ALIASES) {
       const line = config.split('\n').find((l) => l.includes(`source: '${source}'`))
       expect(line, `${source} missing from next.config.ts`).toBeDefined()
-      expect(line).toContain('permanent: true')
+      expect(line).toContain('statusCode: 301')
     }
   })
 })

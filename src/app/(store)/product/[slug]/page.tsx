@@ -25,6 +25,7 @@ import { agorotFromIlsColumnOr, ilsFromIlsColumn } from '@/lib/money'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { socialMetadata } from '@/lib/seo/social'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import '@/styles/product-page.css'
 import { alternatesFor } from '@/lib/seo/alternates'
@@ -82,16 +83,8 @@ export async function generateMetadata({ params }: Props) {
     title,
     description,
     alternates: alternatesFor(path),
-    openGraph: {
-      title,
-      description,
-      url: path,
-      type: 'website',
-      locale: 'he_IL',
-    },
-    // Next does not merge `twitter` into the root's: without this the card
-    // carries the site-wide title instead of the product's.
-    twitter: { card: 'summary_large_image', title, description },
+    // ownCard: the opengraph-image.tsx beside this file fills og:image.
+    ...socialMetadata({ title, description, path, ownCard: true }),
   }
 }
 

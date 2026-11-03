@@ -28,6 +28,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 import { alternatesFor } from '@/lib/seo/alternates'
+import { socialMetadata } from '@/lib/seo/social'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -109,13 +110,11 @@ export async function generateMetadata({ params, searchParams: spPromise }: Prop
     title: category.name_he,
     description,
     alternates: alternatesFor(`/category/${encodeURIComponent(category.slug)}`),
-    openGraph: {
+    ...socialMetadata({
       title: ogTitle,
       description,
-      url: `/category/${encodeURIComponent(category.slug)}`,
-      type: 'website',
-      locale: 'he_IL',
-    },
+      path: `/category/${encodeURIComponent(category.slug)}`,
+    }),
   }
 }
 
