@@ -9,15 +9,20 @@ import {
 import { EMPTY_CART } from '@/lib/cart/types'
 import type { CartView } from '@/lib/cart/types'
 import { type ReactNode, createContext, useContext, useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 import { useStore } from 'zustand'
 
+// sonner is imported on first feedback, not with the store chrome: a static
+// `toast` import put all of sonner on every storefront first load (C183) while
+// the <Toaster> that renders it was already deferred. Both resolve to the same
+// module instance, so the queued toast reaches the deferred Toaster.
 function showFeedback(feedback: CartFeedback): void {
-  if (feedback.kind === 'error') {
-    toast.error(feedback.message)
-  } else {
-    toast.success(feedback.message)
-  }
+  void import('sonner').then(({ toast }) => {
+    if (feedback.kind === 'error') {
+      toast.error(feedback.message)
+    } else {
+      toast.success(feedback.message)
+    }
+  })
 }
 
 const CartStoreContext = createContext<CartStoreApi | null>(null)

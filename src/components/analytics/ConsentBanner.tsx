@@ -2,8 +2,12 @@
 
 import { CONSENT_DECIDED_ATTRIBUTE, CONSENT_DECIDED_VALUE } from '@/lib/analytics/consent'
 import { decideConsent } from '@/server/actions/consent'
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import ConsentSettings from './ConsentSettings'
+
+// The settings dialog opens only from the banner's button, so its module is
+// fetched on that click rather than on every first load (C183).
+const ConsentSettings = dynamic(() => import('./ConsentSettings'), { ssr: false })
 
 /**
  * Cookie consent for behavioral analytics. Accept and decline carry equal
@@ -122,7 +126,7 @@ export default function ConsentBanner() {
         <script dangerouslySetInnerHTML={{ __html: SUBMIT_HIDES_SCRIPT }} />
       </section>
 
-      <ConsentSettings isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      {showSettings && <ConsentSettings isOpen onClose={() => setShowSettings(false)} />}
     </>
   )
 }

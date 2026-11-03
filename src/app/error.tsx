@@ -1,6 +1,6 @@
 'use client'
 
-import * as Sentry from '@sentry/nextjs'
+import { loadSentry } from '@/lib/observability/sentry-client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -38,7 +38,8 @@ export default function AppError({
   const [checkingHealth, setCheckingHealth] = useState(false)
 
   useEffect(() => {
-    // The plain SDK, not the helpers in lib/observability: those run on
+    // The browser SDK via its loader (C183), not the helpers in
+    // lib/observability: those run on
     // @sentry/node and tag everything area=payments, so importing them into a
     // client boundary would both fail to bundle and mislabel every UI error as
     // a money-path one. The browser SDK itself is already initialised by
@@ -48,10 +49,12 @@ export default function AppError({
     // customer looking at this page. `digest` is tagged because it is the only
     // handle that ties the browser event to the server-side one
     // onRequestError already reported.
-    Sentry.withScope((scope) => {
-      scope.setTag('boundary', 'app-error')
-      if (error.digest) scope.setTag('digest', error.digest)
-      Sentry.captureException(error)
+    void loadSentry().then((Sentry) => {
+      Sentry.withScope((scope) => {
+        scope.setTag('boundary', 'app-error')
+        if (error.digest) scope.setTag('digest', error.digest)
+        Sentry.captureException(error)
+      })
     })
 
     // Kept alongside, not replaced: lib/observability/log.ts reads its request

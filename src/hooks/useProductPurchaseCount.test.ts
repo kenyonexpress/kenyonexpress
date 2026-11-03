@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useProductPurchaseCount } from './useProductPurchaseCount'
 
@@ -31,9 +31,12 @@ describe('useProductPurchaseCount', () => {
     expect(result.current).toBe(10)
   })
 
-  it('subscribes to order_items channel for the product', () => {
+  // The client is imported inside the effect (C183), so every assertion on
+  // the subscription waits for that import to resolve.
+  it('subscribes to order_items channel for the product', async () => {
     renderHook(() => useProductPurchaseCount('product-1', 5))
 
+    await waitFor(() => expect(mockSubscribe).toHaveBeenCalled())
     expect(mockChannel).toHaveBeenCalledWith('product-purchases:product-1')
     expect(mockOn).toHaveBeenCalledWith(
       'postgres_changes',
@@ -48,7 +51,7 @@ describe('useProductPurchaseCount', () => {
     expect(mockSubscribe).toHaveBeenCalled()
   })
 
-  it('increments count on INSERT event', () => {
+  it('increments count on INSERT event', async () => {
     let insertCallback: (() => void) | undefined
 
     mockOn.mockImplementationOnce(
@@ -71,21 +74,16 @@ describe('useProductPurchaseCount', () => {
 
     expect(result.current).toBe(5)
 
-    // Simulate an INSERT event
-    if (insertCallback) {
-      insertCallback()
-    }
-
-    // Wait for state update (using rerender to get updated value)
-    const { result: _updatedResult } = renderHook(() => useProductPurchaseCount('product-1', 5))
-    // Note: In real implementation with act() this would show the increment
-    // For this basic test we verify the callback was set up
-    expect(insertCallback).toBeDefined()
+    await waitFor(() => expect(insertCallback).toBeDefined())
+    act(() => insertCallback?.())
+    expect(result.current).toBe(6)
   })
 
-  it('cleans up subscription on unmount', () => {
+  it('cleans up subscription on unmount', async () => {
+    mockSubscribe.mockClear()
     const { unmount } = renderHook(() => useProductPurchaseCount('product-1', 5))
 
+    await waitFor(() => expect(mockSubscribe).toHaveBeenCalled())
     unmount()
 
     // Verify removeChannel was called (the channel instance is created internally)

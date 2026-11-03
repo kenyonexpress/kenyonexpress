@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -51,7 +51,9 @@ import { useProductLive } from './use-product-live'
 const ID = '11111111-1111-4111-8111-111111111111'
 const BASE = { stock: 10, price: 150, oldPrice: 200 }
 
-function deliver(payload: unknown) {
+// The client is imported inside the effect (C183): wait for the subscription.
+async function deliver(payload: unknown) {
+  await waitFor(() => expect(mock.subscribed).toBe(1))
   act(() => {
     for (const h of mock.handlers) h.cb({ payload })
   })
@@ -66,17 +68,18 @@ describe('useProductLive', () => {
     mock.throwOnCreate = false
   })
 
-  it('subscribes to product:<id> for the live event and starts from the cache', () => {
+  it('subscribes to product:<id> for the live event and starts from the cache', async () => {
     const { result } = renderHook(() => useProductLive(ID, BASE))
+    await waitFor(() => expect(mock.subscribed).toBe(1))
     expect(mock.topics).toEqual([`product:${ID}`])
     expect(mock.handlers.map((h) => h.event)).toEqual(['live'])
     expect(mock.subscribed).toBe(1)
     expect(result.current).toEqual({ ...BASE, onSale: true, live: false })
   })
 
-  it('applies a trigger payload to stock, price and strike-through', () => {
+  it('applies a trigger payload to stock, price and strike-through', async () => {
     const { result } = renderHook(() => useProductLive(ID, BASE))
-    deliver({
+    await deliver({
       product_id: ID,
       stock_quantity: 3,
       available: 2,
@@ -94,10 +97,10 @@ describe('useProductLive', () => {
     })
   })
 
-  it('ignores a malformed message and one about another product', () => {
+  it('ignores a malformed message and one about another product', async () => {
     const { result } = renderHook(() => useProductLive(ID, BASE))
-    deliver({ hello: 'world' })
-    deliver({
+    await deliver({ hello: 'world' })
+    await deliver({
       product_id: '22222222-2222-4222-8222-222222222222',
       stock_quantity: 0,
       available: 0,
@@ -109,8 +112,9 @@ describe('useProductLive', () => {
     expect(result.current).toEqual({ ...BASE, onSale: true, live: false })
   })
 
-  it('removes the channel on unmount', () => {
+  it('removes the channel on unmount', async () => {
     const { unmount } = renderHook(() => useProductLive(ID, BASE))
+    await waitFor(() => expect(mock.subscribed).toBe(1))
     unmount()
     expect(mock.removed).toBe(1)
   })

@@ -1,7 +1,7 @@
 'use client'
 
+import { loadSentry } from '@/lib/observability/sentry-client'
 import { SITE } from '@/styles/tokens'
-import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
 
 /**
@@ -35,7 +35,7 @@ export default function GlobalError({
   error: Error & { digest?: string }
 }) {
   useEffect(() => {
-    Sentry.captureException(error)
+    void loadSentry().then((Sentry) => Sentry.captureException(error))
   }, [error])
 
   return (

@@ -120,7 +120,7 @@ describe('an incomplete saved address under the gate', () => {
 })
 
 describe('a complete saved address under the gate', () => {
-  it('keeps the summary but holds the address step until the phone is verified', () => {
+  it('keeps the summary but holds the address step until the phone is verified', async () => {
     const { container } = renderGated(SAVED, {
       required: true,
       addressComplete: true,
@@ -128,7 +128,8 @@ describe('a complete saved address under the gate', () => {
     })
     expect(screen.getByText('דנה כהן')).toBeTruthy()
     expect(container.querySelector<HTMLInputElement>('[name="address_id"]')?.value).toBe('addr-1')
-    expect(screen.getByTestId('shipping-phone-verification')).toBeTruthy()
+    // Lazy since C183: the verification block arrives through next/dynamic.
+    expect(await screen.findByTestId('shipping-phone-verification')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
     expect(currentStep(container)).toBe('address')
@@ -164,7 +165,7 @@ describe('a complete saved address under the gate', () => {
         phoneVerified: false,
       })
       fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-      fireEvent.click(screen.getByRole('button', { name: 'שליחת קוד אימות בוואטסאפ' }))
+      fireEvent.click(await findByRole('button', { name: 'שליחת קוד אימות בוואטסאפ' }))
       const code = await findByLabelText('קוד בן 6 ספרות')
       fireEvent.change(code, { target: { value: '123456' } })
       fireEvent.click(await findByRole('button', { name: 'אימות' }))

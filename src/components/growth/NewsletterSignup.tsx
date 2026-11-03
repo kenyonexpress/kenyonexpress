@@ -1,10 +1,14 @@
 'use client'
 
-import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { type NewsletterState, subscribeToNewsletter } from '@/server/actions/newsletter'
+import dynamic from 'next/dynamic'
 import { useActionState, useEffect, useId, useRef, useState } from 'react'
 
 const EMPTY: NewsletterState = { ok: false }
+
+// Mounted only once the form is armed, so react-turnstile stays off the home
+// and footer first load (C183).
+const TurnstileWidget = dynamic(() => import('@/components/shared/TurnstileWidget'), { ssr: false })
 
 /**
  * Newsletter signup, RTL.

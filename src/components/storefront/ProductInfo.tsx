@@ -7,7 +7,6 @@ import WishlistButton from '@/components/product/WishlistButton'
 import CopyLinkButton from '@/components/shared/CopyLinkButton'
 import NativeShareButton from '@/components/shared/NativeShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
-import CouponPricing from '@/components/storefront/CouponPricing'
 import ProductQuestionLink from '@/components/storefront/ProductQuestionLink'
 import type { RatingSummary } from '@/components/storefront/RatingStars'
 import { productQuantityCeiling } from '@/lib/cart/format'
@@ -18,8 +17,13 @@ import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useState } from 'react'
+
+// Coupon products only. Still server-rendered when it applies; split out so a
+// physical product's first load does not carry it (C183).
+const CouponPricing = dynamic(() => import('@/components/storefront/CouponPricing'))
 
 interface Variant {
   id: string

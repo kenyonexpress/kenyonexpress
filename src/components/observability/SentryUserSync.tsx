@@ -1,6 +1,6 @@
 'use client'
 
-import * as Sentry from '@sentry/nextjs'
+import { loadSentry } from '@/lib/observability/sentry-client'
 import { useEffect } from 'react'
 
 /**
@@ -48,15 +48,17 @@ export default function SentryUserSync() {
     let unsubscribe: (() => void) | null = null
 
     const subscribe = () => {
-      void import('@/lib/supabase/client').then(({ createClient }) => {
-        if (cancelled) return
-        const {
-          data: { subscription },
-        } = createClient().auth.onAuthStateChange((_event, session) => {
-          Sentry.setUser(session?.user ? { id: session.user.id } : null)
-        })
-        unsubscribe = () => subscription.unsubscribe()
-      })
+      void Promise.all([import('@/lib/supabase/client'), loadSentry()]).then(
+        ([{ createClient }, Sentry]) => {
+          if (cancelled) return
+          const {
+            data: { subscription },
+          } = createClient().auth.onAuthStateChange((_event, session) => {
+            Sentry.setUser(session?.user ? { id: session.user.id } : null)
+          })
+          unsubscribe = () => subscription.unsubscribe()
+        },
+      )
     }
 
     const idle = typeof window.requestIdleCallback === 'function'

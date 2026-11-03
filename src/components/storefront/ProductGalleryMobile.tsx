@@ -1,6 +1,6 @@
 'use client'
 
-import { SwipeableGallery } from '@/components/mobile'
+import SwipeableGallery from '@/components/mobile/SwipeableGallery'
 
 interface ProductGalleryMobileProps {
   images: string[]

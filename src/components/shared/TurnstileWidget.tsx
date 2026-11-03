@@ -1,7 +1,14 @@
 'use client'
 
-import { Turnstile } from '@marsidev/react-turnstile'
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+
+// The widget paints nothing until the effect below has run, so the package is
+// fetched after hydration instead of riding on the checkout, login and contact
+// first loads (C183). Markup is unchanged: there was never any on the server.
+const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then((m) => m.Turnstile), {
+  ssr: false,
+})
 
 /**
  * Below this viewport width the 300px `normal` widget is wider than the auth

@@ -1,5 +1,5 @@
+import { configureSentry, loadSentry, sentryIfLoaded } from '@/lib/observability/sentry-client'
 import { scrubEventUser } from '@/lib/observability/sentry-user'
-import * as Sentry from '@sentry/nextjs'
 
 /**
  * Browser instrumentation. Runs after the document loads and BEFORE React
@@ -7,9 +7,17 @@ import * as Sentry from '@sentry/nextjs'
  * itself - the class of bug that otherwise shows a blank page and reports
  * nothing.
  *
+ * The SDK itself is NOT imported here (C183): a static import put ~45 KB gz
+ * of Sentry on every first load. This file registers the options, buffers any
+ * error thrown before the SDK arrives (React 19 reports recoverable hydration
+ * errors through reportError, so they land on these same window events), and
+ * loads the SDK when the browser is idle after `load`, or at once on the first
+ * error. The buffer is replayed after init, then the listeners are removed and
+ * Sentry's own global handlers take over.
+ *
  * Next warns if this file takes longer than 16ms, so it does one thing.
  */
-Sentry.init({
+configureSentry({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
   // NEXT_PUBLIC_SENTRY_RELEASE first, then the SHA Vercel exposes to the
@@ -56,5 +64,43 @@ Sentry.init({
   ],
 })
 
-/** Navigation breadcrumbs, so an error report says how the user got there. */
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
+const early: unknown[] = []
+const onError = (event: ErrorEvent) => {
+  early.push(event.error ?? event.message)
+  start()
+}
+const onRejection = (event: PromiseRejectionEvent) => {
+  early.push(event.reason)
+  start()
+}
+window.addEventListener('error', onError)
+window.addEventListener('unhandledrejection', onRejection)
+
+let started = false
+function start() {
+  if (started) return
+  started = true
+  void loadSentry().then((Sentry) => {
+    window.removeEventListener('error', onError)
+    window.removeEventListener('unhandledrejection', onRejection)
+    for (const error of early.splice(0)) Sentry.captureException(error)
+  })
+}
+
+const whenIdle = () =>
+  typeof window.requestIdleCallback === 'function'
+    ? window.requestIdleCallback(start, { timeout: 2000 })
+    : window.setTimeout(start, 0)
+if (document.readyState === 'complete') whenIdle()
+else window.addEventListener('load', whenIdle, { once: true })
+
+/**
+ * Navigation breadcrumbs, so an error report says how the user got there.
+ * A navigation before the SDK has loaded has no trace to join yet.
+ */
+export function onRouterTransitionStart(
+  href: string,
+  navigationType: 'push' | 'replace' | 'traverse',
+) {
+  sentryIfLoaded()?.captureRouterTransitionStart(href, navigationType)
+}

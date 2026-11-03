@@ -1,7 +1,5 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import {
   PRODUCT_LIVE_EVENT,
@@ -38,24 +36,34 @@ export function useProductLive(
   const [state, setState] = useState<ProductLiveState>(() => initialProductLiveState(base))
 
   useEffect(() => {
-    let channel: RealtimeChannel | null = null
-    let supabase: ReturnType<typeof createClient> | null = null
-    try {
-      supabase = createClient()
-      channel = supabase
-        .channel(productLiveTopic(productId))
-        .on('broadcast', { event: PRODUCT_LIVE_EVENT }, (message) => {
-          const event = parseProductLiveEvent(message.payload)
-          if (!event) return
-          setState((prev) => applyProductLiveEvent(prev, event, productId))
-        })
-        .subscribe()
-    } catch {
-      // No anon key in this runtime, or no WebSocket. The cached page is the
-      // answer, and it was the answer before this hook too.
-    }
+    // The client is imported inside the effect so the product page's first
+    // load does not carry Supabase auth, realtime and storage (~60 KB gz) for
+    // a socket that only matters after hydration (C183).
+    let cancelled = false
+    let cleanup: (() => void) | null = null
+    void import('@/lib/supabase/client')
+      .then(({ createClient }) => {
+        if (cancelled) return
+        const supabase = createClient()
+        const channel = supabase
+          .channel(productLiveTopic(productId))
+          .on('broadcast', { event: PRODUCT_LIVE_EVENT }, (message) => {
+            const event = parseProductLiveEvent(message.payload)
+            if (!event) return
+            setState((prev) => applyProductLiveEvent(prev, event, productId))
+          })
+          .subscribe()
+        cleanup = () => {
+          void supabase.removeChannel(channel)
+        }
+      })
+      .catch(() => {
+        // No anon key in this runtime, or no WebSocket. The cached page is the
+        // answer, and it was the answer before this hook too.
+      })
     return () => {
-      if (supabase && channel) void supabase.removeChannel(channel)
+      cancelled = true
+      cleanup?.()
     }
   }, [productId])
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { StickyCartBar } from '@/components/mobile'
+import StickyCartBar from '@/components/mobile/StickyCartBar'
 import { agorotFromIlsNumber } from '@/lib/money'
 import { useCallback, useState } from 'react'
 

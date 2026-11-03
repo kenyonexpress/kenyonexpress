@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -51,11 +51,12 @@ describe('not-found.tsx', () => {
 describe('error.tsx', () => {
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-  it('reports the error to Sentry tagged with the digest, once', () => {
+  it('reports the error to Sentry tagged with the digest, once', async () => {
     const error = Object.assign(new Error('boom'), { digest: 'abc123' })
     render(<AppError error={error} reset={() => {}} />)
 
-    expect(captureException).toHaveBeenCalledTimes(1)
+    // The SDK arrives through loadSentry()'s dynamic import (C183).
+    await waitFor(() => expect(captureException).toHaveBeenCalledTimes(1))
     expect(captureException).toHaveBeenCalledWith(error)
     expect(setTag).toHaveBeenCalledWith('boundary', 'app-error')
     expect(setTag).toHaveBeenCalledWith('digest', 'abc123')

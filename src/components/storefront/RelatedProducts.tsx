@@ -1,4 +1,4 @@
-import ProductCard from '@/components/ProductCard'
+import ProductCard from '@/components/storefront/LazyProductCard'
 import { loadRelatedProducts } from '@/lib/related-products'
 
 interface Props {

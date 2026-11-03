@@ -1,20 +1,13 @@
 'use client'
 
 import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
-import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import type { MegaMenuItem } from './MegaMenuPanel'
 
-interface MegaMenuItem {
-  label: string
-  href: string
-  featured?: boolean
-  subcategories?: { label: string; href: string }[]
-  promoText?: string
-  promoSubtext?: string
-  brandLogos?: { name: string; src?: string }[]
-  featuredImage?: string
-}
+const loadPanel = () => import('./MegaMenuPanel')
+const MegaMenuPanel = dynamic(loadPanel, { ssr: false })
 
 const MEGAMENU_ITEMS: MegaMenuItem[] = [
   {
@@ -180,7 +173,14 @@ export default function MegaMenu() {
   return (
     <>
       {/* Desktop Mega Menu (xl and up) */}
-      <nav ref={menuRef} className="hidden xl:block flex-1" aria-label="תפריט קטגוריות ראשי">
+      <nav
+        ref={menuRef}
+        className="hidden xl:block flex-1"
+        aria-label="תפריט קטגוריות ראשי"
+        // Warm the panel chunk before the 100ms hover delay runs out.
+        onPointerEnter={() => void loadPanel()}
+        onFocus={() => void loadPanel()}
+      >
         <div className="flex items-center gap-1">
           {MEGAMENU_ITEMS.map((item, index) => (
             <div
@@ -219,125 +219,7 @@ export default function MegaMenu() {
               </button>
 
               {openIndex === index && (
-                <div
-                  id={`${panelIdPrefix}-${index}`}
-                  className="absolute top-full -start-6 mt-0 w-screen md:max-w-4xl bg-[var(--electro-yellow-primary)] shadow-xl z-50 p-8 rounded-b-lg animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none"
-                  role="menu"
-                >
-                  <div className="grid grid-cols-3 gap-8">
-                    {/* Featured Image - Left Column */}
-                    <div className="col-span-1 animate-in fade-in slide-in-from-left-4 duration-300 motion-reduce:animate-none">
-                      <div className="bg-gradient-to-br from-[color:var(--electro-page)] to-[color:var(--electro-surface-hover)] rounded-lg overflow-hidden aspect-square shadow-sm flex flex-col items-center justify-between p-4 transition-transform duration-300">
-                        {item.featuredImage ? (
-                          <Image
-                            src={item.featuredImage}
-                            alt={item.label}
-                            fill
-                            sizes="(max-width: 768px) 200px, 300px"
-                            className="w-full h-full object-cover transition-transform duration-300"
-                          />
-                        ) : (
-                          <>
-                            <div className="text-4xl animate-in zoom-in duration-300 motion-reduce:animate-none">
-                              📦
-                            </div>
-                            <span className="text-xs text-[color:var(--electro-muted)] text-center">
-                              {item.label}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      {/* Brand Logos */}
-                      {item.brandLogos && item.brandLogos.length > 0 && (
-                        <div className="mt-3 grid grid-cols-3 gap-2 animate-in fade-in delay-100 duration-300 motion-reduce:animate-none">
-                          {item.brandLogos.map((brand, brandIndex) => (
-                            <div
-                              key={`${brand.name}-${brandIndex}`}
-                              className="bg-[color:var(--electro-white)] rounded p-2 flex items-center justify-center min-h-10 text-xs text-[color:var(--electro-text-secondary)]"
-                            >
-                              {brand.src ? (
-                                <Image
-                                  src={brand.src}
-                                  alt={brand.name}
-                                  width={100}
-                                  height={40}
-                                  sizes="40px"
-                                  className="max-h-full max-w-full object-contain"
-                                  loading="lazy"
-                                />
-                              ) : (
-                                <span className="text-center text-[0.7em] font-medium">
-                                  {brand.name}
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Subcategories & Promo - Right Columns */}
-                    <div className="col-span-2">
-                      <div className="grid grid-cols-2 gap-8">
-                        {/* Subcategories Column */}
-                        <div>
-                          <h3 className="font-bold text-base mb-4 text-[color:var(--electro-text-primary)] flex items-center gap-2">
-                            {item.label}
-                          </h3>
-                          {item.subcategories && item.subcategories.length > 0 ? (
-                            <ul className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300 motion-reduce:animate-none">
-                              <li>
-                                <Link
-                                  href={item.href}
-                                  className="text-[color:var(--electro-text-primary)] hover:text-[color:var(--electro-text-primary)] font-semibold text-sm transition-colors duration-200"
-                                >
-                                  כל {item.label}
-                                </Link>
-                              </li>
-                              {item.subcategories.map((sub, subIndex) => (
-                                <li key={`${sub.href}-${subIndex}`}>
-                                  <Link
-                                    href={sub.href}
-                                    className="text-[color:var(--electro-text-secondary)] hover:text-[color:var(--electro-text-primary)] hover:underline text-sm transition-colors duration-200"
-                                  >
-                                    {sub.label}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-[color:var(--electro-muted)] text-sm animate-in fade-in duration-300 motion-reduce:animate-none">
-                              כל המוצרים בקטגוריה
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Promo Banner */}
-                        <div
-                          className="bg-[color:var(--electro-info)] text-[color:var(--electro-white)] rounded-lg p-6 flex flex-col justify-center shadow-md animate-in fade-in slide-in-from-right-2 duration-300 motion-reduce:animate-none"
-                          role="complementary"
-                        >
-                          <p className="font-bold text-lg mb-2 leading-tight">{item.promoText}</p>
-                          <p className="text-sm text-[color:var(--electro-info-light)]">
-                            {item.promoSubtext}
-                          </p>
-                          <Link
-                            href={item.href}
-                            className="inline-flex items-center mt-4 text-[color:var(--electro-white)] font-medium hover:underline text-sm transition-all duration-200"
-                          >
-                            <span>לחצו כאן</span>
-                            <span
-                              className="ms-2 transition-transform duration-200 group-hover:-translate-x-1"
-                              aria-hidden="true"
-                            >
-                              ←
-                            </span>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <MegaMenuPanel item={item} id={`${panelIdPrefix}-${index}`} />
               )}
             </div>
           ))}

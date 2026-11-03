@@ -1,7 +1,6 @@
 'use client'
 
 import { CardVerificationStep } from '@/components/checkout/CardVerificationStep'
-import ShippingPhoneVerification from '@/components/checkout/ShippingPhoneVerification'
 import TurnstileWidget from '@/components/shared/TurnstileWidget'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
@@ -34,9 +33,16 @@ import { shekels } from '@/lib/money-format'
 import { resetTurnstile } from '@/lib/security/turnstile-client'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
+import dynamic from 'next/dynamic'
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { FRAME_RETURN_MESSAGE } from './frame-return/FrameReturnBreakout'
 import { useCheckoutVariant } from './useCheckoutVariant'
+
+// Mounted only when the shipping phone gate is open, so it is fetched then
+// rather than on every checkout first load (C183).
+const ShippingPhoneVerification = dynamic(
+  () => import('@/components/checkout/ShippingPhoneVerification'),
+)
 
 export type CheckoutAddressPrefill = {
   id: string | null

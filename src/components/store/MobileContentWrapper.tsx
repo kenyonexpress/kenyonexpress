@@ -1,6 +1,6 @@
 'use client'
 
-import { PullToRefresh } from '@/components/mobile'
+import PullToRefresh from '@/components/mobile/PullToRefresh'
 
 const pullToRefreshPath = (pathname: string) => pathname === '/' || pathname.startsWith('/category')
 
