@@ -102,10 +102,6 @@ body:has([data-home]) .site-footer-newsletter {
   display: none;
 }
 
-.home-hero-scrim {
-  background: linear-gradient(to top, color-mix(in srgb, black 65%, transparent), transparent 70%);
-}
-
 /* Brands row (was BrandsRow.module.css: a CSS module is its own chunk, the
    homepage's second render-blocking stylesheet; C142). */
 .home-brands {

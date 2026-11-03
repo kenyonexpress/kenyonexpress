@@ -596,3 +596,11 @@ the tree had uncommitted changes when it was measured.
 | 2026-11-03 12:27 | category | 380 | 3.79% | PASS | `2785a7035-dirty` | baseline refs/electro_shop_380.png (frozen PNG, 2026-09-04T05:02:46.545Z), not a fresh archive shot; overall 31.43% (reference blank 11.59%, ours blank 16.06%) |
 | 2026-11-03 12:28 | category | 768 | 4.89% | PASS | `2785a7035-dirty` | baseline refs/electro_shop_768.png (frozen PNG, 2026-09-04T05:02:47.380Z), not a fresh archive shot; overall 32.92% (reference blank 11.54%, ours blank 16.49%) |
 | 2026-11-03 12:30 | category | 1440 | 1.38% | PASS | `2785a7035-dirty` | baseline refs/electro_shop_1440.png (frozen PNG, 2026-09-04T05:02:48.261Z), not a fresh archive shot; overall 21.09% (reference blank 8.08%, ours blank 11.63%) |
+| 2026-11-03 12:57 | home | 380 | 13.35% | **FAIL** | `6cdfb48af` | ref everything loaded; overall 43.31% (reference blank 15.35%, ours blank 14.62%) |
+| 2026-11-03 12:59 | home | 768 | 8.20% | PASS | `6cdfb48af-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
+| 2026-11-03 13:00 | home | 1440 | 6.55% | PASS | `6cdfb48af-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |
+| 2026-11-03 13:04 | home | 380 | 13.35% | **FAIL** | `6cdfb48af-dirty` | c195 diagnostic copy; ref everything loaded; overall 43.31% (reference blank 15.35%, ours blank 14.62%) |
+| 2026-11-03 13:08 | home | 380 | 9.86% | PASS | `6cdfb48af-dirty` | c195 diagnostic copy; ref everything loaded; overall 37.68% (reference blank 13.22%, ours blank 14.6%) |
+| 2026-11-03 13:10 | home | 380 | 9.86% | PASS | `6cdfb48af-dirty` | ref everything loaded; overall 37.68% (reference blank 13.22%, ours blank 14.6%) |
+| 2026-11-03 13:11 | home | 768 | 8.20% | PASS | `6cdfb48af-dirty` | ref everything loaded; overall 35.87% (reference blank 12.72%, ours blank 14.96%) |
+| 2026-11-03 13:13 | home | 1440 | 6.55% | PASS | `6cdfb48af-dirty` | ref everything loaded; overall 24% (reference blank 8.85%, ours blank 8.6%) |
