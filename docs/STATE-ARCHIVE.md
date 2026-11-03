@@ -31003,3 +31003,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T05:00:51+07:00
 - item: C171
 - BLOCKED: network: production Supabase UNHEALTHY and 923 ms average RTT, E2E retry skipped
+
+## Archived 2026-11-03T17:05:35+07:00 after M03-c349 (3 lines from STATE.md)
+
+### 2026-11-03T05:02:35+07:00
+- item: C172
+- BLOCKED: locked-component C172
