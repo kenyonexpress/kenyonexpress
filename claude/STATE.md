@@ -171,3 +171,4 @@
 - המשך מ: M04-c353 DONE (2026-11-04): pnpm type-check (tsc --noEmit) exit 0, 0 errors at 15be92a8f; no drift, no code change; proof docs/M04-c353.md
 - המשך מ: M05-c353 DONE (2026-11-04): pnpm test exit 0, 879 files / 9722 tests passed, 3 files / 39 tests skipped, 0 failed at 3b6f6451c; no drift, no code change; proof docs/M05-c353.md
 - המשך מ: M07-c353 DONE (2026-11-04): TODO/FIXME scan at 15e4b5aa4, 2 markers (cardcom.ts:255 since 07-24, :318 since 08-07), both already filed in docs/BACKLOG.md #1/#2, blocked on Cardcom prod creds; no new markers, no code change; proof docs/M07-c353.md
+- המשך מ: M08-c353 DONE (2026-11-04): Lighthouse 13.5.0 mobile on build 2CnXm9YDPOSOLI8woTYOB (3417): simulate / 87/84/81 (median 84, c352 79), /product/barbecue 92/93/82 (median 92, c352 82); devtools / 93, product 99; TBT 0-20 ms, CLS <=0.031; no code change; proof docs/M08-c353.md
