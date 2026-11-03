@@ -31009,3 +31009,9 @@ line only, and the full block for each goal is in the root file.
 ### 2026-11-03T05:02:35+07:00
 - item: C172
 - BLOCKED: locked-component C172
+
+## Archived 2026-11-03T17:06:47+07:00 after M04-c349 (3 lines from STATE.md)
+
+### 2026-11-03T05:16:24+07:00
+- item: C173
+- BLOCKED: supabase-rest-down C173
