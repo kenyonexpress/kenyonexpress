@@ -12,7 +12,7 @@
  * so the two seeds can coexist, be counted apart, and be removed apart.
  */
 
-export function demoId(kind, index) {
+function demoId(kind, index) {
   const prefix = kind === 'supplier' ? '1' : '2'
   return `d3e30000-0000-4000-8000-${prefix}${String(index).padStart(11, '0')}`
 }

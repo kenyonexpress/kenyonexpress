@@ -11,7 +11,7 @@ import { git } from './ci-diff-files.mjs'
 export const HEX_RE = /#[0-9a-fA-F]{3,8}\b/g
 export const PX_RE = /\b\d+(?:\.\d+)?px\b/g
 
-export function isTrivialComment(line) {
+function isTrivialComment(line) {
   const t = line.trim()
   if (t.startsWith('//')) return true
   if (t.startsWith('*')) return true

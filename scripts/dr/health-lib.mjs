@@ -31,7 +31,7 @@ export const STALE_HOURS = 36
 export const DRILL_OVERDUE_DAYS = 100
 
 /** Weekly heartbeat day (UTC): a monitor nobody hears from is indistinguishable from a dead one. */
-export const HEARTBEAT_UTC_DAY = 1 // Monday
+const HEARTBEAT_UTC_DAY = 1 // Monday
 
 const HOUR = 3_600_000
 const DAY = 24 * HOUR

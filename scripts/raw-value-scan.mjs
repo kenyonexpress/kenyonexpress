@@ -64,7 +64,7 @@ const ARBITRARY_PX_RE = /\[-?\d+(?:\.\d+)?px\]/g
  * itself threw, which includes the stylesheet failing to load, so it cannot
  * reference a custom property for the same reason it supplies its own <html>.
  */
-export const COLOUR_ALLOWLIST = new Set([
+const COLOUR_ALLOWLIST = new Set([
   'src/styles/tokens.ts',
   'src/lib/category-tokens.ts',
   'src/lib/electro-hero-tokens.ts',
@@ -95,7 +95,7 @@ export const COLOUR_ALLOWLIST = new Set([
  * BarSeries is admin analytics chrome: `gap-[2px]` between chart bars, with no
  * live counterpart to measure and no second use.
  */
-export const PX_ALLOWLIST = new Set([
+const PX_ALLOWLIST = new Set([
   'src/components/home/HeroSlider.tsx',
   'src/components/admin/analytics/BarSeries.tsx',
 ])

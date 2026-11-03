@@ -26,15 +26,15 @@ export const MONITOR_NAME = 'KenyonExpress /api/health'
 export const CONTACT_NAME = 'KenyonExpress alert relay'
 
 /** UptimeRobot API v2 constants. */
-export const MONITOR_TYPE_HTTP = 1
-export const HTTP_METHOD_GET = 2
-export const CONTACT_TYPE_WEBHOOK = 5
+const MONITOR_TYPE_HTTP = 1
+const HTTP_METHOD_GET = 2
+const CONTACT_TYPE_WEBHOOK = 5
 
 /** The free plan refuses anything under five minutes. */
 export const MIN_INTERVAL_SECONDS = 300
 
 /** Placeholders UptimeRobot substitutes into the webhook URL on each alert. */
-export const PLACEHOLDERS = [
+const PLACEHOLDERS = [
   'alertType',
   'monitorFriendlyName',
   'monitorURL',
@@ -43,7 +43,7 @@ export const PLACEHOLDERS = [
   'sslExpiryDaysLeft',
 ]
 
-export function normaliseBaseUrl(baseUrl) {
+function normaliseBaseUrl(baseUrl) {
   const url = new URL(baseUrl)
   if (url.protocol !== 'https:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
     throw new Error(`base URL must be https: ${baseUrl}`)

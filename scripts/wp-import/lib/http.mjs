@@ -54,7 +54,7 @@ const RETRYABLE = new Set([408, 429, 500, 502, 503, 504])
  * attempt. Non-retryable statuses (4xx other than 408/429) throw immediately:
  * a 401 will not fix itself.
  */
-export async function politeFetch(url, init = {}) {
+async function politeFetch(url, init = {}) {
   let lastErr
   for (let attempt = 0; attempt < THROTTLE.maxAttempts; attempt += 1) {
     await acquire()
@@ -103,7 +103,7 @@ function authHeader() {
 }
 
 /** GET one WooCommerce REST endpoint. Returns {data, total, totalPages}. */
-export async function wcGet(path, params = {}) {
+async function wcGet(path, params = {}) {
   const url = new URL(`${WC.base}/wp-json/wc/v3/${path.replace(/^\/+/, '')}`)
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null) url.searchParams.set(key, String(value))

@@ -15,14 +15,14 @@
  * dashboard clicks that are easy to half-finish. It never performs them.
  */
 
-export const PITR_VARIANTS = ['pitr_7', 'pitr_14', 'pitr_28']
+const PITR_VARIANTS = ['pitr_7', 'pitr_14', 'pitr_28']
 export const DEFAULT_PITR_VARIANT = 'pitr_7'
 
 /** Supabase refuses PITR below Small compute; Nano (no add-on) and Micro are below it. */
 export const MIN_COMPUTE_FOR_PITR = 'ci_small'
 
 /** Compute variants, cheapest first, as the API lists them. Nano is the implicit no-add-on tier. */
-export const COMPUTE_ORDER = [
+const COMPUTE_ORDER = [
   'ci_nano',
   'ci_micro',
   'ci_small',

@@ -20,7 +20,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
-export const LOCAL_URL_PREFIX = '/images/cdn'
+const LOCAL_URL_PREFIX = '/images/cdn'
 
 /** True for the errors that mean "R2 will refuse this run, stop asking". */
 export function isForbiddenR2Error(err) {

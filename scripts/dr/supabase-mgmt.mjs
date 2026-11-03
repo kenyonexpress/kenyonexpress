@@ -13,7 +13,7 @@
 
 import { spawnSync } from 'node:child_process'
 
-export const DEFAULT_PROJECT_REF = 'ixvwfbuvfxxsjiywhbbb'
+const DEFAULT_PROJECT_REF = 'ixvwfbuvfxxsjiywhbbb'
 export const API_BASE = 'https://api.supabase.com'
 
 /** Decode the CLI keychain entry format. Exported for the unit test. */

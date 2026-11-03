@@ -219,7 +219,7 @@ function summary(set = CATALOGUE_SET) {
   ].join('\n')
 }
 
-export { upsertSql, cleanSql, summary, DEMO_SET, CATALOGUE_SET }
+export { upsertSql, cleanSql, summary, DEMO_SET }
 
 // Only when run as a command. Without the guard, importing this module from a
 // test writes 19KB of SQL to the runner's stdout.

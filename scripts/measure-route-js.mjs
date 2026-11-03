@@ -33,7 +33,7 @@ export const ROUTES = ['/', '/products', '/cart', '/checkout']
 // and `pnpm start` negotiate different encodings, and a browser that asks for
 // brotli gets a number that is not the one the budget is written in. Gzipping
 // the decoded body ourselves is the same arithmetic every time.
-export async function gzipBytes(response) {
+async function gzipBytes(response) {
   try {
     return gzipSync(await response.body()).byteLength
   } catch {

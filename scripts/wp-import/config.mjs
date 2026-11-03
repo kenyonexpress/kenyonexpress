@@ -301,4 +301,4 @@ Safety
   reading, transforming, and validating, and prints the exact plan.
 `
 
-export { argv, positionals }
+export { argv }

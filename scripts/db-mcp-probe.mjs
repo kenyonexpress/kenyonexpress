@@ -28,7 +28,7 @@ import { basename } from 'node:path'
 import { createInterface } from 'node:readline'
 
 export const PROJECT_REF = 'ixvwfbuvfxxsjiywhbbb'
-export const SLOW_MS = 500
+const SLOW_MS = 500
 
 const PGSS = 'extensions.pg_stat_statements'
 
