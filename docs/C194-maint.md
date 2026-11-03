@@ -187,3 +187,24 @@ Build success, E2E (Playwright) success, Pixel parity (380 / 768 / 1440) success
 - `E2E without a database`: `Error: Project(s) "chromium" not found. Available projects: "chromium-380", "chromium-768", "chromium-1440", ...`. The projects were renamed; `scripts/e2e-no-database.mjs` and the preview smoke step still passed `--project=chromium`. Now `chromium-1440` (Desktop Chrome, nearest to the old default). Local `--list --project=chromium-1440 e2e/home.spec.ts`: `Total: 23 tests in 1 file`.
 - `Migration lint`: `migration-lint: 59 files, 2 hard, 115 soft`, both in pending `324_orders_monthly_partitioning.sql` (CREATE TABLE/INDEX without IF NOT EXISTS). Added IF NOT EXISTS; semantics unchanged (the DO block renames the old table and frees its index names first; partitions are already guarded by to_regclass). After: `migration-lint: 59 files, 0 hard, 115 soft`. 324 is NOT applied.
 Bundle gates (skipped behind the lint) run locally on the HEAD build: `shared first-load 171.1 KB gz across 7 chunks, budget 260 KB -- ok`, `/checkout 237.2 KB 18 chunks budget 240 ok`.
+
+## CI after the fourth push (abfb8a489)
+Run 41605766963: every job green except `E2E without a database`, which now runs for real:
+```
+  5 failed
+    [chromium-1440] › e2e/a11y.spec.ts:339:7 › the consent banner does not cover the page it sits on at 640px
+    [chromium-1440] › e2e/a11y.spec.ts:760:7 › account pages ... › account overview has no violations
+    [chromium-1440] › e2e/a11y.spec.ts:773:7 › account pages ... › orders page has no violations
+    [chromium-1440] › e2e/a11y.spec.ts:786:7 › account pages ... › wallet page has no violations
+    [chromium-1440] › e2e/a11y.spec.ts:799:7 › account pages ... › coupons page has no violations
+  3 flaky
+  3 skipped
+  343 passed (11.7m)
+```
+- Account specs: `Error: listUsers: Invalid API key`. `E2E_CUSTOMER_PASSWORD` has a built-in default, so `paidFlowEnabled()` was always true; the DB-less runner now sets `E2E_PAID_FLOW=0`, the switch auth-session.ts already reads.
+- Banner: `body reserves 126px for a 142.75px banner at 640px`. Local measurement (macOS) 640/680/720 = 120px, 767 = 97.25px; CI Linux wraps one more line. 640 rung 9rem -> 10.5rem (147px). 380, 768 and 1440 rungs untouched, so the parity widths are unaffected.
+Local, fresh build, `E2E_PAID_FLOW=0`, `-g "consent banner does not cover|account pages"`:
+```
+  4 skipped
+  3 passed (7.0s)
+```

@@ -154,9 +154,12 @@ html:not([data-consent="decided"]) {
   --reserve-consent: 22rem;
 }
 
+/* 10.5rem (147px) from 640: CI's Linux Chromium wraps the disclosure copy one
+   more line than macOS, 142.75px against 120px here, and the a11y sweep failed
+   with "body reserves 126px for a 142.75px banner at 640px" (C194). */
 @media (min-width: 640px) {
   html:not([data-consent="decided"]) {
-    --reserve-consent: 9rem;
+    --reserve-consent: 10.5rem;
   }
 }
 

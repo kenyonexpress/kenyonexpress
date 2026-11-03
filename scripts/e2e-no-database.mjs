@@ -35,6 +35,11 @@ console.log(`e2e-no-database: ${specs.length} spec file(s), no database required
 try {
   execFileSync('pnpm', ['exec', 'playwright', 'test', ...specs, '--project=chromium-1440'], {
     stdio: 'inherit',
+    // No database means no sign-in. E2E_CUSTOMER_PASSWORD has a built-in
+    // default, so paidFlowEnabled() read true here and the signed-in account
+    // a11y specs failed on `listUsers: Invalid API key` (C194). This is the
+    // switch auth-session.ts already reads.
+    env: { ...process.env, E2E_PAID_FLOW: '0' },
   })
 } catch (error) {
   const code = typeof error?.status === 'number' ? error.status : 1
