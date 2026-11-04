@@ -2,8 +2,8 @@
 
 import CheckoutConsentText, { CheckoutPrivacyNote } from '@/components/checkout/CheckoutConsentText'
 import TurnstileWidget from '@/components/fraud/TurnstileWidget'
+import { trackCheckoutStep } from '@/lib/analytics/checkout-steps'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
-import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { paymentReturnTarget } from '@/lib/checkout/frame-return-message'
@@ -350,8 +350,8 @@ export default function CheckoutForm({
   }
 
   useEffect(() => {
-    track('checkout_step', { step: 'identity' })
-    if (needsAddress) track('checkout_step', { step: 'address' })
+    trackCheckoutStep('identity')
+    if (needsAddress) trackCheckoutStep('address')
   }, [needsAddress])
 
   // Refill after the Google round trip. Done in an effect against the live DOM
@@ -407,7 +407,7 @@ export default function CheckoutForm({
       }
     }
 
-    track('checkout_step', { step: 'payment_redirect' })
+    trackCheckoutStep('payment_redirect')
   }
 
   // The returning customer's way to their saved address and card. What they
@@ -427,7 +427,7 @@ export default function CheckoutForm({
         // A blocked sessionStorage costs the refill, not the sign-in.
       }
     }
-    track('checkout_step', { step: 'guest_login' })
+    trackCheckoutStep('guest_login')
     googleFormRef.current?.requestSubmit()
   }
 
