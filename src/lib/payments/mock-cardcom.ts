@@ -19,6 +19,35 @@ type StoredDeal = {
   transactionId: string
 }
 
+const LOW_PROFILE_ID = new RegExp(
+  `^${MOCK_TRANSACTION_PREFIX}lp-(\\d+)-([0-9a-f]{1,8})-(\\d+)(-t)?$`,
+)
+
+/**
+ * The deal, read back from the id the mock minted for it.
+ *
+ * THE MAP IS PER PROCESS, AND A PREVIEW IS MANY PROCESSES. S27 measured it on a
+ * Vercel preview: the checkout created the deal on one function instance, the
+ * frame-return verified on another, found nothing, and the order went to
+ * /checkout/failed with the payment `failed`. A local `next start` is one
+ * process, which is why no local run ever saw it. The id now carries what
+ * verification needs (amount, whether a card is saved), so any instance can
+ * answer. Mock only: the real provider asks Cardcom.
+ */
+function dealFromLowProfileId(lowProfileId: string): StoredDeal | undefined {
+  const match = LOW_PROFILE_ID.exec(lowProfileId)
+  if (!match) return undefined
+  const [, sequence, paymentPrefix, amount, saveToken] = match
+  return {
+    input: {
+      amountAgorot: Number(amount),
+      saveToken: saveToken === '-t',
+    } as CreateLowProfileInput,
+    status: 'pending',
+    transactionId: `${MOCK_TRANSACTION_PREFIX}txn-${sequence}-${paymentPrefix}`,
+  }
+}
+
 /**
  * In-memory Cardcom stand-in for Vitest / local checkout without real credentials.
  * Deals succeed by default; call `failNext` to simulate declines.
@@ -49,7 +78,7 @@ export class MockCardcomProvider implements PaymentProvider {
 
   async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {
     this.sequence += 1
-    const lowProfileId = `${MOCK_TRANSACTION_PREFIX}lp-${this.sequence}-${input.paymentId.slice(0, 8)}`
+    const lowProfileId = `${MOCK_TRANSACTION_PREFIX}lp-${this.sequence}-${input.paymentId.slice(0, 8)}-${input.amountAgorot}${input.saveToken ? '-t' : ''}`
     const transactionId = `${MOCK_TRANSACTION_PREFIX}txn-${this.sequence}`
     this.deals.set(lowProfileId, {
       input,
@@ -134,7 +163,7 @@ export class MockCardcomProvider implements PaymentProvider {
   }
 
   async verifyLowProfile(lowProfileId: string): Promise<VerifyLowProfileResult> {
-    const deal = this.deals.get(lowProfileId)
+    const deal = this.deals.get(lowProfileId) ?? dealFromLowProfileId(lowProfileId)
     if (!deal) {
       return {
         success: false,
