@@ -1,0 +1,324 @@
+/* V06: /supplier/apply as an Electro v7 page in the same frame as /login,
+   /cart and /checkout (V01, V02, V04): the breadcrumb band, a centred 40px
+   title, the intro as body paragraphs, then the form as one column the width
+   of an Electro my-account column.
+
+   The wizard (`SupplierApplyWizard`), the Turnstile gate and the card check
+   are shared with /suppliers/apply and are NOT edited. Everything below is
+   scoped under `.supplier-apply` and reshapes their existing markup by element
+   and role, so /suppliers/apply keeps its output byte for byte. This sheet is
+   unlayered and therefore wins over the Tailwind utilities on that markup.
+
+   Every control is at least 44px. Nothing scrolls sideways at 380. */
+
+.supplier-apply {
+  --sa-ink: #333e48;
+  --sa-muted: #51606d;
+  --sa-line: #ddd;
+  --sa-soft: #f7f6f6;
+  --sa-yellow: #fed700;
+  --sa-touch: 44px;
+
+  max-width: var(--container-page, 1320px);
+  margin-inline: auto;
+  padding: 0 15px 3rem;
+  color: var(--sa-ink);
+  font-size: 14px;
+  line-height: 23.996px;
+}
+
+/* Same band as .auth-page__breadcrumb: grey and 42px at 380, transparent with
+   Electro's padding from 768. */
+.supplier-apply__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  margin-inline: -15px;
+  padding: 0 15px;
+  min-height: 42px;
+  background: var(--sa-soft);
+}
+
+.supplier-apply__breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sa-touch);
+  min-width: var(--sa-touch);
+  color: var(--sa-ink);
+  text-decoration: none;
+}
+
+.supplier-apply__breadcrumb a:hover {
+  color: #0062bd;
+}
+
+.supplier-apply__delimiter {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+}
+
+[dir="rtl"] .supplier-apply__delimiter {
+  transform: scaleX(-1);
+}
+
+@media (min-width: 768px) {
+  .supplier-apply__breadcrumb {
+    margin-inline: 0;
+    padding: 14px 0 12px;
+    background: transparent;
+  }
+}
+
+.supplier-apply__title {
+  margin: 22px 0 16px;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 500;
+  color: var(--sa-ink);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .supplier-apply__title {
+    margin-top: 0;
+    font-size: 39.998px;
+    line-height: 47.9976px;
+  }
+}
+
+.supplier-apply__intro {
+  max-width: 720px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+/* One Electro my-account column. */
+.supplier-apply__body {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+/* Electro's section heading: a hairline under the title, a yellow bar under
+   the words only. Used for the status card and for the wizard's own h2s. */
+.supplier-apply__heading,
+.supplier-apply__body h2 {
+  margin: 0 0 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--sa-line);
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--sa-ink);
+}
+
+.supplier-apply__body h2.supplier-apply__heading {
+  padding-bottom: 0;
+}
+
+.supplier-apply__heading span {
+  display: inline-block;
+  padding-bottom: 12px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid var(--sa-yellow);
+}
+
+/* Cards: the status block, the Turnstile gate, the documents step. */
+.supplier-apply__body section,
+.supplier-apply__body form[class*="border"] {
+  margin-top: 0;
+  padding: 24px 20px;
+  border: 1px solid var(--sa-line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+@media (min-width: 768px) {
+  .supplier-apply__body section,
+  .supplier-apply__body form[class*="border"] {
+    padding: 32px 36px;
+  }
+}
+
+.supplier-apply__body p {
+  font-size: 14px;
+  line-height: 23.996px;
+  color: var(--sa-ink);
+}
+
+/* ---- the wizard's step strip -------------------------------------------- */
+
+/* Three numbered steps. At 380 each takes a third of the row and wraps its
+   label rather than pushing the row wider than the screen. `form > ol`, not
+   `:first-child`: React 19 puts the action's hidden inputs first. */
+.supplier-apply__body form > ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+}
+
+.supplier-apply__body form > ol > li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--sa-touch);
+  padding: 6px 8px;
+  border-radius: 22px;
+  border: 1px solid var(--sa-line);
+  background: #fff;
+  color: var(--sa-muted);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.supplier-apply__body form > ol > li[class*="bg-brand"] {
+  border-color: var(--sa-yellow);
+  background: var(--sa-yellow);
+  color: var(--sa-ink);
+  font-weight: 700;
+}
+
+/* ---- fields ------------------------------------------------------------- */
+
+.supplier-apply__body label {
+  font-weight: 700;
+  line-height: 18.004px;
+  color: var(--sa-ink);
+}
+
+.supplier-apply__body label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: var(--sa-touch);
+  padding-block: 10px;
+  font-weight: 400;
+  line-height: 23.996px;
+  cursor: pointer;
+}
+
+.supplier-apply__body input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--sa-ink);
+}
+
+.supplier-apply__body input:not([type="checkbox"]):not([type="hidden"]):not([type="file"]),
+.supplier-apply__body select {
+  box-sizing: border-box;
+  height: 45px;
+  width: 100%;
+  border: 1px solid var(--sa-line);
+  border-radius: 22px;
+  padding: 9.504px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--sa-ink);
+  background-color: #fff;
+}
+
+.supplier-apply__body input[type="file"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--sa-touch);
+  padding: 8px 12px;
+  border: 1px dashed var(--sa-line);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.supplier-apply__body input:focus,
+.supplier-apply__body select:focus {
+  outline: none;
+  border-color: var(--sa-yellow);
+  box-shadow: 0 0 0 2px rgb(254 215 0 / 35%);
+}
+
+/* The contract: a scrolling paragraph box in the body rhythm. */
+.supplier-apply__body fieldset > div[class*="overflow-y-auto"] {
+  border: 1px solid var(--sa-line);
+  border-radius: 8px;
+  background: var(--sa-soft);
+  padding: 16px;
+  font-size: 14px;
+  line-height: 23.996px;
+  color: var(--sa-ink);
+}
+
+/* ---- buttons ------------------------------------------------------------ */
+
+.supplier-apply__body button,
+.supplier-apply__body .account-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--sa-touch);
+  padding: 10px 28px;
+  border-radius: 22px;
+  border: 1px solid var(--sa-line);
+  background: #fff;
+  color: var(--sa-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.supplier-apply__body button[type="submit"],
+.supplier-apply__body button[class*="bg-brand"],
+.supplier-apply__body .account-btn {
+  border-color: var(--sa-yellow);
+  background: var(--sa-yellow);
+  color: var(--sa-ink);
+}
+
+.supplier-apply__body button[type="submit"]:hover,
+.supplier-apply__body button[class*="bg-brand"]:hover,
+.supplier-apply__body .account-btn:hover {
+  border-color: var(--sa-ink);
+  background: var(--sa-ink);
+  color: #fff;
+}
+
+.supplier-apply__body button[type="button"]:not([class*="bg-brand"]):hover {
+  background: var(--sa-soft);
+}
+
+.supplier-apply__body button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* The wizard's button row: full width and stacked at 380, so neither button is
+   a thumb-sized sliver; side by side, at the start, from 768. */
+.supplier-apply__body form > div:last-child {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+}
+
+.supplier-apply__body form > div:last-child > button {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .supplier-apply__body form > div:last-child {
+    flex-direction: row;
+  }
+
+  .supplier-apply__body form > div:last-child > button {
+    width: auto;
+  }
+}

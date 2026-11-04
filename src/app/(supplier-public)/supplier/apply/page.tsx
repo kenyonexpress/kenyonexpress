@@ -14,6 +14,7 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import '@/styles/supplier-apply.css'
 
 /**
  * NOINDEX with a self-canonical, for the reason `/supplier/login` gives: the
@@ -91,47 +92,75 @@ export default async function SupplierJoinPage() {
     !checkTurnstilePass((await cookies()).get(TURNSTILE_PASS_COOKIE)?.value, user.id)
 
   return (
-    <div dir="rtl" className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-heading">{t('supplierJoin.title')}</h1>
-      <p className="mt-2 text-sm text-body">{t('supplierJoin.intro')}</p>
+    // V06: Electro's page frame, the one /login and /checkout open with. The
+    // wizard below is shared with /suppliers/apply and is reshaped only by
+    // `src/styles/supplier-apply.css`, scoped to this wrapper.
+    <div dir="rtl" className="supplier-apply">
+      <nav aria-label={t('legal.article.breadcrumbLabel')} className="supplier-apply__breadcrumb">
+        <Link href="/">{t('legal.article.home')}</Link>
+        <svg
+          className="supplier-apply__delimiter"
+          viewBox="0 0 10 10"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M3 1l4 4-4 4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span aria-current="page">{t('supplierJoin.crumb')}</span>
+      </nav>
 
-      {live ? (
-        <section className="mt-6 rounded-lg border border-border bg-white p-5">
-          <h2 className="text-lg font-semibold text-heading">
-            {t('supplierJoin.yourApplication')}
-          </h2>
-          <p className="mt-2 text-sm text-body">
-            {live.business_name}{' '}
-            {live.status === 'approved'
-              ? t('supplierJoin.approved')
-              : live.status === 'in_review'
-                ? t('supplierJoin.inReview')
-                : t('supplierJoin.received')}
-          </p>
-          {live.status === 'approved' ? (
-            <p className="mt-3">
-              <Link href="/supplier" className="account-btn">
-                {t('supplierJoin.toPortal')}
-              </Link>
+      <h1 className="supplier-apply__title">{t('supplierJoin.title')}</h1>
+      <p className="supplier-apply__intro">{t('supplierJoin.intro')}</p>
+
+      <div className="supplier-apply__body">
+        {live ? (
+          <section>
+            <h2 className="supplier-apply__heading">
+              <span>{t('supplierJoin.yourApplication')}</span>
+            </h2>
+            <p>
+              {live.business_name}{' '}
+              {live.status === 'approved'
+                ? t('supplierJoin.approved')
+                : live.status === 'in_review'
+                  ? t('supplierJoin.inReview')
+                  : t('supplierJoin.received')}
             </p>
-          ) : (
-            sandbox && <SupplierCardCheck applicationId={live.id} verifiedLast4={verifiedLast4} />
-          )}
-        </section>
-      ) : (
-        <>
-          {existing?.status === 'rejected' && existing.review_note && (
-            <p className="mt-6 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
-              {t('supplierJoin.rejected').replace('{note}', existing.review_note)}
-            </p>
-          )}
-          {needsChallenge ? (
-            <SupplierApplyChallenge />
-          ) : (
-            <SupplierApplyWizard contractText={CONTRACT_TEXT} contractVersion={CONTRACT_VERSION} />
-          )}
-        </>
-      )}
+            {live.status === 'approved' ? (
+              <p className="mt-3">
+                <Link href="/supplier" className="account-btn">
+                  {t('supplierJoin.toPortal')}
+                </Link>
+              </p>
+            ) : (
+              sandbox && <SupplierCardCheck applicationId={live.id} verifiedLast4={verifiedLast4} />
+            )}
+          </section>
+        ) : (
+          <>
+            {existing?.status === 'rejected' && existing.review_note && (
+              <p className="mb-6 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
+                {t('supplierJoin.rejected').replace('{note}', existing.review_note)}
+              </p>
+            )}
+            {needsChallenge ? (
+              <SupplierApplyChallenge />
+            ) : (
+              <SupplierApplyWizard
+                contractText={CONTRACT_TEXT}
+                contractVersion={CONTRACT_VERSION}
+              />
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

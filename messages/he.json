@@ -920,7 +920,8 @@
     "cardCheckButton": "אימות כרטיס ב-₪1",
     "cardCheckPending": "מאמתים...",
     "cardCheckDone": "כרטיס אומת. החיוב של ₪1 בוטל.",
-    "cardCheckDoneLast4": "כרטיס אומת (מסתיים ב-{last4}). החיוב של ₪1 בוטל."
+    "cardCheckDoneLast4": "כרטיס אומת (מסתיים ב-{last4}). החיוב של ₪1 בוטל.",
+    "crumb": "הצטרפות עסקים"
   },
   "otpSignIn": {
     "openWhatsapp": "כניסה עם קוד ב-WhatsApp",

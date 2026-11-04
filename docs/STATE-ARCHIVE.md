@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c113 (הועבר מ-STATE.md ב-V06, לשמירה על תקרת 300 שורות)
+
+**M05-c113 - DONE (06.10.2026): `pnpm test` רץ על worktree נקי של HEAD `b93675616`, 640/640 קבצים, 7674 עברו, 12 דולגו, אפס כשלים, אפס drift; אין שינוי קוד.**
+משימת התור: "pnpm test fix drift commit". `pwd` אומת, HEAD `b93675616` = `origin/audit/final-audit` (אחרי `git fetch`). ה-worktree הנקי
+`/tmp/ke-m01-c113` הועבר מ-`f0c73423f` ל-`b93675616` (detached; ההפרש הוא `STATE.md` בלבד). **שערים** (אותו worktree, `env -i`):
+test **640/640, 7674 עברו, 12 דולגו** (163.6s, זהה ל-M04-c113); type-check **0**; lint: biome ושאר השערים נקיים, docs-path-audit
+נכשל ב-worktree רק על `supabase/.temp` (ב-gitignore, לא קיים ב-worktree). בעץ הראשי docs-path-audit מדווח "NO LONGER dangling" על
+`refs/electro_product.html`, כי הקובץ קיים שם מקומית (`refs/` ב-gitignore, לא במעקב). **החלטה שהתקבלה לבד:** לא להריץ `--write`,
+כי ב-checkout נקי הנתיב כן תלוי וה-ledger נכון לריפו; שני הכשלים תלויי סביבה ולא drift. `rm -rf .next` ואז build עם
+`CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `paYZ7N8R0vQB_YZ0G2MjR`. אין שינוי UI, ולכן `compare.mjs` לא נדרש.
+**חריגה בזמן הריצה, לא שלי:** ב-17:29 וב-17:30 תהליך אחר הריץ בעץ הראשי `reset` של `audit/final-audit` ל-`origin/main` (פעמיים),
+וב-17:31 `checkout main` (ה-reflog של העץ הראשי). ה-ref המקומי `audit/final-audit` מצביע עכשיו על `7b7e01494` (= `origin/main`),
+העץ הראשי על `main` `3f6ca53c3`, וה-WIP הזר ב-`docs/UI-PARITY-REPORT.md` כבר לא שם. `origin/audit/final-audit` לא נפגע (`b93675616`).
+**החלטה שהתקבלה לבד:** לא נגעתי בעץ הראשי ולא באף ref מקומי; ה-commit הזה נעשה ב-worktree הנקי ונדחף כ-fast-forward
+ל-`origin/audit/final-audit` בלבד. **ידני לאופיר:** לבדוק מי הזיז את `audit/final-audit` המקומי, ולהחזיר אותו ל-`origin/audit/final-audit`
+לפני הפריט הבא, אחרת M06-c113 ירוץ על `main`. **החלטה שהתקבלה לבד:** הפריט הבא ב-`~/ke-goals/final-queue.txt` (קריאה בלבד) הוא
+M06-c113, ולכן `RESUME FROM` עודכן ל-M06-c113. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
+
 ## M04-c113 (הועבר מ-STATE.md ב-S18, לשמירה על תקרת 300 שורות)
 
 **M04-c113 - DONE (06.10.2026): `pnpm type-check` רץ על worktree נקי של HEAD `f0c73423f`, exit 0, אפס שגיאות, אפס drift; אין שינוי קוד.**

@@ -304,8 +304,15 @@ export default function SupplierApplyWizard({
             חזרה
           </button>
         )}
+        {/* DISTINCT KEYS, OR "המשך" ON THE LAST-BUT-ONE STEP SUBMITS THE FORM.
+            Without them React reuses this <button> for the submit button below
+            and flips its type during the click, so the browser runs the
+            submit default of the same click: measured in V06, the wizard
+            landed on step 3 already posting, and with step 3's checkbox
+            unticked a real user gets a validation bubble on arrival. */}
         {step < STEPS.length - 1 ? (
           <button
+            key="next"
             type="button"
             onClick={() => setStep((current) => current + 1)}
             className="min-h-11 rounded-lg bg-brand px-4 py-2 text-sm font-semibold"
@@ -314,6 +321,7 @@ export default function SupplierApplyWizard({
           </button>
         ) : (
           <button
+            key="submit"
             type="submit"
             disabled={pending}
             className="min-h-11 rounded-lg bg-brand px-4 py-2 text-sm font-semibold disabled:opacity-60"

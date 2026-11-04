@@ -303,3 +303,114 @@
 .legal-footer-links__current {
   font-weight: 500;
 }
+
+/* ---- V06: readable and touchable at 380 ---------------------------------
+
+   Electro's 40px title holds one line in English; in Hebrew the policy names
+   ("מדיניות ביטולים, החזרות והחזרים") break into three at 380 and push the
+   first paragraph below the fold. Below 768 the title steps down to 28/36. */
+@media (max-width: 767.98px) {
+  .legal-header {
+    margin-bottom: 28px;
+  }
+
+  .legal-header__title {
+    font-size: 28px;
+    line-height: 36px;
+    overflow-wrap: anywhere;
+  }
+
+  .legal-toc__title,
+  .legal-section__title,
+  .legal-contact__title,
+  .legal-consent-withdraw__title {
+    font-size: 21px;
+    line-height: 30px;
+  }
+
+  .legal-section__title {
+    margin-bottom: 16px;
+  }
+}
+
+/* Touch widths: the breadcrumb's home link, every contents entry and every
+   link in the documents row and the contact block are 44px targets. They are lists of links, not
+   links inside running text, so WCAG 2.5.8's inline exemption does not cover
+   them; at 21px they were the smallest targets on the page. */
+@media (max-width: 1023.98px) {
+  .legal-breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 44px;
+    min-block-size: 44px;
+  }
+
+  .legal-toc__list a,
+  .legal-contact__link,
+  .legal-footer-links__link,
+  .legal-footer-links__current {
+    display: inline-flex;
+    align-items: center;
+    min-inline-size: 44px;
+    min-block-size: 44px;
+  }
+
+  .legal-footer-links {
+    gap: 0 24px;
+  }
+}
+
+/* Below 640 a table is a stack of cards, one per row, each cell printing its
+   column name from `data-label` (LegalArticle). The 36rem minimum made every
+   consumer-law table a sideways scroll at 380, with the column a reader needs
+   off screen. */
+@media (max-width: 639.98px) {
+  .legal-table {
+    min-width: 0;
+  }
+
+  .legal-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .legal-table,
+  .legal-table tbody,
+  .legal-table tr,
+  .legal-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .legal-table tr {
+    margin: 0 0 12px;
+    border: 1px solid var(--color-rule);
+  }
+
+  .legal-table td {
+    border: 0;
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  .legal-table td:last-child {
+    border-bottom: 0;
+  }
+
+  /* A block table shrinks its caption to the first cell's width, one word a
+     line; give it the full row. */
+  .legal-table caption {
+    display: block;
+    width: 100%;
+  }
+
+  .legal-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 500;
+  }
+}

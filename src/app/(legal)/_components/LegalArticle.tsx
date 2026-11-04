@@ -90,8 +90,14 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
                           right column instead of shifting the rest of the row
                           one column over, which in a table of cancellation
                           windows would silently state the wrong rule. */}
+                      {/* data-label: below 640 the row is stacked into a card
+                          and each cell prints its column name from it
+                          (legal-page.css), so no table scrolls sideways on a
+                          phone. */}
                       {block.head.map((column, columnIndex) => (
-                        <td key={column}>{row[columnIndex] ?? ''}</td>
+                        <td key={column} data-label={column}>
+                          {row[columnIndex] ?? ''}
+                        </td>
                       ))}
                     </tr>
                   ))}

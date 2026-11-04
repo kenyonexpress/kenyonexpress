@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**V06 - DONE (04.11.2026): הצטרפות ספקים ומסמכים משפטיים, ויזואלי.** ‏`/supplier/apply` קיבל header ו-footer (לא היה לו שום chrome, כי ל-`(supplier-public)` אין layout), פירורי לחם וכותרת כמו ב-V04, וגיליון `src/styles/supplier-apply.css` חדש שמעצב את האשף המשותף ב-CSS בלבד: שדות גלולה של 45, צעדים כשלוש גלולות של 44, כפתורים של 44. **באג שנמצא:** "המשך" בצעד 2 שלח את הטופס, כי React מיחזר את אותו `<button>` והחליף לו את ה-type באמצע הלחיצה. התיקון הוא שני `key` ב-`SupplierApplyWizard.tsx`, ויש טסט שנכשל בלי התיקון. **המסמכים המשפטיים:** מתחת ל-640 הטבלאות הן כרטיסים עם תוויות (`data-label`), ולא גלילה לרוחב. מתחת ל-1024 קישורי תוכן העניינים, "בית" והקישורים בשורת המסמכים הם 44. מתחת ל-768 הכותרת 28. 0 גלישה ו-0 פקדים קטנים ב-380 וב-768, בחמישה דפים (`docs/V06/`). vitest ‏8155 עברו, tsc 0, lint 0, build 0. שער ההקפאה ריק. הוכחה: `docs/V06-supplier-legal.md`.
+**החלטה שהתקבלה לבד:** ב-1440 קישורי תוכן העניינים נשארים ב-21px של Electro, שעומדים ב-WCAG 2.5.8 דרך חריג הריווח. את Turnstile הסקריפט עוקף ב-cookie מעבר שהוא מחשב בעצמו, לא בשליחת הטופס.
+**הבא: V07** מתור ה-V.
+
 **V05 - DONE (04.11.2026): אזור אישי, ויזואלי.** ‏`/account/**` בנוי כדף my-account של Electro: פירורי לחם, "החשבון שלי" ממורכז. הניווט הוא עמודת צד מ-992, ומתחת לזה פס לשוניות נגלל שבו הלשונית הפעילה ממורכזת (`AccountTabsActive`, צופה ב-`aria-current` ולא ב-`usePathname`, כי hook של נתיב ב-layout שבר את ה-build). ההזמנות והארנק הם `shop_table`, שהופך מתחת ל-768 לכרטיסים עם תוויות. בלוח הבקרה יש ברכת WooCommerce. כרטיסי ההגדרות עברו לשפה של האזור האישי. הכל ב-`src/styles/account-electro.css` החדש. **כסף:** `formatIls` של האזור האישי מציג שקלים שלמים דרך `formatAgorotWhole` החדש ב-`money.ts`. 0 גלישה ו-0 פקדים מתחת ל-44 בשבעה דפים ב-380/768/1440 (`docs/V05/`). vitest ‏8153 עברו, tsc 0, lint 0, build 0. e2e account-area ‏12/18: שלוש הבדיקות האדומות (כפול שני פרויקטים) הן נתוני קופון של ה-fixture ו-`emptyCart` בעגלה, מחוץ לקבצים של הפריט. תקרת i18n ‏592 ← 568. שער ההקפאה ריק. הוכחה: `docs/V05-account.md`.
 **החלטה שהתקבלה לבד:** כפתור משיכת השותפים נשאר מדויק באגורות (123.50 ולא 124), כי הוא מציג את הסכום שיועבר בפועל. פס הלשוניות מתחיל מתחת ל-992 ולא מתחת ל-768, כי ב-768 טבלת ההזמנות לא נכנסת ליד עמודת צד.
 **הבא: V06** מתור ה-V.
@@ -110,22 +114,6 @@ lint: שאר השערים נקיים, docs-path-audit נכשל ב-worktree רק 
 type-check **0**; test **640/640, 7674 עברו, 12 דולגו**; lint: שאר השערים נקיים, docs-path-audit נכשל ב-worktree רק על `supabase/.temp`
 (ב-gitignore, לא קיים ב-worktree), אותו כשל תלוי סביבה שתועד ב-M04-c113 וב-M05-c113, ולא drift. אין שינוי UI, ולכן `compare.mjs` לא נדרש.
 **ידני לאופיר (עדיין פתוח):** להחזיר את `audit/final-audit` המקומי ל-`origin/audit/final-audit` ואת העץ הראשי לענף הזה.
-
-**M05-c113 - DONE (06.10.2026): `pnpm test` רץ על worktree נקי של HEAD `b93675616`, 640/640 קבצים, 7674 עברו, 12 דולגו, אפס כשלים, אפס drift; אין שינוי קוד.**
-משימת התור: "pnpm test fix drift commit". `pwd` אומת, HEAD `b93675616` = `origin/audit/final-audit` (אחרי `git fetch`). ה-worktree הנקי
-`/tmp/ke-m01-c113` הועבר מ-`f0c73423f` ל-`b93675616` (detached; ההפרש הוא `STATE.md` בלבד). **שערים** (אותו worktree, `env -i`):
-test **640/640, 7674 עברו, 12 דולגו** (163.6s, זהה ל-M04-c113); type-check **0**; lint: biome ושאר השערים נקיים, docs-path-audit
-נכשל ב-worktree רק על `supabase/.temp` (ב-gitignore, לא קיים ב-worktree). בעץ הראשי docs-path-audit מדווח "NO LONGER dangling" על
-`refs/electro_product.html`, כי הקובץ קיים שם מקומית (`refs/` ב-gitignore, לא במעקב). **החלטה שהתקבלה לבד:** לא להריץ `--write`,
-כי ב-checkout נקי הנתיב כן תלוי וה-ledger נכון לריפו; שני הכשלים תלויי סביבה ולא drift. `rm -rf .next` ואז build עם
-`CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `paYZ7N8R0vQB_YZ0G2MjR`. אין שינוי UI, ולכן `compare.mjs` לא נדרש.
-**חריגה בזמן הריצה, לא שלי:** ב-17:29 וב-17:30 תהליך אחר הריץ בעץ הראשי `reset` של `audit/final-audit` ל-`origin/main` (פעמיים),
-וב-17:31 `checkout main` (ה-reflog של העץ הראשי). ה-ref המקומי `audit/final-audit` מצביע עכשיו על `7b7e01494` (= `origin/main`),
-העץ הראשי על `main` `3f6ca53c3`, וה-WIP הזר ב-`docs/UI-PARITY-REPORT.md` כבר לא שם. `origin/audit/final-audit` לא נפגע (`b93675616`).
-**החלטה שהתקבלה לבד:** לא נגעתי בעץ הראשי ולא באף ref מקומי; ה-commit הזה נעשה ב-worktree הנקי ונדחף כ-fast-forward
-ל-`origin/audit/final-audit` בלבד. **ידני לאופיר:** לבדוק מי הזיז את `audit/final-audit` המקומי, ולהחזיר אותו ל-`origin/audit/final-audit`
-לפני הפריט הבא, אחרת M06-c113 ירוץ על `main`. **החלטה שהתקבלה לבד:** הפריט הבא ב-`~/ke-goals/final-queue.txt` (קריאה בלבד) הוא
-M06-c113, ולכן `RESUME FROM` עודכן ל-M06-c113. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.

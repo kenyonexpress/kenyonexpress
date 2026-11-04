@@ -920,7 +920,8 @@
     "cardCheckButton": "Verify card with ₪1",
     "cardCheckPending": "Verifying...",
     "cardCheckDone": "Card verified. The ₪1 charge was voided.",
-    "cardCheckDoneLast4": "Card verified (ending {last4}). The ₪1 charge was voided."
+    "cardCheckDoneLast4": "Card verified (ending {last4}). The ₪1 charge was voided.",
+    "crumb": "Business sign-up"
   },
   "otpSignIn": {
     "openWhatsapp": "Sign in with a WhatsApp code",
