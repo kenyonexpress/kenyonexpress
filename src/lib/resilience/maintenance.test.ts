@@ -31,6 +31,7 @@ describe('isMaintenanceExempt', () => {
       '/api/admin/orders',
       '/api/cron/health',
       '/api/health',
+      '/api/ready',
       '/monitoring/x',
       '/_next/static/chunk.js',
       '/favicon.ico',
@@ -48,6 +49,7 @@ describe('isMaintenanceExempt', () => {
       '/account',
       '/supplier/scan',
       '/api/search',
+      '/api/readyz',
       '/administrator',
     ]) {
       expect(isMaintenanceExempt(path), path).toBe(false)

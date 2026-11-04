@@ -13,7 +13,7 @@ import { OFF_PAGE } from '@/styles/tokens'
  * plainly says so.
  *
  * What stays up: the admin panel (the operator turning the page off needs a
- * way in), the scheduled jobs and the health endpoint (a scheduler that sees
+ * way in), the scheduled jobs and the health and readiness endpoints (a scheduler that sees
  * 503 opens incidents about the maintenance it was told about), monitoring,
  * and static assets the page itself needs.
  */
@@ -34,6 +34,10 @@ const EXEMPT_PREFIXES = [
   '/api/admin',
   '/api/cron',
   '/api/health',
+  // Readiness too: a deploy gate that gets the HTML page's 503 cannot tell
+  // "maintenance" from "a dependency is down", and /api/health already
+  // passes. Measured 05.11: health 200 JSON, ready 503 maintenance HTML.
+  '/api/ready',
   '/monitoring',
   '/_next',
 ]
