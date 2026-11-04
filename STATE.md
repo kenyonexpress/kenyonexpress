@@ -1,7 +1,11 @@
-RESUME FROM: M10-c359
+RESUME FROM: M11-c359
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-04T11:54:58+07:00
+- item: M10-c359
+- BLOCKED: 319 needs affiliate tables restored first; 324 would break 23 foreign keys into orders
 
 ### 2026-11-04T11:53:10+07:00
 - item: M09-c359
@@ -97,9 +101,5 @@ RESUME FROM: M10-c359
 
 ### 2026-11-04T10:43:20+07:00
 - item: M05-c358
-- RESULT: DONE
-
-### 2026-11-04T10:41:09+07:00
-- item: M04-c358
 - RESULT: DONE
 
