@@ -16,6 +16,8 @@ const getUser = vi.fn()
 const rpc = vi.fn()
 const applicationInsert = vi.fn()
 const acceptanceInsert = vi.fn()
+const agreementInsert = vi.fn()
+const requestHeaders = new Map<string, string>()
 const getClientIp = vi.fn()
 const logError = vi.fn()
 
@@ -40,6 +42,9 @@ vi.mock('@/lib/supabase/admin', () => ({
       }
       if (table === 'supplier_contract_acceptances') {
         return { insert: (row: unknown) => acceptanceInsert(row) }
+      }
+      if (table === 'agreement_acceptances') {
+        return { insert: (row: unknown) => agreementInsert(row) }
       }
       throw new Error(`unexpected table ${table}`)
     },
@@ -68,6 +73,7 @@ vi.mock('next/headers', () => ({
       cookieJar.has(name) ? { name, value: cookieJar.get(name) as string } : undefined,
     set: (...args: unknown[]) => cookieSet(...args),
   }),
+  headers: async () => ({ get: (name: string) => requestHeaders.get(name) ?? null }),
 }))
 vi.mock('next/navigation', () => ({
   redirect: (to: string) => {
@@ -111,6 +117,10 @@ describe('submitSupplierApplication, the acceptance record', () => {
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     rpc.mockResolvedValue({ data: 'secret-uuid', error: null })
     acceptanceInsert.mockResolvedValue({ error: null })
+    agreementInsert.mockReset()
+    agreementInsert.mockResolvedValue({ error: null })
+    requestHeaders.clear()
+    requestHeaders.set('user-agent', 'Mozilla/5.0 probe')
     getClientIp.mockResolvedValue('203.0.113.9')
   })
 
@@ -177,6 +187,45 @@ describe('submitSupplierApplication, the acceptance record', () => {
     expect(acceptanceInsert).not.toHaveBeenCalled()
   })
 
+  it('writes the click-wrap row to agreement_acceptances: version, server hash, IP, user agent', async () => {
+    await submitSupplierApplication({ ok: false }, validForm({ sha256: 'f'.repeat(64) }))
+    expect(agreementInsert).toHaveBeenCalledTimes(1)
+    expect(agreementInsert.mock.calls[0]?.[0]).toEqual({
+      agreement: 'supplier_contract',
+      version: CONTRACT_VERSION,
+      sha256: contractHash(CONTRACT_TEXT),
+      user_id: 'user-1',
+      subject_type: 'supplier_application',
+      subject_id: 'app-1',
+      client_ip: '203.0.113.9',
+      user_agent: 'Mozilla/5.0 probe',
+    })
+  })
+
+  it('caps the user agent at 512 characters, the column CHECK', async () => {
+    requestHeaders.set('user-agent', 'x'.repeat(2000))
+    await submitSupplierApplication({ ok: false }, validForm())
+    const row = agreementInsert.mock.calls[0]?.[0] as Record<string, unknown>
+    expect((row.user_agent as string).length).toBe(512)
+  })
+
+  it('writes no agreement row for an unticked box', async () => {
+    const fd = validForm()
+    fd.delete('accept_contract')
+    await submitSupplierApplication({ ok: false }, fd)
+    expect(agreementInsert).not.toHaveBeenCalled()
+  })
+
+  it('keeps the application when the agreement log fails, and says so in the log', async () => {
+    agreementInsert.mockResolvedValue({ error: { message: 'down' } })
+    const result = await submitSupplierApplication({ ok: false }, validForm())
+    expect(result.ok).toBe(true)
+    expect(logError).toHaveBeenCalledWith(
+      'supplier_onboarding.agreement_log_failed',
+      expect.objectContaining({ applicationId: 'app-1', reason: 'down' }),
+    )
+  })
+
   it('keeps the submitted application when the acceptance log fails, and says so in the log', async () => {
     acceptanceInsert.mockResolvedValue({ error: { message: 'boom' } })
     const result = await submitSupplierApplication({ ok: false }, validForm())
@@ -185,6 +234,23 @@ describe('submitSupplierApplication, the acceptance record', () => {
       'supplier_onboarding.contract_log_failed',
       expect.objectContaining({ applicationId: 'app-1', reason: 'boom' }),
     )
+  })
+})
+
+describe('migration 257, agreement_acceptances', () => {
+  const sql = readFileSync(
+    join(process.cwd(), 'migrations/pending/257_agreement_acceptances.sql'),
+    'utf8',
+  )
+
+  it('stores version, a 64-hex hash, a server timestamp and the IP as inet', () => {
+    expect(sql).toMatch(/sha256\s+text NOT NULL CHECK \(sha256 ~ '\^\[0-9a-f\]\{64\}\$'\)/)
+    expect(sql).toMatch(/accepted_at\s+timestamptz NOT NULL DEFAULT now\(\)/)
+    expect(sql).toMatch(/client_ip\s+inet/)
+  })
+
+  it('refuses UPDATE and DELETE by trigger, for every role', () => {
+    expect(sql).toMatch(/BEFORE UPDATE OR DELETE ON public\.agreement_acceptances/)
   })
 })
 
@@ -214,6 +280,8 @@ describe('submitSupplierApplication, the Turnstile pass', () => {
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     rpc.mockResolvedValue({ data: 'secret-uuid', error: null })
     acceptanceInsert.mockResolvedValue({ error: null })
+    agreementInsert.mockResolvedValue({ error: null })
+    requestHeaders.clear()
     getClientIp.mockResolvedValue('203.0.113.9')
     vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
     vi.stubEnv('TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
@@ -267,6 +335,32 @@ describe('submitSupplierApplication, the Turnstile pass', () => {
     ]
     expect(name).toBe(TURNSTILE_PASS_COOKIE)
     expect(value.startsWith('user-1.')).toBe(true)
-    expect(options).toMatchObject({ httpOnly: true, sameSite: 'lax', path: '/suppliers' })
+    expect(options).toMatchObject({ httpOnly: true, sameSite: 'lax', path: '/' })
+  })
+
+  it('the gate sends a solver on /supplier/apply back to /supplier/apply', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ success: true }), { status: 200 })),
+    )
+    requestHeaders.set('referer', 'https://kenyonexpress.co.il/supplier/apply')
+    const data = new FormData()
+    data.set('cf-turnstile-response', 'good')
+    await expect(passSupplierApplyChallenge({}, data)).rejects.toThrow(
+      'NEXT_REDIRECT /supplier/apply',
+    )
+  })
+
+  it('the gate ignores a foreign referer', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ success: true }), { status: 200 })),
+    )
+    requestHeaders.set('referer', 'https://evil.example/supplier/apply-x')
+    const data = new FormData()
+    data.set('cf-turnstile-response', 'good')
+    await expect(passSupplierApplyChallenge({}, data)).rejects.toThrow(
+      'NEXT_REDIRECT /suppliers/apply',
+    )
   })
 })

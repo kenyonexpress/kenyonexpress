@@ -66,6 +66,7 @@
 | `supplier-apply` | 5 | 1 h | supplier applications, per user |
 | `app-consent` | 20 | 1 h | in-app consent changes, per user |
 | `supplier-doc-upload` | 30 | 1 h | presigned R2 PUT minting for onboarding documents, per user |
+| `supplier-card-check` | 5 | 1 h | 1 ILS card verify-and-void for an application, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest wishlist merge at login, per user |
 | `review-submit` | 10 | 1 h | post-purchase review submit, per user |

@@ -1069,6 +1069,11 @@ describe('the pending migration inventory', () => {
       // widens payout_cadence to per_order, floors the window at 14.
       // Proof, rolled back: docs/S16-admin-upload.md.
       '256_product_terms_live_completion.sql',
+      // S17 (04.11): APPLIED the same day. agreement_acceptances (append-only
+      // by trigger) and supplier_application_card_checks for the 1 ILS check.
+      // supplier_card_verifications was already taken by a legacy table.
+      // Proof, rolled back: docs/S17-supplier.md.
+      '257_agreement_acceptances.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

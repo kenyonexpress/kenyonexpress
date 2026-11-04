@@ -757,5 +757,20 @@
     "product": "Product:",
     "customer": "Customer:",
     "collect": "Collect at the till:"
+  },
+  "supplierJoin": {
+    "title": "Join KenyonExpress as a business",
+    "intro": "The form takes a few minutes. Read and accept the supplier agreement before submitting. We will review the details and documents and get back to you.",
+    "yourApplication": "Your application",
+    "approved": "approved. Welcome.",
+    "inReview": "is under review.",
+    "received": "was received and is awaiting review.",
+    "toPortal": "To the supplier portal",
+    "rejected": "The previous application was rejected: {note}. You can fix it and apply again.",
+    "cardCheckIntro": "To verify identity we charge ₪1 to the card and void it immediately. It will not appear on your statement.",
+    "cardCheckButton": "Verify card with ₪1",
+    "cardCheckPending": "Verifying...",
+    "cardCheckDone": "Card verified. The ₪1 charge was voided.",
+    "cardCheckDoneLast4": "Card verified (ending {last4}). The ₪1 charge was voided."
   }
 }

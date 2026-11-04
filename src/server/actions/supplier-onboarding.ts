@@ -19,7 +19,7 @@ import {
 } from '@/lib/turnstile/verify'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
@@ -223,7 +223,29 @@ async function runSubmitApplication(
     })
   }
 
+  // The general click-wrap log (257): version, server-side hash, time, IP and
+  // user agent. Append-only by trigger, so this row cannot be rewritten later
+  // even by the service role. Same failure policy as the line above.
+  const userAgent = (await headers()).get('user-agent')?.slice(0, 512) ?? null
+  const { error: agreementError } = await admin.from('agreement_acceptances').insert({
+    agreement: 'supplier_contract',
+    version: CONTRACT_VERSION,
+    sha256: contractHash(),
+    user_id: user.id,
+    subject_type: 'supplier_application',
+    subject_id: applicationId,
+    client_ip: ip && ip !== 'unknown' ? ip : null,
+    user_agent: userAgent,
+  } as never)
+  if (agreementError) {
+    log.error('supplier_onboarding.agreement_log_failed', {
+      applicationId,
+      reason: agreementError.message,
+    })
+  }
+
   revalidatePath('/suppliers/apply')
+  revalidatePath('/supplier/apply')
   return {
     ok: true,
     applicationId,
@@ -387,11 +409,24 @@ async function runPassApplyChallenge(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/suppliers',
+      // `/`, not `/suppliers`: the wizard is served at `/suppliers/apply` and
+      // at `/supplier/apply` (S17), and a cookie scoped to one would send the
+      // other back to the challenge forever. It is httpOnly and bound to the
+      // user id, so a wider path exposes nothing.
+      path: '/',
       maxAge: TURNSTILE_PASS_TTL_SECONDS,
     })
   }
-  redirect('/suppliers/apply')
+  // Back to whichever of the two doors the gate was solved on. The referer is
+  // only a hint: anything but the second path lands on the original one.
+  const referer = (await headers()).get('referer') ?? ''
+  let from = ''
+  try {
+    from = new URL(referer).pathname
+  } catch {
+    from = ''
+  }
+  redirect(from === '/supplier/apply' ? '/supplier/apply' : '/suppliers/apply')
 }
 
 export async function passSupplierApplyChallenge(

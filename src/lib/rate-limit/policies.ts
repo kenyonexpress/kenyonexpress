@@ -201,6 +201,13 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'presigned R2 PUT minting for onboarding documents, per user',
   },
+  // S17. Each press opens and voids a 1 ILS deal; a real applicant needs one,
+  // a mistyped card a second. Five an hour bounds card-testing through it.
+  'supplier-card-check': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: '1 ILS card verify-and-void for an application, per user',
+  },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
   // Once per login per browser, and only when the browser arrives carrying a
   // guest list. Ten an hour is generous for a person signing in and out; it is

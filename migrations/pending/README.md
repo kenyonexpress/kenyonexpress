@@ -1,5 +1,15 @@
 # `migrations/pending/`
 
+## 2026-11-04: 257 WRITTEN AND APPLIED - הצטרפות ספקים: יומן הסכמות ובדיקת כרטיס ₪1
+
+‏`257_agreement_acceptances.sql`. ‏S17. ‏`agreement_acceptances`: יומן click-wrap כללי
+(גרסה, SHA-256 שמחושב בשרת, זמן, IP, ‏user agent), **append-only בטריגר** שמסרב
+UPDATE ו-DELETE גם ל-service_role. ‏`supplier_application_card_checks`: שורה לכל
+ניסיון אימות ₪1 (CHECK על 100 אגורות בדיוק, ‏verified רק עם חיוב וביטול).
+**השם `supplier_card_verifications` תפוס בפרודקשן** בטבלה ישנה (0 שורות, אין כותב
+בריפו); ההחלה הראשונה נכשלה עליה ב-42703 והתגלגלה אחורה. הטבלה הישנה לא נגעה.
+הוחלה 04.11; הוכחה ב-`docs/S17-supplier.md`.
+
 ## 2026-11-04: 256 WRITTEN AND APPLIED - תנאי מוצר: השלמת העמודות החיות
 
 ‏`256_product_terms_live_completion.sql`. ‏S16. בפרודקשן היו ארבע מחמש העמודות של

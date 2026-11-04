@@ -235,6 +235,7 @@
       "/signup/confirm",
       "/supplier",
       "/supplier/access-denied",
+      "/supplier/apply",
       "/supplier/login",
       "/supplier/orders",
       "/supplier/payouts",
