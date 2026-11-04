@@ -185,6 +185,28 @@ describe('InstallPrompt, the first-purchase moment (W14)', () => {
   })
 })
 
+// V07: at 380 the fixed banner sat 44px into the tab bar and 33px into the
+// WhatsApp button on the legal documents, and on the sign-in forms it rides up
+// with the keyboard. It stays on the browsing pages and off these.
+describe('InstallPrompt, off the sign-in forms and the legal documents (V07)', () => {
+  it.each([
+    '/login',
+    '/register',
+    '/terms-and-conditions',
+    '/privacy-policy',
+    '/refund_returns',
+    '/accessibility',
+  ])('stays off %s', (path) => {
+    window.history.replaceState({}, '', path)
+    render(<InstallPrompt />)
+    fireInstallPrompt()
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+  })
+})
+
 describe('InstallPrompt on iOS (W14)', () => {
   it('shows the share-then-add hint after an interaction, with no install event ever firing', () => {
     pretendIphone()

@@ -68,7 +68,16 @@ describe('checkout geometry', () => {
   it('keeps the sticky pay bar under 992 only and above the tab bar', () => {
     expect(RULES).toMatch(/\.checkout-sticky-pay\s*\{[^}]*display:\s*none/)
     expect(RULES).toMatch(
-      /@media \(max-width: 991px\)\s*\{\s*\.checkout-sticky-pay\s*\{[^}]*bottom:\s*var\(--reserve-tabbar/,
+      /@media \(max-width: 991px\)\s*\{\s*\.checkout-sticky-pay\s*\{[^}]*bottom:\s*calc\(var\(--reserve-tabbar/,
+    )
+  })
+
+  it('lifts the sticky pay bar by the safe-area inset on a notched phone (V07)', () => {
+    // The tab bar pads itself with env(safe-area-inset-bottom), so on an
+    // iPhone it is 4rem plus the inset tall. A bar parked at 4rem covered 26px
+    // of its icons (scripts/v07-mobile-shell.mjs, Chromium safe-area override).
+    expect(RULES).toMatch(
+      /@media \(max-width: 767\.98px\)\s*\{\s*\.checkout-sticky-pay\s*\{[^}]*--checkout-sticky-lift:\s*env\(safe-area-inset-bottom/,
     )
   })
 })

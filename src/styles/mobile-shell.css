@@ -1,0 +1,53 @@
+/* V07: the mobile shell of the open routes on a notched phone.
+ *
+ * `viewport-fit=cover` (layout.tsx) hands the bottom 34px of an iPhone to the
+ * page, and the bottom tab bar takes it back as padding INSIDE itself, so on a
+ * notched phone the bar is 4rem plus the inset tall. Two things here were
+ * still positioned off the plain 4rem and slid under the grown bar, measured
+ * with Chromium's safe-area override (scripts/v07-mobile-shell.mjs):
+ *
+ *   - the WhatsApp button, 6px into the bar
+ *   - the page foot, whose last row sat under the bar's inset strip, because
+ *     `body` reserves `--reserve-tabbar` and not the inset on top of it
+ *
+ * Scoped to the open routes by their page roots with :has(), so the frozen
+ * pages (home, category, product) keep their output byte for byte. The
+ * checkout's own sticky pay bar is handled in checkout-page.css. */
+
+@media (max-width: 767.98px) {
+  body:has(
+      :is(.cart-page, .checkout-page, .auth-page, .account-content, .supplier-apply, .legal-page)
+    ) {
+    padding-bottom: calc(
+      var(--reserve-consent) +
+      var(--reserve-pwa) +
+      var(--reserve-tabbar) +
+      env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  body:has(
+      :is(.cart-page, .checkout-page, .auth-page, .account-content, .supplier-apply, .legal-page)
+    )
+    [data-testid="whatsapp-float"] {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  body:has(
+      :is(.cart-page, .checkout-page, .auth-page, .account-content, .supplier-apply, .legal-page)
+    )
+    [data-testid="whatsapp-float-sheet"] {
+    bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* From 768 there is no tab bar and the button sits 1.25rem off the bottom
+   edge, which on an iPad in landscape is the home indicator's strip. */
+@media (min-width: 768px) {
+  body:has(
+      :is(.cart-page, .checkout-page, .auth-page, .account-content, .supplier-apply, .legal-page)
+    )
+    [data-testid="whatsapp-float"] {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  }
+}

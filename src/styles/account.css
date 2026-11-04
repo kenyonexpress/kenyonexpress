@@ -897,6 +897,7 @@
 .affiliate-join__input {
   display: block;
   width: 100%;
+  min-height: 44px;
   margin-top: 6px;
   padding: 8px 10px;
   border: 1px solid var(--account-line);

@@ -71,7 +71,7 @@ export default function WishlistItemActions({
         onClick={onMove}
         disabled={isPending || !canAddToCart}
         aria-label={`העבר לעגלה: ${productName}`}
-        className="rounded-lg bg-brand-primary px-3 py-2 text-sm font-semibold text-brand-dark transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="min-h-touch-min rounded-lg bg-brand-primary px-3 py-2 text-sm font-semibold text-brand-dark transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {canAddToCart ? 'העבר לעגלה' : 'אזל מהמלאי'}
       </button>
@@ -80,7 +80,7 @@ export default function WishlistItemActions({
         onClick={onRemove}
         disabled={isPending}
         aria-label={`הסר ממועדפים: ${productName}`}
-        className="rounded-lg border border-border-alt px-3 py-2 text-sm text-muted transition-colors hover:text-heading disabled:opacity-50"
+        className="min-h-touch-min min-w-touch-min rounded-lg border border-border-alt px-3 py-2 text-sm text-muted transition-colors hover:text-heading disabled:opacity-50"
       >
         הסר
       </button>

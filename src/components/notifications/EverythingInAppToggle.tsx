@@ -52,16 +52,22 @@ export default function EverythingInAppToggle({
           disabled={!available || pending}
           onClick={toggle}
           data-testid="app-consent-switch"
-          className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 ${
-            on ? 'bg-brand-primary' : 'bg-gray-300'
-          }`}
+          // The 44px target is the button; the 28px track inside it is what
+          // paints (V07).
+          className="inline-flex min-h-touch-min w-12 shrink-0 items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
         >
           <span
             aria-hidden="true"
-            className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-              on ? '-translate-x-6' : '-translate-x-1'
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+              on ? 'bg-brand-primary' : 'bg-gray-300'
             }`}
-          />
+          >
+            <span
+              className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                on ? '-translate-x-6' : '-translate-x-1'
+              }`}
+            />
+          </span>
         </button>
         <span className="text-sm font-semibold">
           {on ? t('appConsent.on') : t('appConsent.off')}

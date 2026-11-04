@@ -476,6 +476,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  /* V07: the whole row is the radio's target, 44px like the method row. */
+  min-height: var(--cart-touch, 44px);
   margin-top: 8px;
   font-size: 14px;
   color: var(--color-heading, #333e48);
@@ -738,7 +740,11 @@
   .checkout-sticky-pay {
     position: fixed;
     inset-inline: 0;
-    bottom: var(--reserve-tabbar, 0rem);
+    /* V07: on a notched phone the tab bar is 4rem plus the safe-area inset
+       tall, so a bar parked at 4rem covered its icons. Under 768 the bar
+       sits on the tab bar's real top; from 768 there is no tab bar, the bar
+       is the bottom edge itself and pads its contents out of the inset. */
+    bottom: calc(var(--reserve-tabbar, 0rem) + var(--checkout-sticky-lift, 0px));
     z-index: 35;
     display: flex;
     align-items: center;
@@ -746,6 +752,7 @@
     gap: 12px;
     min-height: var(--checkout-sticky-h);
     padding: 10px 15px;
+    padding-bottom: calc(10px + var(--checkout-sticky-pad, env(safe-area-inset-bottom, 0px)));
     background: #fff;
     border-top: 1px solid #ddd;
     box-shadow: 0 -4px 12px rgb(0 0 0 / 0.06);
@@ -758,14 +765,21 @@
   /* The page keeps the bar's height free at its foot, so the footer's last
      line is never under it. */
   .checkout-page {
-    padding-bottom: calc(3rem + 4rem);
+    padding-bottom: calc(3rem + 4rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* The WhatsApp button floats at the inline end just above the tab bar, which
      is exactly where the pay button now sits. Lifted over the bar while the
      bar is showing; it returns when the real pay button scrolls in. */
   body:has(.checkout-sticky-pay:not([data-hidden])) [data-testid="whatsapp-float"] {
-    bottom: calc(var(--reserve-tabbar, 0rem) + 4rem + 1rem);
+    bottom: calc(var(--reserve-tabbar, 0rem) + 4rem + 1rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .checkout-sticky-pay {
+    --checkout-sticky-lift: env(safe-area-inset-bottom, 0px);
+    --checkout-sticky-pad: 0px;
   }
 }
 

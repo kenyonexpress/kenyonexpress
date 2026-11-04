@@ -59,7 +59,24 @@ const DISMISSED_KEY = 'ke:pwa-install-dismissed'
  * answered, which is what makes "shown once" true rather than "answered once".
  */
 const SHOWN_KEY = 'ke:pwa-install-shown'
-const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
+const HIDDEN_ON = [
+  '/checkout',
+  '/cart',
+  '/account',
+  '/supplier',
+  '/admin',
+  '/scan',
+  // V07: the sign-in forms, where a bar over the bottom of the screen rides up
+  // with the keyboard, and the legal documents, where at 380 it sat on the tab
+  // bar and the WhatsApp button (measured 44px and 33px of overlap). Neither
+  // is a browsing moment worth an install ask.
+  '/login',
+  '/register',
+  '/terms-and-conditions',
+  '/privacy-policy',
+  '/refund_returns',
+  '/accessibility',
+]
 
 /**
  * NOT ON THE FIRST THING A VISITOR SEES.
