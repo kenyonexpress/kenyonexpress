@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**S03 - DONE (04.11.2026): בדיקת env בפרודקשן.** פרויקט `kenyonexpress`: 58 מפתחות. הקוד קורא 119. כל 8 מפתחות ה-preflight מוגדרים, וגם Turnstile ו-R2. נוסף `NEXT_PUBLIC_SITE_URL=https://kenyonexpress.co.il`. סודות חסרים (Upstash, QStash, webhooks, wallet, CAPI) ברשימת HOLD. אף אחד מהם לא חוסם קופה. tsc 0, vitest 640/640. הוכחה: `docs/S03-env.md`.
+**החלטה שהתקבלה לבד:** לא הוספתי `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. ה-ID יושב בשם `NEXT_PUBLIC_GA_MEASUREMENT_ID`, ששום קוד לא קורא, וה-CSP חוסם את googletagmanager. צריך את שניהם יחד ב-item נפרד. בנוסף, www עונה 503 עם retry-after 300 (MAINTENANCE_MODE), ו-/api/health עונה 200.
+**הבא: S04** מתור ה-S.
+
 **S02 - DONE (04.11.2026): ענף הפרודקשן ב-Vercel הוא `closeout/v1-final`.** GET מאשר `link.productionBranch`. commit ריק `c9a3754b8` בנה git production `dpl_DhJJBn82dFLA3HMtWvEuMXPWFzZY`, READY תוך 2 דקות, משויך ל-kenyonexpress.co.il ול-www, ו-/api/health מחזיר 200. מעכשיו כל push לענף הזה הוא דיפלוי לפרודקשן. אסור `vercel --prod` עם upload. הוכחה: `docs/S02-vercel.md`.
 **החלטה שהתקבלה לבד:** ה-API דחה PATCH ל-`/v9/projects` עם `link` (400). השתמשתי ב-`PATCH /v9/projects/{id}/branch` עם `{"branch":...}`, אותו endpoint כמו ב-L02. בילדי ה-preview נכשלים ב-preflight כי משתני Cardcom ו-QR מוגדרים רק ל-production. זה צפוי, ולא נגעתי בזה.
 **הבא: S03** מתור ה-S.
