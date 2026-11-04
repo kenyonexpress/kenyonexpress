@@ -1,6 +1,6 @@
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
 import { log } from '@/lib/observability/log'
-import { capturePaymentAlarm } from '@/lib/observability/sentry'
+import { capturePaymentAlarm, capturePaymentWarning } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { acceptedWebhookSecrets } from '@/lib/payments/env'
@@ -244,6 +244,19 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       paymentId: payment.id,
       lowProfileId: payload.lowprofilecode,
       detail: { response_code: payload.ResponseCode },
+    })
+    // A decline is routine, so it is a Sentry warning and a log line, never
+    // the alarm channel (G1, 05.11.2026). The payment row above already says
+    // `failed`; this is the trace that says how often, and with which code.
+    log.warn('cardcom.callback_declined', {
+      order_id: payment.order_id,
+      response_code: String(payload.ResponseCode),
+    })
+    capturePaymentWarning('cardcom declined the charge', {
+      stage: 'cardcom_webhook_declined',
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      detail: { response_code: String(payload.ResponseCode) },
     })
     return NextResponse.json({ ok: true })
   }

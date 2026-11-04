@@ -89,6 +89,37 @@ export function capturePaymentError(error: unknown, context: PaymentErrorContext
 }
 
 /**
+ * A money-path outcome worth a Sentry record but NOT a page: a card Cardcom
+ * declined, a customer who abandoned the hosted page. These are routine, and
+ * routing them through `capturePaymentAlarm` would make the ntfy channel the
+ * one place nobody reads. Same scope and fingerprint as the error path, at
+ * `warning` level, no push. Nothing happens without a DSN.
+ */
+export function capturePaymentWarning(message: string, context: PaymentErrorContext): void {
+  if (!DSN) return
+  try {
+    Sentry.withScope((scope) => {
+      scope.setTag('area', 'payments')
+      scope.setTag('stage', context.stage)
+      if (context.orderId) scope.setTag('order_id', context.orderId)
+      if (context.userId) scope.setUser({ id: context.userId })
+      scope.setFingerprint(['payments', context.stage, message])
+      scope.setContext('payment', {
+        stage: context.stage,
+        order_id: context.orderId ?? null,
+        payment_id: context.paymentId ?? null,
+        voucher_id: context.voucherId ?? null,
+        ...((redact(context.detail ?? {}) as Record<string, unknown>) ?? {}),
+      })
+      scope.setLevel('warning')
+      Sentry.captureMessage(message)
+    })
+  } catch {
+    // Reporting is best effort by definition.
+  }
+}
+
+/**
  * A money-path condition that is not an exception but still must not pass
  * silently: an amount that does not match, a verification that came back
  * negative for a payment we believe succeeded.

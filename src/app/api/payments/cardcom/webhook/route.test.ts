@@ -63,6 +63,7 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient })
 vi.mock('@/lib/observability/sentry', () => ({
   capturePaymentAlarm: (...args: unknown[]) => capturePaymentAlarm(...args),
   capturePaymentError: vi.fn(),
+  capturePaymentWarning: vi.fn(),
 }))
 vi.mock('@/lib/payments', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),

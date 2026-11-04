@@ -43,6 +43,10 @@ export default defineConfig({
       'scripts/*.test.mjs',
       'scripts/seed/**/*.test.ts',
       'scripts/dr/**/*.test.mjs',
+      // Contract suites that are not unit tests of one module (G1: the Cardcom
+      // webhook's four payload shapes). Same trap as above: a spec outside
+      // this list never runs.
+      'tests/**/*.spec.ts',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {
