@@ -808,5 +808,12 @@
   "expiryEmail": {
     "label": "Email reminder 7 days and 1 day before a coupon expires",
     "saveFailed": "Saving failed."
+  },
+  "pushTopics": {
+    "title": "What this browser receives",
+    "order_updates": "Order updates: shipping, coupon redemption, cashback and invoice",
+    "expiry": "Reminder before a coupon expires",
+    "note": "The purchase confirmation and refunds always arrive.",
+    "saveFailed": "Saving failed."
   }
 }

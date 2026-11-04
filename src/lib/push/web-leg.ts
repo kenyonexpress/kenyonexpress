@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import type { PushContent } from '@/lib/push/templates'
+import { subscriptionWantsKind } from '@/lib/push/topics'
 import { type WebPushOutcome, sendWebPush, vapidConfig } from '@/lib/push/web-push'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -41,12 +42,17 @@ interface SubscriptionRow {
   endpoint: string
   p256dh: string
   auth: string
+  /** 259 (S21). Absent before it lands, which means "every topic". */
+  topics?: string[] | null
 }
 
 const EMPTY: WebPushLegResult = { sent: 0, gone: 0, retry: 0, rejected: 0, reason: null }
 
 /** Postgres undefined_table, and PostgREST's schema-cache equivalent. */
 const MISSING_TABLE = new Set(['42P01', 'PGRST205'])
+
+/** Postgres undefined_column: `topics` before 259. */
+const MISSING_COLUMN = new Set(['42703'])
 
 /**
  * The push service, not the endpoint.
@@ -108,18 +114,33 @@ export async function sendWebPushLeg(
   // anonymous browser subscription here: 179 requires user_id.
   if (!row.user_id) return { ...EMPTY, reason: 'no account to look up browsers for' }
 
-  const { data, error } = await admin
-    .from('push_subscriptions' as never)
-    .select('id, user_id, endpoint, p256dh, auth')
-    .eq('user_id', row.user_id)
+  const select = (columns: string) =>
+    admin
+      .from('push_subscriptions' as never)
+      .select(columns)
+      .eq('user_id', row.user_id as string)
+
+  let { data, error } = await select('id, user_id, endpoint, p256dh, auth, topics')
+  // 259 unapplied: read without topics, and every browser gets every kind,
+  // which is the behaviour before topics existed.
+  if (error && MISSING_COLUMN.has(error.code ?? '')) {
+    ;({ data, error } = await select('id, user_id, endpoint, p256dh, auth'))
+  }
 
   if (error) {
     if (MISSING_TABLE.has(error.code ?? '')) return { ...EMPTY, reason: '179 not applied' }
     return { ...EMPTY, retry: 1, reason: error.message }
   }
 
-  const subscriptions = (data ?? []) as unknown as SubscriptionRow[]
-  if (subscriptions.length === 0) return { ...EMPTY, reason: 'no browser subscribed' }
+  const all = (data ?? []) as unknown as SubscriptionRow[]
+  if (all.length === 0) return { ...EMPTY, reason: 'no browser subscribed' }
+
+  // S21 TOPICS. A browser that unticked this kind's topic is not attempted
+  // and not logged: it is not a delivery failure, it is the customer's answer.
+  // `skipped` with its own reason when that leaves nobody, so the outbox row
+  // settles without spending a retry.
+  const subscriptions = all.filter((s) => subscriptionWantsKind(row.kind, s.topics))
+  if (subscriptions.length === 0) return { ...EMPTY, reason: 'topic switched off on every browser' }
 
   const result: WebPushLegResult = { sent: 0, gone: 0, retry: 0, rejected: 0, reason: null }
   const dead: string[] = []

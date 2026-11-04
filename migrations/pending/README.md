@@ -1,5 +1,12 @@
 # `migrations/pending/`
 
+## 2026-11-04: 259 WRITTEN AND APPLIED - נושאי התראות דחיפה לכל דפדפן
+
+‏`259_push_subscription_topics.sql`. ‏S21. עמודת ‏`topics text[]` ב-`push_subscriptions`,
+ברירת מחדל ‏`{order_updates,expiry}`, ‏CHECK לשני הנושאים בלבד. סוגים חובה (אישור רכישה,
+קופון, החזר) מתעלמים מהנושאים. המיפוי סוג->נושא ב-`src/lib/push/topics.ts`. הוחלה 04.11;
+הוכחה ב-`docs/S21-push.md`.
+
 ## 2026-11-04: 258 WRITTEN AND APPLIED - תזכורות תפוגה: שתי משימות pg_cron, T-7 ו-T-1
 
 ‏`258_expiry_cron_t7_t1.sql`. ‏S20. ‏`ke-expiry-t7` ‏(23:20 UTC) ו-`ke-expiry-t1` ‏(23:25 UTC),

@@ -3,9 +3,17 @@
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { isMissingPushRelation, pushSubscriptionTable } from '@/lib/push/store'
+import { normalizeTopics } from '@/lib/push/topics'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import {
+  type PushSubscriptionInput,
+  type WriteResult,
+  deletePushSubscription,
+  updatePushSubscriptionTopics,
+  upsertPushSubscription,
+} from '@/server/push/subscription-write'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 
@@ -45,39 +53,30 @@ function fail(
   return { error: message }
 }
 
-const BASE64URL = /^[A-Za-z0-9_-]+$/
+export type { PushSubscriptionInput }
+
+/** A write result to the action's one-sentence contract; the reason is logged. */
+function toState(event: string, result: WriteResult): PushActionState {
+  if (result.ok) {
+    revalidatePath('/account/notifications')
+    return { success: true }
+  }
+  if (result.reason === 'unavailable') return { error: NOT_AVAILABLE }
+  return fail(event, result.detail)
+}
 
 /**
- * The subset of PushSubscription.toJSON() we store. Validated to the wire
- * format's own shape: an https endpoint (W3C requires it), a 65-byte P-256
- * point for p256dh (87 base64url chars) and a 16-byte auth secret (22 chars).
- * Anything else is either a broken browser or a forged payload, and both get
- * the same refusal.
+ * `topics` is optional and S21's: the opt-in button sends none, which keeps
+ * whatever this browser already had (both, for a new row).
  */
-export interface PushSubscriptionInput {
-  endpoint: string
-  keys: { p256dh: string; auth: string }
+export async function savePushSubscription(
+  input: PushSubscriptionInput,
+  topics?: unknown,
+): Promise<PushActionState> {
+  return withActionContext('push.subscribe', () => runSave(input, topics))
 }
 
-function validateSubscription(input: PushSubscriptionInput): string | null {
-  if (
-    typeof input?.endpoint !== 'string' ||
-    typeof input.keys?.p256dh !== 'string' ||
-    typeof input.keys?.auth !== 'string'
-  ) {
-    return 'shape'
-  }
-  if (!input.endpoint.startsWith('https://') || input.endpoint.length > 2000) return 'endpoint'
-  if (input.keys.p256dh.length !== 87 || !BASE64URL.test(input.keys.p256dh)) return 'p256dh'
-  if (input.keys.auth.length !== 22 || !BASE64URL.test(input.keys.auth)) return 'auth'
-  return null
-}
-
-export async function savePushSubscription(input: PushSubscriptionInput): Promise<PushActionState> {
-  return withActionContext('push.subscribe', () => runSave(input))
-}
-
-async function runSave(input: PushSubscriptionInput): Promise<PushActionState> {
+async function runSave(input: PushSubscriptionInput, topics: unknown): Promise<PushActionState> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -88,32 +87,57 @@ async function runSave(input: PushSubscriptionInput): Promise<PushActionState> {
   const allowed = await checkRateLimit(`push-subscribe:${ip}`, 30, 3600)
   if (!allowed) return { error: RATE_LIMITED }
 
-  const invalid = validateSubscription(input)
-  if (invalid) return fail('push.subscribe_rejected', invalid)
+  const chosen = topics === undefined ? undefined : normalizeTopics(topics)
+  if (chosen === null) return fail('push.subscribe_rejected', 'topics')
 
   const headerStore = await headers()
   const userAgent = headerStore.get('user-agent')?.slice(0, 256) ?? null
 
-  // Conflict on endpoint, not on (user, endpoint): a subscription belongs to
-  // the browser, and on a shared device the latest signed-in account wins it,
-  // which is the only assignment that cannot notify the wrong person.
-  const admin = createAdminClient()
-  const { error } = await admin.from(pushSubscriptionTable()).upsert(
-    {
-      endpoint: input.endpoint,
-      user_id: user.id,
-      p256dh: input.keys.p256dh,
-      auth: input.keys.auth,
-      user_agent: userAgent,
-    } as never,
-    { onConflict: 'endpoint' },
-  )
-  if (error) {
-    if (isMissingPushRelation(error)) return { error: NOT_AVAILABLE }
-    return fail('push.subscribe_failed', error.message)
+  const result = await upsertPushSubscription({
+    userId: user.id,
+    input,
+    userAgent,
+    topics: chosen,
+  })
+  if (!result.ok && result.reason === 'invalid') {
+    return fail('push.subscribe_rejected', result.detail)
   }
-  revalidatePath('/account/notifications')
-  return { success: true }
+  return toState('push.subscribe_failed', result)
+}
+
+/**
+ * S21: which topics THIS browser gets (`order_updates`, `expiry`). Keyed on
+ * the endpoint the browser reads from its own subscription; filtered on the
+ * caller, so it cannot retopic somebody else's browser.
+ */
+export async function updatePushTopics(
+  endpoint: string,
+  topics: unknown,
+): Promise<PushActionState> {
+  return withActionContext('push.topics', () => runUpdateTopics(endpoint, topics))
+}
+
+async function runUpdateTopics(endpoint: string, topics: unknown): Promise<PushActionState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: NOT_SIGNED_IN }
+
+  if (typeof endpoint !== 'string' || !endpoint.startsWith('https://') || endpoint.length > 2000) {
+    return fail('push.topics_rejected', 'endpoint')
+  }
+  const chosen = normalizeTopics(topics)
+  if (chosen === null || topics === undefined) return fail('push.topics_rejected', 'topics')
+
+  const ip = await getClientIp()
+  const allowed = await checkRateLimit(`push-subscribe:${ip}`, 30, 3600)
+  if (!allowed) return { error: RATE_LIMITED }
+
+  return toState(
+    'push.topics_failed',
+    await updatePushSubscriptionTopics(user.id, endpoint, chosen),
+  )
 }
 
 export async function removePushSubscription(endpoint: string): Promise<PushActionState> {
@@ -133,18 +157,7 @@ async function runRemove(endpoint: string): Promise<PushActionState> {
 
   // Filtered on user_id as well as endpoint, so the service role never
   // deletes a row the caller does not own.
-  const admin = createAdminClient()
-  const { error } = await admin
-    .from(pushSubscriptionTable())
-    .delete()
-    .eq('endpoint', endpoint)
-    .eq('user_id', user.id)
-  if (error) {
-    if (isMissingPushRelation(error)) return { error: NOT_AVAILABLE }
-    return fail('push.unsubscribe_failed', error.message)
-  }
-  revalidatePath('/account/notifications')
-  return { success: true }
+  return toState('push.unsubscribe_failed', await deletePushSubscription(user.id, endpoint))
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

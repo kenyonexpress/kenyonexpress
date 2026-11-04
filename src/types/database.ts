@@ -2640,6 +2640,7 @@ export type Database = {
           endpoint: string
           id: string
           p256dh: string
+          topics: string[]
           updated_at: string
           user_agent: string | null
           user_id: string
@@ -2650,6 +2651,7 @@ export type Database = {
           endpoint: string
           id?: string
           p256dh: string
+          topics?: string[]
           updated_at?: string
           user_agent?: string | null
           user_id: string
@@ -2660,6 +2662,7 @@ export type Database = {
           endpoint?: string
           id?: string
           p256dh?: string
+          topics?: string[]
           updated_at?: string
           user_agent?: string | null
           user_id?: string

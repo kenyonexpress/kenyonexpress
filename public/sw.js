@@ -107,7 +107,10 @@ self.addEventListener('activate', (event) => {
           keys.filter((key) => !key.startsWith(VERSION)).map((key) => caches.delete(key)),
         ),
       )
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
+      // S21: repair a subscription minted against a rotated VAPID key. See
+      // PUSH SUBSCRIPTION UPKEEP at the end of this file.
+      .then(() => reconcilePushKey().catch(() => 'failed')),
   )
 })
 
@@ -320,4 +323,106 @@ self.addEventListener('notificationclick', (event) => {
       return self.clients.openWindow(url)
     }),
   )
+})
+
+/*
+ * PUSH SUBSCRIPTION UPKEEP (S21). Two moments a browser's subscription goes
+ * stale without the page being open to notice:
+ *
+ *   pushsubscriptionchange  the push service expired or rotated it. The event
+ *                           may or may not carry the new one.
+ *   activate                a new worker after a VAPID key rotation. The old
+ *                           subscription is bound to the old public key, and
+ *                           every send to it answers 403 forever. No event
+ *                           fires for this, so the worker compares keys itself.
+ *
+ * Both re-subscribe with the key the server serves NOW (GET
+ * /api/push/subscription) and POST the result there with the old endpoint, so
+ * the server replaces the row and carries its topics over. The POST rides the
+ * customer's session cookie. If the server refuses it (signed out, rate
+ * limited) the fresh subscription is unsubscribed again: a browser that shows
+ * "on" with no row behind it can never receive anything.
+ *
+ * Never prompts. pushManager.subscribe only succeeds here when permission is
+ * already granted; otherwise there is nothing to repair.
+ */
+const PUSH_SUBSCRIPTION_URL = '/api/push/subscription'
+
+function base64UrlToBytes(value) {
+  const padded = value.padEnd(value.length + ((4 - (value.length % 4)) % 4), '=')
+  const raw = atob(padded.replace(/-/g, '+').replace(/_/g, '/'))
+  const bytes = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i += 1) bytes[i] = raw.charCodeAt(i)
+  return bytes
+}
+
+function sameBytes(a, b) {
+  if (!a || !b) return false
+  const x = new Uint8Array(a)
+  const y = new Uint8Array(b)
+  if (x.length !== y.length) return false
+  for (let i = 0; i < x.length; i += 1) if (x[i] !== y[i]) return false
+  return true
+}
+
+async function currentPushKey() {
+  const response = await fetch(PUSH_SUBSCRIPTION_URL, { credentials: 'same-origin' })
+  if (!response.ok) return null
+  const body = await response.json().catch(() => null)
+  return body && typeof body.publicKey === 'string' && body.publicKey !== '' ? body.publicKey : null
+}
+
+async function postPushSubscription(subscription, oldEndpoint) {
+  const json = subscription.toJSON()
+  const response = await fetch(PUSH_SUBSCRIPTION_URL, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      endpoint: json.endpoint,
+      keys: json.keys,
+      oldEndpoint: oldEndpoint || undefined,
+    }),
+  })
+  if (!response.ok) {
+    await subscription.unsubscribe().catch(() => false)
+    return false
+  }
+  return true
+}
+
+async function resubscribe(oldEndpoint, key) {
+  const pushManager = self.registration.pushManager
+  const subscription = await pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: base64UrlToBytes(key),
+  })
+  return postPushSubscription(subscription, oldEndpoint)
+}
+
+async function reconcilePushKey() {
+  const pushManager = self.registration?.pushManager
+  if (!pushManager) return 'unsupported'
+  const existing = await pushManager.getSubscription()
+  if (!existing) return 'none'
+  const key = await currentPushKey()
+  if (!key) return 'no-key'
+  if (sameBytes(existing.options?.applicationServerKey, base64UrlToBytes(key))) {
+    return 'current'
+  }
+  const oldEndpoint = existing.endpoint
+  await existing.unsubscribe()
+  return (await resubscribe(oldEndpoint, key)) ? 'rotated' : 'refused'
+}
+
+async function onSubscriptionChange(event) {
+  const oldEndpoint = event.oldSubscription ? event.oldSubscription.endpoint : null
+  if (event.newSubscription) return postPushSubscription(event.newSubscription, oldEndpoint)
+  const key = await currentPushKey()
+  if (!key) return false
+  return resubscribe(oldEndpoint, key)
+}
+
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(onSubscriptionChange(event).catch(() => false))
 })

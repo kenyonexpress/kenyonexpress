@@ -8,11 +8,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const calls: { method: string; args: unknown[] }[] = []
-let writeResult: { error: unknown } = { error: null }
+let writeResult: { error: unknown; data?: unknown } = { error: null }
 
 function tableBuilder() {
   const builder: Record<string, unknown> = {}
-  for (const method of ['upsert', 'delete', 'eq']) {
+  for (const method of ['upsert', 'delete', 'eq', 'update', 'select']) {
     builder[method] = (...args: unknown[]) => {
       calls.push({ method, args })
       return builder
@@ -47,9 +47,12 @@ vi.mock('@/lib/observability/log', () => ({
   log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }))
 
-const { removePushSubscription, removePushSubscriptionById, savePushSubscription } = await import(
-  './push'
-)
+const {
+  removePushSubscription,
+  removePushSubscriptionById,
+  savePushSubscription,
+  updatePushTopics,
+} = await import('./push')
 
 const ID = '3f2c8d1e-9a4b-4c6d-8e7f-0a1b2c3d4e5f'
 const VALID = {
@@ -113,5 +116,55 @@ describe('the two existing actions', () => {
     expect(await removePushSubscription(VALID.endpoint)).toEqual({ success: true })
     expect(calls.map((c) => c.method)).toEqual(['delete', 'eq', 'eq'])
     expect(calls[2]?.args).toEqual(['user_id', 'u-1'])
+  })
+})
+
+describe('S21 topics', () => {
+  it('an opt-in with no topics leaves the column to the database', async () => {
+    await savePushSubscription(VALID)
+    const upsert = calls.find((c) => c.method === 'upsert')
+    expect(upsert?.args[0]).not.toHaveProperty('topics')
+  })
+
+  it('an opt-in with topics stores them, cleaned', async () => {
+    await savePushSubscription(VALID, ['expiry', 'expiry'])
+    const upsert = calls.find((c) => c.method === 'upsert')
+    expect(upsert?.args[0]).toMatchObject({ topics: ['expiry'] })
+  })
+
+  it('refuses an unknown topic before reaching the database', async () => {
+    const result = await savePushSubscription(VALID, ['marketing'])
+    expect('error' in result).toBe(true)
+    expect(adminFrom).not.toHaveBeenCalled()
+  })
+
+  it("updatePushTopics writes only the caller's row for that endpoint", async () => {
+    writeResult = { error: null, data: [{ id: 's-1' }] }
+    expect(await updatePushTopics(VALID.endpoint, ['order_updates'])).toEqual({ success: true })
+    expect(calls.map((c) => c.method)).toEqual(['update', 'eq', 'eq', 'select'])
+    expect(calls[0]?.args[0]).toEqual({ topics: ['order_updates'] })
+    expect(calls[1]?.args).toEqual(['endpoint', VALID.endpoint])
+    expect(calls[2]?.args).toEqual(['user_id', 'u-1'])
+  })
+
+  it('reports a failure when no row matched, so the box reverts', async () => {
+    writeResult = { error: null, data: [] }
+    expect('error' in (await updatePushTopics(VALID.endpoint, ['expiry']))).toBe(true)
+  })
+
+  it('refuses a visitor, a non-https endpoint and a missing list', async () => {
+    user = null
+    expect('error' in (await updatePushTopics(VALID.endpoint, ['expiry']))).toBe(true)
+    user = { id: 'u-1' }
+    expect('error' in (await updatePushTopics('http://x', ['expiry']))).toBe(true)
+    expect('error' in (await updatePushTopics(VALID.endpoint, undefined))).toBe(true)
+    expect(adminFrom).not.toHaveBeenCalled()
+  })
+
+  it('reads an unapplied 259 as "not available yet"', async () => {
+    writeResult = { error: { code: '42703', message: 'column "topics" does not exist' } }
+    expect(await updatePushTopics(VALID.endpoint, ['expiry'])).toEqual({
+      error: 'התראות עדיין לא זמינות בחשבון הזה, נסו שוב בקרוב',
+    })
   })
 })

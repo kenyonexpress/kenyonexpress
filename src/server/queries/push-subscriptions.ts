@@ -3,6 +3,7 @@ import 'server-only'
 import { log } from '@/lib/observability/log'
 import { deviceLabel } from '@/lib/push/device-label'
 import { isMissingPushRelation } from '@/lib/push/store'
+import { type PushTopic, normalizeTopics } from '@/lib/push/topics'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -31,14 +32,23 @@ export interface PushDevice {
   label: string
   createdAt: string
   updatedAt: string
+  /** S21. Both topics before 259, which is what such a row receives. */
+  topics: PushTopic[]
 }
 
 export async function loadPushSubscriptions(): Promise<PushDevice[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('push_subscriptions' as never)
-    .select('id, endpoint, user_agent, created_at, updated_at')
-    .order('created_at', { ascending: false })
+  const read = (columns: string) =>
+    supabase
+      .from('push_subscriptions' as never)
+      .select(columns)
+      .order('created_at', { ascending: false })
+
+  let { data, error } = await read('id, endpoint, user_agent, created_at, updated_at, topics')
+  // 259 unapplied: the list still renders, every row with both topics.
+  if (error?.code === '42703') {
+    ;({ data, error } = await read('id, endpoint, user_agent, created_at, updated_at'))
+  }
 
   if (error) {
     if (!isMissingPushRelation(error)) {
@@ -47,11 +57,15 @@ export async function loadPushSubscriptions(): Promise<PushDevice[]> {
     return []
   }
 
-  return (data ?? []).map((row: Record<string, unknown>) => ({
+  // The column list is a runtime string, so the typed row is lost; the
+  // mapping below is the shape check.
+  const rows = (data ?? []) as unknown as Record<string, unknown>[]
+  return rows.map((row) => ({
     id: String(row.id),
     endpoint: String(row.endpoint),
     label: deviceLabel((row.user_agent as string | null) ?? null),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
+    topics: normalizeTopics(row.topics ?? undefined) ?? [],
   }))
 }

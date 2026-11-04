@@ -1,6 +1,7 @@
 import EverythingInAppToggle from '@/components/notifications/EverythingInAppToggle'
 import ExpiryEmailSwitch from '@/components/notifications/ExpiryEmailSwitch'
 import PreferenceSwitches from '@/components/notifications/PreferenceSwitches'
+import PushTopicsSwitch from '@/components/notifications/PushTopicsSwitch'
 import PushDevices from '@/components/pwa/PushDevices'
 import PushOptIn from '@/components/pwa/PushOptIn'
 import { t } from '@/lib/i18n/messages'
@@ -102,6 +103,8 @@ export default async function NotificationsPage() {
           it in its own card: opt-in is about THIS browser, the list is about
           all of them. */}
       <PushOptIn />
+      {/* S21: renders only once THIS browser has a stored subscription. */}
+      <PushTopicsSwitch devices={devices} />
       {devices.length > 0 && (
         <section className="account-card">
           <h2 className="account-card__title">{t('pushDevices.title')}</h2>

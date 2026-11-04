@@ -76,3 +76,6 @@ backups/
 # hand-copied one must never become committable either)
 ke-env-*.enc
 ke-env-*.enc.*
+
+# Lighthouse CI run output (lhci collect/upload), regenerated per run
+/.lighthouseci/

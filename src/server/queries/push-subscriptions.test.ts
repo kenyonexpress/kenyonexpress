@@ -66,6 +66,7 @@ describe('loadPushSubscriptions', () => {
             'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/128.0.0.0 Mobile Safari/537.36',
           created_at: '2026-09-25T10:00:00Z',
           updated_at: '2026-09-25T10:00:00Z',
+          topics: ['expiry'],
         },
         {
           id: 's-2',
@@ -85,6 +86,7 @@ describe('loadPushSubscriptions', () => {
         label: 'Chrome, Android',
         createdAt: '2026-09-25T10:00:00Z',
         updatedAt: '2026-09-25T10:00:00Z',
+        topics: ['expiry'],
       },
       {
         id: 's-2',
@@ -92,6 +94,8 @@ describe('loadPushSubscriptions', () => {
         label: 'דפדפן',
         createdAt: '2026-09-20T10:00:00Z',
         updatedAt: '2026-09-21T10:00:00Z',
+        // A row without the column (pre-259) receives both, and shows both.
+        topics: ['order_updates', 'expiry'],
       },
     ])
     const order = calls.find((c) => c.method === 'order')

@@ -26,13 +26,14 @@ const sendMock = vi.mocked(sendWebPush)
 const CONTENT = { title: 'ההזמנה יצאה', body: 'משלוח בדרך', data: { url: '/account/orders' } }
 const ROW = { id: 'outbox-1', kind: 'order_shipped', user_id: 'user-1' }
 
-function subscription(id: string, host = 'fcm.googleapis.com') {
+function subscription(id: string, host = 'fcm.googleapis.com', topics?: string[]) {
   return {
     id,
     user_id: 'user-1',
     endpoint: `https://${host}/send/${id}`,
     p256dh: 'p',
     auth: 'a',
+    ...(topics ? { topics } : {}),
   }
 }
 
@@ -41,16 +42,27 @@ interface State {
   deleted: string[]
   logged: Record<string, unknown>[]
   selectError?: { code?: string; message: string }
+  /** 259 unapplied: a select naming `topics` answers 42703. */
+  topicsMissing?: boolean
+  selects?: string[]
 }
 
 function fakeAdmin(state: State): SupabaseClient {
   return {
     from: (table: string) => ({
-      select: () => ({
-        eq: async () =>
-          state.selectError
+      select: (columns: string) => ({
+        eq: async () => {
+          state.selects?.push(columns)
+          if (state.topicsMissing && columns.includes('topics')) {
+            return {
+              data: null,
+              error: { code: '42703', message: 'column "topics" does not exist' },
+            }
+          }
+          return state.selectError
             ? { data: null, error: state.selectError }
-            : { data: state.subscriptions, error: null },
+            : { data: state.subscriptions, error: null }
+        },
       }),
       insert: async (values: Record<string, unknown>) => {
         if (table === 'push_deliveries') state.logged.push(values)
@@ -219,5 +231,99 @@ describe('the web push leg', () => {
 
     expect(result.reason).toContain('no account')
     expect(sendMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('S21 topics', () => {
+  it('skips a browser that unticked the topic of this kind and sends to the rest', async () => {
+    withVapid()
+    sendMock.mockResolvedValue({ kind: 'sent' })
+    const state: State = {
+      subscriptions: [
+        subscription('phone', 'fcm.googleapis.com', ['order_updates', 'expiry']),
+        subscription('laptop', 'updates.push.services.mozilla.com', ['expiry']),
+      ],
+      deleted: [],
+      logged: [],
+    }
+
+    // order_shipped is an order_updates kind.
+    const result = await sendWebPushLeg(fakeAdmin(state), ROW, CONTENT)
+    expect(result.sent).toBe(1)
+    expect(sendMock).toHaveBeenCalledTimes(1)
+    expect(sendMock.mock.calls[0]?.[0]).toMatchObject({ id: 'phone' })
+    // Not a failure, so not in the delivery log.
+    expect(state.logged).toHaveLength(1)
+  })
+
+  it('sends the expiry reminder only to browsers subscribed to expiry', async () => {
+    withVapid()
+    sendMock.mockResolvedValue({ kind: 'sent' })
+    const state: State = {
+      subscriptions: [
+        subscription('a', 'fcm.googleapis.com', ['order_updates']),
+        subscription('b', 'fcm.googleapis.com', ['expiry']),
+      ],
+      deleted: [],
+      logged: [],
+    }
+
+    const result = await sendWebPushLeg(
+      fakeAdmin(state),
+      { ...ROW, kind: 'voucher_expiring' },
+      CONTENT,
+    )
+    expect(result.sent).toBe(1)
+    expect(sendMock.mock.calls[0]?.[0]).toMatchObject({ id: 'b' })
+  })
+
+  it('settles without a retry when every browser switched the topic off', async () => {
+    withVapid()
+    const state: State = {
+      subscriptions: [subscription('a', 'fcm.googleapis.com', [])],
+      deleted: [],
+      logged: [],
+    }
+
+    const result = await sendWebPushLeg(
+      fakeAdmin(state),
+      { ...ROW, kind: 'voucher_expiring' },
+      CONTENT,
+    )
+    expect(result).toMatchObject({ sent: 0, retry: 0, gone: 0, rejected: 0 })
+    expect(result.reason).toContain('topic')
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('ignores topics for a required kind: the receipt reaches every browser', async () => {
+    withVapid()
+    sendMock.mockResolvedValue({ kind: 'sent' })
+    const state: State = {
+      subscriptions: [subscription('a', 'fcm.googleapis.com', [])],
+      deleted: [],
+      logged: [],
+    }
+
+    const result = await sendWebPushLeg(fakeAdmin(state), { ...ROW, kind: 'order_paid' }, CONTENT)
+    expect(result.sent).toBe(1)
+  })
+
+  it('before 259, reads without topics and sends to everyone', async () => {
+    withVapid()
+    sendMock.mockResolvedValue({ kind: 'sent' })
+    const state: State = {
+      subscriptions: [subscription('a'), subscription('b')],
+      deleted: [],
+      logged: [],
+      topicsMissing: true,
+      selects: [],
+    }
+
+    const result = await sendWebPushLeg(fakeAdmin(state), ROW, CONTENT)
+    expect(result.sent).toBe(2)
+    expect(state.selects).toEqual([
+      'id, user_id, endpoint, p256dh, auth, topics',
+      'id, user_id, endpoint, p256dh, auth',
+    ])
   })
 })

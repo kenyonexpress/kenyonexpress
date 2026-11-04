@@ -1079,6 +1079,10 @@ describe('the pending migration inventory', () => {
       // apex to www; the dead push-expiry-reminders job unscheduled.
       // Proof: docs/S20-expiry.md.
       '258_expiry_cron_t7_t1.sql',
+      // S21 (04.11): APPLIED the same day. push_subscriptions.topics text[],
+      // default {order_updates,expiry}, CHECK to those two. The kind -> topic
+      // map is src/lib/push/topics.ts. Proof: docs/S21-push.md.
+      '259_push_subscription_topics.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

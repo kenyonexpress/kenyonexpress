@@ -52,6 +52,7 @@ Three surfaces, and the first is by far the largest:
 |---|---|---|---|
 | `/api/app/session` | POST, DELETE | session | Mobile app session exchange. |
 | `/api/app/push-tokens` | POST, DELETE | bearer, rate limited | Registers a device for push. Writes `push_tokens`. |
+| `/api/push/subscription` | GET, POST | GET public; POST cookie session, same-origin, rate limited | S21. The service worker re-subscribes through it after `pushsubscriptionchange` or a VAPID key rotation. GET serves the current public key; POST stores the new subscription, carries the old row's topics, then deletes the old row. Writes `push_subscriptions`. |
 | `/api/wallet/apple/[id]` | GET | **RLS** | The `.pkpass` for one voucher. The id is a voucher UUID and **not a capability**: `getCustomerVoucher` reads through the user-scoped client, so somebody else's id is indistinguishable from one that does not exist. Missing Apple credentials is 404, not 500. `no-store`, always: the body carries a live voucher payload. |
 | `/api/admin/reports/[report]` | GET | `canReadSection(role, 'payments')` | CSV export. Denies with **403 and a plain-text body**, not a redirect: a downloader that follows a redirect writes an HTML login page into a file named `.csv`. |
 
