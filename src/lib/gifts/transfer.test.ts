@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { giftTransferSchema, isVoucherId, transferEligibility } from './transfer'
+import { giftTransferSchema, isOwnAddress, isVoucherId, transferEligibility } from './transfer'
 
 const now = new Date('2026-09-25T10:00:00Z')
 const live = { status: 'issued', expires_at: '2026-12-01T00:00:00Z' }
@@ -61,5 +61,17 @@ describe('isVoucherId', () => {
     expect(isVoucherId('123e4567-e89b-12d3-a456-426614174000')).toBe(true)
     expect(isVoucherId('123e4567')).toBe(false)
     expect(isVoucherId("' or 1=1")).toBe(false)
+  })
+})
+
+describe('isOwnAddress (S14)', () => {
+  it("matches the sender's address trimmed and in any case, and nothing else", () => {
+    expect(isOwnAddress('Me@Mail.co ', 'me@mail.co')).toBe(true)
+    expect(isOwnAddress('friend@mail.co', 'me@mail.co')).toBe(false)
+  })
+  it('lets a sender with no email on the session through', () => {
+    expect(isOwnAddress('me@mail.co', null)).toBe(false)
+    expect(isOwnAddress('me@mail.co', undefined)).toBe(false)
+    expect(isOwnAddress('me@mail.co', '')).toBe(false)
   })
 })

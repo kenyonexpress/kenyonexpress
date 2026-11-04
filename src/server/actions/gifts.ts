@@ -9,6 +9,7 @@ import {
 import {
   type GiftTransferInput,
   giftTransferSchema,
+  isOwnAddress,
   isVoucherId,
   transferEligibility,
 } from '@/lib/gifts/transfer'
@@ -60,7 +61,11 @@ import { revalidatePath } from 'next/cache'
 
 export type ClaimGiftResult =
   | { ok: true; voucherId: string; alreadyMine: boolean }
-  | { ok: false; error: string; code: 'BAD_TOKEN' | 'NOT_FOUND' | 'CLAIMED' | 'UNUSABLE' | 'AUTH' }
+  | {
+      ok: false
+      error: string
+      code: 'BAD_TOKEN' | 'NOT_FOUND' | 'CLAIMED' | 'UNUSABLE' | 'AUTH' | 'OWN_GIFT'
+    }
 
 async function runClaimGift(token: string): Promise<ClaimGiftResult> {
   if (!isWellFormedGiftToken(token)) {
@@ -122,6 +127,17 @@ async function runClaimGift(token: string): Promise<ClaimGiftResult> {
       return { ok: true, voucherId: voucher.id, alreadyMine: true }
     }
     return { ok: false, error: 'המתנה כבר נאספה', code: 'CLAIMED' }
+  }
+
+  if (voucher.user_id === user.id) {
+    // The sender opened their own link (S14). Letting it through would retire
+    // the row and re-issue it to the same person: a silent revoke that also
+    // burns the recipient's link. Revoking is its own, explicit action.
+    return {
+      ok: false,
+      error: 'זה הקופון שלך. כדי לבטל את השליחה, בטלו אותה מעמוד הקופון',
+      code: 'OWN_GIFT',
+    }
   }
 
   if (voucher.status !== 'issued') {
@@ -290,6 +306,7 @@ export type TransferVoucherResult =
         | 'NOT_ISSUED'
         | 'EXPIRED'
         | 'PENDING_GIFT'
+        | 'SELF'
         | 'RATE_LIMITED'
         | 'FAILED'
     }
@@ -319,6 +336,10 @@ async function runTransferVoucher(
       error: parsed.error.issues[0]?.message ?? 'הפרטים אינם תקינים',
       code: 'INPUT',
     }
+  }
+
+  if (isOwnAddress(parsed.data.recipientEmail, user.email)) {
+    return { ok: false, error: 'אפשר להעביר קופון רק לכתובת מייל של אדם אחר', code: 'SELF' }
   }
 
   // Every transfer sends one email to an address the sender typed. Twenty an

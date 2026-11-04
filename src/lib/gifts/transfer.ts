@@ -68,6 +68,23 @@ export const giftTransferSchema = z.object({
 
 export type GiftTransferInput = z.infer<typeof giftTransferSchema>
 
+/**
+ * A transfer goes to ANOTHER person. Sending a coupon to the address you are
+ * signed in with mints a link that only retires your own row and re-issues it
+ * to you, with a mail to yourself in between: nothing changes hands, and the
+ * coupon's code is blanked on your screens until you claim it back. Compared
+ * case-insensitively and trimmed, because that is how mail providers compare.
+ * A sender with no email on the session (phone sign-in) cannot be matched and
+ * is let through; the claim side refuses the owner anyway (`claimGift`).
+ */
+export function isOwnAddress(
+  recipientEmail: string,
+  senderEmail: string | null | undefined,
+): boolean {
+  if (!senderEmail) return false
+  return recipientEmail.trim().toLowerCase() === senderEmail.trim().toLowerCase()
+}
+
 /** UUID shape, so a bad id is refused here rather than as a Postgres 22P02. */
 export function isVoucherId(value: string): boolean {
   return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(value)

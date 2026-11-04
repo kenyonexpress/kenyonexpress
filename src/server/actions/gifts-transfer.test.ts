@@ -476,6 +476,114 @@ describe('claimGift', () => {
   })
 })
 
+// S14: transfer to another email, the recipient's claim, the old row retired.
+describe('S14 transfer coupon', () => {
+  const TOKEN = 'c'.repeat(43)
+  const NEW_VOUCHER = '323e4567-e89b-12d3-a456-426614174777'
+
+  beforeEach(() => {
+    process.env.VOUCHER_QR_SECRET = 'gifts-transfer-test-secret-000000'
+  })
+
+  it("refuses sending a coupon to the sender's own address, in any case, before reading", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'owner', email: 'Owner@Mail.co' } } })
+    const result = await transferVoucher(VOUCHER, { recipientEmail: '  owner@mail.CO ' })
+    expect(result).toMatchObject({ ok: false, code: 'SELF' })
+    expect(calls).toEqual([])
+  })
+
+  it('refuses the sender claiming their own pending link, and calls no RPC', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'owner' } } })
+    answer('vouchers.select', {
+      data: {
+        id: VOUCHER,
+        user_id: 'owner',
+        supplier_id: 'supplier-1',
+        status: 'issued',
+        expires_at: '2099-01-01T00:00:00Z',
+        gift_claimed_at: null,
+        transferred_to_voucher_id: null,
+      },
+      error: null,
+    })
+    expect(await claimGift(TOKEN)).toMatchObject({ ok: false, code: 'OWN_GIFT' })
+    expect(calls.some((c) => c.table === 'rpc')).toBe(false)
+    expect(calls.some((c) => c.verb === 'update' || c.verb === 'insert')).toBe(false)
+  })
+
+  it('end to end: owner sends to another email, recipient claims, old row becomes transferred', async () => {
+    // 1. The owner sends. One link minted on the owner's row, one mail queued
+    // to the address typed, ownership unchanged.
+    getUser.mockResolvedValue({ data: { user: { id: 'owner', email: 'owner@mail.co' } } })
+    answer('vouchers.select', { data: liveRow, error: null })
+    answer('vouchers.update', { data: { id: VOUCHER }, error: null })
+    expect(await transferVoucher(VOUCHER, { recipientEmail: 'friend@mail.co' })).toEqual({
+      ok: true,
+      voucherId: VOUCHER,
+    })
+    const mint = calls.find((c) => c.table === 'vouchers' && c.verb === 'update')
+    expect(mint?.args[0]).toMatchObject({
+      gift_recipient_email: 'friend@mail.co',
+      gift_claim_token_hash: 'h'.repeat(64),
+    })
+    expect(mint?.args[0]).not.toHaveProperty('user_id')
+    expect(mint?.args[0]).not.toHaveProperty('status')
+    const mail = calls.find((c) => c.table === 'notification_outbox' && c.verb === 'insert')
+    expect(mail?.args[0]).toMatchObject({
+      kind: 'voucher_gifted',
+      recipient_email: 'friend@mail.co',
+      payload: { claim_token: 'raw-token' },
+    })
+
+    // 2. The recipient opens the link signed in and claims. The RPC retires
+    // the owner's row and issues theirs; the audit records issued -> transferred.
+    calls.length = 0
+    getUser.mockResolvedValue({ data: { user: { id: 'friend', email: 'friend@mail.co' } } })
+    answer('vouchers.select', {
+      data: {
+        id: VOUCHER,
+        user_id: 'owner',
+        supplier_id: 'supplier-1',
+        status: 'issued',
+        expires_at: '2099-01-01T00:00:00Z',
+        gift_claimed_at: null,
+        transferred_to_voucher_id: null,
+      },
+      error: null,
+    })
+    answer('rpc.transfer_voucher_on_claim', { data: NEW_VOUCHER, error: null })
+    expect(await claimGift(TOKEN)).toEqual({ ok: true, voucherId: NEW_VOUCHER, alreadyMine: false })
+    const rpc = calls.find((c) => c.table === 'rpc')
+    expect(rpc?.args[0]).toMatchObject({ p_voucher_id: VOUCHER, p_new_user_id: 'friend' })
+    const audit = calls.find((c) => c.table === 'audit_log' && c.verb === 'insert')
+    expect(audit?.args[0]).toMatchObject({
+      changes: {
+        user_id: { from: 'owner', to: 'friend' },
+        status: { from: 'issued', to: 'transferred' },
+      },
+    })
+
+    // 3. The old row is transferred: the owner can neither send it again nor
+    // claim the spent link back.
+    calls.length = 0
+    getUser.mockResolvedValue({ data: { user: { id: 'owner', email: 'owner@mail.co' } } })
+    answer('vouchers.select', {
+      data: {
+        ...liveRow,
+        status: 'transferred',
+        gift_claim_token_hash: 'h'.repeat(64),
+        gift_claimed_at: '2026-11-04T00:00:00Z',
+      },
+      error: null,
+    })
+    expect(await transferVoucher(VOUCHER, { recipientEmail: 'third@mail.co' })).toMatchObject({
+      ok: false,
+      code: 'NOT_ISSUED',
+    })
+    expect(calls.some((c) => c.verb === 'update' || c.verb === 'insert')).toBe(false)
+  })
+})
+
 describe('loadGiftPreview', () => {
   const TOKEN = 'b'.repeat(43)
 
