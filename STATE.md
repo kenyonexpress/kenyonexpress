@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**S26 - BLOCKED חלקית (04.11.2026): תצפיתיות.** נמדד קודם: ה-DSN וה-release של Sentry כבר מחוברים בשלושת ה-runtimes (`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`), ושני ה-DSN מוגדרים בפרודקשן כ-sensitive. **פער שתוקן:** ארבע קריאות `checkout_step` בקופה הלכו רק ל-`/api/a`, ולכן ה-funnel ב-PostHog קפץ מ-`begin_checkout` ישר ל-`purchase`. ‏`trackCheckoutStep` החדש (`src/lib/analytics/checkout-steps.ts`) שולח גם ל-PostHog, מאחורי שער ההסכמה ומפתח מוגדר. ‏`CheckoutForm` עבר אליו בלי שינוי markup. **אומת ב-sandbox:** אירוע Sentry ‏`3d06f650…` נמסר עם environment ‏sandbox ו-release של ה-SHA. ‏`checkout_step` ל-PostHog החזיר 200 ‏`{"status":"Ok"}` דרך `scripts/posthog-verify.mjs` החדש. **Axiom לא אומת:** אין drain ואין אינטגרציה ב-Vercel (שלושה scopes החזירו `[]`), ו-`AXIOM_TOKEN` הוא sensitive ואי אפשר לקרוא אותו. vitest ‏683/684, ‏8128 טסטים, tsc 0, lint 0. שער ההקפאה: רק קבצים חדשים. הוכחה: `docs/S26-observability.md`.
+**החלטה שהתקבלה לבד:** ה-drain לא נוצר עם token מומצא, וגם לא דרך התקנת OAuth, כי זו כניסה לחשבון Axiom חיצוני. מה שישחרר את זה: token של Axiom עם הרשאת ingest ב-`.env.local`, ואז `scripts/axiom/setup.mjs` ו-POST ל-`/v1/drains`. כל push לענף הזה פורס לפרודקשן (S02), ולכן השינוי בקופה עלה איתו.
+**הבא: S27** מתור ה-S.
+
 **S25 - DONE (04.11.2026): SEO.** נמדד קודם: ‏robots.txt, אינדקס ה-sitemap עם חמישה חלקים, ו-JSON-LD של Product/Offer ושל Organization/WebSite כבר היו חיים. **שני פערים תוקנו, בספרייה בלבד** (`src/lib/seo/json-ld.ts`), כי כל דף שפולט JSON-LD קפוא, וגם ה-metadata export שלו יושב באותו `page.tsx`. מחיר ה-Offer נחתך עכשיו מאגורות שלמות דרך `parseIls` של money.ts ולא מ-`toFixed` על float. ל-Organization נוספו legalName, ‏taxID 033798513 ו-ContactPoint באימייל בלבד, בלי טלפון ובלי sameAs. נמדד על build מקומי: robots/sitemap/products/categories מחזירים 200, דף הבית מגיש Organization עם השדות החדשים, ודף מוצר מגיש Offer במחיר 800.00 ILS. ‏177/177 טסטים ב-SEO/sitemap/robots, tsc 0, lint 0, build 0. שער ההקפאה: 0 קבצים קיימים שונו. הוכחה: `docs/S25-seo.md`.
 **החלטה שהתקבלה לבד:** ‏`name` נשאר "קניון אקספרס" ולא "קניון EXPRESS", כי זה מה שכותרת ה-layout הקפוא ו-og:site_name אומרים, וטסט קיים מוודא שהשם המכונה תואם לשם שהמבקר רואה. Organization נשאר בדף הבית בלבד, כי פריסה לכל האתר דורשת את ה-layout הקפוא.
 **הבא: S26** מתור ה-S.
@@ -61,10 +65,6 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 **חסום:** ה-smoke לא רץ. (1) מפתחות R2 קיימים רק כ-Secret ב-Vercel, ו-env pull מחזיר `[SENSITIVE]`. בעותק המקומי אין `R2_ACCESS_KEY_ID`. (2) `cdn.kenyonexpress.co.il` יושב ב-DNS של Vercel ומחזיר `DEPLOYMENT_NOT_FOUND`, כך שה-URL הציבורי לא יחזיר 200 גם אחרי העלאה מוצלחת. הפקודה לסגירה: `node scripts/r2-smoke.mjs --env-file=<file>`.
 **החלטה שהתקבלה לבד:** לא פתחתי endpoint בפרודקשן רק בשביל ה-smoke. ב-action קראתי ל-`updateTag(CATALOGUE_TAG)` במקום להוסיף חריג רביעי למקסימום 3 של שער ה-cache. `pnpm lint` נופל על `.lighthouseci/` ו-`android/`, תיקיות untracked שלא שלי. הגייטים על הקבצים שלי נקיים.
 **הבא: S05** מתור ה-S.
-
-**S03 - DONE (04.11.2026): בדיקת env בפרודקשן.** פרויקט `kenyonexpress`: 58 מפתחות. הקוד קורא 119. כל 8 מפתחות ה-preflight מוגדרים, וגם Turnstile ו-R2. נוסף `NEXT_PUBLIC_SITE_URL=https://kenyonexpress.co.il`. סודות חסרים (Upstash, QStash, webhooks, wallet, CAPI) ברשימת HOLD. אף אחד מהם לא חוסם קופה. tsc 0, vitest 640/640. הוכחה: `docs/S03-env.md`.
-**החלטה שהתקבלה לבד:** לא הוספתי `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. ה-ID יושב בשם `NEXT_PUBLIC_GA_MEASUREMENT_ID`, ששום קוד לא קורא, וה-CSP חוסם את googletagmanager. צריך את שניהם יחד ב-item נפרד. בנוסף, www עונה 503 עם retry-after 300 (MAINTENANCE_MODE), ו-/api/health עונה 200.
-**הבא: S04** מתור ה-S.
 
 **S02 - DONE (04.11.2026): ענף הפרודקשן ב-Vercel הוא `closeout/v1-final`.** GET מאשר `link.productionBranch`. commit ריק `c9a3754b8` בנה git production `dpl_DhJJBn82dFLA3HMtWvEuMXPWFzZY`, READY תוך 2 דקות, משויך ל-kenyonexpress.co.il ול-www, ו-/api/health מחזיר 200. מעכשיו כל push לענף הזה הוא דיפלוי לפרודקשן. אסור `vercel --prod` עם upload. הוכחה: `docs/S02-vercel.md`.
 **החלטה שהתקבלה לבד:** ה-API דחה PATCH ל-`/v9/projects` עם `link` (400). השתמשתי ב-`PATCH /v9/projects/{id}/branch` עם `{"branch":...}`, אותו endpoint כמו ב-L02. בילדי ה-preview נכשלים ב-preflight כי משתני Cardcom ו-QR מוגדרים רק ל-production. זה צפוי, ולא נגעתי בזה.
