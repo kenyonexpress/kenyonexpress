@@ -1,7 +1,11 @@
-RESUME FROM: M10-c354
+RESUME FROM: M11-c354
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-04T07:00:25+07:00
+- item: M10-c354
+- BLOCKED: M10-c354 319 parent tables absent in prod, 324 breaks 23 FKs into orders
 
 ### 2026-11-04T06:58:49+07:00
 - item: M09-c354
@@ -97,9 +101,5 @@ RESUME FROM: M10-c354
 
 ### 2026-11-04T05:19:14+07:00
 - item: M05-c353
-- RESULT: DONE
-
-### 2026-11-04T05:16:26+07:00
-- item: M04-c353
 - RESULT: DONE
 
