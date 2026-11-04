@@ -33,3 +33,4 @@
 - המשך מ: M04-c359 DONE (2026-11-04): pnpm type-check at ba951e393 exit=0, tsc --noEmit zero diagnostics (c358 also 0); no drift, no code changed, no forbidden files touched; proof docs/M04-c359.md
 - המשך מ: M05-c359 DONE (2026-11-04): pnpm test at b7a50b2fc exit=0, 879 files / 9722 tests pass, 0 failed (c358 identical); no drift, no code changed, no forbidden files touched; proof docs/M05-c359.md
 - המשך מ: M06-c359 DONE (2026-11-04): pnpm build at 38d42e975 exit=0, 367/367 static pages (c358 367), 0 supabase timeouts, all 34 *_failed lines are the prerender-cutoff message; no drift, no code changed, no forbidden files touched; proof docs/M06-c359.md
+- המשך מ: M07-c359 DONE (2026-11-04): TODO/FIXME scan at fc5c20361, 2 markers (cardcom.ts:255 since 07-24, :318 since 08-07), both already filed as docs/BACKLOG.md #1 #2, Cardcom-creds blocker; no new marker, no code changed, no forbidden files touched; proof docs/M07-c359.md
