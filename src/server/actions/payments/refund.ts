@@ -20,6 +20,7 @@ import {
 import { selectRefundDestination } from '@/lib/payments/refund-destination'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { trackServerEvent } from '@/server/analytics/track'
+import { decideCancellation14g } from '@/server/domain/orders/cancellation-14g'
 import {
   RefundError,
   type RefundLineInput,
@@ -43,6 +44,9 @@ export type RefundOutcome =
       orderId: string
       refundedIls: number
       feeIls: number
+      /** The same two figures in integer agorot, for display through money-format. */
+      refundedAgorot: number
+      feeAgorot: number
       /** The deal was cancelled before transmission rather than credited. */
       cancelOnly: boolean
     }
@@ -56,6 +60,7 @@ export type RefundOutcome =
         | 'FORBIDDEN'
         | 'INTERNAL'
         | 'MANUAL_RESOLUTION'
+        | 'POLICY_REFUSED'
     }
 
 type ProductType = 'physical' | 'coupon'
@@ -67,11 +72,25 @@ type ProductType = 'physical' | 'coupon'
  *
  * @param input.partialAmountIls optional partial refund (no cancellation fee)
  * @param input.isDefectClaim    defect/non-conformity => zero cancellation fee
+ * @param input.override         admin override: full refund, no fee, any time
+ *
+ * THREE GROUNDS, ONE PATH (S13).
+ *  - Voluntary cancellation (the default): bound by s.14C through
+ *    `decideCancellation14g`, the same decision the customer's order page and
+ *    request form read. Within 14 days of payment, nothing redeemed, fee
+ *    min(5%, 100 ILS). Outside those terms the action refuses with
+ *    POLICY_REFUSED and names the override.
+ *  - Defect claim: not a cancellation, so no window and no fee.
+ *  - Admin override: a full refund at any time, recorded as `goodwill`. It does
+ *    NOT reach a redeemed or expired voucher: that value left the platform at
+ *    the counter, and the settlement state machine has no REFUND from there.
+ *    That case stays MANUAL_RESOLUTION (wallet credit or a supplier claim).
  */
 type RefundInput = {
   orderId: string
   reason: string
   isDefectClaim?: boolean
+  override?: boolean
   partialAmountIls?: number
   now?: Date
 }
@@ -92,7 +111,7 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     // `user_id` is here only so the refund-done mail can find a recipient:
     // `orders` carries no customer email column, the address lives on the
     // profile, and a guest order has neither.
-    .select('id, status, user_id')
+    .select('id, status, user_id, paid_at')
     .eq('id', input.orderId)
     .maybeSingle()
   if (!order) return { ok: false, error: 'הזמנה לא נמצאה', code: 'NOT_FOUND' }
@@ -103,6 +122,8 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       orderId: order.id,
       refundedIls: 0,
       feeIls: 0,
+      refundedAgorot: 0,
+      feeAgorot: 0,
       cancelOnly: false,
     }
   }
@@ -159,7 +180,7 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
 
   const { data: voucherRows } = await admin
     .from('vouchers')
-    .select('id, status')
+    .select('id, status, redeemed_at')
     .eq('order_id', order.id)
 
   const lines: RefundLineInput[] = items.map((i) => ({
@@ -190,6 +211,31 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     }
   }
 
+  // THE STATUTE, for a voluntary cancellation only. A defect claim and the
+  // admin override are not cancellations under s.14C and are not bound by it.
+  const override = input.override === true
+  if (!override && !input.isDefectClaim) {
+    const statutory = decideCancellation14g({
+      orderStatus: order.status,
+      paidAt: (order as { paid_at?: string | null }).paid_at ?? null,
+      chargedAgorot: cardChargedAgorot,
+      vouchers: (voucherRows ?? []).map((v) => ({
+        status: v.status,
+        usedAt: (v as { redeemed_at?: string | null }).redeemed_at ?? null,
+      })),
+      // No booked-service time is stored anywhere yet (docs/S11-order.md).
+      bookedServiceAt: null,
+      now,
+    })
+    if (!statutory.allowed) {
+      return {
+        ok: false,
+        error: `${statutory.message} להחזר מלא בכל זאת: עקיפת מנהל.`,
+        code: 'POLICY_REFUSED',
+      }
+    }
+  }
+
   const chargedAt =
     typeof payment.succeeded_at === 'string' ? new Date(payment.succeeded_at) : undefined
 
@@ -200,6 +246,7 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       lines,
       vouchers: voucherInputs,
       isDefectClaim: input.isDefectClaim ?? false,
+      waiveFee: override,
       now,
       // Omitted when the charge never recorded a success time, which reads as
       // "not the same day" and takes the credit path. Erring the other way
@@ -298,7 +345,8 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       orderId: order.id,
       paymentId,
       state: 'completed',
-      ground: groundFor({ isDefectClaim: input.isDefectClaim }),
+      ground: groundFor({ isDefectClaim: input.isDefectClaim, override }),
+      decidedBy: session.userId,
       // The charge being cancelled, not the sum handed back. The fee cap in 131
       // is computed against this figure and the planner computes the fee the
       // same way, so passing the post-fee amount would make a legal fee look
@@ -348,6 +396,26 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
 
     await recordSettlementEvents(admin, buildRefundEvents(order.id, paymentId, plan, now))
 
+    // The customer's side of the flow. A pending request on this order is what
+    // this refund answers, so it is closed here with the refund payment that
+    // moved the money; otherwise the queue shows an open ask on an order that
+    // is already refunded. Best effort: 202 may not be applied, and the card is
+    // already credited.
+    const { error: requestError } = await admin
+      .from('refund_requests')
+      .update({
+        status: 'approved',
+        decided_at: now.toISOString(),
+        decided_by: session.userId,
+        decision_note: input.reason,
+        refund_payment_id: (refundPaymentRow as { id: string } | null)?.id ?? null,
+      } as never)
+      .eq('order_id', order.id)
+      .eq('status', 'pending')
+    if (requestError) {
+      log.warn('refund.request_not_closed', { order_id: order.id, err: requestError.message })
+    }
+
     // The credit note. A tax invoice is never edited or deleted, so reversing
     // one is a second document, not an undo of the first. Queued rather than
     // called for the same reason the sale's invoice is: the card has already
@@ -384,6 +452,7 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
         refunded_agorot: plan.refundAmountAgorot,
         cancellation_fee_agorot: plan.cancellationFeeAgorot,
         cancel_only: plan.cancelOnly,
+        override,
         supplier_debits_agorot: plan.supplierDebits.reduce((sum, d) => sum + d.amountAgorot, 0),
         reason: input.reason,
       } as unknown as Json,
@@ -443,6 +512,8 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       orderId: order.id,
       refundedIls: agorotToIls(plan.refundAmountAgorot),
       feeIls: agorotToIls(plan.cancellationFeeAgorot),
+      refundedAgorot: plan.refundAmountAgorot,
+      feeAgorot: plan.cancellationFeeAgorot,
       cancelOnly: plan.cancelOnly,
     }
   } catch (error) {

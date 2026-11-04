@@ -90,6 +90,12 @@ export interface PlanRefundInput {
   chargedAt?: Date
   /** Explicit partial refund in agorot; when set, no cancellation fee is applied. */
   partialAmountAgorot?: number
+  /**
+   * The admin override (S13): a full refund with no cancellation fee, whatever
+   * the s.14C window says. The planner only zeroes the fee; whether the
+   * override was allowed is the action's question, behind requireAdminSession.
+   */
+  waiveFee?: boolean
 }
 
 /**
@@ -280,7 +286,10 @@ export function planOrderRefund(input: PlanRefundInput): RefundPlan {
   const cancellationFee =
     input.partialAmountAgorot !== undefined || cancelOnly
       ? agorot(0)
-      : computeCancellationFee(input.cardChargedAgorot, input.isDefectClaim)
+      : computeCancellationFee(
+          input.cardChargedAgorot,
+          input.isDefectClaim || input.waiveFee === true,
+        )
 
   const rawRefund =
     input.partialAmountAgorot !== undefined

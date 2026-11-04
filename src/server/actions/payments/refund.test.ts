@@ -830,3 +830,165 @@ describe('refundOrder: refusals', () => {
     expect(rpc?.payload).toMatchObject({ p_email: '' })
   })
 })
+
+/**
+ * S13: the cancellation flow per the returns policy.
+ *
+ * A voluntary cancellation goes through `decideCancellation14g`, the same
+ * decision the customer's order page reads; a defect claim and the admin
+ * override do not. Every case asserts what reached the payment adapter, the
+ * `refunds` row and the fee, all in integer agorot.
+ */
+describe('refundOrder: s.14C cancellation and the admin override (S13)', () => {
+  const NOW = new Date('2026-11-04T10:00:00Z')
+  const daysAgo = (n: number) => new Date(NOW.getTime() - n * 86_400_000).toISOString()
+
+  function seedPaidAt(paidAt: string, amountIls = 100, vouchers: unknown[] = []): void {
+    seedHappyPath()
+    queues.set('orders.select', [
+      { data: { id: 'order-1', status: 'paid', user_id: null, paid_at: paidAt }, error: null },
+    ])
+    queues.set('payments.select', [
+      NO_AGOROT_COLUMN,
+      {
+        data: {
+          id: 'pay-1',
+          amount_ils: amountIls,
+          cardcom_transaction_id: 'tx-9',
+          status: 'succeeded',
+          cardcom_account_id: null,
+          succeeded_at: null,
+        },
+        error: null,
+      },
+    ])
+    queues.set('vouchers.select', [{ data: vouchers, error: null }])
+  }
+
+  const refundRow = () => find('refunds', 'insert')?.payload as Record<string, unknown> | undefined
+
+  it('cancels inside 14 days with the min(5%, 100 ILS) fee and writes the refunds row', async () => {
+    seedPaidAt(daysAgo(3))
+    const result = await refundOrder({ orderId: 'order-1', reason: 'התחרטתי', now: NOW })
+
+    expect(result).toMatchObject({ ok: true, refundedAgorot: 9_500, feeAgorot: 500 })
+    expect(refundByTransactionId).toHaveBeenCalledWith(
+      expect.objectContaining({ transactionId: 'tx-9', amountAgorot: 9_500, cancelOnly: false }),
+    )
+    expect(refundRow()).toMatchObject({
+      order_id: 'order-1',
+      payment_id: 'pay-1',
+      state: 'completed',
+      ground: 'distance_sale_14d',
+      requested_agorot: 10_000,
+      granted_agorot: 9_500,
+      cancellation_fee_agorot: 500,
+      decided_by: 'admin-1',
+    })
+  })
+
+  it('refuses a voluntary cancellation after 14 days and never calls the adapter', async () => {
+    seedPaidAt(daysAgo(15))
+    const result = await refundOrder({ orderId: 'order-1', reason: 'התחרטתי', now: NOW })
+
+    expect(result).toMatchObject({ ok: false, code: 'POLICY_REFUSED' })
+    if (!result.ok) expect(result.error).toContain('עקיפת מנהל')
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+    expect(refundRow()).toBeUndefined()
+  })
+
+  it('admin override refunds in full, with no fee, on day 40, recorded as goodwill', async () => {
+    seedPaidAt(daysAgo(40))
+    const result = await refundOrder({
+      orderId: 'order-1',
+      reason: 'החלטת הנהלה',
+      override: true,
+      now: NOW,
+    })
+
+    expect(result).toMatchObject({ ok: true, refundedAgorot: 10_000, feeAgorot: 0 })
+    expect(refundByTransactionId).toHaveBeenCalledWith(
+      expect.objectContaining({ amountAgorot: 10_000 }),
+    )
+    expect(refundRow()).toMatchObject({
+      ground: 'goodwill',
+      requested_agorot: 10_000,
+      granted_agorot: 10_000,
+      cancellation_fee_agorot: 0,
+      decided_by: 'admin-1',
+    })
+    const audit = find('audit_log', 'insert')?.payload as { metadata: Record<string, unknown> }
+    expect(audit.metadata).toMatchObject({ override: true, cancellation_fee_agorot: 0 })
+  })
+
+  it('a defect claim is not bound by the 14 days and takes no fee', async () => {
+    seedPaidAt(daysAgo(30))
+    const result = await refundOrder({
+      orderId: 'order-1',
+      reason: 'פגום',
+      isDefectClaim: true,
+      now: NOW,
+    })
+
+    expect(result).toMatchObject({ ok: true, refundedAgorot: 10_000, feeAgorot: 0 })
+    expect(refundRow()).toMatchObject({ ground: 'defect', cancellation_fee_agorot: 0 })
+  })
+
+  it('the override does not reach a redeemed voucher: that value was consumed', async () => {
+    seedPaidAt(daysAgo(2), 100, [{ id: 'v-1', status: 'redeemed', redeemed_at: daysAgo(1) }])
+    const result = await refundOrder({
+      orderId: 'order-1',
+      reason: 'החלטת הנהלה',
+      override: true,
+      now: NOW,
+    })
+
+    expect(result).toMatchObject({ ok: false, code: 'MANUAL_RESOLUTION' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('caps the fee at 100 ILS and rounds 5% half up, in integer agorot', async () => {
+    seedPaidAt(daysAgo(1), 3000)
+    const big = await refundOrder({ orderId: 'order-1', reason: 'התחרטתי', now: NOW })
+    expect(big).toMatchObject({ ok: true, feeAgorot: 10_000, refundedAgorot: 290_000 })
+
+    calls.length = 0
+    queues.clear()
+    __resetPaymentMoneySchemaCache()
+    seedPaidAt(daysAgo(1), 817.5)
+    const odd = await refundOrder({ orderId: 'order-1', reason: 'התחרטתי', now: NOW })
+    // 5% of 81,750 is 4,087.5, rounded half up through applyBp.
+    expect(odd).toMatchObject({ ok: true, feeAgorot: 4_088, refundedAgorot: 77_662 })
+    for (const value of [odd.ok && odd.feeAgorot, odd.ok && odd.refundedAgorot]) {
+      expect(Number.isInteger(value)).toBe(true)
+    }
+  })
+
+  it('closes the customer’s pending request with the refund payment', async () => {
+    seedPaidAt(daysAgo(3))
+    queue('payments.insert', { data: { id: 'refund-pay-1' }, error: null })
+    await refundOrder({ orderId: 'order-1', reason: 'התחרטתי', now: NOW })
+
+    const close = find('refund_requests', 'update')
+    expect(close?.payload).toMatchObject({
+      status: 'approved',
+      decided_by: 'admin-1',
+      refund_payment_id: 'refund-pay-1',
+    })
+    expect(close?.chain).toEqual(
+      expect.arrayContaining([
+        ['eq', ['order_id', 'order-1']],
+        ['eq', ['status', 'pending']],
+      ]),
+    )
+  })
+
+  it('the refunds row is still written when the request table is not applied', async () => {
+    seedPaidAt(daysAgo(3))
+    queue('refund_requests.update', { data: null, error: { code: '42P01', message: 'missing' } })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'התחרטתי', now: NOW })
+
+    expect(result.ok).toBe(true)
+    expect(refundRow()).toBeDefined()
+  })
+})

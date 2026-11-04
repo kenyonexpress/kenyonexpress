@@ -389,3 +389,30 @@ describe('planOrderRefund: supplier debits', () => {
     expect(plan.supplierDebits.map((d) => d.orderItemId)).toEqual(['line-9'])
   })
 })
+
+describe('planOrderRefund: waiveFee (S13 admin override)', () => {
+  it('returns the full charge with a zero fee', () => {
+    const plan = planOrderRefund({
+      cardChargedAgorot: 81_750,
+      lines: [{ orderItemId: 'l1', productType: 'physical', settlementStatus: 'paid' }],
+      vouchers: [],
+      isDefectClaim: false,
+      waiveFee: true,
+      now: new Date('2026-11-04T10:00:00Z'),
+    })
+    expect(plan.cancellationFeeAgorot).toBe(0)
+    expect(plan.refundAmountAgorot).toBe(81_750)
+  })
+
+  it('without it, the same charge carries the statutory fee', () => {
+    const plan = planOrderRefund({
+      cardChargedAgorot: 81_750,
+      lines: [{ orderItemId: 'l1', productType: 'physical', settlementStatus: 'paid' }],
+      vouchers: [],
+      isDefectClaim: false,
+      now: new Date('2026-11-04T10:00:00Z'),
+    })
+    expect(plan.cancellationFeeAgorot).toBe(4_088)
+    expect(plan.refundAmountAgorot).toBe(77_662)
+  })
+})

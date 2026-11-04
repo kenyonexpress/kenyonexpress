@@ -99,6 +99,11 @@ describe('the ground a refund is made on', () => {
     expect(groundFor({ isDefectClaim: false })).toBe('distance_sale_14d')
     expect(groundFor({})).toBe('distance_sale_14d')
   })
+
+  it('is goodwill for the S13 admin override, and a defect claim still wins', () => {
+    expect(groundFor({ override: true })).toBe('goodwill')
+    expect(groundFor({ override: true, isDefectClaim: true })).toBe('defect')
+  })
 })
 
 describe('a record that cannot be written never fails the refund', () => {

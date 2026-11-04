@@ -1,5 +1,7 @@
 'use client'
 
+import { agorot } from '@/lib/money'
+import { shekelsRounded } from '@/lib/money-format'
 import { type OrderActionState, addOrderNote } from '@/server/actions/admin/orders'
 import { refundOrder } from '@/server/actions/payments/refund'
 import { AlertTriangle } from 'lucide-react'
@@ -30,6 +32,7 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
   const [pending, startTransition] = useTransition()
   const [reason, setReason] = useState('')
   const [defect, setDefect] = useState(false)
+  const [override, setOverride] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [refundError, setRefundError] = useState<string | null>(null)
   const [refundOk, setRefundOk] = useState<string | null>(null)
@@ -40,7 +43,7 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
     setRefundError(null)
     setRefundOk(null)
     startTransition(async () => {
-      const result = await refundOrder({ orderId, reason, isDefectClaim: defect })
+      const result = await refundOrder({ orderId, reason, isDefectClaim: defect, override })
       if (result.ok) {
         // Which of the two things happened is worth saying, because they are
         // not the same event on the statement: a cancellation never reaches the
@@ -50,9 +53,11 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
           result.replay
             ? 'ההזמנה כבר זוכתה קודם. לא בוצעה פעולה נוספת.'
             : result.cancelOnly
-              ? `העסקה בוטלה לפני שידור לסליקה. ${result.refundedIls.toFixed(2)} ש״ח חוזרים במלואם, בלי דמי ביטול.`
-              : `ההחזר יצא לביצוע: ${result.refundedIls.toFixed(2)} ש״ח לכרטיס${
-                  result.feeIls > 0 ? `, אחרי ${result.feeIls.toFixed(2)} ש״ח דמי ביטול` : ''
+              ? `העסקה בוטלה לפני שידור לסליקה. ${shekelsRounded(agorot(result.refundedAgorot))} חוזרים במלואם, בלי דמי ביטול.`
+              : `ההחזר יצא לביצוע: ${shekelsRounded(agorot(result.refundedAgorot))} לכרטיס${
+                  result.feeAgorot > 0
+                    ? `, אחרי ${shekelsRounded(agorot(result.feeAgorot))} דמי ביטול`
+                    : ''
                 }.`,
         )
         setConfirming(false)
@@ -133,6 +138,16 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
               ביטול עקב פגם או אי-התאמה (מבטל את דמי הביטול)
             </label>
 
+            <label className="flex items-center gap-2 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                checked={override}
+                onChange={(e) => setOverride(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300"
+              />
+              עקיפת מנהל: החזר מלא בכל מועד, בלי דמי ביטול ובלי בדיקת 14 הימים
+            </label>
+
             {refundError && <p className="text-xs text-red-600">{refundError}</p>}
             {refundOk && <p className="text-xs text-green-600">{refundOk}</p>}
 
@@ -165,8 +180,8 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
               </button>
             )}
             <p className="text-xs text-gray-500">
-              פעולה שלא ניתן לבטל. דמי הביטול הם הנמוך מבין 5% ו-100 ש״ח, ואינם נגבים בביטול עקב
-              פגם.
+              פעולה שלא ניתן לבטל. ביטול רגיל כפוף לסעיף 14ג: עד 14 יום מהתשלום ורק אם לא מומש דבר.
+              דמי הביטול הם הנמוך מבין 5% ו-100 ש״ח, ואינם נגבים בביטול עקב פגם או בעקיפת מנהל.
             </p>
           </div>
         )}

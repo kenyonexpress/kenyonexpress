@@ -156,6 +156,11 @@ export async function recordRefund(
  * fee for a defect claim, so the two agree; this keeps them agreeing when the
  * caller passes a ground explicitly.
  */
-export function groundFor(input: { isDefectClaim?: boolean }): RefundGround {
-  return input.isDefectClaim ? 'defect' : 'distance_sale_14d'
+export function groundFor(input: { isDefectClaim?: boolean; override?: boolean }): RefundGround {
+  if (input.isDefectClaim) return 'defect'
+  // The S13 admin override refunds in full outside the statute's terms. Writing
+  // it as `distance_sale_14d` would make a refund on day 40 read as a statutory
+  // one, so it is recorded as what it is.
+  if (input.override) return 'goodwill'
+  return 'distance_sale_14d'
 }
