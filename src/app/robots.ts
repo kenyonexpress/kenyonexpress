@@ -41,6 +41,9 @@ export default function robots(): MetadataRoute.Robots {
           '/reset-password',
           '/forgot-password',
           '/debug/', // SENTRY_DEBUG_ROUTES renders these outside the /api/ prefix when the gate is on
+          '/newsletter/', // confirm and unsubscribe write on GET from a ?token= in the URL
+          '/partner/', // coupon-partner redeem screen, supplier session only
+          '/dev/', // notFound() in production; listed so a NODE_ENV slip is not crawled
         ],
       },
     ],

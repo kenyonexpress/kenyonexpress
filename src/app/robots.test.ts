@@ -62,6 +62,17 @@ describe('robots', () => {
     expect(disallowList()).toContain('/debug/')
   })
 
+  it('disallows the token-on-GET newsletter pages and the partner screen', () => {
+    // /newsletter/confirm and /newsletter/unsubscribe perform their write on
+    // load from a ?token= in the URL, so a crawler that follows a leaked link
+    // confirms or unsubscribes somebody. /partner/redeem is supplier-gated.
+    // All three already set noindex; this is the outer layer, as for /redeem/.
+    const disallow = disallowList()
+    for (const path of ['/newsletter/', '/partner/', '/dev/']) {
+      expect(disallow).toContain(path)
+    }
+  })
+
   it('still allows the storefront to be crawled', () => {
     const rules = robots().rules
     const first = Array.isArray(rules) ? rules[0] : rules
