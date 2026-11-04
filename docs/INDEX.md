@@ -327,6 +327,7 @@ one.
 | [S01-baseline.md](S01-baseline.md) | ✅ | Queue S01, 04.11.2026: HEAD == design-locked-2026-10-19, install, tsc 0, vitest 640/640, freeze diff empty. |
 | [S02-vercel.md](S02-vercel.md) | ✅ | Queue S02, 04.11.2026: Vercel production branch is closeout/v1-final; git production build READY. |
 | [S03-env.md](S03-env.md) | ✅ | Queue S03, 04.11.2026: production env vs 119 keys read in src; 8/8 deploy keys set, NEXT_PUBLIC_SITE_URL added, HOLD list of missing secrets. |
+| [S04-r2.md](S04-r2.md) | ✅ | Queue S04, 04.11.2026: R2 upload on @aws-sdk/client-s3, AVIF+WebP variants, admin action uploadImageToR2; smoke blocked (key only in Vercel, cdn host not R2). |
 | [STATE-ARCHIVE.md](STATE-ARCHIVE.md) | 🕯️ | כל מה שהיה ב-STATE.md לפני הגיזום ל-300 שורות (Q06, 25.09.2026), החדש למעלה. STATE.md הוא הנוכחי. |
 | [UI-PARITY-REPORT.md](UI-PARITY-REPORT.md) | ✅ | Every scripts/compare.mjs run appends a row here automatically -- the gate |
 | [WP-IMPORT-REPORT.md](WP-IMPORT-REPORT.md) | 🕯️ | מקור: data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml (‏5,942,638 בתים) |

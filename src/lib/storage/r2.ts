@@ -1,29 +1,42 @@
-// Cloudflare R2 uploads via AWS SigV4 presigned PUT URLs (S3 compatible API).
-// Server only. No AWS SDK: signing is done with Web Crypto (HMAC-SHA256).
+// Cloudflare R2, single-bucket admin path, on the official S3-compatible SDK
+// (@aws-sdk/client-s3). Server only: holds credentials and a live client.
 //
-// The browser receives a short-lived presigned URL and PUTs the file straight
-// to R2, so image bytes never pass through the Next.js server. When R2 env vars
-// are absent, callers fall back to Supabase Storage (see requestUploadUrl).
+// Two ways in:
+//   - putR2Object / uploadImageVariants: the server already holds the bytes
+//     (admin image pipeline, invoice PDF mirror) and writes them directly.
+//   - createR2PresignedPutUrl: the browser PUTs the file straight to R2, so the
+//     bytes never pass through the Next.js server.
+// When R2 env vars are absent, callers fall back to Supabase Storage.
 //
 // Required env:
 //   R2_ACCOUNT_ID           Cloudflare account id (subdomain of r2 endpoint)
 //   R2_ACCESS_KEY_ID        R2 API token access key
 //   R2_SECRET_ACCESS_KEY    R2 API token secret
-//   R2_BUCKET               target bucket name
+//   R2_BUCKET_NAME          target bucket name (R2_BUCKET is the older name,
+//                           still read so production keeps working while both
+//                           are set; R2_BUCKET_NAME wins)
 //   R2_PUBLIC_BASE_URL      public CDN base, e.g. https://cdn.kenyonexpress.co.il
 
 import 'server-only'
 
-const ALGORITHM = 'AWS4-HMAC-SHA256'
-const REGION = 'auto'
-const SERVICE = 's3'
+import { type ProcessedImage, processImage } from '@/lib/images/process'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { assertValidR2Key } from './r2-buckets'
+
+/** Content-addressed keys (uuid per upload) never change, so cache forever. */
+const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable'
+
+export function r2BucketFromEnv(): string {
+  return process.env.R2_BUCKET_NAME || process.env.R2_BUCKET || ''
+}
 
 export function isR2Configured(): boolean {
   return Boolean(
     process.env.R2_ACCOUNT_ID &&
       process.env.R2_ACCESS_KEY_ID &&
       process.env.R2_SECRET_ACCESS_KEY &&
-      process.env.R2_BUCKET &&
+      r2BucketFromEnv() &&
       process.env.R2_PUBLIC_BASE_URL,
   )
 }
@@ -33,103 +46,126 @@ export function r2PublicUrl(key: string): string {
   return `${base}/${key}`
 }
 
-const encoder = new TextEncoder()
+// Memoised per credential set, so tests that stub different env values do not
+// get a client built from a previous stub. Retries are the SDK default (3,
+// standard backoff); see r2-service.ts for why that is the right number here.
+let cached: { key: string; client: S3Client } | null = null
 
-async function sha256Hex(data: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', encoder.encode(data))
-  return toHex(new Uint8Array(buf))
+export function getR2SingleBucketClient(): S3Client {
+  const accountId = process.env.R2_ACCOUNT_ID
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
+  if (!accountId || !accessKeyId || !secretAccessKey) {
+    throw new Error('R2 is not configured: R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY')
+  }
+  const cacheKey = `${accountId}:${accessKeyId}:${secretAccessKey}`
+  if (cached?.key !== cacheKey) {
+    cached = {
+      key: cacheKey,
+      client: new S3Client({
+        region: 'auto',
+        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+        credentials: { accessKeyId, secretAccessKey },
+        maxAttempts: 3,
+        retryMode: 'standard',
+      }),
+    }
+  }
+  return cached.client
 }
 
-async function hmac(key: ArrayBuffer | Uint8Array, data: string): Promise<ArrayBuffer> {
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    key as BufferSource,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
+function requireBucket(): string {
+  const bucket = r2BucketFromEnv()
+  if (!bucket) throw new Error('R2 is not configured: R2_BUCKET_NAME')
+  return bucket
+}
+
+/** Server-side write of bytes the server already holds. Returns the public URL. */
+export async function putR2Object(
+  key: string,
+  body: Uint8Array | Buffer | string,
+  contentType: string,
+  cacheControl: string = IMMUTABLE_CACHE_CONTROL,
+): Promise<string> {
+  assertValidR2Key(key)
+  await getR2SingleBucketClient().send(
+    new PutObjectCommand({
+      Bucket: requireBucket(),
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      CacheControl: cacheControl,
+    }),
   )
-  return crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(data))
-}
-
-function toHex(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
-
-// RFC 3986 encoding; each path segment is encoded but slashes are preserved.
-function encodeRfc3986(str: string): string {
-  return encodeURIComponent(str).replace(
-    /[!'()*]/g,
-    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
-  )
-}
-
-function encodeKey(key: string): string {
-  return key.split('/').map(encodeRfc3986).join('/')
+  return r2PublicUrl(key)
 }
 
 /**
  * Build a presigned PUT URL valid for `expiresSeconds`. The browser must PUT the
- * raw file body to this URL. Only the `host` header is signed, so the client may
- * freely set Content-Type without breaking the signature.
+ * raw file body to this URL. Content-Type is deliberately left out of the
+ * command, so only `host` is signed and the client may set its own type.
  */
 export async function createR2PresignedPutUrl(
   key: string,
   expiresSeconds = 600,
 ): Promise<{ uploadUrl: string; publicUrl: string }> {
-  const accountId = process.env.R2_ACCOUNT_ID as string
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID as string
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY as string
-  const bucket = process.env.R2_BUCKET as string
-
-  const host = `${accountId}.r2.cloudflarestorage.com`
-  const canonicalUri = `/${bucket}/${encodeKey(key)}`
-
-  // amz date: YYYYMMDDTHHMMSSZ (Date.now / new Date allowed here; runs at request time)
-  const now = new Date()
-  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
-  const dateStamp = amzDate.slice(0, 8)
-
-  const credentialScope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`
-  const signedHeaders = 'host'
-
-  const queryParams: Record<string, string> = {
-    'X-Amz-Algorithm': ALGORITHM,
-    'X-Amz-Credential': `${accessKeyId}/${credentialScope}`,
-    'X-Amz-Date': amzDate,
-    'X-Amz-Expires': String(expiresSeconds),
-    'X-Amz-SignedHeaders': signedHeaders,
-  }
-
-  const canonicalQuery = Object.keys(queryParams)
-    .sort()
-    .map((k) => `${encodeRfc3986(k)}=${encodeRfc3986(queryParams[k] as string)}`)
-    .join('&')
-
-  const canonicalHeaders = `host:${host}\n`
-  const canonicalRequest = [
-    'PUT',
-    canonicalUri,
-    canonicalQuery,
-    canonicalHeaders,
-    signedHeaders,
-    'UNSIGNED-PAYLOAD',
-  ].join('\n')
-
-  const stringToSign = [
-    ALGORITHM,
-    amzDate,
-    credentialScope,
-    await sha256Hex(canonicalRequest),
-  ].join('\n')
-
-  const kDate = await hmac(encoder.encode(`AWS4${secretAccessKey}`), dateStamp)
-  const kRegion = await hmac(kDate, REGION)
-  const kService = await hmac(kRegion, SERVICE)
-  const kSigning = await hmac(kService, 'aws4_request')
-  const signature = toHex(new Uint8Array(await hmac(kSigning, stringToSign)))
-
-  const uploadUrl = `https://${host}${canonicalUri}?${canonicalQuery}&X-Amz-Signature=${signature}`
+  assertValidR2Key(key)
+  const uploadUrl = await getSignedUrl(
+    getR2SingleBucketClient(),
+    new PutObjectCommand({ Bucket: requireBucket(), Key: key }),
+    { expiresIn: expiresSeconds },
+  )
   return { uploadUrl, publicUrl: r2PublicUrl(key) }
+}
+
+export type R2ImageVariant = {
+  format: 'webp' | 'avif'
+  width: number
+  height: number
+  key: string
+  url: string
+  bytes: number
+}
+
+export type R2ImageUpload = {
+  width: number
+  height: number
+  blurDataURL: string
+  /** Largest webp first, then the smaller webp tiers, then the avif. */
+  variants: R2ImageVariant[]
+}
+
+/**
+ * Decode one original, emit the AVIF + WebP renditions (lib/images/process),
+ * and write every one under `${basePath}/w{width}.{format}`.
+ *
+ * `processed` lets a caller that already ran processImage (to gate dimensions
+ * before spending uploads) pass the result instead of decoding twice.
+ */
+export async function uploadImageVariants(
+  basePath: string,
+  original: Buffer,
+  processed?: ProcessedImage,
+): Promise<R2ImageUpload> {
+  assertValidR2Key(basePath)
+  const image = processed ?? (await processImage(original))
+  const variants: R2ImageVariant[] = []
+  for (const rendition of image.renditions) {
+    const key = `${basePath}/w${rendition.width}.${rendition.format}`
+    const url = await putR2Object(key, rendition.buffer, `image/${rendition.format}`)
+    variants.push({
+      format: rendition.format,
+      width: rendition.width,
+      height: rendition.height,
+      key,
+      url,
+      bytes: rendition.buffer.length,
+    })
+  }
+  return {
+    width: image.width,
+    height: image.height,
+    blurDataURL: image.blurDataURL,
+    variants,
+  }
 }

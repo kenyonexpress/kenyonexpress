@@ -44,6 +44,9 @@ const UPLOADER_WRITABLE = new Set([
   // because a single undo there can revert a bulk PRICE change.
   'product-images.ts',
   'products.ts',
+  // The R2 twin of images.ts: same input (file + Hebrew alt), same output (a
+  // media_assets row and its URLs), no price, status or slug reachable.
+  'r2-upload.ts',
   'reviews.ts',
   'upload.ts',
   'vouchers.ts', // its catalog half; the redeem half gates on 'orders'

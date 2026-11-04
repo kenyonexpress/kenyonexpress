@@ -3,6 +3,11 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**S04 - BLOCKED (04.11.2026): צינור העלאה ל-R2.** הקוד גמור. `src/lib/storage/r2.ts` עבר ל-`@aws-sdk/client-s3`, קורא `R2_BUCKET_NAME` (ואם הוא חסר, `R2_BUCKET`), ומעלה גרסאות AVIF+WebP דרך `uploadImageVariants`. נוספה פעולת אדמין חדשה, `uploadImageToR2` (`src/server/actions/admin/r2-upload.ts`). 11 טסטים עם client ממוקק. tsc 0, vitest 641/641. הוכחה: `docs/S04-r2.md`.
+**חסום:** ה-smoke לא רץ. (1) מפתחות R2 קיימים רק כ-Secret ב-Vercel, ו-env pull מחזיר `[SENSITIVE]`. בעותק המקומי אין `R2_ACCESS_KEY_ID`. (2) `cdn.kenyonexpress.co.il` יושב ב-DNS של Vercel ומחזיר `DEPLOYMENT_NOT_FOUND`, כך שה-URL הציבורי לא יחזיר 200 גם אחרי העלאה מוצלחת. הפקודה לסגירה: `node scripts/r2-smoke.mjs --env-file=<file>`.
+**החלטה שהתקבלה לבד:** לא פתחתי endpoint בפרודקשן רק בשביל ה-smoke. ב-action קראתי ל-`updateTag(CATALOGUE_TAG)` במקום להוסיף חריג רביעי למקסימום 3 של שער ה-cache. `pnpm lint` נופל על `.lighthouseci/` ו-`android/`, תיקיות untracked שלא שלי. הגייטים על הקבצים שלי נקיים.
+**הבא: S05** מתור ה-S.
+
 **S03 - DONE (04.11.2026): בדיקת env בפרודקשן.** פרויקט `kenyonexpress`: 58 מפתחות. הקוד קורא 119. כל 8 מפתחות ה-preflight מוגדרים, וגם Turnstile ו-R2. נוסף `NEXT_PUBLIC_SITE_URL=https://kenyonexpress.co.il`. סודות חסרים (Upstash, QStash, webhooks, wallet, CAPI) ברשימת HOLD. אף אחד מהם לא חוסם קופה. tsc 0, vitest 640/640. הוכחה: `docs/S03-env.md`.
 **החלטה שהתקבלה לבד:** לא הוספתי `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. ה-ID יושב בשם `NEXT_PUBLIC_GA_MEASUREMENT_ID`, ששום קוד לא קורא, וה-CSP חוסם את googletagmanager. צריך את שניהם יחד ב-item נפרד. בנוסף, www עונה 503 עם retry-after 300 (MAINTENANCE_MODE), ו-/api/health עונה 200.
 **הבא: S04** מתור ה-S.
