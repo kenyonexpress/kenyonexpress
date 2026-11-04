@@ -31,3 +31,20 @@ export function wazeSearchLink(
 
   return `https://waze.com/ul?q=${encodeURIComponent(query)}&navigate=yes`
 }
+
+/**
+ * `https://www.google.com/maps/search/?api=1&query=<address>`, or null when
+ * there is no street address. Same rule and same query as `wazeSearchLink`:
+ * the thank-you page offers both, because a buyer on an iPhone without Waze
+ * should not be handed a link that opens an App Store page.
+ */
+export function googleMapsSearchLink(
+  address: string | null | undefined,
+  city?: string | null,
+): string | null {
+  const street = address?.trim()
+  if (!street) return null
+  const town = city?.trim()
+  const query = town && !street.includes(town) ? `${street}, ${town}` : street
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+}

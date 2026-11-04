@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { wazeSearchLink } from './waze'
+import { googleMapsSearchLink, wazeSearchLink } from './waze'
 
 describe('wazeSearchLink', () => {
   it('builds a navigating search link from address and city', () => {
@@ -25,5 +25,24 @@ describe('wazeSearchLink', () => {
     expect(wazeSearchLink('דיזנגוף 100', null)).toBe(
       `https://waze.com/ul?q=${encodeURIComponent('דיזנגוף 100')}&navigate=yes`,
     )
+  })
+})
+
+describe('googleMapsSearchLink', () => {
+  it('searches the street and city', () => {
+    expect(googleMapsSearchLink('הרצל 5', 'חיפה')).toBe(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('הרצל 5, חיפה')}`,
+    )
+  })
+
+  it('does not repeat a city the address already carries', () => {
+    expect(googleMapsSearchLink('הרצל 5, חיפה', 'חיפה')).toBe(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('הרצל 5, חיפה')}`,
+    )
+  })
+
+  it('returns null without a street address', () => {
+    expect(googleMapsSearchLink(null, 'חיפה')).toBeNull()
+    expect(googleMapsSearchLink('   ')).toBeNull()
   })
 })

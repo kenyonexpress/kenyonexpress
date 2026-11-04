@@ -146,6 +146,7 @@ const PUBLIC_PAGES: RouteSpec[] = [
   redirect('/supplier', '/login'),
   redirect('/supplier/scan', '/login'),
   redirect('/checkout/confirmation', '/login', 'order pages need the buyer'),
+  redirect('/checkout/confirm', '/login', 'order pages need the buyer'),
   redirect('/checkout/return', '/login'),
   redirect('/checkout/app-return', '/login'),
   redirect(`/coupon/${BOGUS}`, '/login'),

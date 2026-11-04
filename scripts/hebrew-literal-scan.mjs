@@ -199,5 +199,7 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * 2026-11-04, V02: the checkout lost its stepper and its continue/back
  * buttons; the error summary and the sticky pay bar were born in the catalog
  * (`checkout.single.*`). 601 -> 600.
+ * 2026-11-04, V03: the thank-you page moved its copy to `checkout.confirm.*`
+ * and its new order overview and business block were born there. 600 -> 595.
  */
-export const HEBREW_LITERAL_CEILING = 600
+export const HEBREW_LITERAL_CEILING = 595

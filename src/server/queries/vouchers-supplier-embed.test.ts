@@ -18,6 +18,7 @@ const FILES = [
   'src/server/queries/vouchers.ts',
   'src/app/(admin)/admin/coupons/codes/page.tsx',
   'src/app/(admin)/admin/coupons/codes/[id]/page.tsx',
+  'src/app/(store)/checkout/return/page.tsx',
 ]
 
 describe('supplier embeds on vouchers name their foreign key', () => {

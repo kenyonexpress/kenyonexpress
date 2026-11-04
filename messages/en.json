@@ -425,6 +425,31 @@
       "stickyTotal": "Total to pay",
       "stickyPay": "Pay",
       "stickyBusy": "Redirecting to payment..."
+    },
+    "confirm": {
+      "notice": "Thank you. Your order has been received.",
+      "title": "Payment successful!",
+      "pendingTitle": "Verifying the payment...",
+      "pendingBody": "Your order was received and we are waiting for the card approval. This page refreshes by itself.",
+      "overviewLabel": "Order details",
+      "orderNumber": "Order number",
+      "date": "Date",
+      "total": "Total paid",
+      "email": "Email",
+      "couponsTitle": "Your coupons",
+      "collect": "To pay at the business on redemption:",
+      "validUntil": "Valid until",
+      "showAtBusiness": "Show the code or the QR at the business",
+      "share": "Share the coupon on WhatsApp",
+      "qrAlt": "QR code for coupon",
+      "savedInAccount": "Your coupons are also saved in your account",
+      "businessTitle": "Business details",
+      "waze": "Navigate with Waze",
+      "maps": "Open in Google Maps",
+      "cashbackPrefix": "Added to your wallet:",
+      "cashbackSuffix": "cashback",
+      "whatsapp": "For order updates, talk to us on WhatsApp",
+      "continueShopping": "Continue shopping"
     }
   },
   "voucherExpiry": {

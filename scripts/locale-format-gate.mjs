@@ -40,9 +40,10 @@ import { extname, join } from 'node:path'
  * the route audit (M07-c1) moved every client component that renders a
  * server-supplied timestamp (14 files, 18 sites) to the timezone-pinned
  * `formatDateShort` / `formatDateTime`, because the inline form hydrated to a
- * different day than the server printed. NEVER RAISE IT.
+ * different day than the server printed; 115 on 2026-11-04 after V03 moved the
+ * thank-you page's coupon expiry to `formatDateShort`. NEVER RAISE IT.
  */
-const CEILING = 116
+const CEILING = 115
 
 /** The sanctioned homes for a locale tag, and the only ones. */
 const ALLOWED_PREFIXES = ['src/lib/i18n/', 'src/lib/money']

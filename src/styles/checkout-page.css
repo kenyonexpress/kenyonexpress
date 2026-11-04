@@ -846,3 +846,253 @@
 .checkout-payment__method {
   min-height: var(--cart-touch, 44px);
 }
+
+/* ── V03: order confirmation (/checkout/return) ─────────────────────────────
+   Electro's thank-you: a notice line, the order overview, then the coupons.
+   Mobile first: one column and full-width actions at 380; the overview goes to
+   a row of four from 768. Centred column capped at 760 so a coupon card does
+   not stretch to 1320 with its QR a screen away from its code. */
+
+.confirm-page {
+  max-width: 760px;
+  margin-inline: auto;
+  padding-inline: 0;
+}
+
+.confirm-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  color: #2f7d18;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.confirm-notice svg {
+  flex: none;
+}
+
+.confirm-notice__tick {
+  stroke: #fff;
+}
+
+.confirm-page .checkout-success__title {
+  font-size: 28px;
+  line-height: 1.25;
+  margin-bottom: 20px;
+}
+
+/* Electro: `ul.order_details`, one bordered box, dashed separators. Below 768
+   it is a list of label / value rows, so the email gets a whole row and never
+   breaks letter by letter; from 768 a row of content-sized cells. */
+.confirm-overview {
+  margin: 0 0 28px;
+  border: 1px dashed #b6bfc8;
+  border-radius: 9px;
+  text-align: start;
+}
+
+.confirm-overview__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-block-end: 1px dashed #ddd;
+}
+
+.confirm-overview__item:last-child {
+  border-block-end: 0;
+}
+
+.confirm-overview dt {
+  flex: none;
+  font-size: 13px;
+  color: #657888;
+}
+
+.confirm-overview dd {
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #333e48;
+  overflow-wrap: anywhere;
+}
+
+.confirm-coupons {
+  margin-block: 8px 24px;
+  text-align: start;
+}
+
+.confirm-coupons .checkout-section__title {
+  margin-bottom: 20px;
+}
+
+/* Below 576 the QR goes on top, centred: it is the thing scanned at the till,
+   and a 132px code squeezed beside the text wraps the code onto three lines. */
+.confirm-coupon {
+  flex-direction: column-reverse;
+  align-items: stretch;
+  padding: 16px;
+}
+
+.confirm-coupon .coupon-card__qr {
+  align-self: center;
+}
+
+.confirm-coupon .coupon-card__qr img {
+  width: 176px;
+  height: 176px;
+}
+
+.confirm-coupon__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.confirm-coupon .coupon-card__code {
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  overflow-wrap: anywhere;
+}
+
+.confirm-business {
+  margin-top: 8px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.confirm-business__title {
+  font-size: 12px;
+  color: #657888;
+}
+
+.confirm-business__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333e48;
+}
+
+.confirm-business__address {
+  font-size: 14px;
+  color: #333e48;
+}
+
+.confirm-business__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.confirm-business__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cart-touch, 44px);
+  padding: 0 16px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  color: #333e48;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.confirm-wa-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--cart-touch, 44px);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-whatsapp-ink);
+}
+
+.confirm-coupons__saved {
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.confirm-coupons__saved a,
+.confirm-cancel a,
+.confirm-invoice a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cart-touch, 44px);
+  font-weight: 700;
+}
+
+.confirm-invoice .checkout-success__sub {
+  margin-bottom: 12px;
+}
+
+.confirm-contact {
+  margin-top: 16px;
+}
+
+.confirm-cancel {
+  margin-top: 8px;
+}
+
+.confirm-continue {
+  margin-top: 20px;
+}
+
+.confirm-continue .checkout-pay-btn {
+  display: flex;
+  height: auto;
+  min-height: 52px;
+}
+
+@media (min-width: 576px) {
+  .confirm-coupon {
+    flex-direction: row;
+    align-items: center;
+    padding: 18px 20px;
+  }
+
+  .confirm-coupon .coupon-card__qr img {
+    width: 132px;
+    height: 132px;
+  }
+
+  .confirm-coupon__body {
+    flex: 1 1 0;
+  }
+
+  .confirm-continue .checkout-pay-btn {
+    display: inline-flex;
+    width: auto;
+    min-width: 260px;
+  }
+}
+
+@media (min-width: 768px) {
+  .confirm-page .checkout-success__title {
+    font-size: 39.998px;
+  }
+
+  .confirm-overview {
+    display: flex;
+  }
+
+  .confirm-overview__item {
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+    border-block-end: 0;
+    border-inline-end: 1px dashed #ddd;
+  }
+
+  .confirm-overview__item:last-child {
+    border-inline-end: 0;
+  }
+}

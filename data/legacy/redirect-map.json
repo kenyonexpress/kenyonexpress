@@ -203,6 +203,7 @@
       "/cart",
       "/checkout",
       "/checkout/app-return",
+      "/checkout/confirm",
       "/checkout/confirmation",
       "/checkout/failed",
       "/checkout/frame-return",

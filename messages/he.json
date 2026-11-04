@@ -425,6 +425,31 @@
       "stickyTotal": "סה\"כ לתשלום",
       "stickyPay": "לתשלום",
       "stickyBusy": "מעביר לתשלום..."
+    },
+    "confirm": {
+      "notice": "תודה. ההזמנה שלך התקבלה.",
+      "title": "התשלום הצליח!",
+      "pendingTitle": "מאמתים את התשלום...",
+      "pendingBody": "ההזמנה נקלטה ואנחנו ממתינים לאישור הסליקה. העמוד יתעדכן אוטומטית.",
+      "overviewLabel": "פרטי ההזמנה",
+      "orderNumber": "מספר הזמנה",
+      "date": "תאריך",
+      "total": "סה\"כ ששולם",
+      "email": "אימייל",
+      "couponsTitle": "הקופונים שלך",
+      "collect": "לתשלום בעסק במימוש:",
+      "validUntil": "בתוקף עד",
+      "showAtBusiness": "הציגו את הקוד או את ה-QR בבית העסק",
+      "share": "שתפו את הקופון בוואטסאפ",
+      "qrAlt": "קוד QR לקופון",
+      "savedInAccount": "הקופונים שמורים גם באזור האישי",
+      "businessTitle": "פרטי העסק",
+      "waze": "ניווט ב-Waze",
+      "maps": "פתיחה במפות Google",
+      "cashbackPrefix": "נוסף לארנק שלך:",
+      "cashbackSuffix": "קאשבק",
+      "whatsapp": "לעדכונים על ההזמנה דברו איתנו בוואטסאפ",
+      "continueShopping": "המשך לקניות"
     }
   },
   "voucherExpiry": {

@@ -10,9 +10,10 @@ import {
   resolveOrderGeneration,
 } from '@/lib/commerce/order-money-columns'
 import { giftHeldCopy } from '@/lib/gifts/held-copy'
+import { formatDate, formatDateShort } from '@/lib/i18n/format'
 import { t } from '@/lib/i18n/messages'
 import { agorot } from '@/lib/money'
-import { shekels } from '@/lib/money-format'
+import { shekelsRounded } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { WALLET_AMOUNT_CANDIDATES, readFirstAvailableColumn } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -34,6 +35,8 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import AutoRefresh from './AutoRefresh'
+import BusinessDetails, { type ConfirmSupplier } from './BusinessDetails'
+import OrderOverview from './OrderOverview'
 import PasskeyAfterPurchase from './PasskeyAfterPurchase'
 import SaveWithGoogle from './SaveWithGoogle'
 import '@/styles/checkout-page.css'
@@ -75,10 +78,8 @@ export default function CheckoutReturnPage(props: Props) {
       fallback={
         <div className="checkout-page">
           <div className="checkout-pending">
-            <h1 className="checkout-success__title">מאמתים את התשלום...</h1>
-            <p className="checkout-success__sub">
-              ההזמנה נקלטה ואנחנו ממתינים לאישור הסליקה. העמוד יתעדכן אוטומטית.
-            </p>
+            <h1 className="checkout-success__title">{t('checkout.confirm.pendingTitle')}</h1>
+            <p className="checkout-success__sub">{t('checkout.confirm.pendingBody')}</p>
           </div>
         </div>
       }
@@ -102,10 +103,8 @@ async function CheckoutReturnBody({ searchParams }: Props) {
       <div className="checkout-page">
         <AutoRefresh />
         <div className="checkout-pending">
-          <h1 className="checkout-success__title">מאמתים את התשלום...</h1>
-          <p className="checkout-success__sub">
-            ההזמנה נקלטה ואנחנו ממתינים לאישור הסליקה. העמוד יתעדכן אוטומטית.
-          </p>
+          <h1 className="checkout-success__title">{t('checkout.confirm.pendingTitle')}</h1>
+          <p className="checkout-success__sub">{t('checkout.confirm.pendingBody')}</p>
         </div>
       </div>
     )
@@ -141,7 +140,8 @@ async function CheckoutReturnBody({ searchParams }: Props) {
          face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
          gift_claim_token_hash, gift_claimed_at, gift_sent_at,
          gift_recipient_name, gift_recipient_email,
-         products(name_he)`,
+         products(name_he),
+         supplier:suppliers!vouchers_supplier_id_fkey(name, address, city)`,
       )
       .eq('order_id', orderId)
       .order('issued_at', { ascending: true }),
@@ -223,14 +223,52 @@ async function CheckoutReturnBody({ searchParams }: Props) {
     passkeys && 'available' in passkeys && passkeys.available && passkeys.passkeys.length > 0,
   )
 
+  const orderNumber = order.id.slice(0, 8).toUpperCase()
+  const paidAt = (order.paid_at as string | null) ?? null
+  const storePhone = storeWhatsAppNumber()
+  // The coupon names and the amount paid ride in the prefilled text, so the
+  // first message already says what support would ask first.
+  const inquiryHref = storePhone
+    ? waChatLink(
+        storePhone,
+        buildOrderInquiryText(orderNumber, {
+          itemNames: couponsWithQr.map((coupon) => productNameOf(coupon.products)),
+          totalAgorot: orderMoney.totalAgorot,
+        }),
+      )
+    : null
+
   return (
     <div className="checkout-page">
-      <div className="checkout-success">
-        <h1 className="checkout-success__title">התשלום הצליח!</h1>
-        <p className="checkout-success__sub">
-          הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
-          {shekels(agorot(orderMoney.totalAgorot))}
+      <div className="checkout-success confirm-page">
+        {/*
+          V03: Electro's thank-you, top to bottom. The notice line, then the
+          order overview (number, date, total, email), then what the buyer came
+          for -- the coupon with its QR and the business it is redeemed at --
+          and the invoice, the cancellation right and the way back to the shop.
+        */}
+        <p className="confirm-notice">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22">
+            <circle cx="12" cy="12" r="11" fill="currentColor" />
+            <path
+              d="M7 12.5l3.2 3.2L17 9"
+              fill="none"
+              className="confirm-notice__tick"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          {t('checkout.confirm.notice')}
         </p>
+        <h1 className="checkout-success__title">{t('checkout.confirm.title')}</h1>
+
+        <OrderOverview
+          orderNumber={orderNumber}
+          date={paidAt ? formatDate(paidAt) : ''}
+          total={shekelsRounded(agorot(orderMoney.totalAgorot))}
+          email={isGuest ? null : (viewer?.email ?? null)}
+        />
 
         {/*
           THE ONE MOMENT WORTH ASKING FOR NOTIFICATION PERMISSION IN, and the
@@ -242,7 +280,95 @@ async function CheckoutReturnBody({ searchParams }: Props) {
         */}
         {isGuest && <SaveWithGoogle next={`/checkout/return?order_id=${order.id}`} />}
 
-        <InvoiceDownloadLink orderId={order.id} />
+        {couponsWithQr.length > 0 && (
+          <section aria-label={t('checkout.confirm.couponsTitle')} className="confirm-coupons">
+            <h2 className="checkout-section__title">{t('checkout.confirm.couponsTitle')}</h2>
+            {couponsWithQr.map((coupon) => {
+              const productName = productNameOf(coupon.products)
+              const supplier = (
+                Array.isArray(coupon.supplier) ? coupon.supplier[0] : coupon.supplier
+              ) as ConfirmSupplier | null | undefined
+              const shareHref = waShareLink(
+                buildCouponShareText({
+                  productName: productName ?? null,
+                  code: coupon.code,
+                  collectAmountAgorot: coupon.collect_amount_agorot,
+                  expiresAt: coupon.expires_at,
+                  siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
+                }),
+              )
+              return (
+                <article className="coupon-card confirm-coupon" key={coupon.id}>
+                  <div className="confirm-coupon__body">
+                    {productName && <div className="coupon-card__collect">{productName}</div>}
+                    {/*
+                      A gift shows where it went instead of the code. The share
+                      link below is dropped with it: a WhatsApp message built
+                      from a blank code is a message offering nothing, and one
+                      built from a real code would hand the buyer the coupon
+                      they just paid to give away.
+                    */}
+                    {coupon.gift ? (
+                      <>
+                        <div className="coupon-card__collect">{coupon.gift.headline}</div>
+                        <div className="coupon-card__note">{coupon.gift.explanation}</div>
+                      </>
+                    ) : (
+                      <div className="coupon-card__code" dir="ltr" data-testid="coupon-code">
+                        {formatVoucherCode(coupon.code)}
+                      </div>
+                    )}
+                    {coupon.collect_amount_agorot > 0 && (
+                      <div className="coupon-card__collect">
+                        {t('checkout.confirm.collect')}{' '}
+                        {shekelsRounded(coupon.collect_amount_agorot)}
+                      </div>
+                    )}
+                    <div className="coupon-card__note">
+                      {t('checkout.confirm.validUntil')} {formatDateShort(coupon.expires_at)}
+                      {' · '}
+                      {t('checkout.confirm.showAtBusiness')}
+                    </div>
+                    <BusinessDetails supplier={supplier ?? null} />
+                    {!coupon.gift && (
+                      <a
+                        href={shareHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="coupon-card__share confirm-wa-link"
+                      >
+                        <WhatsAppIcon size={16} />
+                        {t('checkout.confirm.share')}
+                      </a>
+                    )}
+                  </div>
+                  {coupon.qrDataUrl && (
+                    <div className="coupon-card__qr" data-testid="coupon-qr">
+                      <img
+                        src={coupon.qrDataUrl}
+                        alt={`${t('checkout.confirm.qrAlt')} ${coupon.code}`}
+                      />
+                    </div>
+                  )}
+                </article>
+              )
+            })}
+            <p className="confirm-coupons__saved">
+              <Link href="/account/coupons">{t('checkout.confirm.savedInAccount')}</Link>
+            </p>
+          </section>
+        )}
+
+        {cashbackAmount > 0 && (
+          <p className="checkout-wallet-note">
+            {t('checkout.confirm.cashbackPrefix')} {shekelsRounded(cashbackAmount)}{' '}
+            {t('checkout.confirm.cashbackSuffix')}
+          </p>
+        )}
+
+        <div className="confirm-invoice">
+          <InvoiceDownloadLink orderId={order.id} />
+        </div>
 
         {(await isFirstPaidOrder(admin, order.id)) ? (
           <>
@@ -269,136 +395,19 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           <PostPurchasePushPrompt />
         )}
 
-        {couponsWithQr.length > 0 && (
-          <section aria-label="הקופונים שלך" style={{ maxWidth: 640, marginInline: 'auto' }}>
-            <h2 className="checkout-section__title">הקופונים שלך</h2>
-            {couponsWithQr.map((coupon) => {
-              const productName = Array.isArray(coupon.products)
-                ? coupon.products[0]?.name_he
-                : (coupon.products as { name_he: string } | null)?.name_he
-              const shareHref = waShareLink(
-                buildCouponShareText({
-                  productName: productName ?? null,
-                  code: coupon.code,
-                  collectAmountAgorot: coupon.collect_amount_agorot,
-                  expiresAt: coupon.expires_at,
-                  siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
-                }),
-              )
-              return (
-                <article className="coupon-card" key={coupon.id}>
-                  <div>
-                    {productName && <div className="coupon-card__collect">{productName}</div>}
-                    {/*
-                      A gift shows where it went instead of the code. The share
-                      link below is dropped with it: a WhatsApp message built
-                      from a blank code is a message offering nothing, and one
-                      built from a real code would hand the buyer the coupon
-                      they just paid to give away.
-                    */}
-                    {coupon.gift ? (
-                      <>
-                        <div className="coupon-card__collect">{coupon.gift.headline}</div>
-                        <div className="coupon-card__note">{coupon.gift.explanation}</div>
-                      </>
-                    ) : (
-                      <div className="coupon-card__code" dir="ltr" data-testid="coupon-code">
-                        {formatVoucherCode(coupon.code)}
-                      </div>
-                    )}
-                    {coupon.collect_amount_agorot > 0 && (
-                      <div className="coupon-card__collect">
-                        לתשלום בעסק במימוש: {shekels(coupon.collect_amount_agorot)}
-                      </div>
-                    )}
-                    <div className="coupon-card__note">
-                      בתוקף עד{' '}
-                      {new Date(coupon.expires_at).toLocaleDateString('he-IL', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                      })}
-                      {' · '}הציגו את הקוד או את ה-QR בבית העסק
-                    </div>
-                    {!coupon.gift && (
-                      <a
-                        href={shareHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="coupon-card__share"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          marginTop: 10,
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: 'var(--color-whatsapp-ink)',
-                        }}
-                      >
-                        <WhatsAppIcon size={16} />
-                        שתפו את הקופון בוואטסאפ
-                      </a>
-                    )}
-                  </div>
-                  {coupon.qrDataUrl && (
-                    <div className="coupon-card__qr" data-testid="coupon-qr">
-                      <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
-                    </div>
-                  )}
-                </article>
-              )
-            })}
-            <p style={{ marginTop: 12, fontSize: 13 }}>
-              <Link href="/account/coupons" style={{ fontWeight: 600 }}>
-                הקופונים שמורים גם באזור האישי
-              </Link>
-            </p>
-          </section>
+        {inquiryHref && (
+          <p className="confirm-contact">
+            <a
+              href={inquiryHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="confirm-wa-link"
+            >
+              <WhatsAppIcon size={18} />
+              {t('checkout.confirm.whatsapp')}
+            </a>
+          </p>
         )}
-
-        {cashbackAmount > 0 && (
-          <p className="checkout-wallet-note">נוסף לארנק שלך: {shekels(cashbackAmount)} קאשבק</p>
-        )}
-
-        {(() => {
-          const storePhone = storeWhatsAppNumber()
-          if (!storePhone) return null
-          // The coupon names and the amount paid ride in the prefilled text, so
-          // the first message already says what support would ask first.
-          const href = waChatLink(
-            storePhone,
-            buildOrderInquiryText(order.id.slice(0, 8).toUpperCase(), {
-              itemNames: couponsWithQr.map((coupon) =>
-                Array.isArray(coupon.products)
-                  ? coupon.products[0]?.name_he
-                  : (coupon.products as { name_he: string } | null)?.name_he,
-              ),
-              totalAgorot: orderMoney.totalAgorot,
-            }),
-          )
-          if (!href) return null
-          return (
-            <p style={{ marginTop: 20 }}>
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: 'var(--color-whatsapp-ink)',
-                }}
-              >
-                <WhatsAppIcon size={18} />
-                לעדכונים על ההזמנה דברו איתנו בוואטסאפ
-              </a>
-            </p>
-          )
-        })()}
 
         {/*
           Consumer Protection Law s.14C, on the page a buyer lands on: the
@@ -406,23 +415,23 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           regrets the purchase in the next minute should not have to hunt for
           it in the footer.
         */}
-        <p
-          className="checkout-success__sub"
-          style={{ marginTop: 16 }}
-          data-testid="cancellation-note"
-        >
+        <p className="checkout-success__sub confirm-cancel" data-testid="cancellation-note">
           {t('cancellation.thankYou')}{' '}
-          <Link href={`/account/orders/${order.id}`} style={{ fontWeight: 600 }}>
-            {t('cancellation.thankYouCta')}
-          </Link>
+          <Link href={`/account/orders/${order.id}`}>{t('cancellation.thankYouCta')}</Link>
         </p>
 
-        <p style={{ marginTop: 28 }}>
-          <Link href="/products" className="checkout-pay-btn" style={{ display: 'inline-flex' }}>
-            המשך לקניות
+        <p className="confirm-continue">
+          <Link href="/products" className="checkout-pay-btn">
+            {t('checkout.confirm.continueShopping')}
           </Link>
         </p>
       </div>
     </div>
   )
+}
+
+function productNameOf(products: unknown): string | undefined {
+  return Array.isArray(products)
+    ? (products[0] as { name_he?: string } | undefined)?.name_he
+    : (products as { name_he: string } | null)?.name_he
 }
