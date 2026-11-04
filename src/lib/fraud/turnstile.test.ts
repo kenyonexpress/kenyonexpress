@@ -1,6 +1,11 @@
 import { turnstileConfig, turnstileEnabled, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+const requestHasTestBypass = vi.fn(async () => false)
+vi.mock('@/lib/testing/test-bypass', () => ({
+  requestHasTestBypass: () => requestHasTestBypass(),
+}))
+
 const CONFIGURED = {
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA',
   TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
@@ -125,5 +130,28 @@ describe('verifyTurnstile', () => {
     await verifyTurnstile('token', '203.0.113.7', CONFIGURED)
     const body = fetchSpy.mock.calls[0]?.[1]?.body as URLSearchParams
     expect(body.get('remoteip')).toBe('203.0.113.7')
+  })
+})
+
+describe('the E2E bypass (B3-launch, 05.11.2026)', () => {
+  afterEach(() => {
+    requestHasTestBypass.mockReset()
+    requestHasTestBypass.mockResolvedValue(false)
+  })
+
+  it('allows without a round trip when the request carries the matching x-test-secret', async () => {
+    requestHasTestBypass.mockResolvedValue(true)
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    // No token at all: the one case a configured deployment refuses on sight.
+    const outcome = await verifyTurnstile(null, '203.0.113.7', CONFIGURED)
+    expect(outcome).toEqual({ ok: true, enforced: false })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when the bypass does not match: an empty token is still refused', async () => {
+    requestHasTestBypass.mockResolvedValue(false)
+    const outcome = await verifyTurnstile('', '203.0.113.7', CONFIGURED)
+    expect(outcome).toEqual({ ok: false, codes: ['missing-input-response'] })
   })
 })

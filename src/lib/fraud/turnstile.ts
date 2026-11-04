@@ -1,4 +1,5 @@
 import { log } from '@/lib/observability/log'
+import { requestHasTestBypass } from '@/lib/testing/test-bypass'
 
 /**
  * Cloudflare Turnstile verification.
@@ -65,6 +66,15 @@ export async function verifyTurnstile(
 ): Promise<TurnstileOutcome> {
   const config = turnstileConfig(source)
   if (!config) return { ok: true, enforced: false }
+
+  // The E2E runner, identified by `x-test-secret` against `TEST_BYPASS_SECRET`
+  // (`lib/testing/test-bypass.ts` holds the gating). Answered as "allowed, not
+  // enforced", the same shape as an unconfigured deployment, and logged so a
+  // bypassed request is never silent.
+  if (await requestHasTestBypass(source)) {
+    log.info('turnstile.test_bypass', {})
+    return { ok: true, enforced: false }
+  }
 
   // An empty field with the widget configured means the browser never solved
   // the challenge - script blocked, or a client that is not a browser. Refused

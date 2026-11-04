@@ -86,6 +86,14 @@ export default defineConfig({
       ...(process.env.E2E_FORWARDED_FOR
         ? { 'x-forwarded-for': process.env.E2E_FORWARDED_FOR }
         : {}),
+      // The E2E bypass for Turnstile and the rate limiter: the server honours
+      // this header only when its own TEST_BYPASS_SECRET (32+ chars) equals it
+      // (src/lib/testing/test-bypass.ts). Unset here, the header is not sent
+      // and the suite meets both controls as a real browser would. The value
+      // lives in .env.local and the Vercel env, never in tracked .env.test.
+      ...(process.env.TEST_BYPASS_SECRET
+        ? { 'x-test-secret': process.env.TEST_BYPASS_SECRET }
+        : {}),
     },
   },
   projects: [
