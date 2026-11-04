@@ -197,6 +197,19 @@ describe('buildSiteJsonLd', () => {
     }
   })
 
+  it('names the operator with legal name, registration number and email only', () => {
+    const org = buildSiteJsonLd(SITE, 'support@kenyonexpress.co.il').find(
+      (node) => node['@type'] === 'Organization',
+    )
+    expect(org?.legalName).toBe('קניון אקספרס')
+    expect(org?.taxID).toBe('033798513')
+    expect(org?.email).toBe('support@kenyonexpress.co.il')
+    const contact = org?.contactPoint as Record<string, unknown>
+    expect(contact.email).toBe('support@kenyonexpress.co.il')
+    // Owner rules: no phone and no social links on any surface.
+    expect(JSON.stringify(org)).not.toMatch(/telephone|sameAs/)
+  })
+
   it('declares the search action against the route that answers', () => {
     const website = buildSiteJsonLd(SITE).find((node) => node['@type'] === 'WebSite')
     const action = website?.potentialAction as Record<string, unknown>
@@ -207,6 +220,21 @@ describe('buildSiteJsonLd', () => {
   it('does not produce a double slash from a trailing slash in the origin', () => {
     for (const node of buildSiteJsonLd('https://kenyonexpress.co.il/')) {
       expect(JSON.stringify(node)).not.toContain('.co.il//')
+    }
+  })
+})
+
+describe('offer price digits come from integer agorot', () => {
+  it('prints whole and fractional shekels without float drift', () => {
+    const cases: Array<[number, string]> = [
+      [199, '199.00'],
+      [1.05, '1.05'],
+      [0.1 + 0.2, '0.30'],
+      [49.9, '49.90'],
+    ]
+    for (const [priceIls, expected] of cases) {
+      const node = buildProductJsonLd({ ...physical, priceIls, fullPriceIls: null })
+      expect((node.offers as Record<string, unknown>).price).toBe(expected)
     }
   })
 })

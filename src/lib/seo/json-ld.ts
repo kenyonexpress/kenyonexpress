@@ -1,4 +1,6 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { contactEmail } from '@/lib/contact-address'
+import { type Agorot, parseIls } from '@/lib/money'
 
 /**
  * Structured data, built from the same values the page renders.
@@ -72,9 +74,25 @@ function trimSite(siteUrl: string): string {
   return siteUrl.replace(/\/+$/, '')
 }
 
-/** Two decimals, dot separator. Schema.org wants a number, not a formatted one. */
-function price(value: number): string {
-  return value.toFixed(2)
+/**
+ * Two decimals, dot separator. Schema.org wants a number, not a formatted one.
+ *
+ * The shekel amount is converted to integer agorot through `money.ts` first and
+ * the string is cut from that integer, so no float arithmetic produces the
+ * digits. `toFixed(2)` on the shekel value printed 1.005 as "1.00" and could
+ * disagree with what the cart charges by an agora. The fallback parse handles a
+ * caller that passes an already-floated value such as 0.30000000000000004.
+ */
+function price(valueIls: number): string {
+  let minor: Agorot
+  try {
+    minor = parseIls(valueIls)
+  } catch {
+    minor = parseIls(valueIls.toFixed(2))
+  }
+  const sign = minor < 0 ? '-' : ''
+  const abs = Math.abs(minor)
+  return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, '0')}`
 }
 
 /**
@@ -305,13 +323,25 @@ const SITE_NAME_HE = 'קניון אקספרס'
 const SITE_NAME_LATIN = 'KenyonExpress'
 
 /**
+ * The operator, as the terms and the footer name it (S18, messages/he.json
+ * legal.contact.operator). `taxID` is the schema.org slot for a registration
+ * number; the digits are the owner's 04.11 brand rule, ח.פ 033798513.
+ *
+ * Contact is email only. No `telephone` and no `sameAs`: the owner's rules
+ * forbid a phone number and social links on every surface, and a structured
+ * claim is a surface search engines print.
+ */
+const LEGAL_NAME = 'קניון אקספרס'
+const TAX_ID = '033798513'
+
+/**
  * `Organization` and `WebSite` for the home page.
  *
  * `SearchAction` points at the search route that exists (`/search?q=`). A
  * sitelinks searchbox declared against a route that does not answer is worse
  * than none: it is a promise the site fails in front of the person who uses it.
  */
-export function buildSiteJsonLd(siteUrl: string): JsonLdNode[] {
+export function buildSiteJsonLd(siteUrl: string, email: string = contactEmail()): JsonLdNode[] {
   const site = trimSite(siteUrl)
   return [
     {
@@ -319,8 +349,18 @@ export function buildSiteJsonLd(siteUrl: string): JsonLdNode[] {
       '@type': 'Organization',
       name: SITE_NAME_HE,
       alternateName: SITE_NAME_LATIN,
+      legalName: LEGAL_NAME,
+      taxID: TAX_ID,
       url: site,
       logo: `${site}/logo.png`,
+      email,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer service',
+        email,
+        availableLanguage: 'he',
+        areaServed: 'IL',
+      },
     },
     {
       '@context': SCHEMA,
