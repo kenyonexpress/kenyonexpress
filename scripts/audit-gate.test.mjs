@@ -128,3 +128,43 @@ describe('what blocks a build', () => {
     expect(summarize({}).exitCode).toBe(0)
   })
 })
+
+describe('time-boxed acceptance (S24)', () => {
+  const ZOD = {
+    id: 3456,
+    severity: 'high',
+    module_name: 'zod',
+    title: 'Zod can exhaust memory while validating oversized constrained collections',
+    url: 'https://github.com/advisories/GHSA-mrhx-c7xc-m3w5',
+    vulnerable_versions: '<4.6.6',
+    patched_versions: '>=4.6.6',
+  }
+  const accepted = [
+    { ghsa: 'GHSA-mrhx-c7xc-m3w5', module: 'zod', until: '2026-12-31', reason: 'r' },
+  ]
+  const report = { advisories: { 1: ZOD, 2: CRITICAL_WITH_PATCH } }
+
+  it('an accepted advisory does not block before its date, and is still reported', () => {
+    const out = summarize(report, { accepted, today: '2026-11-04' })
+    expect(out.accepted.map((a) => a.module)).toEqual(['zod'])
+    expect(out.blocking.map((a) => a.module)).toEqual(['next'])
+  })
+
+  it('blocks again the day after it expires', () => {
+    const out = summarize({ advisories: { 1: ZOD } }, { accepted, today: '2027-01-01' })
+    expect(out.blocking.map((a) => a.module)).toEqual(['zod'])
+    expect(out.exitCode).toBe(1)
+  })
+
+  it('matches on the GHSA id, so a new zod advisory still blocks', () => {
+    const other = { ...ZOD, url: 'https://github.com/advisories/GHSA-zzzz-zzzz-zzzz' }
+    const out = summarize({ advisories: { 1: other } }, { accepted, today: '2026-11-04' })
+    expect(out.blocking).toHaveLength(1)
+  })
+
+  it('the shipped list is short and every entry expires', async () => {
+    const { ACCEPTED } = await import('./audit-gate.mjs')
+    expect(ACCEPTED.length).toBeLessThanOrEqual(3)
+    for (const a of ACCEPTED) expect(a.until).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})

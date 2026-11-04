@@ -55,17 +55,55 @@ export function hasFix(advisory) {
 }
 
 /**
+ * FIXABLE, BUT ONLY BY A MAJOR MIGRATION, AND TIME-BOXED. Each entry names one
+ * advisory by GHSA id and carries an expiry. Past `until` it blocks again on
+ * its own, so an acceptance cannot quietly become permanent the way a
+ * suppression does. Not a place for anything a patch or minor bump fixes.
+ *
+ * zod (S24, 2026-11-04): memory exhaustion validating oversized constrained
+ * collections. Patched only in zod >=4.6.6; the 3.x line has no fix, and this
+ * app is on 3.25.76 across 91 files in src/, with server-action and env
+ * schemas that behave differently under v4 (error shape, preprocess). That is
+ * its own work item, not a lockfile bump. Every untrusted input that reaches a
+ * zod array or record here is already bounded by Next's server-action body
+ * limit and the route rate limits.
+ */
+export const ACCEPTED = [
+  {
+    ghsa: 'GHSA-mrhx-c7xc-m3w5',
+    module: 'zod',
+    until: '2026-12-31',
+    reason: 'fixed only in zod 4; migration is a separate work item (docs/S24-security.md)',
+  },
+]
+
+function acceptanceFor(advisory, accepted, today) {
+  const url = String(advisory.url ?? '')
+  const entry = accepted.find(
+    (a) =>
+      a.module === advisory.module_name &&
+      (url.endsWith(a.ghsa) || advisory.github_advisory_id === a.ghsa),
+  )
+  return entry && today <= entry.until ? entry : null
+}
+
+/**
  * Splits advisories into what blocks and what is merely reported.
  *
  * Pure, so `audit-gate.test.mjs` can drive every branch without a registry.
  */
-export function classifyAdvisories(report) {
+export function classifyAdvisories(
+  report,
+  { accepted = ACCEPTED, today = new Date().toISOString().slice(0, 10) } = {},
+) {
   const advisories = Object.values(report?.advisories ?? {})
   const blocking = []
   const unfixable = []
+  const acceptedOut = []
   for (const advisory of advisories) {
     if (!BLOCKING_SEVERITIES.has(advisory.severity)) continue
-    ;(hasFix(advisory) ? blocking : unfixable).push({
+    const acceptance = hasFix(advisory) ? acceptanceFor(advisory, accepted, today) : null
+    ;(acceptance ? acceptedOut : hasFix(advisory) ? blocking : unfixable).push({
       id: advisory.id,
       module: advisory.module_name,
       severity: advisory.severity,
@@ -73,16 +111,21 @@ export function classifyAdvisories(report) {
       url: advisory.url,
       patched: advisory.patched_versions ?? null,
       vulnerable: advisory.vulnerable_versions ?? null,
+      ...(acceptance ? { until: acceptance.until, reason: acceptance.reason } : {}),
     })
   }
   const order = { critical: 0, high: 1 }
   const bySeverity = (a, b) => order[a.severity] - order[b.severity]
-  return { blocking: blocking.sort(bySeverity), unfixable: unfixable.sort(bySeverity) }
+  return {
+    blocking: blocking.sort(bySeverity),
+    unfixable: unfixable.sort(bySeverity),
+    accepted: acceptedOut.sort(bySeverity),
+  }
 }
 
-export function summarize(report) {
-  const { blocking, unfixable } = classifyAdvisories(report)
-  return { blocking, unfixable, exitCode: blocking.length === 0 ? 0 : 1 }
+export function summarize(report, options) {
+  const { blocking, unfixable, accepted } = classifyAdvisories(report, options)
+  return { blocking, unfixable, accepted, exitCode: blocking.length === 0 ? 0 : 1 }
 }
 
 function runAudit() {
@@ -112,7 +155,14 @@ function describe(entry) {
 
 function main() {
   const report = runAudit()
-  const { blocking, unfixable, exitCode } = summarize(report)
+  const { blocking, unfixable, accepted, exitCode } = summarize(report)
+
+  if (accepted.length > 0) {
+    console.log(`accepted until a date (${accepted.length}), reported and not blocking:\n`)
+    for (const entry of accepted)
+      console.log(`${describe(entry)}\n    accepted until ${entry.until}: ${entry.reason}`)
+    console.log('')
+  }
 
   if (unfixable.length > 0) {
     console.log(`known and unfixable (${unfixable.length}), reported and not blocking:\n`)
@@ -121,7 +171,7 @@ function main() {
   }
 
   if (process.argv.includes('--json')) {
-    console.log(JSON.stringify({ blocking, unfixable }, null, 2))
+    console.log(JSON.stringify({ blocking, unfixable, accepted }, null, 2))
     return exitCode
   }
 

@@ -6,6 +6,8 @@ vouchers and wallet.
 
 I measured before writing anything. Three of the four parts already existed.
 The fourth, gitleaks, was in the repo but had not actually run for six weeks.
+The broken file also hid the dependency audit, which turned up two critical
+advisories in the next.js version production serves (section 5).
 
 ## 1. Rate limits: wired on all three surfaces, but Upstash is not provisioned in production
 
@@ -189,7 +191,56 @@ so a renamed column cannot pass silently.
 Invariants: `src/lib/auth/rls-smoke.test.ts` (12 tests) over
 `supabase/rls-smoke.json`.
 
-## 5. Gates
+## 5. Dependency audit: the same invalid file hid it, so it ran today for the first time since 22.09
+
+Once security.yml parsed, its run on `3a496951f` had `Secret scan (gitleaks)`
+SUCCESS and `Dependency audit (fixable high/critical)` FAILURE:
+
+```
+CRITICAL next        vulnerable >=16.0.0 <=16.4.0   patched >=16.4.1   (x2)
+HIGH     next        vulnerable >=16.0.0 <16.3.8    patched >=16.3.8   (and one more <=16.4.0)
+CRITICAL dompurify   vulnerable >=3.4.4 <=3.4.16    patched >=3.4.17
+HIGH     dompurify   vulnerable <=3.4.16            patched >=3.4.17
+HIGH     node-forge  vulnerable <=1.4.0             patched >=1.4.1    (x6)
+HIGH     source-map-js vulnerable <1.2.2            patched >=1.2.2
+HIGH     zod         vulnerable <4.6.6              patched >=4.6.6
+```
+
+Production was serving next 16.3.7, which two critical advisories cover.
+Fixed:
+
+- `next` 16.3.7 to 16.4.5 and `@next/mdx` to ^16.4.5
+- `node-forge` to ^1.4.3
+- `pnpm-workspace.yaml` overrides for `dompurify` ^3.4.17 (pinned by
+  posthog-js) and `source-map-js` ^1.2.2 (via tailwind and vitest), next to
+  the existing transitive pins
+
+`pnpm build` exits 0 on 16.4.5. The Sentry upload 401 and the build-time
+`reviews` RLS denials both predate this item.
+
+**zod is accepted with an expiry, not fixed.** The fix exists only in zod 4.
+The last 3.x release is 3.25.76, which this app uses across 91 files, and v4
+changes the error shape and the preprocess semantics that the server actions
+rely on. That is a migration, not a bump. `scripts/audit-gate.mjs` now has an
+`ACCEPTED` list with a single entry, matched on the GHSA id. It expires
+2026-12-31 and blocks again by itself the day after. A new zod advisory with
+a different id still blocks. 4 new tests are in `scripts/audit-gate.test.mjs`.
+
+```
+$ node scripts/audit-gate.mjs
+accepted until a date (1), reported and not blocking:
+  HIGH     zod
+    Zod can exhaust memory while validating oversized constrained collections
+    vulnerable <4.6.6   patched >=4.6.6
+    https://github.com/advisories/GHSA-mrhx-c7xc-m3w5
+    accepted until 2026-12-31: fixed only in zod 4; migration is a separate work item (docs/S24-security.md)
+audit gate: no fixable high or critical advisory
+```
+
+**Not deployed.** Production runs MAINTENANCE_MODE and is deployed separately.
+next 16.4.5 reaches it with the next production deploy.
+
+## 6. Gates
 
 ```
 $ pnpm type-check
@@ -211,13 +262,19 @@ $ pnpm test   (before adding this document)
 
 The one red was already there before this item: S23 added a document without
 bumping the README count. This item sets the count to 306, which covers S23's
-document and this one. Final run below.
+document and this one. Final run below, after the dependency bumps:
 
 ```
+$ pnpm build
+build exit 0
+$ pnpm type-check
+tsc exit 0
+$ pnpm lint
+lint exit 0
 $ pnpm test
  Test Files  682 passed | 1 skipped (683)
-      Tests  8117 passed | 13 skipped (8130)
-exit 0
+      Tests  8121 passed | 13 skipped (8134)
+test exit 0
 ```
 
 Freeze gate:
@@ -245,5 +302,7 @@ S24 touches none of those paths.
    dual-key window. Rotate the Vercel protection bypass and API token.
 2. Provision Upstash for production: set both `UPSTASH_REDIS_REST_*`
    variables in Vercel production.
-3. Add `Secret scan (gitleaks)` to the required checks on `main`. It now has
+3. Migrate zod 3 to 4 before 2026-12-31, when the audit acceptance expires.
+4. Deploy next 16.4.5 to production. It closes two critical advisories.
+5. Add `Secret scan (gitleaks)` to the required checks on `main`. It now has
    a run history to show.

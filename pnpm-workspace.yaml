@@ -49,6 +49,14 @@ overrides:
   minimatch@9>brace-expansion: ^2.0.2
   fast-uri: ^3.1.5
 
+  # S24 (2026-11-04), from the first audit run in six weeks (security.yml was
+  # invalid YAML until then). dompurify comes in through posthog-js, which
+  # pins 3.4.16; source-map-js through tailwind and vitest. Both patch bumps.
+  # dompurify <=3.4.16  critical + high sanitizer bypass
+  # source-map-js <1.2.2  high
+  dompurify: ^3.4.17
+  source-map-js: ^1.2.2
+
   # esbuild <=0.24.2 lets any website send requests to the dev server and read
   # the response (GHSA-67mh-4wv8-2f99). The vulnerable 0.18.20 copy comes from
   # @esbuild-kit/esm-loader inside drizzle-kit, which pins ~0.18 and is
