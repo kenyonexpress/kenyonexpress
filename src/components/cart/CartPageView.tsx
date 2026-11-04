@@ -1,9 +1,11 @@
 'use client'
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
+import CartCouponForm from '@/components/cart/CartCouponForm'
 import CartLineItem, { CartEmptyState } from '@/components/cart/CartLineItem'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import CartTotalsSidebar from '@/components/cart/CartTotalsSidebar'
+import { t } from '@/lib/i18n/messages'
 import Link from 'next/link'
 
 /**
@@ -19,12 +21,18 @@ import Link from 'next/link'
  * whole route in the static shell.
  */
 export default function CartPageView() {
-  const { cart, clear, removeUnavailable, isPending } = useCart()
+  const { cart, clear, removeUnavailable, isPending, serverConfirmed, mirrorCount } = useCart()
   const isAuthenticated = useCartAuth()
 
   const unavailableCount = cart.items.filter((item) => !item.available).length
   const hasUnavailable = unavailableCount > 0
   const isEmpty = cart.items.length === 0
+  // The page is prerendered with an empty store and the cart arrives from
+  // /api/cart a second or two later. Measured on a local build: a guest with
+  // one item read "סל הקניות שלך ריק כרגע." for that whole wait, under a header
+  // badge already saying 1. While the persisted count says there is something
+  // and the server has not answered, the honest state is loading, not empty.
+  const awaitingServer = isEmpty && !serverConfirmed && mirrorCount > 0
 
   return (
     <div className="cart-page">
@@ -34,7 +42,7 @@ export default function CartPageView() {
           made it visible again; the styling notes live's geometry in
           cart-page.css. */}
       <nav className="cart-page__breadcrumb" aria-label="פירורי לחם">
-        <Link href="/" className="inline-block py-1">
+        <Link href="/" className="cart-page__crumb">
           עמוד הבית
         </Link>
         <span aria-hidden="true">›</span>
@@ -42,7 +50,11 @@ export default function CartPageView() {
       </nav>
       <h1 className="cart-page__title">סל הקניות</h1>
 
-      {isEmpty ? (
+      {awaitingServer ? (
+        <div className="cart-page__loading" aria-busy="true">
+          <output>{t('cartPage.loading')}</output>
+        </div>
+      ) : isEmpty ? (
         <CartEmptyState />
       ) : (
         <div className="cart-page__grid">
@@ -72,36 +84,64 @@ export default function CartPageView() {
               </div>
             )}
 
-            <div className="cart-page__items">
-              {cart.items.map((item) => (
-                <CartLineItem
-                  key={`${item.product_id}::${item.variant_id ?? 'null'}`}
-                  item={item}
-                />
-              ))}
-            </div>
-
-            <button
-              type="button"
-              className="cart-page__clear"
-              onClick={() => void clear()}
-              disabled={isPending}
-            >
-              רוקן עגלה
-            </button>
+            {/* Electro's `table.shop_table.cart`. Below 768 the CSS turns
+                each row into a stacked card labelled from `data-title`. The
+                header cells for remove and thumbnail are empty in Electro;
+                they carry screen-reader names here so the columns are named. */}
+            <table className="cart-table">
+              <thead>
+                <tr>
+                  <th scope="col" className="cart-table__th--remove">
+                    <span className="sr-only">{t('cartPage.colRemove')}</span>
+                  </th>
+                  <th scope="col" className="cart-table__th--thumb">
+                    <span className="sr-only">{t('cartPage.colImage')}</span>
+                  </th>
+                  <th scope="col">{t('cartPage.colProduct')}</th>
+                  <th scope="col">{t('cartPage.colPrice')}</th>
+                  <th scope="col">{t('cartPage.colQuantity')}</th>
+                  <th scope="col">{t('cartPage.colSubtotal')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.items.map((item) => (
+                  <CartLineItem
+                    key={`${item.product_id}::${item.variant_id ?? 'null'}`}
+                    item={item}
+                  />
+                ))}
+                {/* Electro's actions row: coupon on the start side, the gray
+                    pill on the end. Electro's pill is "Update cart"; quantities
+                    here save on every press, so the pill empties the cart. */}
+                <tr className="cart-table__actions">
+                  <td colSpan={6}>
+                    <div className="cart-table__actions-inner">
+                      <CartCouponForm coupon={cart.coupon} />
+                      <button
+                        type="button"
+                        className="cart-page__clear"
+                        onClick={() => void clear()}
+                        disabled={isPending}
+                      >
+                        רוקן עגלה
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </section>
 
-          <div>
-            <CartTotalsSidebar cart={cart} />
-            <div className="mt-4">
-              <CartCheckoutButton
-                isAuthenticated={isAuthenticated}
-                disabled={hasUnavailable || isEmpty}
-              />
-            </div>
-            <p className="cart-sidebar__note mt-3 px-gutter">
-              המחירים מחושבים בזמן אמת ועשויים להשתנות לפני התשלום
-            </p>
+          <div className="cart-collaterals">
+            <CartTotalsSidebar
+              cart={cart}
+              checkout={
+                <CartCheckoutButton
+                  isAuthenticated={isAuthenticated}
+                  disabled={hasUnavailable || isEmpty}
+                />
+              }
+            />
           </div>
         </div>
       )}

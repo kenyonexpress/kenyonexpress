@@ -5,7 +5,8 @@ import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
-import { shekels } from '@/lib/money-format'
+import { t } from '@/lib/i18n/messages'
+import { shekelsRounded } from '@/lib/money-format'
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
@@ -41,9 +42,22 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
       </Link>
 
       <div className="cart-drawer__item-body">
-        <Link href={`/product/${item.slug}`} className="cart-drawer__item-name">
-          {item.name_he}
-        </Link>
+        <div className="cart-drawer__item-head">
+          <Link href={`/product/${item.slug}`} className="cart-drawer__item-name">
+            {item.name_he}
+          </Link>
+          {/* Electro's mini-cart "×". The minus at quantity 1 also removes,
+              but a shopper should not have to count down to delete a line. */}
+          <button
+            type="button"
+            aria-label={`הסר ${item.name_he} מהעגלה`}
+            onClick={() => void removeItem(item.product_id, item.variant_id)}
+            disabled={isPending}
+            className="cart-drawer__remove"
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
         {warning && <output className="cart-drawer__item-warning">{warning}</output>}
         <div className="cart-drawer__item-row">
           <div className="cart-drawer__qty">
@@ -58,7 +72,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
               aria-label="הפחת כמות"
               className="cart-drawer__qty-btn"
             >
-              <Minus size={12} />
+              <Minus size={14} aria-hidden="true" />
             </button>
             <span className="tabular-nums">{item.quantity}</span>
             <button
@@ -70,10 +84,12 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
               aria-label="הוסף כמות"
               className="cart-drawer__qty-btn"
             >
-              <Plus size={12} />
+              <Plus size={14} aria-hidden="true" />
             </button>
           </div>
-          <span className="cart-drawer__item-price tabular-nums">{shekels(item.line_total)}</span>
+          <span className="cart-drawer__item-price tabular-nums">
+            {shekelsRounded(item.line_total)}
+          </span>
         </div>
       </div>
     </li>
@@ -81,7 +97,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
 }
 
 export default function CartDrawer() {
-  const { cart, drawerOpen, closeDrawer, isPending } = useCart()
+  const { cart, drawerOpen, closeDrawer, isPending, serverConfirmed, mirrorCount } = useCart()
   const isAuthenticated = useCartAuth()
 
   /**
@@ -225,7 +241,13 @@ export default function CartDrawer() {
         </header>
 
         <div className={`cart-drawer__body ${isPending ? 'opacity-70' : ''}`}>
-          {cart.items.length === 0 ? (
+          {/* Same rule as /cart: opened before /api/cart answers, a
+              remembered cart is loading, not empty. */}
+          {cart.items.length === 0 && !serverConfirmed && mirrorCount > 0 ? (
+            <div className="cart-drawer__empty" aria-busy="true">
+              <output>{t('cartPage.loading')}</output>
+            </div>
+          ) : cart.items.length === 0 ? (
             <div className="cart-drawer__empty">
               <ShoppingCart size={40} className="text-icon-empty" aria-hidden="true" />
               <p>העגלה ריקה</p>
@@ -249,7 +271,7 @@ export default function CartDrawer() {
           <footer className="cart-drawer__footer">
             <div className="cart-drawer__subtotal">
               <span>סה"כ לתשלום באתר</span>
-              <strong className="tabular-nums">{shekels(cart.subtotal)}</strong>
+              <strong className="tabular-nums">{shekelsRounded(cart.subtotal)}</strong>
             </div>
             <Link href="/cart" onClick={closeDrawer} className="cart-drawer__view-cart">
               צפייה בעגלה המלאה

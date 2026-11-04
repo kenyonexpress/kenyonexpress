@@ -4,11 +4,25 @@ import { useCart } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
-import { shekels } from '@/lib/money-format'
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { t } from '@/lib/i18n/messages'
+import { shekelsRounded } from '@/lib/money-format'
+import { Minus, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+/**
+ * One row of Electro's `table.shop_table.cart`, in its column order: remove,
+ * thumbnail, product, price, quantity, subtotal. In RTL the table runs right
+ * to left, so remove is the far-right cell, as Electro's is the far-left one.
+ *
+ * Below 768 the same cells stack, the WooCommerce small-screen pattern Electro
+ * ships: thead hidden, each cell a full-width row labelled from `data-title`,
+ * thumbnail hidden. That is why the labels live on the cells and not in the
+ * markup.
+ *
+ * Prices are whole shekels (`shekelsRounded`). The agorot stay integer in the
+ * store; only the display rounds.
+ */
 export default function CartLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
   const [localQty, setLocalQty] = useState(item.quantity)
@@ -44,26 +58,40 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
   }
 
   return (
-    <article className="cart-line">
-      <Link href={`/product/${item.slug}`} className="cart-line__thumb">
-        {item.image_url ? (
-          <SmartImage
-            src={item.image_url}
-            alt={item.name_he}
-            width={100}
-            height={100}
-            className="h-full w-full object-contain"
-            fallbackClassName="h-full w-full"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-surface-hover text-icon-empty text-xs">
-            אין תמונה
-          </div>
-        )}
-      </Link>
+    <tr className="cart-row">
+      <td className="cart-row__remove">
+        <button
+          type="button"
+          aria-label={`הסר ${item.name_he} מהעגלה`}
+          onClick={remove}
+          disabled={isPending}
+          className="cart-row__remove-btn"
+        >
+          <X size={18} aria-hidden="true" />
+        </button>
+      </td>
 
-      <div className="cart-line__body">
-        <Link href={`/product/${item.slug}`} className="cart-line__name">
+      <td className="cart-row__thumb">
+        <Link href={`/product/${item.slug}`} tabIndex={-1} aria-hidden="true">
+          {item.image_url ? (
+            <SmartImage
+              src={item.image_url}
+              alt=""
+              width={92}
+              height={92}
+              className="h-full w-full object-contain"
+              fallbackClassName="h-full w-full"
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center bg-surface-hover text-icon-empty text-xs">
+              אין תמונה
+            </span>
+          )}
+        </Link>
+      </td>
+
+      <td className="cart-row__name" data-title={t('cartPage.colProduct')}>
+        <Link href={`/product/${item.slug}`} className="cart-row__name-link">
           {item.name_he}
         </Link>
 
@@ -71,76 +99,50 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             role, and it is what this actually is -- a message produced in
             response to the shopper's own action, announced when a quantity
             change turns a line unavailable rather than only read on load. */}
-        {warning && <output className="cart-line__warning">{warning}</output>}
+        {warning && <output className="cart-row__warning">{warning}</output>}
 
         {item.type === 'coupon' && item.balance_due_at_business > 0 && (
-          <p className="cart-line__coupon-note">
-            תשלום באתר: {shekels(item.customer_pays_now)} · יתרה בחנות:{' '}
-            {shekels(item.balance_due_at_business)}
+          <p className="cart-row__coupon-note">
+            תשלום באתר: {shekelsRounded(item.customer_pays_now)} · יתרה בחנות:{' '}
+            {shekelsRounded(item.balance_due_at_business)}
           </p>
         )}
+      </td>
 
-        {/* Below 768 the line renders as live's stacked WooCommerce rows
-            (remove / name / unit price / quantity / line total, measured
-            57+83+54+75+54 in refs/ke_live_computed.json cart@380). This row is
-            the unit price, which the desktop card never shows; CSS hides it
-            from 768 up and orders the interactive controls around it. */}
-        <div className="cart-line__unit">
-          <span>מחיר:</span>
-          <span>{shekels(item.unit_price)}</span>
-        </div>
+      <td className="cart-row__price tabular-nums" data-title={t('cartPage.colPrice')}>
+        {shekelsRounded(item.unit_price)}
+      </td>
 
-        {/* DOM order is side order in this RTL flex row. Live's cart row reads
-            right-to-left: remove (x1236, the far right of a 135..1305 row),
-            then price (x497), then quantity (x267) with the subtotal leftmost
-            (refs/ke_live_computed.json, cart@1440). Ours had the exact mirror:
-            qty right, remove far left. Remove renders first (right), price
-            next, and the qty pill carries the auto margin to the far left. */}
-        <div className="cart-line__footer">
+      <td className="cart-row__qty" data-title={t('cartPage.colQuantity')}>
+        <div className="cart-qty">
+          {/* Minus first: in RTL that puts it on the right, the mirror of
+              the LTR stepper where minus sits on the left. */}
           <button
             type="button"
-            onClick={remove}
-            disabled={isPending}
-            aria-label={`הסר ${item.name_he} מהעגלה`}
-            className="cart-line__remove"
+            aria-label="הפחת כמות"
+            onClick={dec}
+            disabled={localQty <= 1 || isPending}
+            className="cart-qty__btn"
           >
-            <Trash2 size={16} aria-hidden="true" />
+            <Minus size={14} aria-hidden="true" />
           </button>
-
-          {/* Mobile-only labels for the stacked rows; aria-hidden because the
-              controls beside them are already named. */}
-          <span className="cart-line__mlabel" aria-hidden="true">
-            מחיר:
-          </span>
-          <span className="cart-line__price">{shekels(item.line_total)}</span>
-
-          <span className="cart-line__mlabel" aria-hidden="true">
-            כמות:
-          </span>
-          <div className="cart-line__qty">
-            <button
-              type="button"
-              onClick={dec}
-              disabled={localQty <= 1 || isPending}
-              aria-label="הפחת כמות"
-              className="cart-line__qty-btn"
-            >
-              <Minus size={14} />
-            </button>
-            <span className="cart-line__qty-value tabular-nums">{localQty}</span>
-            <button
-              type="button"
-              onClick={inc}
-              disabled={localQty >= maxQty || isPending}
-              aria-label="הוסף כמות"
-              className="cart-line__qty-btn"
-            >
-              <Plus size={14} />
-            </button>
-          </div>
+          <span className="cart-qty__value tabular-nums">{localQty}</span>
+          <button
+            type="button"
+            aria-label="הוסף כמות"
+            onClick={inc}
+            disabled={localQty >= maxQty || isPending}
+            className="cart-qty__btn"
+          >
+            <Plus size={14} aria-hidden="true" />
+          </button>
         </div>
-      </div>
-    </article>
+      </td>
+
+      <td className="cart-row__subtotal tabular-nums" data-title={t('cartPage.colSubtotal')}>
+        {shekelsRounded(item.line_total)}
+      </td>
+    </tr>
   )
 }
 

@@ -5,7 +5,7 @@ import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
 import type { CartViewItem } from '@/lib/cart/types'
 import { t } from '@/lib/i18n/messages'
-import { shekels } from '@/lib/money-format'
+import { shekelsRounded } from '@/lib/money-format'
 import { ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -48,18 +48,18 @@ function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: ()
           {item.name_he}
         </Link>
         <span className="mini-cart__item-meta tabular-nums">
-          {item.quantity} × {shekels(item.unit_price)}
+          {item.quantity} × {shekelsRounded(item.unit_price)}
         </span>
         {item.type === 'coupon' && item.balance_due_at_business > 0 && (
           <span className="mini-cart__item-note">
-            יתרה בחנות: {shekels(item.balance_due_at_business)}
+            יתרה בחנות: {shekelsRounded(item.balance_due_at_business)}
           </span>
         )}
       </div>
 
       <div className="mini-cart__item-end">
         <span className="mini-cart__item-price tabular-nums">
-          {shekels(item.customer_pays_now)}
+          {shekelsRounded(item.customer_pays_now)}
         </span>
         <button
           type="button"
@@ -76,7 +76,7 @@ function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: ()
 }
 
 export default function MiniCartDropdown() {
-  const { cart, drawerOpen, closeDrawer, isPending } = useCart()
+  const { cart, drawerOpen, closeDrawer, isPending, serverConfirmed, mirrorCount } = useCart()
   const isAuthenticated = useCartAuth()
   const panelRef = useRef<HTMLDialogElement | null>(null)
   const pathname = usePathname()
@@ -150,6 +150,9 @@ export default function MiniCartDropdown() {
   if (!drawerOpen) return null
 
   const isEmpty = cart.items.length === 0
+  // Same rule as /cart: opened before /api/cart answers, a remembered cart is
+  // loading, not empty.
+  const awaitingServer = isEmpty && !serverConfirmed && mirrorCount > 0
 
   return (
     // A real <dialog open>, not a div with role="dialog". Open-but-not-modal is
@@ -162,7 +165,11 @@ export default function MiniCartDropdown() {
       className={`mini-cart__panel ${isPending ? 'mini-cart__panel--pending' : ''}`}
       aria-label={t('nav.cart')}
     >
-      {isEmpty ? (
+      {awaitingServer ? (
+        <div className="mini-cart__empty" aria-busy="true">
+          <output>{t('cartPage.loading')}</output>
+        </div>
+      ) : isEmpty ? (
         <div className="mini-cart__empty">
           <ShoppingCart size={32} aria-hidden="true" />
           <p>אין מוצרים בסל הקניות</p>
@@ -185,12 +192,12 @@ export default function MiniCartDropdown() {
           <div className="mini-cart__footer">
             <div className="mini-cart__subtotal">
               <span>סה"כ לתשלום באתר</span>
-              <strong className="tabular-nums">{shekels(cart.subtotal)}</strong>
+              <strong className="tabular-nums">{shekelsRounded(cart.subtotal)}</strong>
             </div>
             {cart.balance_due_at_business > 0 && (
               <div className="mini-cart__balance">
                 <span>יתרה לתשלום בחנות</span>
-                <span className="tabular-nums">{shekels(cart.balance_due_at_business)}</span>
+                <span className="tabular-nums">{shekelsRounded(cart.balance_due_at_business)}</span>
               </div>
             )}
             <div className="mini-cart__actions">

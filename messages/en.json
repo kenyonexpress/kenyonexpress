@@ -829,5 +829,17 @@
     "expiry": "Reminder before a coupon expires",
     "note": "The purchase confirmation and refunds always arrive.",
     "saveFailed": "Saving failed."
+  },
+  "cartPage": {
+    "colRemove": "Remove",
+    "colImage": "Image",
+    "colProduct": "Product",
+    "colPrice": "Price",
+    "colQuantity": "Quantity",
+    "colSubtotal": "Subtotal",
+    "subtotal": "Subtotal",
+    "couponPlaceholder": "Coupon code",
+    "applyCoupon": "Apply coupon",
+    "loading": "Loading your cart..."
   }
 }

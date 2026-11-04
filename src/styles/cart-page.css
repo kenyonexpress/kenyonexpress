@@ -39,10 +39,9 @@
   align-items: center;
   gap: 8px;
   margin-inline: -15px;
-  /* 6px, not the checkout's 9: this band's link carries py-1 for its touch
-     target, so 11.5px measured 52px against live's 42; 6px + the link's own
-     padding lands on the 42 the min-height guards. */
-  padding: 6px 15px;
+  /* No block padding: the link is 44px tall (`.cart-page__crumb`, the touch
+     floor), so the band is 44 against live's 42 and any padding adds to it. */
+  padding: 0 15px;
   min-height: 42px;
   background: #f7f6f6;
   font-size: 14px;
@@ -52,10 +51,17 @@
 @media (min-width: 768px) {
   .cart-page__breadcrumb {
     margin-inline: 0;
-    padding: 25.004px 0 22.4px;
+    /* Live's 25.004 / 22.4, less 7.5 each: the link grew from 29 to 44. */
+    padding: 17.504px 0 14.9px;
     min-height: 0;
     background: transparent;
   }
+}
+
+.cart-page__crumb {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cart-touch);
 }
 
 .cart-page__breadcrumb a:hover {
@@ -81,328 +87,375 @@
     margin-top: 0;
   }
 }
-
+/* ===========================================================================
+   ELECTRO v7 CART. The WooCommerce `table.shop_table.cart` and
+   `.cart_totals` that Electro ships, measured off electro.madrasthemes.com
+   /cart/ (refs/GAP-CART-CHECKOUT.md, electro column): 1px #ddd row rules,
+   cells padded 8px inline and centred vertically, a 92px thumbnail with 4px
+   padding, a 14px-radius quantity box, the joined coupon pill in #333e48 and
+   the #efecec gray action pill. Mirrored for RTL with logical properties.
+   =========================================================================== */
 .cart-page__grid {
-  display: grid;
-  gap: 2rem;
-}
-
-@media (min-width: 992px) {
-  .cart-page__grid {
-    grid-template-columns: 1fr 340px;
-    align-items: start;
-  }
-}
-
-.cart-page__items {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  border: 1px solid #ddd;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  background: #fff;
 }
 
-.cart-line {
-  display: grid;
-  grid-template-columns: 100px 1fr;
-  gap: 1rem;
-  padding: 1.25rem;
-  border-bottom: 1px solid #eee;
-}
-
-.cart-line:last-child {
-  border-bottom: none;
-}
-
-.cart-line__thumb {
-  display: block;
-  width: 100px;
-  height: 100px;
-  border: 1px solid #eee;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  background: #fff;
-}
-
-.cart-line__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.cart-line__name {
-  font-size: 16.996px;
-  font-weight: 400;
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: transparent;
   color: #333e48;
-  line-height: 1.4;
-  transition: color 0.15s;
+  font-size: 14px;
+  line-height: 1.714;
 }
 
-.cart-line__name:hover {
-  color: #0062bd;
+.cart-table thead th {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: start;
+  white-space: nowrap;
 }
 
-.cart-line__warning {
-  font-size: 0.8125rem;
-  color: #dc3545;
-  font-weight: 600;
+.cart-table td {
+  padding: 34.995px 8px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+  text-align: start;
 }
 
-.cart-line__coupon-note {
-  font-size: 0.8125rem;
-  color: #666;
+.cart-table__th--remove,
+.cart-row__remove {
+  width: 52px;
 }
 
-.cart-line__footer {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: auto;
-  flex-wrap: wrap;
+.cart-table__th--thumb,
+.cart-row__thumb {
+  width: 108px;
 }
 
-.cart-line__qty {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 22px;
-  overflow: hidden;
-  height: var(--cart-touch);
-  /* The auto margin rides on the LAST flex child so the row splits
-     remove+price (inline-start, the right) from the qty pill (inline-end, the
-     left) -- live's side order, see the note in CartLineItem. */
-  margin-inline-start: auto;
+.cart-row__remove {
+  padding-inline: 0 !important;
+  text-align: center;
 }
 
-.cart-line__qty-btn {
-  display: flex;
+.cart-row__remove-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* Both axes at the full touch target. The control used to be 36x36 inside a
-     40px pill, which reads fine on a desktop pointer and is under the 44px
-     minimum for the thumb this page is mostly used with. */
   width: var(--cart-touch);
   height: var(--cart-touch);
-  color: #515151;
-  transition: background 0.15s;
+  border-radius: 50%;
+  color: #333e48;
+  transition: color 0.15s, background 0.15s;
 }
 
-.cart-line__qty-btn:hover:not(:disabled) {
+.cart-row__remove-btn:hover:not(:disabled) {
+  color: #e4002b;
   background: #f5f5f5;
 }
 
-.cart-line__qty-btn:disabled {
+.cart-row__remove-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cart-row__thumb a {
+  display: block;
+  width: 92px;
+  height: 92px;
+  padding: 4px;
+  background: #fff;
+}
+
+.cart-row__name-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cart-touch);
+  color: #0062bd;
+  font-weight: 400;
+}
+
+.cart-row__name-link:hover {
+  color: #333e48;
+}
+
+.cart-row__warning {
+  display: block;
+  margin-top: 4px;
+  color: #dc3545;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cart-row__coupon-note {
+  margin: 4px 0 0;
+  color: #657888;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cart-row__price,
+.cart-row__subtotal {
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+/* The quantity stepper: Electro's quantity box (1px #ddd, radius 14px, 40px
+   tall) with a minus and plus inside it. The buttons are 44px wide and the
+   box 44px tall, the project's touch floor; Electro's bare input is 40. */
+.cart-qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.cart-qty__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cart-touch);
+  height: var(--cart-touch);
+  color: #333e48;
+  transition: background 0.15s;
+}
+
+.cart-qty__btn:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.cart-qty__btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
-.cart-line__qty-value {
-  width: 2.5rem;
+.cart-qty__value {
+  min-width: 28px;
   text-align: center;
-  font-weight: 700;
-  color: #333e48;
+  font-size: 14px;
 }
 
-.cart-line__price {
-  font-size: 16.996px;
-  font-weight: 700;
-  /* The price is the one thing on the row that has to be findable at a glance,
-     and on Electro it is the accent red rather than the body slate. */
-  color: var(--cart-price-red);
+/* The actions row: coupon pill on the start side, gray pill on the end. */
+.cart-table__actions td {
+  padding: 22px 0;
+  border-bottom: 0;
 }
 
-.cart-line__remove {
+.cart-table__actions-inner {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--cart-touch);
-  height: var(--cart-touch);
-  color: #a7a7a7;
-  border-radius: 0.375rem;
-  transition: color 0.15s, background 0.15s;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.cart-line__remove:hover:not(:disabled) {
-  color: #dc3545;
-  background: #fef2f2;
-}
-
-/* Desktop never shows the unit-price row or the stacked-row labels; the card
-   already carries the line total. */
-.cart-line__unit,
-.cart-line__mlabel {
-  display: none;
-}
-
-/* ===========================================================================
-   BELOW 768 THE LINE IS LIVE'S STACKED WOOCOMMERCE ROWS, NOT THE CARD.
-   refs/ke_live_computed.json, cart@380: one cart_item renders as label rows
-   remove 57 / name 83 / price 54 / quantity 75 / subtotal 54 (~336 with cell
-   padding), values on the left (x23) and labels on the right, no thumbnail.
-   Our 177px card left every block after it ~200px above the reference, which
-   is what the 65.6% and 76.3% bands at y900-1300 were reading. The card DOM
-   is kept; display:contents flattens it and order re-stacks it.
-   =========================================================================== */
-@media (max-width: 767px) {
-  .cart-page__items {
-    border: none;
-    border-radius: 0;
-  }
-
-  .cart-line {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    padding: 6px 0;
-    gap: 0;
-  }
-
-  .cart-line__thumb {
-    display: none;
-  }
-
-  .cart-line__body,
-  .cart-line__footer {
-    display: contents;
-  }
-
-  .cart-line__remove {
-    order: 1;
-    grid-column: 1 / -1;
-    /* end = the LEFT in RTL; live's remove link sits at x23. */
-    justify-self: end;
-    min-height: 57px;
-  }
-
-  .cart-line__name {
-    order: 2;
-    grid-column: 1 / -1;
-    min-height: 83px;
-    display: flex;
-    align-items: center;
-  }
-
-  .cart-line__warning {
-    order: 3;
-    grid-column: 1 / -1;
-  }
-
-  .cart-line__coupon-note {
-    order: 4;
-    grid-column: 1 / -1;
-  }
-
-  .cart-line__unit {
-    order: 5;
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 54px;
-    font-size: 16.996px;
-  }
-
-  .cart-line__mlabel {
-    display: flex;
-    align-items: center;
-    font-size: 16.996px;
-    justify-self: start;
-  }
-
-  /* DOM order in the footer is remove, price-label, price, qty-label, qty;
-     live stacks quantity ABOVE the line total, so order swaps the two pairs.
-     The labels also carry live's row heights (quantity 75, subtotal 54) so
-     the grid rows measure what the reference measures. */
-  .cart-line__footer .cart-line__mlabel:first-of-type {
-    order: 8; /* מחיר: (line total) */
-    min-height: 54px;
-  }
-
-  .cart-line__footer .cart-line__mlabel:last-of-type {
-    order: 6; /* כמות: */
-    min-height: 75px;
-  }
-
-  .cart-line__qty {
-    order: 7;
-    justify-self: end;
-    margin-inline-start: 0;
-    /* Height stays var(--cart-touch): live's input is 40px but the 44px
-       touch floor is a standing project rule and outranks the 4px. The row's
-       75px comes from the label beside it either way. */
-  }
-
-  .cart-line__price {
-    order: 9;
-    justify-self: end;
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-  }
-}
-
-.cart-sidebar {
-  background: transparent;
-  padding: 0 15px;
-  position: sticky;
-  top: 1rem;
-}
-
-.cart-sidebar__title {
-  font-size: 25.004px;
-  font-weight: 500;
-  color: #333e48;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #eee;
-}
-
-.cart-sidebar__rows {
+.cart-coupon {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  gap: 6px;
 }
 
-.cart-sidebar__row {
+.cart-coupon__row {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.9375rem;
-  color: #333e48;
 }
 
-.cart-sidebar__row--muted {
+.cart-coupon__input {
+  width: 200px;
+  min-width: 0;
+  height: 48px;
+  padding: 7.476px 25.2px;
+  border: 1px solid #ddd;
+  border-inline-end: 0;
+  border-start-start-radius: 22px;
+  border-end-start-radius: 22px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333e48;
+  background: #fff;
+}
+
+.cart-coupon__input:focus {
+  outline: none;
+  border-color: #fed700;
+}
+
+.cart-coupon__input[aria-invalid="true"] {
+  border-color: #dc3545;
+}
+
+.cart-coupon__submit {
+  height: 48px;
+  padding: 14.504px 15.876px;
+  border: 0;
+  border-start-end-radius: 21.994px;
+  border-end-end-radius: 21.994px;
+  background: #333e48;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cart-coupon__submit:hover:not(:disabled) {
+  background: #1d252c;
+}
+
+.cart-coupon__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cart-coupon__error {
+  margin: 0;
+  color: #dc3545;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cart-coupon--applied {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+}
+
+.cart-coupon__applied-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-coupon__label {
   color: #657888;
-  font-size: 0.875rem;
+  font-size: 12px;
 }
 
-.cart-sidebar__total {
+.cart-coupon__remove {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cart-touch);
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: #0062bd;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cart-page__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 47px;
+  padding: 14.504px 29.876px;
+  background: #efecec;
+  color: #333e48;
+  font-size: 14px;
+  border-radius: 21.994px;
+  transition: background 0.15s;
+}
+
+.cart-page__clear:hover:not(:disabled) {
+  background: #e2dede;
+}
+
+.cart-page__clear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* `.cart_totals`: end-aligned (left, in RTL), padding-top 70 at 768 and up. */
+.cart-collaterals {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 1rem 0;
-  border-top: 2px solid #333e48;
-  font-size: 1rem;
-  font-weight: 700;
+  justify-content: flex-end;
+}
+
+.cart-totals {
+  width: 100%;
+  padding-top: 14px;
+}
+
+@media (min-width: 768px) {
+  .cart-totals {
+    width: max(390px, 48%);
+    padding-top: 70px;
+  }
+}
+
+.cart-totals__title {
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ddd;
+  font-size: 25.004px;
+  font-weight: 500;
+  line-height: 1.2;
   color: #333e48;
 }
 
-.cart-sidebar__total strong {
-  font-size: 1.5rem;
-  font-weight: 700;
+.cart-totals__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.714;
   color: #333e48;
 }
 
-.cart-sidebar__note {
-  font-size: 0.75rem;
+.cart-totals__table th,
+.cart-totals__table td {
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.cart-totals__table th {
+  font-weight: 400;
+  text-align: start;
+}
+
+.cart-totals__table td {
+  text-align: end;
+  white-space: nowrap;
+}
+
+.cart-totals__row--muted th,
+.cart-totals__row--muted td {
+  color: #657888;
+}
+
+.cart-totals__row--discount td {
+  color: #328614;
+  font-weight: 700;
+}
+
+.cart-totals__row--total th,
+.cart-totals__row--total td {
+  font-weight: 700;
+  border-bottom: 0;
+}
+
+.cart-totals__row--total strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cart-totals__proceed {
+  margin-top: 20px;
+}
+
+.cart-totals__note {
+  margin: 12px 0 0;
+  font-size: 12px;
   /* Darkened from #999 for WCAG AA: 2.84:1 on white at 12px, which axe reported
      as serious on the phone. #6f6f6f is 5.02. */
   color: #6f6f6f;
-  margin-bottom: 1.25rem;
   line-height: 1.5;
 }
 
@@ -449,6 +502,17 @@
   pointer-events: none;
 }
 
+/* Holds the empty banner's place while the server cart is on its way, so the
+   page does not jump from banner to table. */
+.cart-page__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  color: #657888;
+  font-size: 14px;
+}
+
 /* The empty-cart banner, measured off the live page: #fed700, 49px/300,
    centred, padding 49px 79.282px, margin 98px 0 36.75px, radius 2px. */
 .cart-empty {
@@ -493,7 +557,7 @@
    disabled button, because the button is at the bottom of the sidebar and the
    thing the shopper has to act on is up here among the items.
 
-   #dc3545 is the same red `.cart-line__warning` already uses for the per-line
+   #dc3545 is the same red `.cart-row__warning` already uses for the per-line
    message, so the banner and the lines it is about read as one statement
    instead of two unrelated alarms. */
 .cart-page__blocked {
@@ -539,207 +603,122 @@
   cursor: not-allowed;
 }
 
-.cart-page__clear {
-  margin-top: 1rem;
-  display: inline-block;
-  padding: 14.504px 29.876px;
-  background: #efecec;
-  color: #333e48;
-  font-size: 14px;
-  border-radius: 21.994px;
-  transition: background 0.15s;
-}
-
-.cart-page__clear:hover:not(:disabled) {
-  background: #e2dede;
-}
-
-.cart-page__clear:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Discount code. Sits between the rows and the total because that is the order
-   it is read in: what the items cost, what the code takes off, what is left.
-   Below 768 it is a <details> whose summary is the only row; from 768 up the
-   summary is inert and the form is forced visible, the footer-disclosure
-   pattern. */
-.cart-coupon {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-block: 16px;
-  border-top: 1px solid #ddd;
-  font-size: 14px;
-}
-
-.cart-coupon__summary {
-  list-style: none;
-  cursor: pointer;
-  color: #657888;
-  font-size: 14px;
-  /* The 44px touch floor is a standing project rule; the summary is the one
-     control a phone shopper taps to reach the coupon field. */
-  display: flex;
-  align-items: center;
-  min-height: var(--cart-touch);
-}
-
-.cart-coupon__summary::-webkit-details-marker {
-  display: none;
-}
-
-.cart-coupon__form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-@media (min-width: 768px) {
-  .cart-coupon--disclosure > summary {
-    pointer-events: none;
-  }
-
-  .cart-coupon--disclosure > *:not(summary) {
-    display: flex !important;
-  }
-}
-
-.cart-coupon__row {
-  display: flex;
-  gap: 8px;
-}
-
-.cart-coupon__input {
-  flex: 1;
-  min-width: 0;
-  height: 40px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  padding: 0 16px;
-  font-size: 14px;
-  font-family: inherit;
-  color: #333e48;
-  background: #fff;
-}
-
-.cart-coupon__input:focus {
-  outline: none;
-  border-color: #fed700;
-}
-
-.cart-coupon__input[aria-invalid="true"] {
-  border-color: #dc3545;
-}
-
-.cart-coupon__submit {
-  height: 40px;
-  padding: 0 22px;
-  border: 1px solid #fed700;
-  border-radius: 20px;
-  background: #fed700;
-  color: #333e48;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-
-.cart-coupon__submit:hover:not(:disabled) {
-  background: #fedd26;
-}
-
-.cart-coupon__submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.cart-coupon__error {
-  margin: 0;
-  color: #dc3545;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.cart-coupon--applied {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.cart-coupon__applied-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.cart-coupon__label {
-  color: #657888;
-  font-size: 12px;
-}
-
-.cart-coupon__remove {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: #0062bd;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.cart-sidebar__row--discount {
-  color: #328614;
-  font-weight: 700;
-}
-
 /* ===========================================================================
-   MOBILE COMPACTION, AT THE END OF THE FILE ON PURPOSE: these override base
-   rules declared above at equal specificity, so source order is the override
-   mechanism. All values are live's, refs/ke_live_computed.json cart@380.
+   BELOW 768: STACKED CARDS, the WooCommerce small-screen table Electro ships.
+   thead hidden, every cell a full-width row with its `data-title` as the
+   label on the start side and the value on the end side, thumbnail hidden.
+   Electro measured at 380: remove 31, name 74, price 54, qty 75, subtotal 54;
+   326 per row. At the end of the file on purpose: these override the rules
+   above at equal specificity, so source order is the override mechanism.
    =========================================================================== */
 @media (max-width: 767px) {
-  /* Live's actions row: a full-width 47px gray pill (y689 x23 w334), 42px
-     under the last item row (table tr ends 647, button starts 689). */
+  .cart-table thead {
+    display: none;
+  }
+
+  .cart-table,
+  .cart-table tbody,
+  .cart-table tr,
+  .cart-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .cart-row {
+    border: 1px solid #ddd;
+    border-radius: 0;
+    margin-bottom: 16px;
+    background: #fff;
+  }
+
+  .cart-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 17.489px 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: end;
+  }
+
+  .cart-table td::before {
+    content: attr(data-title) ":";
+    flex-shrink: 0;
+    font-weight: 700;
+  }
+
+  .cart-row__remove,
+  .cart-row__thumb {
+    width: 100%;
+  }
+
+  .cart-row__remove {
+    justify-content: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .cart-row__remove::before,
+  .cart-table__actions td::before {
+    content: none !important;
+  }
+
+  .cart-row__thumb {
+    display: none !important;
+  }
+
+  .cart-row__name {
+    flex-wrap: wrap;
+  }
+
+  .cart-row__name-link {
+    flex: 1;
+    min-width: 0;
+    text-align: end;
+    overflow-wrap: anywhere;
+  }
+
+  .cart-row__warning,
+  .cart-row__coupon-note {
+    flex-basis: 100%;
+    text-align: start;
+  }
+
+  .cart-row td:last-child {
+    border-bottom: 0;
+  }
+
+  .cart-table__actions td {
+    display: block;
+    padding: 8px 0 0;
+    border-bottom: 0;
+  }
+
+  .cart-table__actions-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cart-coupon__row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cart-coupon__input,
+  .cart-coupon__submit {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 22px;
+  }
+
+  .cart-coupon__submit {
+    border-color: #333e48;
+  }
+
   .cart-page__clear {
     width: 100%;
-    margin-top: 42px;
   }
 
-  /* Live's order-total row is 41px (y898..939); the desktop 1rem block
-     padding measured 70. */
-  .cart-sidebar__total {
-    padding: 8px 0;
-  }
-
-  /* Collapsed coupon costs one 44px summary row; the summary's own touch
-     height is the row, so the block needs no padding of its own. */
-  .cart-coupon {
-    padding-block: 0;
-  }
-}
-
-@media (max-width: 767px) {
-  /* Live's gap between the actions row (ends 736) and the collaterals h2
-     (starts 795) is ~56px; the desktop grid gap is 32. */
-  .cart-page__grid {
-    gap: 56px;
-  }
-
-  /* Live: h2 795..846, table starts 858 -- 12px under the heading. */
-  .cart-sidebar__title {
-    margin-bottom: 12px;
-  }
-
-  .cart-sidebar__rows {
-    margin-bottom: 8px;
-  }
-
-  /* Live's collaterals hold nothing after the checkout button; the note's
-     caveat is re-stated by the checkout itself, which reprices before
-     payment. */
-  .cart-sidebar__note {
-    display: none;
+  .cart-totals {
+    padding-top: 40px;
   }
 }

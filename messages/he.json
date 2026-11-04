@@ -829,5 +829,17 @@
     "expiry": "תזכורת לפני שקופון פג",
     "note": "אישור הרכישה וההחזר מגיעים תמיד.",
     "saveFailed": "השמירה נכשלה."
+  },
+  "cartPage": {
+    "colRemove": "הסרה",
+    "colImage": "תמונה",
+    "colProduct": "מוצר",
+    "colPrice": "מחיר",
+    "colQuantity": "כמות",
+    "colSubtotal": "סה״כ",
+    "subtotal": "סכום ביניים",
+    "couponPlaceholder": "קוד קופון",
+    "applyCoupon": "החל קופון",
+    "loading": "טוען את הסל..."
   }
 }

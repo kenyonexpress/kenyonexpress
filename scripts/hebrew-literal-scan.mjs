@@ -194,5 +194,7 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * and iOS variants there; the two new push kinds (`security_alert`,
  * `invoice_ready`) and the push opt-in's iOS hint were born in the catalog
  * (`push.*`, `pushOptIn.*`). 605 -> 603.
+ * 2026-11-04, V01: the Electro cart table was born in the catalog
+ * (`cartPage.*`), and two old totals strings moved there with it. 603 -> 601.
  */
-export const HEBREW_LITERAL_CEILING = 603
+export const HEBREW_LITERAL_CEILING = 601
