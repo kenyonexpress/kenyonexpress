@@ -257,13 +257,13 @@ export function frameOptionsFor(pathname: string): 'DENY' | 'SAMEORIGIN' {
 export const DEFAULT_CONTENT_SECURITY_POLICY = contentSecurityPolicyFor('/')
 
 /**
- * The two routes that legitimately open the device camera: the supplier QR
- * scanner (both its addresses). Everywhere else camera stays denied --
+ * The routes that legitimately open the device camera: the supplier QR
+ * scanner (both its addresses) and the partner redeem screen (S15). Everywhere else camera stays denied --
  * Permissions-Policy: camera=() on a route the scanner lives on is a scanner
  * that silently cannot see, which is exactly what the static header was doing
  * until 2026-09-02.
  */
-export const CAMERA_PATHS = ['/scan', '/supplier/scan'] as const
+export const CAMERA_PATHS = ['/scan', '/supplier/scan', '/partner/redeem'] as const
 
 function isCameraPath(pathname: string): boolean {
   return CAMERA_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))

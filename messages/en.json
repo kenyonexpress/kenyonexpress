@@ -741,5 +741,21 @@
   },
   "orderVoucher": {
     "pinLabel": "Code for the business:"
+  },
+  "partnerRedeem": {
+    "title": "Redeem a coupon",
+    "intro": "Scan the customer's QR or type the 8-digit code under it.",
+    "business": "Business:",
+    "label": "Coupon code",
+    "submit": "Redeem",
+    "submitting": "Redeeming...",
+    "camera": "Scan QR with the camera",
+    "cameraClose": "Close the camera",
+    "cameraDenied": "Cannot open the camera, type the code",
+    "invalidInput": "Scan a QR or type an 8-digit code",
+    "noConnection": "No connection. Press again to retry the same attempt.",
+    "product": "Product:",
+    "customer": "Customer:",
+    "collect": "Collect at the till:"
   }
 }

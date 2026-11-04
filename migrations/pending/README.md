@@ -1,5 +1,14 @@
 # `migrations/pending/`
 
+## 2026-11-04: 255 WRITTEN AND APPLIED - מימוש קופון אצל שותף: תיקון redeem_voucher_locked
+
+‏`255_redeem_voucher_locked_fix.sql`. ‏S15. ‏`redeem_voucher_locked` והטבלה
+‏`vouchers_redemption_events` היו חיות בפרודקשן ולא היו בריפו. **הפונקציה לא רצה
+אף פעם:** היא העבירה ‏`p_ip` מסוג ‏inet לפרמטר text של ‏`redeem_voucher`, וכל קריאה
+נכשלה ב-42883. לכן הטבלה ריקה. התיקון: ‏`p_ip::text` ונרמול הקוד לפני הנעילה.
+ההרשאות לא השתנו (authenticated ו-service_role בלבד). הוחלה 04.11; הוכחה
+ב-`docs/S15-redeem.md`.
+
 ## 2026-11-04: 254 WRITTEN AND APPLIED - שוברים: תוקף 30/60/90, קוד 8 ספרות, סטטוס transferred
 
 ‏`254_voucher_validity_pin_transfer.sql`. ‏S10. **תוקף:** ‏`products.coupon_expiry_days`

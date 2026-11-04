@@ -225,6 +225,7 @@
       "/newsletter/confirm",
       "/newsletter/unsubscribe",
       "/offline",
+      "/partner/redeem",
       "/privacy-policy",
       "/products",
       "/refund_returns",

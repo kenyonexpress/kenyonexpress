@@ -1103,3 +1103,21 @@ Proof: `docs/S10-vouchers.md`.
 **Reversal:** drop the RPC, the three columns and `vouchers_transferred_fields`;
 re-run 166's guard body; restore `CHECK (coupon_expiry_days > 0)` and drop the
 default. The enum value stays (cannot be dropped without recreating the type).
+
+## 2026-11-04: 255 written AND APPLIED (queue S15)
+
+`255_redeem_voucher_locked_fix.sql`, two parts:
+
+1. `vouchers_redemption_events`: live in production before this (0 rows, RLS
+   on, service_role only), absent from the repo, now written down as it is.
+2. `redeem_voucher_locked`: live, and it had never run once. It passed
+   `p_ip inet` to `redeem_voucher(..., p_ip text, ...)`; inet to text is an
+   assignment cast, which a function call does not apply, so every call
+   raised 42883. Now `p_ip::text`, and the code is normalised before the
+   advisory lock and the event read. CREATE OR REPLACE, ACL unchanged.
+
+Applied 04.11 via `supabase db query --linked -f`, after a BEGIN/ROLLBACK
+rehearsal. Proof in `docs/S15-redeem.md`.
+
+**Reversal:** re-run the body with `p_ip` and `p_code` in place of `p_ip::text`
+and `v_code`. That restores a function nobody can call.

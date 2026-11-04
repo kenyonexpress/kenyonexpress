@@ -137,7 +137,16 @@ describe('permissionsPolicyFor', () => {
   it('opens the camera only on the scanner routes', () => {
     expect(permissionsPolicyFor('/scan')).toContain('camera=(self)')
     expect(permissionsPolicyFor('/supplier/scan')).toContain('camera=(self)')
-    for (const path of ['/', '/checkout', '/checkout/frame-return', '/supplier', '/scanner-x']) {
+    expect(permissionsPolicyFor('/partner/redeem')).toContain('camera=(self)')
+    for (const path of [
+      '/',
+      '/checkout',
+      '/checkout/frame-return',
+      '/supplier',
+      '/scanner-x',
+      '/partner',
+      '/partner/redeemx',
+    ]) {
       expect(permissionsPolicyFor(path)).toContain('camera=()')
     }
   })

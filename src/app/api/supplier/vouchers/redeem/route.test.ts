@@ -26,6 +26,7 @@ const recordRedemptionSignals = vi.fn()
 const adminUpdate = vi.fn()
 const staffRow = vi.fn()
 const membershipRow = vi.fn()
+const trackServerEvent = vi.fn()
 
 vi.mock('@/lib/supabase/bearer', () => ({
   identityScopedClient: (request: unknown) => identityScopedClient(request),
@@ -47,6 +48,9 @@ function decision(allowed: boolean) {
   }
 }
 
+vi.mock('@/server/analytics/track', () => ({
+  trackServerEvent: (input: unknown) => trackServerEvent(input),
+}))
 vi.mock('@/lib/wallet/notify', () => ({
   expireWalletPasses: (codes: string[]) => expireWalletPasses(codes),
 }))
@@ -134,6 +138,16 @@ describe('supplier scan endpoint', () => {
     adminUpdate.mockReset().mockResolvedValue({ error: null })
     staffRow.mockReset().mockReturnValue({ id: 'staff-1', supplier_id: 'sup-1' })
     membershipRow.mockReset().mockReturnValue({ supplier_id: 'sup-1' })
+    trackServerEvent.mockReset().mockResolvedValue(undefined)
+  })
+
+  it('reports one voucher_redeemed per scan, not two (S15)', async () => {
+    const response = await POST(request({ code: 'ABCD123456', idempotency_key: 'key-12345678' }))
+    expect(response.status).toBe(200)
+    expect(trackServerEvent).toHaveBeenCalledTimes(1)
+    expect(trackServerEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ eventName: 'voucher_redeemed' }),
+    )
   })
 
   afterEach(() => {

@@ -1058,6 +1058,11 @@ describe('the pending migration inventory', () => {
       // `transferred` with the service-role transfer_voucher_on_claim RPC.
       // Rehearsed and proven with rolled-back blocks: docs/S10-vouchers.md.
       '254_voucher_validity_pin_transfer.sql',
+      // S15 (04.11): APPLIED the same day. The live redeem_voucher_locked
+      // passed inet to a text parameter and failed every call with 42883;
+      // fixed with p_ip::text, and its event table written down as-is.
+      // Proof, rolled back: docs/S15-redeem.md.
+      '255_redeem_voucher_locked_fix.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

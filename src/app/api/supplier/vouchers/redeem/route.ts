@@ -346,17 +346,6 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       await reportRedemption(result)
     }
 
-    // Funnel event, replays excluded so one scan is one event. Swallows its
-    // own errors. Both destinations work now: PostHog always did, and the
-    // first-party copy needed 180 (applied) plus the `session_id` fix.
-    if (!replayed) {
-      await trackServerEvent({
-        eventName: 'voucher_redeemed',
-        userId: user.id,
-        props: { code: (result.code as string) ?? shortCode },
-      })
-    }
-
     return respond(
       {
         outcome,
