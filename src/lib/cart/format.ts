@@ -41,6 +41,10 @@ export function unavailableMessage(item: CartViewItem): string | null {
       return item.max_quantity === null
         ? 'המוצר אינו זמין בכמות המבוקשת'
         : `נותרו ${item.max_quantity} במלאי — הפחיתו את הכמות כדי להמשיך`
+    case 'over_limit':
+      return item.max_quantity === null
+        ? 'חרגתם ממספר היחידות המותר להזמנה — הפחיתו את הכמות כדי להמשיך'
+        : `ניתן להזמין עד ${item.max_quantity} יחידות — הפחיתו את הכמות כדי להמשיך`
     case 'price_error':
       // Deliberately the same sentence as `unpriced`, and for the same reason:
       // the shopper can neither cause nor cure it, and the honest version --

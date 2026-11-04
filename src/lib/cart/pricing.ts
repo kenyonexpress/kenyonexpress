@@ -36,6 +36,12 @@ type ProductRow = {
    */
   full_price?: number | null
   platform_percent?: number | null
+  /**
+   * The admin's per-order limit for this product, across all of its lines.
+   * Optional because the abandoned-cart reader and older fixtures do not name
+   * it; absent means no limit, the same as a null column.
+   */
+  max_per_order?: number | null
   coupon_price_ils?: number | null
   cashback_percent?: number | null
 }
@@ -85,6 +91,27 @@ function stockCeiling(product: ProductRow, variant: VariantRow | null): number |
 }
 
 /**
+ * `products.max_per_order` as a usable limit, or null for none.
+ *
+ * Shared with the add-to-cart gate in `server/actions/cart.ts` so the write
+ * and the render agree on what counts as a limit. Zero, negatives and junk are
+ * treated as unset rather than as "sell nothing": the admin form only accepts
+ * `min(1)`, so anything else is not a decision anybody made.
+ */
+export function maxPerOrderOf(value: unknown): number | null {
+  const n = Number(value)
+  if (value == null || !Number.isFinite(n) || n < 1) return null
+  return Math.floor(n)
+}
+
+/** The smaller of two optional ceilings, null only when both are. */
+function lowerCeiling(a: number | null, b: number | null): number | null {
+  if (a == null) return b
+  if (b == null) return a
+  return Math.min(a, b)
+}
+
+/**
  * Why this line cannot be ordered, or null when it can.
  *
  * This replaced a boolean `isAvailable`, and the ordering of the branches is
@@ -110,6 +137,11 @@ function unavailableReason(
    * column a second time here is how the guard and the charge drift apart.
    */
   unitPrice: Agorot,
+  /**
+   * How many units of this product this line may still hold under
+   * `max_per_order`, net of the product's other lines. Null for no limit.
+   */
+  limitRoom: number | null,
 ): UnavailableReason | null {
   if (product.status !== 'active' || product.deleted_at) return 'delisted'
   // Before `unpriced` and before the stock reasons, because this line HAS a
@@ -120,10 +152,14 @@ function unavailableReason(
   if (!priceable) return 'unpriced'
 
   const stock = stockCeiling(product, variant)
-  if (stock == null) return null
   if (stock === 0) return 'out_of_stock'
-  if (stock < quantity) return 'insufficient_stock'
-  return null
+  const overStock = stock != null && stock < quantity
+  const overLimit = limitRoom != null && limitRoom < quantity
+  if (!overStock && !overLimit) return null
+  // Both cured by lowering the quantity, so name the ceiling the shopper will
+  // actually hit: the message prints `max_quantity`, which is the lower one.
+  if (overLimit && (stock == null || limitRoom < stock)) return 'over_limit'
+  return 'insufficient_stock'
 }
 
 /**
@@ -202,6 +238,13 @@ export function buildCartView(
   const productMap = new Map(products.map((p) => [p.id, p]))
   const variantMap = new Map(variants.map((v) => [v.id, v]))
 
+  // Units per product across the whole cart, because `max_per_order` limits the
+  // product and two sizes of it are two lines.
+  const productUnits = new Map<string, number>()
+  for (const item of storageItems) {
+    productUnits.set(item.product_id, (productUnits.get(item.product_id) ?? 0) + item.quantity)
+  }
+
   const commissionLines: {
     id: string
     productType: 'physical' | 'coupon'
@@ -266,7 +309,19 @@ export function buildCartView(
       percent != null &&
       (type !== 'coupon' || couponPriceUnit != null) &&
       (type !== 'physical' || unitPrice > 0)
-    const reason = unavailableReason(product, variant, item.quantity, priceable, unitPrice)
+    const limit = maxPerOrderOf(product.max_per_order)
+    const limitRoom =
+      limit == null
+        ? null
+        : Math.max(0, limit - ((productUnits.get(item.product_id) ?? 0) - item.quantity))
+    const reason = unavailableReason(
+      product,
+      variant,
+      item.quantity,
+      priceable,
+      unitPrice,
+      limitRoom,
+    )
     if (priceable) {
       commissionLines.push({
         id: lineKey,
@@ -296,7 +351,7 @@ export function buildCartView(
       type: type ?? 'physical',
       available: reason === null,
       unavailable_reason: reason,
-      max_quantity: stockCeiling(product, variant),
+      max_quantity: lowerCeiling(stockCeiling(product, variant), limitRoom),
       platform_fee: ZERO,
       supplier_due: ZERO,
       customer_pays_now: ZERO,

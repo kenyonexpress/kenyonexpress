@@ -64,6 +64,10 @@ export type CartViewItem = {
    * that can only come back "אין מספיק במלאי", and what lets the line say how many
    * are actually left rather than only that the shopper asked for too many.
    *
+   * Also capped by the product's `max_per_order`, net of the units of the same
+   * product on the cart's other lines, so the stepper stops at whichever of the
+   * shelf and the limit is lower.
+   *
    * It is a display and input ceiling, never an authority: every write still
    * re-reads stock server-side in `validateProductForCart`, because this number
    * is as old as the last cart render and the shelf is not.
@@ -102,6 +106,12 @@ export type UnavailableReason =
   | 'unpriced'
   | 'out_of_stock'
   | 'insufficient_stock'
+  /**
+   * More units of the product than its admin-set `max_per_order` allows, across
+   * every line of the cart. Last because, like `insufficient_stock`, lowering
+   * the quantity cures it, and when both apply the lower ceiling is reported.
+   */
+  | 'over_limit'
 
 /**
  * The hard ceiling on one cart line, matching `max(99)` in

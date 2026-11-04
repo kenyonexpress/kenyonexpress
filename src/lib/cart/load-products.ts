@@ -47,8 +47,10 @@ export async function loadCartProductData(items: CartStorageItem[]) {
   // 2026-09-06. Omitting it would not fail the read -- it would silently make
   // every compare-at null and switch the guard off for the whole catalogue,
   // which is the worse failure because it is invisible.
+  // `max_per_order` was confirmed present (and anon-readable) on the hosted
+  // project on 2026-11-04, 44 active rows carrying a value.
   const productSelect =
-    'id, slug, name_he, type, kenyon_price, full_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
+    'id, slug, name_he, type, kenyon_price, full_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, max_per_order'
 
   // `orFail`, not `const { data }`. A discarded error here does not just show a
   // thin cart: `buildCartView` skips every line whose product it cannot find,

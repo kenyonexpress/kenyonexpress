@@ -8,7 +8,7 @@ import {
   getGuestSessionId,
 } from '@/lib/cart/guest-session'
 import { loadCartProductData } from '@/lib/cart/load-products'
-import { buildCartView } from '@/lib/cart/pricing'
+import { buildCartView, maxPerOrderOf } from '@/lib/cart/pricing'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
@@ -43,6 +43,17 @@ import { cookies, headers } from 'next/headers'
 
 function itemKey(item: CartStorageItem): string {
   return `${item.product_id}::${item.variant_id ?? 'null'}`
+}
+
+/** Units of one product across every line except the one named by `exceptKey`. */
+function otherLinesQuantity(
+  items: CartStorageItem[],
+  productId: string,
+  exceptKey: string,
+): number {
+  return items
+    .filter((i) => i.product_id === productId && itemKey(i) !== exceptKey)
+    .reduce((sum, i) => sum + i.quantity, 0)
 }
 
 function parseItems(raw: unknown): CartStorageItem[] {
@@ -324,6 +335,12 @@ async function validateProductForCart(
   productId: string,
   variantId: string | null,
   quantity: number,
+  /**
+   * Units of this product across EVERY line of the cart once the write lands,
+   * this one included. `max_per_order` is a per-product limit, so two sizes of
+   * the same product share it. Defaults to `quantity` for a single-line product.
+   */
+  productTotal: number = quantity,
 ): Promise<
   { ok: true; platformPercent: number | null } | { ok: false; error: string; code: string }
 > {
@@ -332,7 +349,7 @@ async function validateProductForCart(
   const { data: product } = await catalogue
     .from('products')
     .select(
-      'id, status, deleted_at, stock_quantity, type, is_coupon_enabled, platform_percent, kenyon_price, full_price',
+      'id, status, deleted_at, stock_quantity, type, is_coupon_enabled, platform_percent, kenyon_price, full_price, max_per_order',
     )
     .eq('id', productId)
     .maybeSingle()
@@ -368,6 +385,20 @@ async function validateProductForCart(
   // "נוסף לסל" about something the cart will immediately mark unavailable.
   if (isImplausibleDiscount(product.kenyon_price, product.full_price)) {
     return { ok: false, error: 'המוצר לא זמין', code: 'NOT_FOUND' }
+  }
+
+  // The admin's per-order limit (products.max_per_order). Measured 04.11.2026:
+  // 44 active products carry one (5 on physical, 10 on coupon) and nothing read
+  // it, so a shopper could put 99 of a product capped at 5 in the cart and pay
+  // for them. `pricing.ts` refuses the same line again at render and at
+  // checkout, for carts that reached the limit before this check existed.
+  const maxPerOrder = maxPerOrderOf(product.max_per_order)
+  if (maxPerOrder != null && productTotal > maxPerOrder) {
+    return {
+      ok: false,
+      error: `ניתן להזמין עד ${maxPerOrder} יחידות מהמוצר`,
+      code: 'MAX_PER_ORDER',
+    }
   }
 
   const platformPercent = parsePercentSnapshot(product.platform_percent)
@@ -447,6 +478,7 @@ async function runAddToCart(
     parsed.data.product_id,
     parsed.data.variant_id,
     nextQty,
+    nextQty + otherLinesQuantity(items, parsed.data.product_id, key),
   )
   if (!stockCheck.ok) return stockCheck
 
@@ -509,6 +541,7 @@ async function runUpdateCartItem(
       parsed.data.product_id,
       parsed.data.variant_id,
       parsed.data.quantity,
+      parsed.data.quantity + otherLinesQuantity(items, parsed.data.product_id, key),
     )
     if (!validation.ok) return validation
 
@@ -663,12 +696,26 @@ async function runMergeGuestCart(
 
   const mergedItems = [...merged.values()]
 
-  await Promise.all([
-    userCart?.id
-      ? supabase.from('carts').update({ items: mergedItems }).eq('id', userCart.id)
-      : supabase.from('carts').insert({ profile_id: userId, items: mergedItems }),
-    guest.from('carts').delete().eq('id', guestCart.id),
-  ])
+  // The account write first, and the guest delete only once it has landed.
+  // These used to run together in one Promise.all with neither result read, so
+  // an account write that failed (RLS, a timeout, a constraint) still deleted
+  // the guest row, and the items being merged existed nowhere. The guest row is
+  // the only copy until the account row holds them.
+  const { error: writeError } = userCart?.id
+    ? await supabase.from('carts').update({ items: mergedItems }).eq('id', userCart.id)
+    : await supabase.from('carts').insert({ profile_id: userId, items: mergedItems })
+  if (writeError) {
+    log.error('cart.merge_write_failed', { userId, sessionId, error: writeError })
+    return false
+  }
+
+  // A failed delete leaves a guest row whose items are now also on the account.
+  // Not worth failing the merge over: the caller clears the cookie, and the row
+  // is unreachable and expires on its own.
+  const { error: deleteError } = await guest.from('carts').delete().eq('id', guestCart.id)
+  if (deleteError) {
+    log.warn('cart.merge_guest_delete_failed', { userId, sessionId, error: deleteError })
+  }
 
   return true
 }
