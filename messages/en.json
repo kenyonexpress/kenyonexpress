@@ -34,7 +34,61 @@
     "email": "Email",
     "password": "Password",
     "fullName": "Full Name",
-    "phone": "Phone"
+    "phone": "Phone",
+    "frame": {
+      "crumbHome": "Home",
+      "crumbLabel": "Breadcrumb",
+      "title": "My account",
+      "or": "or"
+    },
+    "loginPage": {
+      "heading": "Sign in",
+      "lead": "Welcome back! Sign in to your account.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "forgot": "Forgot your password?",
+      "otherWays": "or sign in another way",
+      "google": "Sign in with Google",
+      "callbackError": "Sign-in failed, try again",
+      "magicSent": "Check your inbox, we sent a sign-in link",
+      "magicOpen": "Sign in without a password (secure email link)",
+      "magicLabel": "Email for the sign-in link",
+      "magicSubmit": "Send me a link",
+      "magicSending": "Sending...",
+      "smsOpen": "Sign in with an SMS code"
+    },
+    "passkey": {
+      "button": "Sign in with fingerprint or Face ID",
+      "pending": "Verifying..."
+    },
+    "registerPage": {
+      "heading": "Create an account",
+      "lead": "Create a new account for a personal shopping experience.",
+      "fullNameLabel": "Full name",
+      "emailLabel": "Email",
+      "phoneLabel": "Mobile phone",
+      "phoneHint": "Israeli number (050, 052, 054 etc.)",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters and a digit",
+      "submit": "Register",
+      "submitting": "Creating account...",
+      "google": "Register with Google",
+      "googlePending": "Signing in...",
+      "otherWays": "or register with"
+    },
+    "aside": {
+      "newHeading": "New customers",
+      "newLead": "No account yet? Registering takes a minute, and then you can:",
+      "newCta": "Register",
+      "returningHeading": "Already registered?",
+      "returningLead": "Have an account? Sign in to:",
+      "returningCta": "Sign in",
+      "benefitCheckout": "Check out faster",
+      "benefitOrders": "Track your orders easily",
+      "benefitVouchers": "Keep all your coupons and purchases in one place"
+    }
   },
   "common": {
     "loading": "Loading...",

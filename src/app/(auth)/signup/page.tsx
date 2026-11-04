@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import AuthFrame, { AuthAside } from '../AuthFrame'
 import SignupForm from './SignupForm'
 
 /**
@@ -9,7 +10,8 @@ import SignupForm from './SignupForm'
  * on sixteen public routes, this one among them.
  */
 export const metadata: Metadata = {
-  title: 'הרשמה — KenyonExpress',
+  // The root template appends the site name.
+  title: 'הרשמה',
   robots: { index: false, follow: true },
   // A SELF-CANONICAL BESIDE THE NOINDEX, and the pair is deliberate. Without it
   // this page inherits the root layout's canonical of '/', and noindex plus a
@@ -32,5 +34,9 @@ export default function SignupPage(props: { searchParams: Promise<{ next?: strin
 
 async function SignupPageBody({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams
-  return <SignupForm next={next} />
+  return (
+    <AuthFrame aside={<AuthAside mode="toLogin" next={next} />}>
+      <SignupForm next={next} />
+    </AuthFrame>
+  )
 }

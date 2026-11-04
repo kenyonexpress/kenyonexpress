@@ -56,8 +56,8 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
 
   if (!confirmed) {
     return (
-      <form action={sendAction} className="space-y-3">
-        <label htmlFor="otp-phone" className="block text-sm font-medium text-gray-700">
+      <form action={sendAction} className="auth-form">
+        <label htmlFor="otp-phone" className="auth-label">
           מספר טלפון נייד
         </label>
         <input
@@ -71,18 +71,14 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
           placeholder="050-1234567"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-start placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+          className="auth-input text-start"
         />
         {getError(sendState) && (
-          <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <p role="alert" className="auth-notice auth-notice--error">
             {getError(sendState)}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={sendPending}
-          className="w-full border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
-        >
+        <button type="submit" disabled={sendPending} className="auth-btn auth-btn--outline">
           {sendPending ? 'שולחים קוד...' : 'שליחת קוד'}
         </button>
       </form>
@@ -90,17 +86,17 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
   }
 
   return (
-    <form action={verifyAction} className="space-y-3">
+    <form action={verifyAction} className="auth-form">
       <input type="hidden" name="phone" value={confirmed} />
       {next && <input type="hidden" name="next" value={next} />}
 
-      <p className="text-sm text-gray-600">
+      <p className="auth-otp-intro">
         {channel === 'whatsapp'
           ? `שלחנו קוד ב-WhatsApp ל-${confirmed}`
           : `שלחנו קוד ב-SMS ל-${confirmed}`}
       </p>
 
-      <label htmlFor="otp-token" className="block text-sm font-medium text-gray-700">
+      <label htmlFor="otp-token" className="auth-label">
         {channel === 'whatsapp' ? 'הקוד מ-WhatsApp' : 'הקוד מה-SMS'}
       </label>
       <input
@@ -115,28 +111,21 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
         autoComplete="one-time-code"
         maxLength={6}
         placeholder="123456"
-        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+        data-code=""
+        className="auth-input"
       />
 
       {getError(verifyState) && (
-        <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+        <p role="alert" className="auth-notice auth-notice--error">
           {getError(verifyState)}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={verifyPending}
-        className="w-full bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
-      >
+      <button type="submit" disabled={verifyPending} className="auth-btn auth-btn--primary">
         {verifyPending ? 'מאמתים...' : 'כניסה'}
       </button>
 
-      <button
-        type="button"
-        onClick={() => setConfirmed(null)}
-        className="w-full text-xs text-center text-gray-500 hover:text-link"
-      >
+      <button type="button" onClick={() => setConfirmed(null)} className="auth-btn auth-btn--link">
         שינוי מספר טלפון
       </button>
     </form>

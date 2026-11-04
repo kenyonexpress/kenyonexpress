@@ -1,0 +1,417 @@
+/* V04: /login, /register (/signup) and the other (auth) pages as Electro v7's
+   my-account page: breadcrumb, "החשבון שלי" heading, then WooCommerce's
+   `.u-columns.col2-set` -- the sign-in form beside the register panel, an
+   "או" disc on the rule between them. Same container, breadcrumb band,
+   45px pill inputs and #fed700 button as /cart and /checkout (V01, V02), so
+   the three pages of one flow open the same way. Below 768 the columns stack
+   and the rule turns horizontal. Every control is at least 44px. */
+
+.auth-page {
+  --auth-ink: #333e48;
+  --auth-muted: #51606d;
+  --auth-line: #ddd;
+  --auth-yellow: #fed700;
+  --auth-touch: 44px;
+
+  max-width: var(--container-page, 1320px);
+  margin-inline: auto;
+  padding: 0 15px 3rem;
+  color: var(--auth-ink);
+  font-size: 14px;
+  line-height: 23.996px;
+}
+
+/* Same band as .checkout-page__breadcrumb: grey and 42px at 380, transparent
+   with Electro's 25/22.4 padding from 768. */
+.auth-page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline: -15px;
+  padding: 0 15px;
+  min-height: 42px;
+  background: #f7f6f6;
+}
+
+.auth-page__breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--auth-touch);
+}
+
+.auth-page__breadcrumb a:hover {
+  color: #0062bd;
+}
+
+@media (min-width: 768px) {
+  .auth-page__breadcrumb {
+    margin-inline: 0;
+    padding: 14px 0 12px;
+    background: transparent;
+  }
+}
+
+.auth-page__title {
+  margin: 22px 0 40px;
+  font-size: 39.998px;
+  line-height: 47.9976px;
+  font-weight: 500;
+  color: var(--auth-ink);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .auth-page__title {
+    margin-top: 0;
+  }
+}
+
+/* Single-column pages (forgot / reset password, MFA) keep the form at the
+   width of one Electro column instead of stretching it to 1290. */
+.auth-page__single {
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+/* ---- the two columns ---------------------------------------------------- */
+
+.auth-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.auth-cols__or {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-block: 32px;
+}
+
+.auth-cols__or::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  border-top: 1px solid var(--auth-line);
+}
+
+.auth-cols__or span {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--auth-line);
+  background: #fff;
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .auth-cols {
+    grid-template-columns: minmax(0, 1fr) 88px minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .auth-cols__or {
+    margin-block: 0;
+  }
+
+  .auth-cols__or::before {
+    inset-inline: auto;
+    inset-inline-start: 50%;
+    top: 0;
+    bottom: 0;
+    border-top: 0;
+    border-inline-start: 1px solid var(--auth-line);
+  }
+}
+
+/* ---- a column ----------------------------------------------------------- */
+
+/* Electro's section heading: a full-width hairline under the title and a
+   2px yellow bar under the words only. */
+.auth-col__heading {
+  position: relative;
+  margin: 0 0 18px;
+  border-bottom: 1px solid var(--auth-line);
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.auth-col__heading span {
+  display: inline-block;
+  padding-bottom: 12px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid var(--auth-yellow);
+}
+
+.auth-col__lead {
+  margin: 0 0 20px;
+  color: var(--auth-ink);
+}
+
+/* ---- fields ------------------------------------------------------------- */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-field label,
+.auth-label {
+  font-weight: 700;
+  line-height: 18.004px;
+}
+
+.auth-field__req {
+  color: #dc3545;
+}
+
+.auth-field input,
+.auth-input {
+  height: 45px;
+  width: 100%;
+  border: 1px solid var(--auth-line);
+  border-radius: 22px;
+  padding: 9.504px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--auth-ink);
+  background: #fff;
+}
+
+.auth-field input::placeholder,
+.auth-input::placeholder {
+  color: #8a96a0;
+}
+
+.auth-field input:focus,
+.auth-input:focus {
+  outline: none;
+  border-color: var(--auth-yellow);
+  box-shadow: 0 0 0 2px rgb(254 215 0 / 35%);
+}
+
+.auth-field input[data-code],
+.auth-input[data-code] {
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 0.4em;
+}
+
+.auth-field input[data-code]::placeholder,
+.auth-input[data-code]::placeholder {
+  letter-spacing: normal;
+}
+
+.auth-field__hint {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--auth-muted);
+}
+
+/* ---- buttons ------------------------------------------------------------ */
+
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--auth-touch);
+  padding: 10px 24px;
+  border-radius: 22px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.auth-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.auth-btn:focus-visible {
+  outline: 2px solid var(--auth-ink);
+  outline-offset: 2px;
+}
+
+/* Electro's primary: yellow, ink text, goes ink on hover. */
+.auth-btn--primary {
+  background: var(--auth-yellow);
+  color: var(--auth-ink);
+  min-height: 48px;
+}
+
+.auth-btn--primary:hover:not(:disabled) {
+  background: var(--auth-ink);
+  color: #fff;
+}
+
+/* The alternatives (Google, passkey, code): white with the field hairline. */
+.auth-btn--outline {
+  background: #fff;
+  color: var(--auth-ink);
+  border-color: var(--auth-line);
+  font-weight: 500;
+}
+
+.auth-btn--outline:hover:not(:disabled) {
+  border-color: var(--auth-ink);
+}
+
+/* A text control that still has a 44px hit area. */
+.auth-btn--link {
+  background: transparent;
+  color: var(--auth-muted);
+  font-weight: 400;
+  padding-inline: 8px;
+}
+
+.auth-btn--link:hover:not(:disabled) {
+  color: #0062bd;
+}
+
+/* Submit row: button, and the forgot-password link beside it from 576 as in
+   WooCommerce's `.form-row` + `.lost_password`, under it below. */
+.auth-submit-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.auth-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--auth-touch);
+  color: #0062bd;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 576px) {
+  .auth-submit-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .auth-submit-row .auth-btn--primary {
+    width: auto;
+    min-width: 160px;
+  }
+}
+
+/* "או היכנסו בדרך אחרת": a hairline with the words on it. */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block: 24px 16px;
+  font-size: 13px;
+  color: var(--auth-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--auth-line);
+}
+
+.auth-alt {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- notices ------------------------------------------------------------ */
+
+.auth-notice {
+  margin: 0 0 16px;
+  padding: 10px 16px;
+  border-inline-start: 3px solid currentColor;
+  background: #f7f6f6;
+  font-size: 14px;
+}
+
+.auth-notice--error {
+  color: #b02a37;
+}
+
+.auth-notice--ok {
+  color: #2a6b10;
+}
+
+.auth-form .auth-notice,
+.auth-alt .auth-notice {
+  margin: 0;
+}
+
+.auth-otp-intro {
+  margin: 0;
+  color: var(--auth-muted);
+}
+
+/* ---- the panel opposite the form ---------------------------------------- */
+
+.auth-benefits {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-benefits li {
+  position: relative;
+  padding-inline-start: 26px;
+}
+
+.auth-benefits li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 4px;
+  top: 3px;
+  /* The classic CSS tick: a narrow tall box, two borders, a quarter turn. In
+     this RTL page inline-start is the right edge, which is the tick's long
+     arm. */
+  width: 7px;
+  height: 13px;
+  border-inline-start: 2px solid var(--auth-ink);
+  border-bottom: 2px solid var(--auth-ink);
+  transform: rotate(45deg);
+}
+
+.auth-aside .auth-btn {
+  text-decoration: none;
+}
+
+@media (min-width: 576px) {
+  .auth-aside .auth-btn {
+    width: auto;
+    min-width: 160px;
+  }
+}

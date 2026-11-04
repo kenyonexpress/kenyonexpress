@@ -34,7 +34,61 @@
     "email": "אימייל",
     "password": "סיסמה",
     "fullName": "שם מלא",
-    "phone": "טלפון"
+    "phone": "טלפון",
+    "frame": {
+      "crumbHome": "עמוד הבית",
+      "crumbLabel": "פירורי לחם",
+      "title": "החשבון שלי",
+      "or": "או"
+    },
+    "loginPage": {
+      "heading": "כניסה לחשבון",
+      "lead": "ברוכים השבים! היכנסו לחשבון שלכם.",
+      "emailLabel": "אימייל",
+      "passwordLabel": "סיסמה",
+      "submit": "כניסה",
+      "submitting": "מתחברים...",
+      "forgot": "שכחתם סיסמה?",
+      "otherWays": "או היכנסו בדרך אחרת",
+      "google": "כניסה עם Google",
+      "callbackError": "הכניסה נכשלה, נסו שוב",
+      "magicSent": "בדקו את תיבת הדואר, שלחנו קישור כניסה",
+      "magicOpen": "כניסה ללא סיסמה (קישור מאובטח לאימייל)",
+      "magicLabel": "אימייל לקישור כניסה",
+      "magicSubmit": "שלחו לי קישור",
+      "magicSending": "שולחים...",
+      "smsOpen": "כניסה עם קוד ב-SMS"
+    },
+    "passkey": {
+      "button": "כניסה עם טביעת אצבע או Face ID",
+      "pending": "מאמתים..."
+    },
+    "registerPage": {
+      "heading": "יצירת חשבון",
+      "lead": "צרו חשבון חדש ותיהנו מחוויית קנייה אישית.",
+      "fullNameLabel": "שם מלא",
+      "emailLabel": "אימייל",
+      "phoneLabel": "טלפון נייד",
+      "phoneHint": "מספר ישראלי (050, 052, 054 וכו׳)",
+      "passwordLabel": "סיסמה",
+      "passwordPlaceholder": "לפחות 8 תווים + ספרה",
+      "submit": "הרשמה",
+      "submitting": "יוצרים חשבון...",
+      "google": "הרשמה עם Google",
+      "googlePending": "מתחברים...",
+      "otherWays": "או הירשמו עם"
+    },
+    "aside": {
+      "newHeading": "לקוחות חדשים",
+      "newLead": "עוד אין לכם חשבון? ההרשמה לוקחת דקה, ואחריה תוכלו:",
+      "newCta": "הרשמה",
+      "returningHeading": "כבר רשומים?",
+      "returningLead": "יש לכם חשבון? היכנסו אליו כדי:",
+      "returningCta": "כניסה",
+      "benefitCheckout": "לעבור בקופה מהר יותר",
+      "benefitOrders": "לעקוב אחרי ההזמנות בקלות",
+      "benefitVouchers": "לשמור את כל הקופונים והרכישות במקום אחד"
+    }
   },
   "common": {
     "loading": "טוען...",

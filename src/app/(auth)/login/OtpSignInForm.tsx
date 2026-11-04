@@ -19,8 +19,7 @@ function errorOf(state: OtpState): string | null {
   return state && 'error' in state ? state.error : null
 }
 
-const inputClass =
-  'w-full min-h-touch-min rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const inputClass = 'auth-input'
 
 export default function OtpSignInForm({
   channel: initialChannel,
@@ -64,9 +63,9 @@ export default function OtpSignInForm({
 
   if (!sentTo) {
     return (
-      <form action={sendAction} className="space-y-3" data-testid="otp-send-form">
+      <form action={sendAction} className="auth-form" data-testid="otp-send-form">
         <input type="hidden" name="channel" value={channel} />
-        <label htmlFor="otp-target" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="otp-target" className="auth-label">
           {isWhatsApp ? t('otpSignIn.phoneLabel') : t('otpSignIn.emailLabel')}
         </label>
         {isWhatsApp ? (
@@ -96,15 +95,11 @@ export default function OtpSignInForm({
           />
         )}
         {(errorOf(sendState) ?? carriedError) && (
-          <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <p role="alert" className="auth-notice auth-notice--error">
             {errorOf(sendState) ?? carriedError}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={sendPending}
-          className="w-full min-h-touch-min border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
-        >
+        <button type="submit" disabled={sendPending} className="auth-btn auth-btn--outline">
           {sendPending ? t('otpSignIn.sending') : t('otpSignIn.send')}
         </button>
       </form>
@@ -112,17 +107,17 @@ export default function OtpSignInForm({
   }
 
   return (
-    <form action={verifyAction} className="space-y-3" data-testid="otp-verify-form">
+    <form action={verifyAction} className="auth-form" data-testid="otp-verify-form">
       <input type="hidden" name="channel" value={channel} />
       <input type="hidden" name={isWhatsApp ? 'phone' : 'email'} value={sentTo} />
       {next && <input type="hidden" name="next" value={next} />}
 
-      <p className="text-sm text-gray-600">
+      <p className="auth-otp-intro">
         {isWhatsApp ? t('otpSignIn.sentWhatsapp') : t('otpSignIn.sentEmail')}
         <bdi dir="ltr">{sentTo}</bdi>
       </p>
 
-      <label htmlFor="otp-code" className="block text-sm font-medium text-gray-700">
+      <label htmlFor="otp-code" className="auth-label">
         {t('otpSignIn.codeLabel')}
       </label>
       <input
@@ -136,28 +131,21 @@ export default function OtpSignInForm({
         pattern="[0-9]{6}"
         maxLength={6}
         placeholder="123456"
-        className={`${inputClass} text-center text-lg tracking-[0.4em] placeholder:tracking-normal`}
+        data-code=""
+        className={inputClass}
       />
 
       {errorOf(verifyState) && (
-        <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+        <p role="alert" className="auth-notice auth-notice--error">
           {errorOf(verifyState)}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={verifyPending}
-        className="w-full min-h-touch-min bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
-      >
+      <button type="submit" disabled={verifyPending} className="auth-btn auth-btn--primary">
         {verifyPending ? t('otpSignIn.verifying') : t('otpSignIn.verify')}
       </button>
 
-      <button
-        type="button"
-        onClick={() => setSentTo(null)}
-        className="w-full min-h-touch-min text-xs text-center text-gray-500 hover:text-link"
-      >
+      <button type="button" onClick={() => setSentTo(null)} className="auth-btn auth-btn--link">
         {isWhatsApp ? t('otpSignIn.changePhone') : t('otpSignIn.changeEmail')}
       </button>
     </form>

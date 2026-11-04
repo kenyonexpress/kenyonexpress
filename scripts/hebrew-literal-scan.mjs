@@ -201,5 +201,8 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * (`checkout.single.*`). 601 -> 600.
  * 2026-11-04, V03: the thank-you page moved its copy to `checkout.confirm.*`
  * and its new order overview and business block were born there. 600 -> 595.
+ * 2026-11-04, V04: /login and /register moved their copy to `auth.loginPage.*`,
+ * `auth.registerPage.*` and `auth.aside.*` with the Electro my-account
+ * rebuild. 595 -> 592.
  */
-export const HEBREW_LITERAL_CEILING = 595
+export const HEBREW_LITERAL_CEILING = 592

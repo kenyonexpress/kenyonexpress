@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import AuthFrame from '../../AuthFrame'
 
 /**
  * NOINDEX, and the canonical is the reason rather than the crawl budget. The root
@@ -8,7 +9,7 @@ import Link from 'next/link'
  * on sixteen public routes, this one among them.
  */
 export const metadata: Metadata = {
-  title: 'אמתו את האימייל — KenyonExpress',
+  title: 'אמתו את האימייל',
   robots: { index: false, follow: true },
   // A SELF-CANONICAL BESIDE THE NOINDEX, and the pair is deliberate. Without it
   // this page inherits the root layout's canonical of '/', and noindex plus a
@@ -21,15 +22,17 @@ export const metadata: Metadata = {
 
 export default function ConfirmPage() {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
-      <div className="text-5xl mb-4">📬</div>
-      <h2 className="text-xl font-semibold mb-2">בדקו את תיבת הדואר</h2>
-      <p className="text-sm text-gray-500 mb-6">
-        שלחנו לכם קישור לאימות. לחצו עליו כדי להפעיל את החשבון.
-      </p>
-      <Link href="/login" className="text-link text-sm font-medium hover:underline">
-        חזרה לכניסה
-      </Link>
-    </div>
+    <AuthFrame>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+        <div className="text-5xl mb-4">📬</div>
+        <h2 className="text-xl font-semibold mb-2">בדקו את תיבת הדואר</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          שלחנו לכם קישור לאימות. לחצו עליו כדי להפעיל את החשבון.
+        </p>
+        <Link href="/login" className="text-link text-sm font-medium hover:underline">
+          חזרה לכניסה
+        </Link>
+      </div>
+    </AuthFrame>
   )
 }

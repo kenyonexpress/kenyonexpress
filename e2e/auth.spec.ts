@@ -5,9 +5,11 @@ test.describe('Login page', () => {
     await page.goto('/login')
   })
 
-  test('renders the auth layout with branding', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'KenyonExpress' })).toBeVisible()
-    await expect(page.getByText('קופונים, מבצעים ומוצרים')).toBeVisible()
+  // V04: the Electro my-account page inside the store chrome, sign-in beside
+  // the register panel.
+  test('renders the my-account layout', async ({ page }) => {
+    await expect(page.getByRole('heading', { level: 1, name: 'החשבון שלי' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'לקוחות חדשים' })).toBeVisible()
   })
 
   test('shows כניסה heading and Google button', async ({ page }) => {
@@ -16,8 +18,8 @@ test.describe('Login page', () => {
   })
 
   test('shows email and password fields', async ({ page }) => {
-    await expect(page.getByLabel('אימייל')).toBeVisible()
-    await expect(page.getByLabel('סיסמה')).toBeVisible()
+    await expect(page.getByLabel('אימייל', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('סיסמה', { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'כניסה', exact: true })).toBeVisible()
   })
 
@@ -32,12 +34,15 @@ test.describe('Login page', () => {
   })
 
   test('has link to signup', async ({ page }) => {
-    await expect(page.getByRole('link', { name: 'הרשמה' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'הרשמה', exact: true })).toHaveAttribute(
+      'href',
+      '/register',
+    )
   })
 
   test('shows inline error on empty email submit', async ({ page }) => {
     // Native browser validation fires first — just check the input is required
-    const emailInput = page.getByLabel('אימייל')
+    const emailInput = page.getByLabel('אימייל', { exact: true })
     await expect(emailInput).toHaveAttribute('required')
   })
 })
@@ -59,14 +64,25 @@ test.describe('Signup page', () => {
 
   test('has all required fields', async ({ page }) => {
     await expect(page.getByLabel('שם מלא')).toBeVisible()
-    await expect(page.getByLabel('אימייל')).toBeVisible()
+    await expect(page.getByLabel('אימייל', { exact: true })).toBeVisible()
     await expect(page.getByLabel(/טלפון נייד/)).toBeVisible()
-    await expect(page.getByLabel('סיסמה')).toBeVisible()
+    await expect(page.getByLabel('סיסמה', { exact: true })).toBeVisible()
   })
 
   test('has link back to login', async ({ page }) => {
-    await expect(page.getByRole('link', { name: 'כניסה' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'כניסה', exact: true })).toHaveAttribute(
+      'href',
+      '/login',
+    )
   })
+})
+
+// V04: WooCommerce's name for the page, the same form as /signup.
+test('/register renders the signup form', async ({ page }) => {
+  await page.goto('/register')
+  await expect(page.getByRole('heading', { name: 'יצירת חשבון' })).toBeVisible()
+  await expect(page.getByLabel('שם מלא')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'הרשמה', exact: true })).toBeVisible()
 })
 
 test.describe('Forgot password page', () => {
@@ -76,7 +92,7 @@ test.describe('Forgot password page', () => {
 
   test('renders heading and email field', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'שחזור סיסמה' })).toBeVisible()
-    await expect(page.getByLabel('אימייל')).toBeVisible()
+    await expect(page.getByLabel('אימייל', { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'שלחו קישור לאיפוס' })).toBeVisible()
   })
 

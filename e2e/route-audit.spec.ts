@@ -124,6 +124,7 @@ const PUBLIC_PAGES: RouteSpec[] = [
   page200('/offline'),
   page200('/login'),
   page200('/signup'),
+  page200('/register'),
   page200('/signup/confirm'),
   page200('/forgot-password'),
   page200('/reset-password'),

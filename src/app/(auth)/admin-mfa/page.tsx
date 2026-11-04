@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
+import AuthFrame from '../AuthFrame'
 import AdminMfaForm from './AdminMfaForm'
 
 /**
@@ -12,7 +13,7 @@ import AdminMfaForm from './AdminMfaForm'
  * on sixteen public routes, this one among them.
  */
 export const metadata: Metadata = {
-  title: 'אימות דו-שלבי - KenyonExpress',
+  title: 'אימות דו-שלבי',
   robots: { index: false, follow: true },
   // A SELF-CANONICAL BESIDE THE NOINDEX, and the pair is deliberate. Without it
   // this page inherits the root layout's canonical of '/', and noindex plus a
@@ -37,9 +38,11 @@ export const metadata: Metadata = {
 // off the request, which cacheComponents refuses at the page root.
 export default function AdminMfaPage() {
   return (
-    <Suspense fallback={null}>
-      <AdminMfaBody />
-    </Suspense>
+    <AuthFrame>
+      <Suspense fallback={null}>
+        <AdminMfaBody />
+      </Suspense>
+    </AuthFrame>
   )
 }
 

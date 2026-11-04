@@ -3,9 +3,10 @@
 import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import TurnstileRefresh from '@/components/turnstile/TurnstileRefresh'
+import { t } from '@/lib/i18n/messages'
 import { type AuthState, signInWithGoogle, signUpWithEmail } from '@/server/actions/auth'
-import Link from 'next/link'
 import { useActionState } from 'react'
+import { AuthHeading } from '../AuthFrame'
 
 function getError(state: AuthState): string | null {
   return state && 'error' in state ? state.error : null
@@ -24,42 +25,28 @@ export default function SignupForm({ next }: Props) {
 
   const topError = getError(googleState)
 
+  /*
+    V04: WooCommerce's `form.register` as Electro lays it out - the fields are
+    the column's own form and Google sits under an "או" rule beneath it, the
+    same order as the sign-in column. The way back to sign-in is the other
+    column (`AuthAside`).
+  */
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-xl font-semibold mb-6">יצירת חשבון</h2>
+    <div>
+      <AuthHeading>{t('auth.registerPage.heading')}</AuthHeading>
+      <p className="auth-col__lead">{t('auth.registerPage.lead')}</p>
 
       {topError && (
-        <div role="alert" className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+        <div role="alert" className="auth-notice auth-notice--error">
           {topError}
         </div>
       )}
 
-      {/* Google sign-up */}
-      <form action={googleAction}>
-        {next && <input type="hidden" name="next" value={next} />}
-        <button
-          type="submit"
-          disabled={googlePending}
-          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
-        >
-          <GoogleLogo />
-          {googlePending ? 'מתחברים...' : 'הרשמה עם Google'}
-        </button>
-      </form>
-
-      <div className="my-5 flex items-center gap-3">
-        <div className="flex-1 border-t border-gray-200" />
-        <span className="text-xs text-gray-500">או</span>
-        <div className="flex-1 border-t border-gray-200" />
-      </div>
-
-      <form action={action} className="space-y-4">
+      <form action={action} className="auth-form">
         {next && <input type="hidden" name="next" value={next} />}
 
-        <div>
-          <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
-            שם מלא
-          </label>
+        <div className="auth-field">
+          <label htmlFor="full_name">{t('auth.registerPage.fullNameLabel')}</label>
           <input
             id="full_name"
             name="full_name"
@@ -67,14 +54,11 @@ export default function SignupForm({ next }: Props) {
             required
             autoComplete="name"
             placeholder="ישראל ישראלי"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            אימייל
-          </label>
+        <div className="auth-field">
+          <label htmlFor="email">{t('auth.registerPage.emailLabel')}</label>
           <input
             id="email"
             name="email"
@@ -83,14 +67,13 @@ export default function SignupForm({ next }: Props) {
             autoComplete="email"
             placeholder="you@example.com"
             dir="ltr"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
 
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-            טלפון נייד{' '}
-            <span className="text-red-500" aria-hidden="true">
+        <div className="auth-field">
+          <label htmlFor="phone">
+            {t('auth.registerPage.phoneLabel')}{' '}
+            <span className="auth-field__req" aria-hidden="true">
               *
             </span>
           </label>
@@ -102,15 +85,13 @@ export default function SignupForm({ next }: Props) {
             autoComplete="tel"
             placeholder="050-1234567"
             dir="ltr"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-start"
+            className="text-start"
           />
-          <p className="mt-1 text-xs text-gray-500">מספר ישראלי (050, 052, 054 וכו׳)</p>
+          <p className="auth-field__hint">{t('auth.registerPage.phoneHint')}</p>
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            סיסמה
-          </label>
+        <div className="auth-field">
+          <label htmlFor="password">{t('auth.registerPage.passwordLabel')}</label>
           <input
             id="password"
             name="password"
@@ -118,38 +99,39 @@ export default function SignupForm({ next }: Props) {
             required
             minLength={8}
             autoComplete="new-password"
-            placeholder="לפחות 8 תווים + ספרה"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+            placeholder={t('auth.registerPage.passwordPlaceholder')}
           />
         </div>
 
         {getError(state) && (
-          <p role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <p role="alert" className="auth-notice auth-notice--error">
             {getError(state)}
           </p>
         )}
 
         {/* Renders nothing unless a Turnstile key pair is configured. The
-            Google button above is a separate form and carries no challenge:
+            Google button below is a separate form and carries no challenge:
             Google has already decided that caller is a person. */}
         <TurnstileWidget action="signup" />
         <TurnstileRefresh resetOn={state} />
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
-        >
-          {pending ? 'יוצרים חשבון...' : 'הרשמה'}
-        </button>
+        <div className="auth-submit-row">
+          <button type="submit" disabled={pending} className="auth-btn auth-btn--primary">
+            {pending ? t('auth.registerPage.submitting') : t('auth.registerPage.submit')}
+          </button>
+        </div>
       </form>
 
-      <p className="mt-5 text-center text-sm text-gray-500">
-        כבר יש לכם חשבון?{' '}
-        <Link href="/login" className="text-link font-medium hover:underline">
-          כניסה
-        </Link>
-      </p>
+      <p className="auth-divider">{t('auth.registerPage.otherWays')}</p>
+
+      {/* Google sign-up */}
+      <form action={googleAction}>
+        {next && <input type="hidden" name="next" value={next} />}
+        <button type="submit" disabled={googlePending} className="auth-btn auth-btn--outline">
+          <GoogleLogo />
+          {googlePending ? t('auth.registerPage.googlePending') : t('auth.registerPage.google')}
+        </button>
+      </form>
     </div>
   )
 }

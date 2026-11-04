@@ -2,6 +2,7 @@ import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
 import { otpChannel } from '@/lib/auth/whatsapp-cloud'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import AuthFrame, { AuthAside } from '../AuthFrame'
 import LoginForm from './LoginForm'
 
 /**
@@ -11,7 +12,8 @@ import LoginForm from './LoginForm'
  * on sixteen public routes, this one among them.
  */
 export const metadata: Metadata = {
-  title: 'כניסה — KenyonExpress',
+  // The root template appends the site name.
+  title: 'כניסה',
   robots: { index: false, follow: true },
   // A SELF-CANONICAL BESIDE THE NOINDEX, and the pair is deliberate. Without it
   // this page inherits the root layout's canonical of '/', and noindex plus a
@@ -49,12 +51,14 @@ async function LoginPageBody({
   // disagree: a NEXT_PUBLIC copy would be inlined at build time and would keep
   // showing the option after the provider was turned off.
   return (
-    <LoginForm
-      next={next}
-      callbackError={error}
-      magic={magic}
-      phoneEnabled={phoneAuthEnabled()}
-      otpChannel={otpChannel()}
-    />
+    <AuthFrame aside={<AuthAside mode="toRegister" next={next} />}>
+      <LoginForm
+        next={next}
+        callbackError={error}
+        magic={magic}
+        phoneEnabled={phoneAuthEnabled()}
+        otpChannel={otpChannel()}
+      />
+    </AuthFrame>
   )
 }

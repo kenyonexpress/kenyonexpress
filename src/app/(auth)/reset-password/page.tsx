@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import AuthFrame from '../AuthFrame'
 import ResetPasswordForm from './ResetPasswordForm'
 
 /**
@@ -8,7 +9,7 @@ import ResetPasswordForm from './ResetPasswordForm'
  * on sixteen public routes, this one among them.
  */
 export const metadata: Metadata = {
-  title: 'איפוס סיסמה — KenyonExpress',
+  title: 'איפוס סיסמה',
   robots: { index: false, follow: true },
   // A SELF-CANONICAL BESIDE THE NOINDEX, and the pair is deliberate. Without it
   // this page inherits the root layout's canonical of '/', and noindex plus a
@@ -20,5 +21,9 @@ export const metadata: Metadata = {
 }
 
 export default function ResetPasswordPage() {
-  return <ResetPasswordForm />
+  return (
+    <AuthFrame>
+      <ResetPasswordForm />
+    </AuthFrame>
+  )
 }

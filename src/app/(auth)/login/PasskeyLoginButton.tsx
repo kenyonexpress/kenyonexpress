@@ -1,5 +1,6 @@
 'use client'
 
+import { t } from '@/lib/i18n/messages'
 import { beginPasskeyLogin, finishPasskeyLogin } from '@/server/actions/passkeys'
 import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser'
 import { useEffect, useState, useTransition } from 'react'
@@ -61,12 +62,12 @@ export default function PasskeyLoginButton({
   }
 
   return (
-    <div className="mt-3">
+    <div>
       <button
         type="button"
         onClick={signIn}
         disabled={pending}
-        className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
+        className="auth-btn auth-btn--outline"
       >
         <svg
           aria-hidden="true"
@@ -83,10 +84,10 @@ export default function PasskeyLoginButton({
           <path d="M9.5 8.5a2.5 2.5 0 0 1 5 0v3c0 1.5-.2 3-.6 4.4" />
           <path d="M7 13.5c0 2-.4 3.5-1 5" />
         </svg>
-        {pending ? 'מאמתים...' : 'כניסה עם טביעת אצבע או Face ID'}
+        {pending ? t('auth.passkey.pending') : t('auth.passkey.button')}
       </button>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+        <p role="alert" className="auth-notice auth-notice--error mt-2">
           {error}
         </p>
       )}
