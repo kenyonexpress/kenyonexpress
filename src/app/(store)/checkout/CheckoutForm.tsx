@@ -373,9 +373,11 @@ export default function CheckoutForm({
     return !check || check.ok
   }
 
-  // The single gate that makes this a guest checkout: the form is filled, and
-  // only the press of "pay" needs an identity. A guest is stashed and sent to
-  // Google here instead of being turned away at the door.
+  // S07: a guest pays as a guest. The press of "pay" no longer detours through
+  // Google; submitCheckout gives the shopper an anonymous session, and the
+  // Google sign-in is offered after payment, on /checkout/return, to keep the
+  // order on an account. The "already bought here?" link above stays for the
+  // returning customer who wants their saved address and card.
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget
     const zip = (form.elements.namedItem('zip') as HTMLInputElement | null)?.value ?? ''
@@ -398,8 +400,14 @@ export default function CheckoutForm({
       }
     }
 
-    if (!isAuthenticated) {
-      event.preventDefault()
+    track('checkout_step', { step: 'payment_redirect' })
+  }
+
+  // The returning customer's way to their saved address and card. What they
+  // already typed is stashed so the ?resume=1 trip back refills it.
+  const signInFromNotice = () => {
+    const form = formRef.current
+    if (form) {
       const data = new FormData(form)
       const stash: Record<string, string> = {}
       for (const name of RESUME_FIELDS) {
@@ -409,14 +417,11 @@ export default function CheckoutForm({
       try {
         window.sessionStorage.setItem(RESUME_KEY, JSON.stringify(stash))
       } catch {
-        // A blocked sessionStorage costs the refill, not the checkout.
+        // A blocked sessionStorage costs the refill, not the sign-in.
       }
-      track('checkout_step', { step: 'guest_login' })
-      googleFormRef.current?.requestSubmit()
-      return
     }
-
-    track('checkout_step', { step: 'payment_redirect' })
+    track('checkout_step', { step: 'guest_login' })
+    googleFormRef.current?.requestSubmit()
   }
 
   // The payment frame cannot move this tab (its sandbox withholds
@@ -453,7 +458,7 @@ export default function CheckoutForm({
           <button
             type="button"
             className="checkout-guest-notice__link"
-            onClick={() => googleFormRef.current?.requestSubmit()}
+            onClick={signInFromNotice}
             disabled={googlePending}
           >
             {googlePending ? 'מעביר להתחברות...' : 'יש ללחוץ כאן כדי להתחבר'}

@@ -1,3 +1,4 @@
+import { GUEST_LINK_PARAM, IDENTITY_ALREADY_EXISTS } from '@/lib/auth/guest-link'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { log } from '@/lib/observability/log'
@@ -5,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { mergeGuestCart } from '@/server/actions/cart'
 import { identifyPostHogUser, linkAnalyticsIdentity } from '@/server/analytics/track'
+import { attachGuestOrders } from '@/server/auth/guest-orders'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -57,8 +59,42 @@ export async function GET(request: NextRequest) {
   // writes cannot pick a verification the mails never send.
   const otpType = searchParams.get('type') === 'recovery' ? 'recovery' : 'magiclink'
 
+  /*
+    S07: THE GUEST'S GOOGLE LINK WAS REFUSED, so sign in to that account instead.
+
+    `linkIdentity` from the post-payment prompt comes back here with
+    `identity_already_exists` when the Google account already has a user. The
+    anonymous session is still in the cookies (nothing was exchanged), so the
+    plain Google sign-in started here returns to the code leg below, which
+    reads that session BEFORE the exchange and hands its orders over.
+  */
+  if (
+    !code &&
+    !tokenHash &&
+    searchParams.get(GUEST_LINK_PARAM) === '1' &&
+    searchParams.get('error_code') === IDENTITY_ALREADY_EXISTS
+  ) {
+    const supabase = await createClient()
+    const { data } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(safeNext)}`,
+        scopes: 'openid email profile',
+      },
+    })
+    if (data?.url) return NextResponse.redirect(data.url)
+  }
+
   if (code || tokenHash) {
     const supabase = await createClient()
+
+    // The session this browser held BEFORE the exchange. Only an anonymous one
+    // matters: it is the guest who paid, and holding its cookie is the proof
+    // that the orders on it belong to whoever is signing in now.
+    const {
+      data: { user: before },
+    } = await supabase.auth.getUser()
+    const guestBefore = before?.is_anonymous ? before : null
 
     /*
       Two ways in, one session out. `code` is the PKCE leg every flow used
@@ -84,6 +120,11 @@ export async function GET(request: NextRequest) {
           .then(({ data, error }) => ({ session: data.session, error }))
 
     if (!error && session) {
+      // A linked identity keeps the id, so this is a no-op on the normal path
+      // and a hand-over only when the shopper signed in to another account.
+      if (guestBefore && guestBefore.id !== session.user.id) {
+        await attachGuestOrders(createAdminClient(), guestBefore, session.user.id)
+      }
       await enqueueWelcomeOnce(session.user)
       const cookieStore = await cookies()
       const sessionId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)

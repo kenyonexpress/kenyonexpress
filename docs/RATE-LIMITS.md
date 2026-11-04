@@ -55,6 +55,7 @@
 | `coupon` | 10 | 1 h | coupon code guessing |
 | `coupon_qr_apply` | 30 | 1 h | printed QR landing, per IP |
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
+| `guest_identity` | 20 | 1 h | anonymous user per guest checkout |
 | `referral-code` | 10 | 1 h | referral code mint, per user |
 | `affiliate-join` | 5 | 1 h | affiliate programme enrolment, per user |
 | `affiliate-payout` | 5 | 1 h | affiliate payout request, per user |

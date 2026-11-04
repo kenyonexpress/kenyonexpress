@@ -123,6 +123,10 @@ export const RATE_LIMIT_POLICIES = {
   // genuine shopper scans one flyer.
   coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
+  // S07: every guest checkout mints an anonymous auth user. Per IP, because the
+  // visitor has no account yet; twenty an hour is above a family on one router
+  // and far below a script filling auth.users.
+  guest_identity: { limit: 20, windowSeconds: 3600, reason: 'anonymous user per guest checkout' },
   // Same shape and the same number as `newsletter`, because it is the same
   // hazard: a form that ends in mail to an address the submitter typed. Without
   // a ceiling it is a free way to point our domain at a stranger's inbox, with

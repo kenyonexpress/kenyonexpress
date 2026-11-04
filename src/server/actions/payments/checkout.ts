@@ -1,6 +1,7 @@
 'use server'
 
 import { appReturnUrl } from '@/lib/app/deep-links'
+import { getGuestSessionId } from '@/lib/cart/guest-session'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
@@ -32,6 +33,7 @@ import {
   loadCardcomEnv,
 } from '@/lib/payments'
 import { selectAccountForSuppliers } from '@/lib/payments/accounts'
+import { ensureCheckoutUser, normaliseGuestEmail } from '@/lib/payments/guest-identity'
 import {
   paymentMoneyWrite,
   readAmountAgorot,
@@ -50,13 +52,14 @@ import {
   type CheckoutActionResult,
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
-import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
+import { getCart, mergeGuestCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
 import { snapshotAffiliateAttribution } from '@/server/affiliates/attribution'
 import {
   linkAnalyticsIdentity,
   stampOrderAttribution,
   trackServerEvent,
 } from '@/server/analytics/track'
+import { readGuestEmail, saveGuestContact } from '@/server/auth/guest-orders'
 import { snapshotClubTierOnOrder } from '@/server/club/snapshot'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { readBlocklistMatches, readVelocityCounts, scoreOrder } from '@/server/fraud/signals'
@@ -745,7 +748,8 @@ async function runBeginCheckout(
   const clientIp = await getClientIp()
   const blocklist = blocklistDecision(
     await readBlocklistMatches(admin, {
-      email: user.email ?? null,
+      // A guest's address is on the profile, not on the anonymous auth user.
+      email: user.email ?? (user.is_anonymous ? await readGuestEmail(admin, user.id) : null),
       phone: null,
       ip: clientIp,
       tokenId: input.token_id ?? null,
@@ -1286,14 +1290,44 @@ async function runSubmitCheckout(
   formData: FormData,
 ): Promise<CheckoutFormState> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { error: 'יש להתחבר לפני התשלום' }
+
+  // S07, GUEST CHECKOUT: no sign-in before paying. A shopper without a session
+  // gets an anonymous one here, the cookie cart moves onto it, and Google is
+  // offered AFTER payment on the return page to keep the order on an account.
+  // src/lib/payments/guest-identity.ts.
+  const identity = await ensureCheckoutUser(
+    supabase,
+    async (userId) => {
+      const sessionId = await getGuestSessionId()
+      return sessionId ? mergeGuestCart(supabase, userId, sessionId) : true
+    },
+    async () => checkRateLimit(`guest_identity:ip:${await getClientIp()}`, 20, 3600),
+  )
+  if (!identity.ok) return { error: identity.message, code: identity.code }
+  const user = { id: identity.userId }
 
   const text = (name: string) => {
     const v = formData.get(name)
     return typeof v === 'string' ? v.trim() : ''
+  }
+
+  // A guest's email is the only way the voucher, the invoice and the receipt
+  // reach them, so it is required here and not only on the form. Kept on the
+  // anonymous user's profile, which is where every post-payment mail reads it.
+  // A returning guest whose form hid the field (a saved address) keeps the one
+  // they gave last time.
+  if (identity.guest) {
+    const admin = createAdminClient()
+    const typed = text('email')
+    const email = typed ? normaliseGuestEmail(typed) : await readGuestEmail(admin, user.id)
+    if (!email) return { error: 'יש להזין כתובת אימייל תקינה לקבלת ההזמנה', code: 'VALIDATION' }
+    const fullName = [text('first_name'), text('last_name')].filter(Boolean).join(' ') || null
+    const saved = await saveGuestContact(admin, user.id, {
+      email,
+      fullName,
+      phone: text('phone') || null,
+    })
+    if (!saved) return { error: 'שמירת פרטי הקשר נכשלה, נסו שוב', code: 'INTERNAL' }
   }
 
   // Business-invoice fields (Q08). Posted only by a form that rendered the

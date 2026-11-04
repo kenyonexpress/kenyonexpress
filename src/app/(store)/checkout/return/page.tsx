@@ -15,6 +15,7 @@ import { agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { WALLET_AMOUNT_CANDIDATES, readFirstAvailableColumn } from '@/lib/supabase/optional-columns'
+import { createClient } from '@/lib/supabase/server'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import {
   buildCouponShareText,
@@ -32,6 +33,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import AutoRefresh from './AutoRefresh'
+import SaveWithGoogle from './SaveWithGoogle'
 import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
@@ -205,6 +207,14 @@ async function CheckoutReturnBody({ searchParams }: Props) {
 
   const cashbackAmount = agorot(cashbackAgorot ?? 0)
 
+  // S07: a guest paid on an anonymous session. reconcileOrderReturn has just
+  // proved the order is this session's, so the prompt to keep it on an account
+  // goes to exactly the person who paid.
+  const {
+    data: { user: viewer },
+  } = await (await createClient()).auth.getUser()
+  const isGuest = viewer?.is_anonymous === true
+
   return (
     <div className="checkout-page">
       <div className="checkout-success">
@@ -222,6 +232,8 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           who has already answered, and it does not open the browser dialog
           itself -- it links to the page where a button does.
         */}
+        {isGuest && <SaveWithGoogle next={`/checkout/return?order_id=${order.id}`} />}
+
         <InvoiceDownloadLink orderId={order.id} />
 
         {(await isFirstPaidOrder(admin, order.id)) ? (

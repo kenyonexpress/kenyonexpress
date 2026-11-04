@@ -480,6 +480,21 @@
   margin-bottom: 28px;
 }
 
+/* S07: the post-payment prompt a guest sees to keep the order on an account. */
+.checkout-save-account {
+  max-width: 480px;
+  margin: 0 auto 28px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.checkout-save-account p {
+  margin-bottom: 12px;
+  color: #333e48;
+}
+
 .coupon-card {
   display: flex;
   flex-wrap: wrap;

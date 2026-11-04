@@ -385,6 +385,11 @@
     "steps": {
       "extras": "Additional details"
     },
+    "guestSave": {
+      "prompt": "Want to see this order in an account and keep the address for next time?",
+      "button": "Save the order with Google",
+      "pending": "Redirecting to sign-in..."
+    },
     "businessInvoice": {
       "title": "Invoice to a business",
       "toggle": "I need a tax invoice issued to a business (VAT-registered dealer / company)",

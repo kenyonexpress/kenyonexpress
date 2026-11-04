@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
+import { readGuestEmail } from '@/server/auth/guest-orders'
 import { getInvoiceSettings } from '@/server/queries/invoice-settings'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -114,11 +115,12 @@ async function CheckoutPageBody({
     data: { user },
   } = await supabase.auth.getUser()
 
-  // A guest reaches this page and fills it in. The account is required to pay,
-  // not to shop: the sign-in happens on the pay button, and the guest cart is
-  // merged into the account by /auth/callback on the way back. Sending an
-  // anonymous visitor back to /cart, as this page used to, made the login the
-  // first thing asked and the address the second.
+  // A guest reaches this page, fills it in and pays (S07): submitCheckout gives
+  // them an anonymous session at the pay button, and Google is offered after
+  // payment. A returning guest in the same browser IS that anonymous user, so
+  // the block below prefills their address and email like an account's - the
+  // "saved for next order" half of guest checkout. Only the sign-in notice
+  // still treats them as a guest.
   const cart = await getCart()
   if (cart.items.length === 0) redirect('/cart')
   const validation = validateCartView(cart)
@@ -169,7 +171,10 @@ async function CheckoutPageBody({
       apartment: defaultAddress?.apartment ?? '',
       floor: defaultAddress?.floor ?? '',
       zip: defaultAddress?.zip ?? '',
-      email: user.email ?? '',
+      // An anonymous user has no auth email; the one they typed last time is
+      // on their profile (src/server/auth/guest-orders.ts).
+      email:
+        user.email ?? (user.is_anonymous ? ((await readGuestEmail(admin, user.id)) ?? '') : ''),
     }
     // The saved "invoice to business" preference, through the RLS client like
     // the account page. A failed read is a blank block, never a blocked checkout.
@@ -200,7 +205,7 @@ async function CheckoutPageBody({
         address={address}
         walletBalance={walletBalance}
         savedCards={savedCards}
-        isAuthenticated={Boolean(user)}
+        isAuthenticated={Boolean(user) && !user?.is_anonymous}
         resuming={resume === '1'}
         channel={channel === 'app' ? 'app' : 'web'}
         invoiceSettings={invoiceSettings}

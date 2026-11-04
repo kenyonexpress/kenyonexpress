@@ -24,7 +24,13 @@ const exchangeCodeForSession = vi.fn()
 const verifyOtp = vi.fn()
 
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: async () => ({ auth: { exchangeCodeForSession, verifyOtp } }),
+  createClient: async () => ({
+    auth: {
+      exchangeCodeForSession,
+      verifyOtp,
+      getUser: async () => ({ data: { user: null } }),
+    },
+  }),
 }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({}) }))
 vi.mock('next/headers', () => ({
