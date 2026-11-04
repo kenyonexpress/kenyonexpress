@@ -32522,3 +32522,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 - המשך מ: M12-c356 DONE (2026-11-04): robots.txt 200 text/plain on www (apex 308 -> www), 0 blanket Disallow, 17/17 Disallow lines identical to src/app/robots.ts, home no x-robots-tag and no robots meta, /redeem noindex, /admin and /account 308, robots.test.ts 9/9; edge age 11848 past s-maxage, body unchanged; Host/Sitemap apex caveat unchanged (env); no code changed, no forbidden files touched; proof docs/M12-c356.md
 - המשך מ: M18-c356 DONE (2026-11-04): STATE.md 105 lines (rotated by state-log, untouched), claude/STATE.md 50 to 33 lines: 18 c353+c354 resume lines appended to docs/STATE-ARCHIVE.md first, then removed; sorted union of kept + archived == original; docs only, no forbidden files touched; proof docs/M18-c356.md
 - המשך מ: M19-c356 DONE (2026-11-04): prod dpl_DQ12y9iT1vMVV9sCsXt6HcErFDG4 = e4dbf06c6 (closeout/v1-final), www serves it (770 dpl refs, inspect alias match); HEAD 158035273 is 175 commits ahead but diff is docs/ (vercelignored) + STATE files only, 0 runtime paths, so no-op, no build/deploy; /api/ready 200 ok (db/redis/r2/cardcom ok, meili paused); no code changed, no forbidden files touched; proof docs/M19-c356.md
+
+## Archived 2026-11-04T11:11:04+07:00 after M18-c358 (3 lines from STATE.md)
+
+### 2026-11-04T10:02:02+07:00
+- item: M12-c357
+- RESULT: DONE
