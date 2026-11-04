@@ -3,7 +3,7 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
-**M01-c361 + M02-c361 - SKIPPED (05.11.2026): מדידות `compare.mjs` על `/` ועל `/product` לא רצו.** חוקי התור מ-04.11 אוסרים `compare.mjs` מחוץ למסלולים הפתוחים (עגלה, קופה, חשבון, כניסה, משפטי), ודף הבית ודף המוצר קפואים. שער ההקפאה ריק מול `design-locked-2026-10-19`, אין שינוי קוד. הוכחה: `docs/M01-c361.md`, `docs/M02-c361.md`.
+**M01-c361 + M02-c361 + M03-c361 - SKIPPED (05.11.2026): מדידות `compare.mjs` על `/`, על `/product` ועל `/category` לא רצו.** חוקי התור מ-04.11 אוסרים `compare.mjs` מחוץ למסלולים הפתוחים (עגלה, קופה, חשבון, כניסה, משפטי), ודף הבית, דף המוצר ודף הקטגוריה קפואים. שער ההקפאה ריק מול `design-locked-2026-10-19`, אין שינוי קוד. הוכחה: `docs/M01-c361.md`, `docs/M02-c361.md`, `docs/M03-c361.md`.
 
 **S30 - DONE (05.11.2026): תג `v2.1.0-checkout`. LAUNCH-READY pending-external.** התג המוער (`checkout complete, design locked 2026-10-19`) נוצר על `4f5a054d3` ונדחף (`refs/tags/v2.1.0-checkout` ב-origin). הקוד זהה לזה ש-S29 מדד (מ-`65f6c5912` רק docs השתנו). tsc 0, lint 0. שער ההקפאה: 0 שורות. ‏`~/ke-goals/LAUNCH.flag` **לא נוצר**, כי ב-HOLD של `docs/LAUNCH-CHECKLIST.md` יש 9 שורות פתוחות, ובראשן סליקה אמיתית מוכחת וכיבוי `MAINTENANCE_MODE`. הוכחה: `docs/S30-tag.md`.
 **LAUNCH-READY pending-external:** הקוד עד הקופה ואישור ההזמנה גמור ומתויג. ההמשך תלוי באופיר בלבד (`docs/MANUAL.md`).
