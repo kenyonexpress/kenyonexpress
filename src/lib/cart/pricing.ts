@@ -5,6 +5,7 @@ import {
   EMPTY_CART,
   type UnavailableReason,
 } from '@/lib/cart/types'
+import { effectiveCashbackPercent } from '@/lib/cashback/product'
 import { calculateCommission } from '@/lib/commerce/commission'
 import { isImplausibleDiscountAgorot } from '@/lib/commerce/implausible-discount'
 import { type Agorot, agorot, ilsToAgorot, multiplyAgorot } from '@/lib/commerce/money'
@@ -44,6 +45,8 @@ type ProductRow = {
   max_per_order?: number | null
   coupon_price_ils?: number | null
   cashback_percent?: number | null
+  /** Absent = not selected, which is not "off" (lib/cashback/product.ts). */
+  cashback_enabled?: boolean | null
 }
 
 type VariantRow = {
@@ -58,8 +61,8 @@ type VariantRow = {
 
 // CONTRADICTIONS C1: platform_percent has no default anywhere. A product without
 // it cannot be priced, so the cart marks the line unavailable instead of inventing
-// a percent. cashback_percent is a genuine opt-in perk, so absent means zero.
-const DEFAULT_CASHBACK_PERCENT = 0
+// a percent. cashback_percent is a genuine opt-in perk, so absent means zero;
+// the rule, and the cashback_enabled switch, live in lib/cashback/product.ts.
 
 function firstImage(images: unknown): string | null {
   if (!Array.isArray(images)) return null
@@ -215,8 +218,7 @@ function couponPriceIls(product: ProductRow): number | null {
 }
 
 function cashbackPercent(product: ProductRow): number {
-  const value = product.cashback_percent
-  return value != null && !Number.isNaN(Number(value)) ? Number(value) : DEFAULT_CASHBACK_PERCENT
+  return effectiveCashbackPercent(product)
 }
 
 export function buildCartView(

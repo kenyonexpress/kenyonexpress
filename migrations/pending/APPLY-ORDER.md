@@ -1065,6 +1065,22 @@ next paid order carrying an approved affiliate's code writes a conversion.
 **Reversal:** `DROP TABLE public.affiliate_conversions; DROP TABLE public.affiliate_campaigns;`
 Wallet entries already written stay, as ledger entries must.
 
+## 2026-11-04: 260 written AND APPLIED (queue S23)
+
+`260_wallet_ledger_view_agorot.sql` appends `amount_agorot` and
+`signed_amount_agorot` (bigint, from the generated
+`wallet_entries.amount_ils_agorot`) to `v_wallet_ledger`, restates
+`security_invoker = true`, and revokes anon and the authenticated write
+grants. No table altered. Independent of every other pending file.
+
+Applied 04.11 via `supabase db query --linked -f`, after a BEGIN/ROLLBACK
+rehearsal. Verified: ten columns, grants exactly `(authenticated, SELECT)`,
+1352 rows, 0 where `signed_amount_agorot <> round(signed_amount_ils * 100)`.
+Proof: `docs/S23-wallet.md`.
+
+**Reversal:** DROP VIEW and re-create the eight-column body quoted in the
+file header, then `GRANT SELECT ... TO authenticated`.
+
 ## 2026-11-04: 253 written AND APPLIED (queue S09)
 
 `253_order_items_split_amount_lock.sql` replaces the body of the live

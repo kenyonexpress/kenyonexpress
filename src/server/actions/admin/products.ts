@@ -30,6 +30,7 @@ import {
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
+import { cashbackEnabledFor } from '@/lib/cashback/product'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { OPEN_WEEKEND_TAG } from '@/lib/catalogue/filter-chips'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
@@ -317,7 +318,14 @@ async function runUpsertProduct(
   const city = extras.city == null ? null : (cityByName(extras.city)?.name ?? extras.city)
   const directExtras = {
     city,
-    ...(hidePricing ? {} : { cashback_percent: extras.cashback_percent ?? 0 }),
+    // The switch is derived from the rate on every save (lib/cashback/product.ts):
+    // the form shows the rate only, and checkout pays nothing while it is off.
+    ...(hidePricing
+      ? {}
+      : {
+          cashback_percent: extras.cashback_percent ?? 0,
+          cashback_enabled: cashbackEnabledFor(extras.cashback_percent ?? 0),
+        }),
   }
 
   // Shekels to agorot, once, at the edge, through money.ts. Nothing downstream

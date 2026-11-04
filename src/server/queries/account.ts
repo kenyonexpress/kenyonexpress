@@ -1,8 +1,16 @@
-import { ilsColumnToAgorot } from '@/lib/account/format'
 import { orFail } from '@/lib/catalogue-read'
 import { type Agorot, agorot } from '@/lib/money'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
+import {
+  WALLET_LEDGER_SELECT_AGOROT,
+  WALLET_LEDGER_SELECT_ILS,
+  type WalletLedgerDbRow,
+  ledgerRowToEntry,
+} from '@/lib/wallet/ledger'
+
+/** Postgres: undefined_column. The ledger view before 260. */
+const UNDEFINED_COLUMN = '42703'
 
 /**
  * Account-area reads.
@@ -148,25 +156,24 @@ export async function getWalletLedger(limit = 100): Promise<WalletLedgerRow[]> {
   // The ledger is the customer's record of their own money. A discarded error
   // rendered it as "no movements yet", which for someone checking where a
   // refund went is not a slower answer, it is a wrong one.
-  const data = orFail(
-    await supabase
+  //
+  // Integer agorot first (260); the decimal pair only when this database has
+  // no agorot columns (42703), never as a guess. lib/wallet/ledger.ts maps
+  // both shapes to the same integer row.
+  const read = (select: string) =>
+    supabase
       .from('v_wallet_ledger')
-      .select('id, direction, signed_amount_ils, amount_ils, reason, order_id, created_at')
+      .select(select)
       .order('created_at', { ascending: false })
-      .limit(limit),
-    'account.wallet_ledger_read_failed',
-  )
+      .limit(limit) as unknown as PromiseLike<{
+      data: WalletLedgerDbRow[] | null
+      error: { code?: string; message?: string } | null
+    }>
+  let result = await read(WALLET_LEDGER_SELECT_AGOROT)
+  if (result.error?.code === UNDEFINED_COLUMN) result = await read(WALLET_LEDGER_SELECT_ILS)
+  const data = orFail(result, 'account.wallet_ledger_read_failed')
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    direction: row.direction === 'credit' ? 'credit' : 'debit',
-    // `v_wallet_ledger` still exposes decimal `*_ils`; parsed, not multiplied.
-    signedAmountAgorot: ilsColumnToAgorot(row.signed_amount_ils),
-    amountAgorot: ilsColumnToAgorot(row.amount_ils),
-    reason: row.reason,
-    orderId: row.order_id,
-    createdAt: row.created_at,
-  }))
+  return (data ?? []).map(ledgerRowToEntry)
 }
 
 export async function getMyAddresses(): Promise<AccountAddress[]> {

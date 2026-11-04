@@ -1,5 +1,12 @@
 # `migrations/pending/`
 
+## 2026-11-04: 260 WRITTEN AND APPLIED - ספר הארנק באגורות
+
+‏`260_wallet_ledger_view_agorot.sql`. ‏S23. שתי עמודות שלמות נוספו בסוף ‏`v_wallet_ledger`:
+‏`amount_agorot` ו-`signed_amount_agorot` ‏(bigint, מהעמודה המחושבת ‏`wallet_entries.amount_ils_agorot`).
+‏`security_invoker=true` נשמר. הורדו ההרשאות של ‏anon ושל הכתיבה ל-authenticated, נשאר ‏SELECT בלבד.
+אף טבלה לא שונתה. נבדקה ב-BEGIN/ROLLBACK ואז הוחלה: ‏1352 שורות, ‏0 אי-התאמות. הוכחה ב-`docs/S23-wallet.md`.
+
 ## 2026-11-04: 226 APPLIED - מתנה עם תאריך משלוח ועמלת אריזה
 
 ‏`226_gift_scheduling_and_wrap.sql`. ‏S22. נכתבה 10.09 ולא הוחלה, ולכן בפרודקשן תאריך המשלוח ועמלת

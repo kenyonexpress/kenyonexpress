@@ -1083,6 +1083,11 @@ describe('the pending migration inventory', () => {
       // default {order_updates,expiry}, CHECK to those two. The kind -> topic
       // map is src/lib/push/topics.ts. Proof: docs/S21-push.md.
       '259_push_subscription_topics.sql',
+      // S23 (04.11): APPLIED the same day. v_wallet_ledger gains amount_agorot
+      // and signed_amount_agorot (bigint, from the generated amount_ils_agorot);
+      // anon and the authenticated write grants revoked. No table altered.
+      // Proof: docs/S23-wallet.md.
+      '260_wallet_ledger_view_agorot.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

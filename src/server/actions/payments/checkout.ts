@@ -2,6 +2,7 @@
 
 import { appReturnUrl } from '@/lib/app/deep-links'
 import { getGuestSessionId } from '@/lib/cart/guest-session'
+import { effectiveCashbackPercent } from '@/lib/cashback/product'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
@@ -94,6 +95,7 @@ type SettlementProductRow = {
   discount_percent: number | null
   coupon_price_ils: number | null
   cashback_percent: number | null
+  cashback_enabled: boolean | null
 }
 
 /**
@@ -477,7 +479,7 @@ async function runBeginCheckout(
   const { data: productRows, error: productRowsError } = await admin
     .from('products')
     .select(
-      'id, type, is_coupon_enabled, supplier_id, platform_percent, supplier_split_percent, discount_percent, coupon_price_ils, cashback_percent',
+      'id, type, is_coupon_enabled, supplier_id, platform_percent, supplier_split_percent, discount_percent, coupon_price_ils, cashback_percent, cashback_enabled',
     )
     .in('id', productIds)
     .is('deleted_at', null)
@@ -594,7 +596,7 @@ async function runBeginCheckout(
         quantity: item.quantity,
         couponPriceUnit: ilsToAgorot(couponPrice.toFixed(2)),
         platformPercent: split.pair.platformPercent,
-        cashbackPercent: product.cashback_percent ?? 0,
+        cashbackPercent: effectiveCashbackPercent(product),
       })
     } else {
       // The same rule as the coupon branch above, for the type that had no
@@ -616,7 +618,7 @@ async function runBeginCheckout(
         unitPrice: item.unit_price,
         quantity: item.quantity,
         platformPercent: split.pair.platformPercent,
-        cashbackPercent: product.cashback_percent ?? 0,
+        cashbackPercent: effectiveCashbackPercent(product),
       })
     }
   }

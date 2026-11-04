@@ -80,6 +80,21 @@ export async function loadCartProductData(items: CartStorageItem[]) {
     'cart cashback',
   )
 
+  // The cashback switch (048). Probed rather than named for the same reason
+  // as the rate above: a missing column must cost the perk, not the cart. A
+  // product the probe did not answer for keeps `undefined`, which
+  // effectiveCashbackPercent reads as "not selected", never as "off".
+  const cashbackSwitch = await readOptionalColumns<{
+    id: string
+    cashback_enabled: boolean | null
+  }>(
+    (select, ids) => catalogue.from('products').select(select).in('id', ids) as never,
+    ['cashback_enabled'],
+    productIds,
+    'cart cashback switch',
+    'apply supabase/migrations/048_products_content_fields.sql. Cashback reads as switched on until then.',
+  )
+
   const pricedProducts = (products ?? []).map((p) => ({
     ...p,
     coupon_price_ils: coupon054.get(p.id)?.coupon_price_ils ?? null,
@@ -87,6 +102,7 @@ export async function loadCartProductData(items: CartStorageItem[]) {
     // module keeps speaking percent, which is what its invariants are written
     // in. 250 bp is 2.5 percent.
     cashback_percent: cashback.get(p.id) ?? null,
+    cashback_enabled: cashbackSwitch.get(p.id)?.cashback_enabled ?? undefined,
   }))
 
   let variants: {
