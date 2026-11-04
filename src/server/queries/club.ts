@@ -16,7 +16,7 @@ import {
 } from '@/lib/commerce/order-money-columns'
 import { agorot } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestUser } from '@/lib/supabase/request-user'
 
 /**
  * The signed-in customer's club standing: tier, twelve-month spend, and how
@@ -49,10 +49,7 @@ import { createClient } from '@/lib/supabase/server'
  * once per standing and handed to the pure rule.
  */
 export async function getClubStanding(clock?: Date): Promise<ClubStanding | null> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getRequestUser()
   if (!user) return null
 
   // The clock is read AFTER the session, never as a parameter default: under

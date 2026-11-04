@@ -1,6 +1,7 @@
 import { orFail } from '@/lib/catalogue-read'
 import { type Agorot, agorot } from '@/lib/money'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
+import { getRequestUser } from '@/lib/supabase/request-user'
 import { createClient } from '@/lib/supabase/server'
 import {
   WALLET_LEDGER_SELECT_AGOROT,
@@ -104,9 +105,7 @@ export function walletReasonLabel(reason: string): string {
 
 export async function getAccountProfile(): Promise<AccountProfile | null> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getRequestUser()
   if (!user) return null
 
   const data = orFail(
@@ -131,9 +130,7 @@ export async function getAccountProfile(): Promise<AccountProfile | null> {
 
 export async function getWalletSummary(): Promise<WalletSummary> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getRequestUser()
   if (!user) return { balanceAgorot: agorot(0), accountId: null }
 
   // Probed, not named. This selected `balance_agorot`, which the hosted project

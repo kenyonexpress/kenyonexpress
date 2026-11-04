@@ -11,7 +11,7 @@ import type { GiftCollectedState } from '@/lib/gifts/collected'
 import { type Agorot, agorot } from '@/lib/money'
 import { type TrackingView, trackingView } from '@/lib/shipping/carriers'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestUser } from '@/lib/supabase/request-user'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import {
   SETTLEMENT_STATES,
@@ -147,10 +147,7 @@ function asSettlementState(value: string | null | undefined): SettlementState {
 }
 
 async function requireUserId(): Promise<string | null> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getRequestUser()
   return user?.id ?? null
 }
 

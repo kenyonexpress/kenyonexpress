@@ -30,12 +30,18 @@ export const metadata: Metadata = {
  * and throws away anything already typed. `searchParams` resolves off the
  * request with no I/O behind it, so this hole is filled in the same flush that
  * carries the shell.
+ *
+ * Not quite null (V08): on a slow link the shell paints before that flush
+ * lands, and with nothing in the hole the footer was drawn under the header
+ * and then pushed off the screen by the form, CLS 0.41 on Lighthouse mobile
+ * with devtools throttling. The fallback is an empty box that holds a screen
+ * of height, never a form, so nothing typed can be lost to it.
  */
 export default function LoginPage(props: {
   searchParams: Promise<{ next?: string; error?: string; magic?: string }>
 }) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="auth-page__pending" aria-hidden="true" />}>
       <LoginPageBody {...props} />
     </Suspense>
   )

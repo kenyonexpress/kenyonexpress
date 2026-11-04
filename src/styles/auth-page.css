@@ -415,3 +415,17 @@
     min-width: 160px;
   }
 }
+
+/* V08: the managed Turnstile widget is a 65px iframe that arrives after the
+   form has painted (lazyOnload), and its arrival pushed the submit row and the
+   alternative sign-in buttons down: the one layout shift Lighthouse found on
+   /login. Its slot is held from the first paint. */
+.auth-form .cf-turnstile {
+  min-height: 65px;
+}
+
+/* V08: the Suspense fallback of /login, /register and /signup. A screen tall,
+   so the footer stays below the fold until the form replaces it. */
+.auth-page__pending {
+  min-height: 100svh;
+}

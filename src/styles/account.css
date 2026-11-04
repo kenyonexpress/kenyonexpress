@@ -209,6 +209,21 @@
   min-width: 0;
 }
 
+/* V08: the streamed page's placeholder. With no fallback the footer was drawn
+   right under the empty column and every /account page's arrival pushed it
+   down: CLS 0.41 on Lighthouse mobile, the footer the shifted node. Beside the
+   nav the column is held at the nav's own pending height; stacked under it, a
+   screen, since every endpoint plus its heading outgrows the fold there. */
+.account-content__pending {
+  min-height: 401.5px;
+}
+
+@media (max-width: 900px) {
+  .account-content__pending {
+    min-height: 100svh;
+  }
+}
+
 .account-title {
   font-size: 25px;
   font-weight: 500;

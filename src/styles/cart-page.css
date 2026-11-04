@@ -513,6 +513,17 @@
   font-size: 14px;
 }
 
+/* V08: below 1024 the cart stacks (rows, coupon, totals) and is always taller
+   than the screen, but 240px left the footer in view under the loading line, so
+   the table's arrival pushed it down: CLS 0.188 on Lighthouse mobile, the
+   footer the one shifted node. A full screen of placeholder keeps the footer
+   below the fold until the real lines replace it. */
+@media (max-width: 1023px) {
+  .cart-page__loading {
+    min-height: 100svh;
+  }
+}
+
 /* The empty-cart banner, measured off the live page: #fed700, 49px/300,
    centred, padding 49px 79.282px, margin 98px 0 36.75px, radius 2px. */
 .cart-empty {

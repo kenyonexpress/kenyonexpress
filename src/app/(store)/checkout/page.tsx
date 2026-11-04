@@ -113,9 +113,15 @@ async function CheckoutPageBody({
   searchParams: Promise<{ resume?: string; channel?: string }>
 }) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // The session and the cart in one round trip, not two (V08). getCart() reads
+  // its own session, so it never needed this one first, and from a slow link
+  // each serial hop here is a hop added to the time the form takes to paint.
+  const [
+    {
+      data: { user },
+    },
+    cart,
+  ] = await Promise.all([supabase.auth.getUser(), getCart()])
 
   // A guest reaches this page, fills it in and pays (S07): submitCheckout gives
   // them an anonymous session at the pay button, and Google is offered after
@@ -123,7 +129,6 @@ async function CheckoutPageBody({
   // the block below prefills their address and email like an account's - the
   // "saved for next order" half of guest checkout. Only the sign-in notice
   // still treats them as a guest.
-  const cart = await getCart()
   if (cart.items.length === 0) redirect('/cart')
   const validation = validateCartView(cart)
 
@@ -135,7 +140,7 @@ async function CheckoutPageBody({
 
   if (user) {
     const admin = createAdminClient()
-    const [wallet, { data: defaultAddress }, { data: tokens }] = await Promise.all([
+    const [wallet, { data: defaultAddress }, { data: tokens }, invoice] = await Promise.all([
       // Probed rather than named. The comment that stood here said
       // `balance_agorot` was correct since 059 and that the old name had
       // failed with 42703; the hosted project never received 059, so it was
@@ -161,6 +166,11 @@ async function CheckoutPageBody({
         .eq('profile_id', user.id)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false }),
+      // The saved "invoice to business" preference, through the RLS client like
+      // the account page. A failed read is a blank block, never a blocked
+      // checkout. In this batch rather than after it (V08): it depends on the
+      // user id only.
+      getInvoiceSettings(supabase, user.id).catch(() => null),
     ])
 
     address = {
@@ -178,9 +188,7 @@ async function CheckoutPageBody({
       email:
         user.email ?? (user.is_anonymous ? ((await readGuestEmail(admin, user.id)) ?? '') : ''),
     }
-    // The saved "invoice to business" preference, through the RLS client like
-    // the account page. A failed read is a blank block, never a blocked checkout.
-    invoiceSettings = await getInvoiceSettings(supabase, user.id).catch(() => null)
+    invoiceSettings = invoice
     walletBalance = wallet.balanceAgorot / 100
     savedCards = (tokens ?? [])
       // An expired card is still listed in /account so the customer can delete

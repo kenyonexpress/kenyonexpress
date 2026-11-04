@@ -22,11 +22,12 @@ export const metadata: Metadata = {
   alternates: { canonical: '/signup' },
 }
 
-// Null fallback for the same reason as /login: a second render of the form is a
-// remount, and a remount loses what has been typed into it.
+// No form in the fallback, for the same reason as /login: a second render of the form is a
+// remount, and a remount loses what has been typed into it. The fallback is an
+// empty box, not a form, holding the footer below the fold (V08, see /login).
 export default function SignupPage(props: { searchParams: Promise<{ next?: string }> }) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="auth-page__pending" aria-hidden="true" />}>
       <SignupPageBody {...props} />
     </Suspense>
   )

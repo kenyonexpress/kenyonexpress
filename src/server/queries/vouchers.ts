@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getRequestUser } from '@/lib/supabase/request-user'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -147,9 +148,7 @@ function voucherReadOrFail<T>(
 
 export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getRequestUser()
   if (!user) return []
 
   const data = voucherReadOrFail(
@@ -193,9 +192,7 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
   if (!/^[0-9a-fA-F-]{36}$/.test(id)) return null
 
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getRequestUser()
   if (!user) return null
 
   const data = voucherReadOrFail(

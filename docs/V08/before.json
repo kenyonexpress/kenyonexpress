@@ -1,0 +1,148 @@
+{
+  "base": "http://localhost:3481",
+  "runs": 3,
+  "at": "2026-11-04T17:00:12.101Z",
+  "notes": ["cart: had", "cart: had"],
+  "rows": [
+    {
+      "name": "cart",
+      "path": "/cart",
+      "median": {
+        "finalUrl": "http://localhost:3481/cart",
+        "perf": 87,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 770,
+        "lcp": 1206,
+        "tbt": 190,
+        "cls": 0.188,
+        "si": 3526,
+        "perfFails": ["total-blocking-time", "cumulative-layout-shift", "speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [87, 86, 89],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/cart",
+        "perf": 89,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 61,
+        "fcp": 807,
+        "lcp": 807,
+        "tbt": 0,
+        "cls": 0.188,
+        "si": 3970,
+        "perfFails": ["cumulative-layout-shift", "speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      }
+    },
+    {
+      "name": "checkout",
+      "path": "/checkout",
+      "median": {
+        "finalUrl": "http://localhost:3481/checkout",
+        "perf": 84,
+        "a11y": 97,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 770,
+        "lcp": 3749,
+        "tbt": 0,
+        "cls": 0.003,
+        "si": 6220,
+        "perfFails": ["largest-contentful-paint", "speed-index"],
+        "a11yFails": ["target-size"],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [95, 82, 84],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/checkout",
+        "perf": 75,
+        "a11y": 97,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 1322,
+        "lcp": 7591,
+        "tbt": 0,
+        "cls": 0.003,
+        "si": 2900,
+        "perfFails": ["first-contentful-paint", "largest-contentful-paint", "speed-index"],
+        "a11yFails": ["target-size"],
+        "bpFails": ["errors-in-console"]
+      }
+    },
+    {
+      "name": "login",
+      "path": "/login",
+      "median": {
+        "finalUrl": "http://localhost:3481/login",
+        "perf": 100,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 618,
+        "lcp": 1053,
+        "tbt": 0,
+        "cls": 0.01,
+        "si": 723,
+        "perfFails": [],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [100, 100, 100],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/login",
+        "perf": 100,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 209,
+        "lcp": 209,
+        "tbt": 0,
+        "cls": 0.025,
+        "si": 469,
+        "perfFails": [],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      }
+    },
+    {
+      "name": "account",
+      "path": "/account",
+      "median": {
+        "finalUrl": "http://localhost:3481/account",
+        "perf": 68,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 92,
+        "fcp": 769,
+        "lcp": 2861,
+        "tbt": 29,
+        "cls": 0.432,
+        "si": 8169,
+        "perfFails": ["largest-contentful-paint", "cumulative-layout-shift", "speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [68, 73, 45],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/account",
+        "perf": 54,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 85,
+        "fcp": 811,
+        "lcp": 7968,
+        "tbt": 0,
+        "cls": 0.449,
+        "si": 4187,
+        "perfFails": ["largest-contentful-paint", "cumulative-layout-shift", "speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      }
+    }
+  ]
+}

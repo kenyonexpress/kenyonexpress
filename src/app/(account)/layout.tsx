@@ -167,9 +167,16 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                   <AccountTabsActive />
                   {/* Every /account page reads rows scoped to the signed-in user,
                     so each one is request-time work. One boundary here covers
-                    all ten rather than ten boundaries in ten files. */}
+                    all ten rather than ten boundaries in ten files. The
+                    fallback holds the column's place (V08, see
+                    .account-content__pending) so the footer is not drawn
+                    under an empty column and then pushed away. */}
                   <div className="account-content">
-                    <Suspense fallback={null}>{children}</Suspense>
+                    <Suspense
+                      fallback={<div className="account-content__pending" aria-hidden="true" />}
+                    >
+                      {children}
+                    </Suspense>
                   </div>
                 </div>
               </div>

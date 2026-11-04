@@ -1,0 +1,148 @@
+{
+  "base": "http://localhost:3481",
+  "runs": 5,
+  "at": "2026-11-04T18:16:56.763Z",
+  "notes": ["cart: had", "cart: had"],
+  "rows": [
+    {
+      "name": "cart",
+      "path": "/cart",
+      "median": {
+        "finalUrl": "http://localhost:3481/cart",
+        "perf": 97,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 61,
+        "fcp": 769,
+        "lcp": 1205,
+        "tbt": 0,
+        "cls": 0,
+        "si": 4578,
+        "perfFails": ["speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [95, 96, 97, 98, 98],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/cart",
+        "perf": 98,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 1032,
+        "lcp": 1088,
+        "tbt": 0,
+        "cls": 0,
+        "si": 3819,
+        "perfFails": ["speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      }
+    },
+    {
+      "name": "checkout",
+      "path": "/checkout",
+      "median": {
+        "finalUrl": "http://localhost:3481/checkout",
+        "perf": 97,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 61,
+        "fcp": 770,
+        "lcp": 2249,
+        "tbt": 0,
+        "cls": 0.003,
+        "si": 4033,
+        "perfFails": ["largest-contentful-paint", "speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [99, 97, 96, 97, 93],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/checkout",
+        "perf": 90,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 996,
+        "lcp": 3591,
+        "tbt": 0,
+        "cls": 0.003,
+        "si": 1650,
+        "perfFails": ["largest-contentful-paint"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      }
+    },
+    {
+      "name": "login",
+      "path": "/login",
+      "median": {
+        "finalUrl": "http://localhost:3481/login",
+        "perf": 99,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 618,
+        "lcp": 1053,
+        "tbt": 145,
+        "cls": 0.002,
+        "si": 890,
+        "perfFails": ["total-blocking-time"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [96, 100, 100, 98, 99],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/login",
+        "perf": 100,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 69,
+        "fcp": 137,
+        "lcp": 538,
+        "tbt": 0,
+        "cls": 0.002,
+        "si": 1230,
+        "perfFails": [],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      }
+    },
+    {
+      "name": "account",
+      "path": "/account",
+      "median": {
+        "finalUrl": "http://localhost:3481/account",
+        "perf": 97,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 92,
+        "fcp": 771,
+        "lcp": 2035,
+        "tbt": 52,
+        "cls": 0.02,
+        "si": 3912,
+        "perfFails": ["largest-contentful-paint", "speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      },
+      "simulatedPerf": [88, 99, 97, 98, 86],
+      "devtools": {
+        "finalUrl": "http://localhost:3481/account",
+        "perf": 97,
+        "a11y": 100,
+        "bp": 96,
+        "seo": 92,
+        "fcp": 712,
+        "lcp": 2550,
+        "tbt": 0,
+        "cls": 0.02,
+        "si": 2027,
+        "perfFails": ["largest-contentful-paint", "speed-index"],
+        "a11yFails": [],
+        "bpFails": ["errors-in-console"]
+      }
+    }
+  ]
+}
