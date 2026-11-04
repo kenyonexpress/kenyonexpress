@@ -32630,3 +32630,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 ### 2026-11-04T10:55:25+07:00
 - item: M10-c358
 - BLOCKED: pending 319 needs affiliate tables restored first; 324 unsafe with 23 FKs into orders
+
+## Archived 2026-11-04T12:09:14+07:00 after M17-c359 (3 lines from STATE.md)
+
+### 2026-11-04T10:58:35+07:00
+- item: M11-c358
+- RESULT: DONE
