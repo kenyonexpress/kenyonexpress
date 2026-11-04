@@ -19,7 +19,9 @@ import {
   productExtrasSchema,
   productSchema,
 } from '@/lib/admin/product-form-schema'
+import { type ProductTerms, productTermsFromForm } from '@/lib/admin/product-terms'
 import { type ProductMoneyWrite, buildProductMoneyWrite } from '@/lib/commerce/product-money'
+import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 
 export const IMPORT_COLUMNS = [
   { key: 'slug', label: 'קישור (slug)', required: true },
@@ -42,6 +44,9 @@ export const IMPORT_COLUMNS = [
   { key: 'description_he', label: 'תיאור', required: false },
   { key: 'short_description_he', label: 'תיאור קצר', required: false },
   { key: 'tags', label: 'תגיות (מופרדות בפסיק)', required: false },
+  { key: 'shipping_price_ils', label: 'דמי משלוח', required: false },
+  { key: 'cancellation_window_days', label: 'חלון ביטול בימים', required: false },
+  { key: 'images', label: 'תמונות (קישורים מופרדים ב-|)', required: false },
 ] as const
 
 export type ImportColumnKey = (typeof IMPORT_COLUMNS)[number]['key']
@@ -102,6 +107,14 @@ const HEADER_ALIASES: Record<string, ImportColumnKey> = {
   short_description_he: 'short_description_he',
   tags: 'tags',
   תגיות: 'tags',
+  shipping_price_ils: 'shipping_price_ils',
+  shipping: 'shipping_price_ils',
+  משלוח: 'shipping_price_ils',
+  cancellation_window_days: 'cancellation_window_days',
+  'חלון ביטול': 'cancellation_window_days',
+  images: 'images',
+  image_urls: 'images',
+  תמונות: 'images',
 }
 
 function normalizeHeader(raw: string): string {
@@ -186,6 +199,42 @@ export interface ValidatedImportRow {
   originalPriceSource?: string | null
   /** Raw category name for the server to resolve to an id. */
   categoryName: string | null
+  /**
+   * S16: shipping fee (agorot) and cancellation window, through the form's own
+   * `productExtrasSchema` and `productTermsFromForm`, so a blank cell is the
+   * same default the form writes. The other three terms stay at their defaults:
+   * they are payout settings, not something a catalogue spreadsheet carries.
+   */
+  terms: ProductTerms
+  /** S16: already-hosted image URLs, each one passing the storefront host allowlist. */
+  images: string[]
+}
+
+/** The form's cap (ProductForm `maxFiles={8}`), so the CSV cannot exceed it. */
+export const MAX_IMPORT_IMAGES = 8
+
+/**
+ * The images cell: URLs separated by `|` (a comma is the CSV delimiter and is
+ * legal inside a URL). Every URL must pass `isAllowedImageUrl`, the same check
+ * the form's save applies, because next/image throws on an unlisted host and
+ * that is a 500 on the storefront, not an import error.
+ */
+export function parseImageCell(cell: string | undefined): { urls: string[]; errors: string[] } {
+  const urls = [
+    ...new Set(
+      (cell ?? '')
+        .split('|')
+        .map((u) => u.trim())
+        .filter(Boolean),
+    ),
+  ]
+  const errors: string[] = []
+  if (urls.length > MAX_IMPORT_IMAGES) {
+    errors.push(`${COLUMN_LABELS.images}: עד ${MAX_IMPORT_IMAGES} תמונות למוצר`)
+  }
+  const bad = urls.find((u) => !isAllowedImageUrl(u))
+  if (bad !== undefined) errors.push(`${COLUMN_LABELS.images}: ${IMAGE_HOST_ERROR}`)
+  return { urls, errors }
 }
 
 /**
@@ -293,6 +342,34 @@ export function validateImportRow(row: RawImportRow): ValidatedImportRow {
     }
   }
 
+  // Shipping and the cancellation window, bounded by the form's schema (the
+  // window never below the statutory 14 days) and converted to agorot once,
+  // through money.ts, by productTermsFromForm.
+  const termsParsed = productExtrasSchema
+    .innerType()
+    .pick({ shipping_price_ils: true, cancellation_window_days: true })
+    .safeParse({
+      shipping_price_ils: r.shipping_price_ils ?? null,
+      cancellation_window_days: r.cancellation_window_days ?? null,
+    })
+  let terms = productTermsFromForm({})
+  if (termsParsed.success) {
+    terms = productTermsFromForm(termsParsed.data)
+  } else {
+    for (const issue of termsParsed.error.issues) {
+      const label = COLUMN_LABELS[String(issue.path[0] ?? '')] ?? ''
+      errors.push(label ? `${label}: ${issue.message}` : issue.message)
+    }
+  }
+  // A coupon is redeemed at the business; nothing ships, and checkout asks for
+  // a shipping address only on physical lines.
+  if (type === 'coupon' && terms.shippingPriceAgorot > 0) {
+    errors.push(`${COLUMN_LABELS.shipping_price_ils}: לקופון אין משלוח`)
+  }
+
+  const imageCell = parseImageCell(r.images)
+  errors.push(...imageCell.errors)
+
   const parsed = productSchema.safeParse(candidate)
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
@@ -337,6 +414,8 @@ export function validateImportRow(row: RawImportRow): ValidatedImportRow {
     ...(parsed.success && errors.length === 0 ? { data: parsed.data, money } : {}),
     originalPriceSource,
     categoryName: r.category?.trim() || null,
+    terms,
+    images: imageCell.urls,
   }
 }
 
@@ -397,6 +476,9 @@ export function buildTemplateCsv(): string {
     'תיאור מלא של המוצר',
     'תיאור קצר',
     'חדש,מבצע',
+    '29',
+    '14',
+    '',
   ]
   const coupon = [
     'example-coupon',
@@ -418,6 +500,9 @@ export function buildTemplateCsv(): string {
     '',
     'שובר הנחה לבית העסק',
     '',
+    '',
+    '',
+    '30',
     '',
   ]
   return `﻿${[header, physical, coupon].map((row) => row.map(csvEscape).join(',')).join('\r\n')}\r\n`

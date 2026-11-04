@@ -1,6 +1,7 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import { writeWithOptionalColumns } from '@/lib/admin/optional-column-groups'
 import { ORIGINAL_PRICE_SOURCE_MIGRATION_NOTICE } from '@/lib/admin/product-fields'
 import {
   type RawImportRow,
@@ -8,6 +9,12 @@ import {
   markInFileDuplicates,
   validateImportRow,
 } from '@/lib/admin/product-import/import-rows'
+import {
+  PRODUCT_TERMS_COLUMNS,
+  PRODUCT_TERMS_MIGRATION_NOTICE,
+  isDefaultProductTerms,
+  productTermsWrite,
+} from '@/lib/admin/product-terms'
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -200,14 +207,30 @@ async function runImportBatch(raw: RawImportRow[]): Promise<ImportBatchResult> {
     const sourceWrite = row.originalPriceSource
       ? { original_price_source: row.originalPriceSource }
       : {}
-    const { error: insertError } = await supabase.from('products').insert({
-      ...fields,
-      ...row.money,
-      ...sourceWrite,
-      category_id: row.categoryName ? (categoryIds.get(row.categoryName) ?? null) : null,
-      images: [],
-      created_by: session.userId,
-    })
+    // S16: the shipping fee and cancellation window ride the same optional
+    // group as the form's save, so a database without 243's columns drops them
+    // only while they are defaults and refuses a row that set them.
+    const { error: insertError } = await writeWithOptionalColumns(
+      [
+        {
+          key: 'product_terms_243',
+          columns: [...PRODUCT_TERMS_COLUMNS],
+          fields: productTermsWrite(row.terms),
+          atDefault: isDefaultProductTerms(row.terms),
+          notice: PRODUCT_TERMS_MIGRATION_NOTICE,
+        },
+      ],
+      async (extra) =>
+        supabase.from('products').insert({
+          ...fields,
+          ...row.money,
+          ...sourceWrite,
+          ...extra,
+          category_id: row.categoryName ? (categoryIds.get(row.categoryName) ?? null) : null,
+          images: row.images,
+          created_by: session.userId,
+        }),
+    )
 
     if (insertError) {
       const missingSource =

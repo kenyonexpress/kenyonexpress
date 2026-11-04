@@ -1,5 +1,13 @@
 # `migrations/pending/`
 
+## 2026-11-04: 256 WRITTEN AND APPLIED - תנאי מוצר: השלמת העמודות החיות
+
+‏`256_product_terms_live_completion.sql`. ‏S16. בפרודקשן היו ארבע מחמש העמודות של
+243 בצורה אחרת, ו-`refund_policy` חסרה. לכן כל שמירה של מוצר עם דמי משלוח או חלון
+ביטול נדחתה עם הודעת 243. התיקון: ‏`refund_policy` ‏(NOT NULL DEFAULT 'statutory'),
+‏CHECK של ‏`payout_cadence` מורחב ל-per_order, ורצפה של 14 יום על חלון הביטול.
+**אין להחיל את 243 על פרודקשן אחרי זה.** הוחלה 04.11; הוכחה ב-`docs/S16-admin-upload.md`.
+
 ## 2026-11-04: 255 WRITTEN AND APPLIED - מימוש קופון אצל שותף: תיקון redeem_voucher_locked
 
 ‏`255_redeem_voucher_locked_fix.sql`. ‏S15. ‏`redeem_voucher_locked` והטבלה

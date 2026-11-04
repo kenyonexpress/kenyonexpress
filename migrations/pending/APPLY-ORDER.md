@@ -1121,3 +1121,27 @@ rehearsal. Proof in `docs/S15-redeem.md`.
 
 **Reversal:** re-run the body with `p_ip` and `p_code` in place of `p_ip::text`
 and `v_code`. That restores a function nobody can call.
+
+## 2026-11-04: 256 written AND APPLIED (queue S16)
+
+`256_product_terms_live_completion.sql`. Measured first: production had
+`shipping_price_agorot`, `supplier_transfer_days`, `payout_cadence` and
+`cancellation_window_days` (nullable, no defaults, another lineage's CHECKs)
+and no `refund_policy`. The form and the CSV import write the five as one
+optional group, so every save that set a shipping fee or a cancel window was
+refused with the 243 notice.
+
+1. `refund_policy text NOT NULL DEFAULT 'statutory'`, CHECK statutory/fee_waived,
+   column SELECT grant to anon and authenticated.
+2. `products_payout_cadence_check` widened to per_order, weekly, biweekly,
+   monthly (126/126 rows NULL).
+3. `products_cancellation_window_statutory_floor`: NULL or 14..365 (44 rows at
+   14, 82 NULL).
+
+**243 must not be applied on production after this:** its cadence CHECK would
+intersect with the live one.
+
+Applied 04.11 via `supabase db query --linked -f`, after a BEGIN/ROLLBACK
+rehearsal. Proof in `docs/S16-admin-upload.md`.
+
+**Reversal:** in the file header.

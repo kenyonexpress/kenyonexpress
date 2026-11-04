@@ -1063,6 +1063,12 @@ describe('the pending migration inventory', () => {
       // fixed with p_ip::text, and its event table written down as-is.
       // Proof, rolled back: docs/S15-redeem.md.
       '255_redeem_voucher_locked_fix.sql',
+      // S16 (04.11): APPLIED the same day. Production had four of 243's five
+      // product-terms columns in another shape and no refund_policy, so every
+      // save with a shipping fee or cancel window was refused. Adds the column,
+      // widens payout_cadence to per_order, floors the window at 14.
+      // Proof, rolled back: docs/S16-admin-upload.md.
+      '256_product_terms_live_completion.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',
