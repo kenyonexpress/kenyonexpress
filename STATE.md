@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**S01 - DONE (04.11.2026): baseline. HEAD == `design-locked-2026-10-19` == `origin/closeout/v1-final` (337d1a2a4).** install frozen 0; tsc 0; vitest 640/640, 7674 עברו, 12 דולגו; diff --stat מול התג ריק. הוכחה: `docs/S01-baseline.md`.
+**החלטה שהתקבלה לבד:** tsc נכשל ב-316 שגיאות, כולן ב-types שנוצרו ב-`.next` (gitignored) מבילד של עץ אחר. `pnpm next typegen` רענן את `.next/types`; `.next/dev/types` הועבר ל-`.next/dev/types.stale-S01` (לא נמחק). אפס קבצים במעקב שונו.
+**הבא: S02** מתור ה-S.
+
 **M08-c113 - DONE (19.10.2026): סגר חוסם 9. `purchaseConfirmation.sellerName` ב-`messages/he.json` כולל עכשיו ח.פ 033798513; אין שינוי קוד אחר.**
 משימת המקור: לא `final-queue.txt` (ראו "החלטה שהתקבלה לבד" למטה) — הוראה מפורשת של אופיר בצ'אט, כולל המספר עצמו.
 **החלטה שהתקבלה לבד:** `~/ke-goals/final-queue.txt` כבר לא מחזיק את תור ה-M, הוא הוחלף בחזרה לרשימת F01-F40 הישנה (40 שורות, MVP-מאפס) — אי אפשר
