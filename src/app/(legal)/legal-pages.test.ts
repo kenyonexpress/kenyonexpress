@@ -241,7 +241,10 @@ describe('the cookie policy names what the code sets and loads', () => {
 
 describe('every document names the operator and keeps phone numbers out', () => {
   it.each(LEGAL_DOCS.map((d) => [d.slug, d] as const))('%s', (_slug, document) => {
-    const text = textOf(document)
+    // The registration number 033798513 is nine digits starting 03, which the
+    // phone pattern reads as a Tel Aviv landline. Only that exact labelled
+    // string is exempt, so a real number next to it still fails.
+    const text = textOf(document).replaceAll('ח.פ 033798513', '')
     // Owner policy (22.09.2026): written support only. A legal page is the
     // last place a phone number should reappear. (The WORD WhatsApp may still
     // appear: the privacy document lists it among the channels whose content
@@ -252,6 +255,33 @@ describe('every document names the operator and keeps phone numbers out', () => 
 
   it('states the legal form of the operator in the terms', () => {
     expect(textOf(doc('terms'))).toContain('קניון אקספרס, עוסק מורשה')
+  })
+})
+
+/**
+ * S18 (04.11.2026): the four clauses the owner's launch rules name. Each is a
+ * sentence a customer or a regulator looks for, so each is pinned to the
+ * document that must carry it.
+ */
+describe('the clauses the launch rules require', () => {
+  it('terms: minimum age 18', () => {
+    expect(textOf(doc('terms'))).toMatch(/מלאו לו 18 שנים/)
+  })
+
+  it('terms: the registration number, ח.פ 033798513', () => {
+    expect(textOf(doc('terms'))).toContain('ח.פ 033798513')
+  })
+
+  it('terms: exclusive jurisdiction in the Tel Aviv district', () => {
+    expect(textOf(doc('terms'))).toMatch(/סמכות השיפוט[^.]*במחוז תל אביב/)
+  })
+
+  it('returns: section 14ג, 14 days, two non-rest days, fee min(5%, ₪100)', () => {
+    const returns = textOf(doc('returns'))
+    expect(returns).toContain('14ג')
+    expect(returns).toContain('14 יום')
+    expect(returns).toContain('שני ימים, שאינם ימי מנוחה')
+    expect(returns).toMatch(/5% ממחיר העסקה או 100 שקלים חדשים, לפי הנמוך/)
   })
 })
 

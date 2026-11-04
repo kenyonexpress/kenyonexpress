@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**S18 - DONE (04.11.2026): דפים משפטיים.** ארבעת הנתיבים קיימים: ‏`/terms`, ‏`/privacy` ו-`/returns` מפנים ב-308 לדפים הקנוניים, ו-`/accessibility` הוא דף. גיל 18, סעיף 14ג (14 יום, שני ימים שאינם ימי מנוחה, דמי ביטול min(5%, ₪100)) וסמכות שיפוט בתל אביב כבר היו בתוכן. **חסר היה רק ח.פ 033798513.** הוא נוסף לתקנון, למדיניות העוגיות ולבלוק יצירת הקשר בכל הדפים המשפטיים, כתוכן בלבד. טסט חדש נועל את ארבעת הסעיפים. vitest ‏245/246, tsc 0, lint נקי מחוץ ל-`.lighthouseci/`. הוכחה: `docs/S18-legal.md`.
+**החלטה שהתקבלה לבד:** הנוסח הוא "עוסק מורשה, ח.פ 033798513". כך הוא תואם לחוק הבעלים וגם שומר את הצורה המשפטית. שומר הטלפונים בטסט קרא את המספר כ-03-379-8513, ולכן הוחרגה רק המחרוזת המדויקת.
+**הבא: S19** מתור ה-S.
+
 **S17 - DONE (04.11.2026): הצטרפות ספקים.** ‏`/supplier/apply` חדש ב-`(supplier-public)`, ומשתמש בויזארד הקיים (קפוא, יובא ולא נערך) עם הסכם הספק כ-click-wrap. כל הסכמה נרשמת ב-`agreement_acceptances`: גרסה, SHA-256 שמחושב בשרת, זמן מה-DB, IP ו-user agent. הטבלה append-only בטריגר, גם ל-service_role. נוסף hook לאימות כרטיס ב-₪1: חיוב של 100 אגורות וביטול באותו יום (`src/lib/suppliers/card-verification.ts`), ב-sandbox בלבד. ‏`cardCheckAvailable` מסרב גם ל-sandbox שאליו פרודקשן נופל. מיגרציה 257 **הוחלה**, וה-append-only הוכח בבלוק שבוטל. **נמצא:** ‏`supplier_card_verifications` כבר תפוסה בפרודקשן בטבלה ישנה (0 שורות, אין כותב), וההחלה הראשונה נכשלה ב-42703 והתגלגלה אחורה. הטבלה החדשה היא `supplier_application_card_checks`. עוגיית ה-Turnstile עברה ל-path ‏`/`, כדי שהשער לא ייכנס ללולאה ב-`/supplier/apply`. vitest ‏662/663 (1 skipped), tsc 0, שערי ה-lint 0 על העץ המנוהל. שער ההקפאה: רק קבצים חדשים. הוכחה: `docs/S17-supplier.md`.
 **החלטה שהתקבלה לבד:** אימות ₪1 מול המסוף האמיתי לא נכתב, כי הוא דורש סבב דרך הדף המתארח של Cardcom, ואין credentials בשום סביבה. מול כל ספק שאינו mock ה-hook מחזיר unavailable. הטבלה הישנה לא נמחקה. README תוקן ל-299 מסמכים (הספירה פיגרה מאז S16).
 **הבא: S18** מתור ה-S.
@@ -107,18 +111,6 @@ test **640/640, 7674 עברו, 12 דולגו** (163.6s, זהה ל-M04-c113); typ
 ל-`origin/audit/final-audit` בלבד. **ידני לאופיר:** לבדוק מי הזיז את `audit/final-audit` המקומי, ולהחזיר אותו ל-`origin/audit/final-audit`
 לפני הפריט הבא, אחרת M06-c113 ירוץ על `main`. **החלטה שהתקבלה לבד:** הפריט הבא ב-`~/ke-goals/final-queue.txt` (קריאה בלבד) הוא
 M06-c113, ולכן `RESUME FROM` עודכן ל-M06-c113. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
-
-**M04-c113 - DONE (06.10.2026): `pnpm type-check` רץ על worktree נקי של HEAD `f0c73423f`, exit 0, אפס שגיאות, אפס drift; אין שינוי קוד.**
-משימת התור: "pnpm type-check fix drift commit". `pwd` אומת, HEAD `f0c73423f` = `origin/audit/final-audit` (אחרי `git fetch`).
-בעץ הראשי אותו WIP זר (`docs/UI-PARITY-REPORT.md`), לא נגעתי בו ולא חויב. ה-worktree הנקי `/tmp/ke-m01-c113` הועבר ל-`f0c73423f`
-(detached). לשם כך שינוי השער שנשאר בו ב-`docs/UI-PARITY-REPORT.md` מ-M03-c113 גובה קודם ל-`/tmp/m04c113-worktree-UI-PARITY-REPORT.backup.md`
-ורק אז הוחזר לגרסת ה-commit. ההפרש מ-`d0cc3be4f` כולל את `ebbb72628` (fix: L1 LANDMINES, 17 קבצים ב-`src`), ו-type-check עובר גם איתו.
-**שערים** (אותו worktree, `env -i`): type-check **0** (`tsc --noEmit`, אפס פלט); lint: eslint ושאר השערים נקיים מלבד docs-path-audit
-ב-worktree, שנכשל רק על `supabase/.temp` (ב-gitignore), נקי בעץ הראשי (`OK. 155 known`, ללא שינוי); test **640/640, 7674 עברו, 12 דולגו**;
-`rm -rf .next` ואז build עם `CARDCOM_USE_MOCK=true`: 0, 340/340, אפס `Invalid API key`, `BUILD_ID` `19K9yT18GhFO2-hIUtJSD`.
-אין שינוי UI, ולכן `compare.mjs` לא נדרש. **החלטה שהתקבלה לבד:** הפריט הבא ב-`~/ke-goals/final-queue.txt` (קריאה בלבד, שורה 2124)
-הוא M05-c113, ולכן `RESUME FROM` עודכן ל-M05-c113. ל-M16-c111 עדיין אין commit עם ראיה; הפער רשום כאן ולא נסגר.
-
 
 **M11-c110 - DONE** (sitemap.xml טרי, 98/98 כתובות 200, ממצא apex→www ב-BACKLOG),
 ו-W14..W01, M01-c96, L12, L11 וכל מה שקדם: ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, החדש למעלה.
