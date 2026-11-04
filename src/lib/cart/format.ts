@@ -1,16 +1,11 @@
 import { CART_LINE_MAX_QUANTITY, type CartViewItem } from '@/lib/cart/types'
 
 /**
- * `shekels` and `shekelsRounded` moved to `@/lib/money-format`.
- *
- * They were never cart-specific -- `CheckoutForm` already imported them from
- * here, through a path that says "cart" -- and there were five other private
- * copies of the same idea across the app, three of which took shekels rather
- * than agorot under the same name. One formatter, one unit, one place.
+ * `shekels` and `shekelsRounded` live in `@/lib/money-format`; import them
+ * from there. The re-export that used to sit here had no importer left.
  *
  * What stays here is what is genuinely about a cart line.
  */
-export { shekels, shekelsRounded } from '@/lib/money-format'
 
 /**
  * What to tell the shopper about a line that cannot be ordered.

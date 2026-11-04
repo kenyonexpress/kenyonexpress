@@ -1,9 +1,14 @@
-# מלאי קוד מת — ממתין לאישור מחיקה
+# מלאי קוד מת
 
 ‏נמדד ‏02.09.2026 (‏STEP 83). **מחיקת קבצים היא עצירה קשה לפי כללי
-הפרויקט**, ולכן זה מלאי לאישור אופיר, לא מחיקה שבוצעה.
+הפרויקט**, ולכן זה היה מלאי לאישור אופיר, לא מחיקה שבוצעה.
 
-## מת מוכח, בטוח למחיקה
+**‏05.11.2026 (‏M09-c361): נמחק.** תור הסגירה מורה להסיר תלויות וקוד מת בלי
+לשאול. ‏`src/db/schema/` ו-`drizzle.config.ts` הוסרו, וכך גם שתי התלויות.
+‏`src/db/__tests__/` נשאר: אלה טסטי ‏RLS על ‏supabase-js, לא ‏Drizzle.
+הפירוט ב-`docs/M09-c361.md`.
+
+## מת מוכח, נמחק ב-05.11
 
 | מה | ראיה |
 | --- | --- |
@@ -11,10 +16,10 @@
 | `src/db/schema/commerce.ts` + `commerce-managed.ts` | לא מיובאים מאף מקום (האזכור היחיד — הערה בטסט); תפקיד "הסכימה כקוד" שייך ל-`src/types/database.ts` (שנוצר מפרודקשן) ול-`supabase/migrations/` |
 | `drizzle.config.ts` | משרת רק את השניים למעלה |
 
-צעד המחיקה, כשמאושר:
+צעד המחיקה שבוצע:
 
 ```bash
-git rm -r src/db drizzle.config.ts
+git rm -r src/db/schema drizzle.config.ts
 pnpm remove drizzle-orm drizzle-kit
 pnpm type-check && pnpm test && pnpm build
 ```

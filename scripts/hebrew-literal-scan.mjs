@@ -209,4 +209,4 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * `account.dashboard.*`, `account.ordersPage.*` and `account.walletPage.*`
  * with the Electro my-account rebuild. 592 -> 568.
  */
-export const HEBREW_LITERAL_CEILING = 568
+export const HEBREW_LITERAL_CEILING = 564
