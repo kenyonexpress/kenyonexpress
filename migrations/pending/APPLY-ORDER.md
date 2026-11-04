@@ -1064,3 +1064,18 @@ next paid order carrying an approved affiliate's code writes a conversion.
 
 **Reversal:** `DROP TABLE public.affiliate_conversions; DROP TABLE public.affiliate_campaigns;`
 Wallet entries already written stay, as ledger entries must.
+
+## 2026-11-04: 253 written AND APPLIED (queue S09)
+
+`253_order_items_split_amount_lock.sql` replaces the body of the live
+`fn_order_items_percent_snapshot_lock` so a paid line's split AMOUNTS are
+frozen beside its rates: `commission_agorot` (platform amount),
+`supplier_immediate_agorot` / `supplier_payout_ils` (supplier amount),
+`paid_on_site_agorot`, `face_value_agorot`, `balance_due_agorot`, the shekel
+price twins, the remaining rates and `quantity`. No column added, no grant
+touched (CREATE OR REPLACE). Independent of every other pending file.
+
+Applied 04.11 via `supabase db query --linked -f`. Proof, before and after,
+with a rolled-back DO block: `docs/S09-split.md`.
+
+**Reversal:** re-run the pre-253 body quoted in `docs/S09-split.md`.

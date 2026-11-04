@@ -1,5 +1,15 @@
 # `migrations/pending/`
 
+## 2026-11-04: 253 WRITTEN AND APPLIED - נעילת סכומי הפיצול על שורת הזמנה ששולמה
+
+‏`253_order_items_split_amount_lock.sql`. ‏S09. **מה כבר היה:** הקופה מעתיקה
+מהמוצר `platform_percent`, ‏`commission_agorot` (סכום הפלטפורמה) ו-`supplier_immediate_agorot`
+(סכום הספק) בזמן הרכישה; ‏947 שורות ששולמו, ‏0 ריקות. הטריגר החי נעל רק את
+שלושת האחוזים. **מה נוסף:** אותה פונקציה, ב-CREATE OR REPLACE, נועלת גם את
+הסכומים אחרי `paid_at`. ‏`product_id` לא ננעל (FK ‏`ON DELETE SET NULL`).
+הוחלה 04.11; הוכחה לפני ואחרי ב-`docs/S09-split.md`, כולל גוף הפונקציה הקודם
+לשחזור.
+
 ## 2026-10-05: 252 WRITTEN, not applied - תוכנית השותפים: קליקים ובקשות משיכה
 
 ‏`252_affiliate_clicks_payouts.sql`. ‏W08. **מה כבר היה (Q16, 25.09; 244 ממתינה):**

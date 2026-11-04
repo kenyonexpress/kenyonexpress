@@ -1048,6 +1048,11 @@ describe('the pending migration inventory', () => {
       // 010 counter, four SELECT policies, no client write. After 010 and
       // 098 (applied); independent of 244 and of every other pending file.
       '252_affiliate_clicks_payouts.sql',
+      // S09 (04.11): APPLIED the same day, kept here like the files above it.
+      // CREATE OR REPLACE of the live fn_order_items_percent_snapshot_lock so
+      // a paid line's split AMOUNTS freeze beside its rates. No column, no
+      // grant. Proof before and after, rolled back: docs/S09-split.md.
+      '253_order_items_split_amount_lock.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',
