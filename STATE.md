@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**S05 - DONE (04.11.2026): Turnstile ב-/login, ב-/signup וב-/suppliers/apply.** חדש: `src/lib/turnstile/verify.ts` עם `verifyTurnstileForm` ועם pass חתום, עוגיית HMAC ל-30 דקות. הוא נשען על `lib/fraud/turnstile.ts` ולא משכפל אותו. login מסרב לפני מגביל החשבון. signup עבר ל-helper. ב-supplier apply יש טופס שער לפני הויזארד, ופעולת השליחה בודקת את העוגייה. `TurnstileRefresh` מצייר את הווידג'ט אחרי ניווט צד-לקוח ומאפס אותו אחרי סירוב. tsc 0, vitest 642/642, 7703 עברו, 16 טסטים חדשים. שער ההקפאה מראה רק 2 קבצים חדשים. הוכחה: `docs/S05-turnstile.md`.
+**החלטה שהתקבלה לבד:** `SupplierApplyWizard.tsx` קיים בתג, ולכן לא נגעתי בו. השער שלפני הטופס והעוגייה מחליפים token בתוך הטופס. "/register" הוא `/signup`, ו-"/supplier/apply" הוא `/suppliers/apply`. מדיניות fail-open (בלי מפתחות, או כש-Cloudflare לא זמין) נשמרה כמו שהיא. בפרודקשן יש את שני המפתחות, ולכן האכיפה ב-login תעלה בדיפלוי הבא, וה-E2E השעתי בפרודקשן ייחסם ב-login.
+**הבא: S06** מתור ה-S.
+
 **S04 - BLOCKED (04.11.2026): צינור העלאה ל-R2.** הקוד גמור. `src/lib/storage/r2.ts` עבר ל-`@aws-sdk/client-s3`, קורא `R2_BUCKET_NAME` (ואם הוא חסר, `R2_BUCKET`), ומעלה גרסאות AVIF+WebP דרך `uploadImageVariants`. נוספה פעולת אדמין חדשה, `uploadImageToR2` (`src/server/actions/admin/r2-upload.ts`). 11 טסטים עם client ממוקק. tsc 0, vitest 641/641. הוכחה: `docs/S04-r2.md`.
 **חסום:** ה-smoke לא רץ. (1) מפתחות R2 קיימים רק כ-Secret ב-Vercel, ו-env pull מחזיר `[SENSITIVE]`. בעותק המקומי אין `R2_ACCESS_KEY_ID`. (2) `cdn.kenyonexpress.co.il` יושב ב-DNS של Vercel ומחזיר `DEPLOYMENT_NOT_FOUND`, כך שה-URL הציבורי לא יחזיר 200 גם אחרי העלאה מוצלחת. הפקודה לסגירה: `node scripts/r2-smoke.mjs --env-file=<file>`.
 **החלטה שהתקבלה לבד:** לא פתחתי endpoint בפרודקשן רק בשביל ה-smoke. ב-action קראתי ל-`updateTag(CATALOGUE_TAG)` במקום להוסיף חריג רביעי למקסימום 3 של שער ה-cache. `pnpm lint` נופל על `.lighthouseci/` ו-`android/`, תיקיות untracked שלא שלי. הגייטים על הקבצים שלי נקיים.
