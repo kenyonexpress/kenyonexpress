@@ -67,6 +67,10 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   // cart never require an account.
   ['cart.ts:mergeGuestCart', 'internal helper, see STATE.md 20.08 finding 1'],
   ['cart.ts:clearGuestSessionCookie', "deletes the caller's own cookie"],
+  [
+    'gift-purchase.ts:startGiftPurchase',
+    'S22 guest add-to-cart plus a prefill cookie on the caller; addToCart rate limits it, nothing is charged',
+  ],
   // Public forms. All four are rate limited per IP in their own bodies.
   ['contact.ts:submitContactForm', 'public form, rate limited'],
   ['supplier-lead.ts:submitSupplierLead', 'public form, rate limited'],

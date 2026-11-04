@@ -21,6 +21,7 @@ import {
 import { blocklistDecision } from '@/lib/fraud/blocklist'
 import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { checkVelocity } from '@/lib/fraud/velocity'
+import { GIFT_DRAFT_COOKIE } from '@/lib/gifts/draft'
 import { giftWrapFeeAgorot, resolveGiftDeliverAt } from '@/lib/gifts/wrap'
 import { withActionContext } from '@/lib/observability/action-context'
 import { sendAlert } from '@/lib/observability/alert'
@@ -67,6 +68,7 @@ import { planTokenization } from '@/server/payments/adapter'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { isFeatureEnabled } from '@/server/resilience/flags'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
@@ -1290,11 +1292,29 @@ export type CheckoutFormState =
  * beginCheckout and hands back either the hosted page to frame or a redirect to
  * the confirmation.
  */
+/**
+ * Best effort and never in the way of a payment: a cookie store that cannot be
+ * written (outside a request, in a unit test) costs a stale prefill at worst,
+ * and a prefill is only ever a suggestion the shopper sees and can change.
+ */
+async function clearGiftDraft(): Promise<void> {
+  try {
+    ;(await cookies()).delete({ name: GIFT_DRAFT_COOKIE, path: '/checkout' })
+  } catch {
+    // see above
+  }
+}
+
 async function runSubmitCheckout(
   _prev: CheckoutFormState,
   formData: FormData,
 ): Promise<CheckoutFormState> {
   const supabase = await createClient()
+
+  // S22: the /gift/[product] prefill has done its job once the form is posted
+  // (the fields are in this FormData). Left in place it would reopen the gift
+  // block, filled, on the shopper's NEXT checkout within the half hour.
+  await clearGiftDraft()
 
   // S07, GUEST CHECKOUT: no sign-in before paying. A shopper without a session
   // gets an anonymous one here, the cookie cart moves onto it, and Google is

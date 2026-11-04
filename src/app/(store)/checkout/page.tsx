@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { validateCartView } from '@/lib/checkout/validate-cart'
+import { GIFT_DRAFT_COOKIE, decodeGiftDraft } from '@/lib/gifts/draft'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
@@ -8,6 +9,7 @@ import { getCart } from '@/server/actions/cart'
 import { readGuestEmail } from '@/server/auth/guest-orders'
 import { getInvoiceSettings } from '@/server/queries/invoice-settings'
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -193,6 +195,9 @@ async function CheckoutPageBody({
   }
 
   const { resume, channel } = await searchParams
+  // S22: the gift a shopper filled in on /gift/[product]. A prefill only; the
+  // form posts the fields again and the action validates them as usual.
+  const giftPrefill = decodeGiftDraft((await cookies()).get(GIFT_DRAFT_COOKIE)?.value)
 
   return (
     <div className="checkout-page">
@@ -209,6 +214,7 @@ async function CheckoutPageBody({
         resuming={resume === '1'}
         channel={channel === 'app' ? 'app' : 'web'}
         invoiceSettings={invoiceSettings}
+        giftPrefill={giftPrefill}
       />
     </div>
   )

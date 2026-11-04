@@ -21,6 +21,7 @@ import {
   validateStep,
 } from '@/lib/checkout/steps'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
+import type { GiftDraft } from '@/lib/gifts/draft'
 import { GIFT_WRAP_FEE_AGOROT, giftDateInputBounds } from '@/lib/gifts/wrap'
 import { t } from '@/lib/i18n/messages'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
@@ -98,6 +99,7 @@ export default function CheckoutForm({
   resuming = false,
   channel = 'web',
   invoiceSettings = null,
+  giftPrefill = null,
 }: {
   cart: CartView
   clientRef: string
@@ -119,6 +121,11 @@ export default function CheckoutForm({
    * never set one (and for a guest, who has no row to read).
    */
   invoiceSettings?: CheckoutInvoicePrefill | null
+  /**
+   * S22: what the shopper typed on /gift/[product]. The gift box opens ticked
+   * and filled; they can still edit or untick it here.
+   */
+  giftPrefill?: GiftDraft | null
 }) {
   /**
    * `begin_checkout`, once per mount of the checkout page.
@@ -300,7 +307,7 @@ export default function CheckoutForm({
   // Gift fields are mounted only while the box is ticked, so an unticked box
   // cannot post a half-typed address, and the server forwards the fields only
   // when both the flag and the email are present.
-  const [isGift, setIsGift] = useState(false)
+  const [isGift, setIsGift] = useState(Boolean(giftPrefill))
 
   /**
    * The date picker's bounds, set AFTER mount rather than at render.
@@ -881,11 +888,17 @@ export default function CheckoutForm({
                           required={isGift}
                           dir="ltr"
                           placeholder="name@example.com"
+                          defaultValue={giftPrefill?.gift_recipient_email ?? ''}
                         />
                       </div>
                       <div className="checkout-field">
                         <label htmlFor="co-gift-name">שם המקבל</label>
-                        <input id="co-gift-name" name="gift_recipient_name" maxLength={80} />
+                        <input
+                          id="co-gift-name"
+                          name="gift_recipient_name"
+                          maxLength={80}
+                          defaultValue={giftPrefill?.gift_recipient_name ?? ''}
+                        />
                       </div>
                       <div className="checkout-field">
                         <label htmlFor="co-gift-message">ברכה אישית</label>
@@ -894,6 +907,7 @@ export default function CheckoutForm({
                           name="gift_message"
                           maxLength={500}
                           placeholder="מזל טוב! בקיצור, תיהנו."
+                          defaultValue={giftPrefill?.gift_message ?? ''}
                         />
                       </div>
                       <div className="checkout-field">
@@ -911,12 +925,17 @@ export default function CheckoutForm({
                           dir="ltr"
                           min={giftDateBounds.min}
                           max={giftDateBounds.max}
+                          defaultValue={giftPrefill?.gift_deliver_at ?? ''}
                         />
                         <span className="checkout-field__hint">{t('gift.deliverHint')}</span>
                       </div>
 
                       <label className="checkout-terms">
-                        <input type="checkbox" name="gift_wrap" />
+                        <input
+                          type="checkbox"
+                          name="gift_wrap"
+                          defaultChecked={Boolean(giftPrefill?.gift_wrap)}
+                        />
                         <span>
                           {t('gift.wrapLabel')} ({shekels(GIFT_WRAP_FEE_AGOROT)})
                         </span>

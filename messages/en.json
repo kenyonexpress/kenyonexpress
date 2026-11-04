@@ -379,7 +379,21 @@
     "deliverLabel": "When to send it",
     "deliverHint": "Leave empty and the gift goes out right after payment.",
     "wrapLabel": "Add gift wrapping",
-    "notice": "On the send date the recipient gets an email with a personal link to collect the coupon. Until they do, it stays in your account, and the code and QR are shown only to them."
+    "notice": "On the send date the recipient gets an email with a personal link to collect the coupon. Until they do, it stays in your account, and the code and QR are shown only to them.",
+    "purchase": {
+      "eyebrow": "Send as a gift",
+      "intro": "Say who it is for, write a greeting and choose when. After payment the recipient gets an email with a personal link to collect the coupon.",
+      "price": "Price",
+      "emailLabel": "Recipient email",
+      "nameLabel": "Recipient name",
+      "messageLabel": "Personal greeting",
+      "messagePlaceholder": "Congratulations! Enjoy.",
+      "submit": "Continue to payment",
+      "pending": "Taking you to payment...",
+      "cartNote": "The coupon is added to the cart and the gift details are filled in at checkout. Any other items in the cart go to the same recipient.",
+      "notCoupon": "This product cannot be sent as a gift: it ships to an address, not by email.",
+      "backToProduct": "Back to the product page"
+    }
   },
   "checkout": {
     "steps": {

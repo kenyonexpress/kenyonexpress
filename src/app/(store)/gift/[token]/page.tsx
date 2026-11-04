@@ -1,20 +1,40 @@
 import GiftClaimForm from '@/components/gifts/GiftClaimForm'
+import GiftPurchaseForm from '@/components/gifts/GiftPurchaseForm'
+import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
+import { isWellFormedGiftToken } from '@/lib/gifts/claim-token'
+import { t } from '@/lib/i18n/messages'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { loadProductBySlug } from '@/lib/product-detail'
 import { createClient } from '@/lib/supabase/server'
-import { loadGiftPreview } from '@/server/actions/gifts'
+import { type GiftPreview, loadGiftPreview } from '@/server/actions/gifts'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 /**
- * The claim page for a gifted coupon.
+ * /gift/<segment>: the claim page for a gifted coupon, AND (S22) the page that
+ * starts one, /gift/<product slug>.
  *
- * `noindex`, and not as a formality: the URL IS the credential. A crawler that
+ * ONE SEGMENT, TWO MEANINGS, because Next allows one dynamic segment per level
+ * and the claim links already in people's inboxes are /gift/<token>, so that
+ * URL cannot move. They do not collide in practice: a token is 43 base64url
+ * characters (`isWellFormedGiftToken`), and a product slug here is Hebrew or
+ * short. The token is tried first only when it is token-shaped, and a miss
+ * falls through to the product, so even an ASCII slug of token length still
+ * resolves - at the cost of one indexed lookup.
+ *
+ * `noindex` on both, and not as a formality for the claim: the URL IS the
+ * credential. A crawler that
  * reaches one of these holds a working claim link, and a claim link in an index
  * is a coupon anybody can take.
  */
 export const metadata: Metadata = {
-  title: 'קיבלת מתנה',
+  // Neutral since S22: the same segment is also the page that STARTS a gift,
+  // and "you received a gift" in the buyer's tab would be false there. A
+  // per-segment title would need generateMetadata to resolve the token, which
+  // is a second lookup of a credential for a tab label.
+  title: 'מתנה',
   robots: { index: false, follow: false },
   // Self-canonical beside the noindex. Inheriting the root layout's '/' would
   // pair noindex with a canonical pointing at the home page, and Google resolves
@@ -47,10 +67,57 @@ export default function GiftClaimPage(props: Props) {
 async function GiftContent({ params }: Props) {
   // `await params` is itself uncached data, so it belongs inside the boundary
   // and not in the shell - same shape as /coupon/[id].
-  const { token } = await params
-  const gift = await loadGiftPreview(token)
-  if (!gift) notFound()
+  const { token: segment } = await params
 
+  if (isWellFormedGiftToken(segment)) {
+    const gift = await loadGiftPreview(segment)
+    if (gift) return <GiftClaim token={segment} gift={gift} />
+  }
+
+  let slug: string
+  try {
+    slug = decodeURIComponent(segment)
+  } catch {
+    notFound()
+  }
+  const detail = await loadProductBySlug(slug)
+  if (!detail) notFound()
+  return <GiftPurchase detail={detail} />
+}
+
+async function GiftPurchase({
+  detail,
+}: { detail: NonNullable<Awaited<ReturnType<typeof loadProductBySlug>>> }) {
+  const { product, supplier } = detail
+  const isCoupon = resolveStorefrontProductType(product) === 'coupon'
+  const productHref = `/product/${encodeURIComponent(product.slug)}`
+
+  return (
+    <>
+      <p className="text-sm font-medium text-heading/75">{t('gift.purchase.eyebrow')}</p>
+      <h1 className="mt-2 text-2xl font-bold text-heading">{product.name_he}</h1>
+      {supplier?.name && <p className="mt-1 text-sm text-heading/75">{supplier.name}</p>}
+      <p className="mt-3 text-lg font-semibold text-heading">
+        {t('gift.purchase.price')}: {shekelsFromIlsRounded(product.kenyon_price)}
+      </p>
+
+      {isCoupon ? (
+        <>
+          <p className="mt-4 text-sm leading-relaxed text-heading/80">{t('gift.purchase.intro')}</p>
+          <GiftPurchaseForm productId={product.id} />
+        </>
+      ) : (
+        <p className="mt-6 text-sm text-heading/80">{t('gift.purchase.notCoupon')}</p>
+      )}
+
+      <Link href={productHref} className="mt-6 inline-block text-sm underline underline-offset-2">
+        {t('gift.purchase.backToProduct')}
+      </Link>
+    </>
+  )
+}
+
+async function GiftClaim({ token, gift }: { token: string; gift: GiftPreview }) {
   const supabase = await createClient()
   const {
     data: { user },

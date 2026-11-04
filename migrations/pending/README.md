@@ -1,5 +1,12 @@
 # `migrations/pending/`
 
+## 2026-11-04: 226 APPLIED - מתנה עם תאריך משלוח ועמלת אריזה
+
+‏`226_gift_scheduling_and_wrap.sql`. ‏S22. נכתבה 10.09 ולא הוחלה, ולכן בפרודקשן תאריך המשלוח ועמלת
+האריזה נזרקו בשקט וכל מתנה יצאה מיד. נבדקה ב-BEGIN/ROLLBACK ואז הוחלה: ‏`orders.gift_deliver_at`,
+‏`orders.gift_wrap_fee_agorot` ‏(bigint, ברירת מחדל 0, ‏CHECK ‏>= 0), ‏`vouchers.gift_deliver_at` ואינדקס חלקי.
+העמודות `gift_send_at`/`gift_scheduled_at` שכבר היו בפרודקשן (לא מהריפו) לא נגעו. הוכחה ב-`docs/S22-gift.md`.
+
 ## 2026-11-04: 259 WRITTEN AND APPLIED - נושאי התראות דחיפה לכל דפדפן
 
 ‏`259_push_subscription_topics.sql`. ‏S21. עמודת ‏`topics text[]` ב-`push_subscriptions`,
