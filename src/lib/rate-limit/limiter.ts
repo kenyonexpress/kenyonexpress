@@ -5,6 +5,7 @@ import {
   shouldReportRejection,
 } from '@/lib/rate-limit/rejections'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requestHasTestBypass } from '@/lib/testing/test-bypass'
 import { type RateLimitPolicyName, policy as policyFor, postgresKey, redisKey } from './policies'
 import { evaluateWindow } from './sliding-window'
 import { type UpstashConfig, upstashConfig } from './upstash'
@@ -204,6 +205,23 @@ export async function rateLimitByKey(
   options: RateLimitOptions = {},
 ): Promise<RateLimitDecision> {
   const nowMs = options.nowMs ?? Date.now()
+
+  // The E2E runner, identified by `x-test-secret` against `TEST_BYPASS_SECRET`
+  // (`lib/testing/test-bypass.ts` holds the gating). Every limiter in the app
+  // funnels through this function, so this is the one place the bypass lives.
+  // Reported as `open` with no counter, which is the honest shape: nothing was
+  // metered. Logged at info so a bypassed request is never silent.
+  if (await requestHasTestBypass()) {
+    log.info('rate_limit.test_bypass', { key: keys.postgres })
+    return {
+      allowed: true,
+      limit,
+      windowSeconds,
+      remaining: null,
+      resetAtMs: null,
+      backend: 'open',
+    }
+  }
 
   const config = upstashConfig()
   if (config) {

@@ -15,6 +15,11 @@ vi.mock('@/lib/observability/log', () => ({
   },
 }))
 
+const requestHasTestBypass = vi.fn(async () => false)
+vi.mock('@/lib/testing/test-bypass', () => ({
+  requestHasTestBypass: () => requestHasTestBypass(),
+}))
+
 import { rateLimit, rateLimitByKey } from './limiter'
 
 const URL_VAR = 'UPSTASH_REDIS_REST_URL'
@@ -303,5 +308,34 @@ describe('rateLimit', () => {
     // Same key, same millisecond under a fake clock: identical members would
     // overwrite one score instead of counting two requests.
     expect(members[0]).not.toBe(members[1])
+  })
+})
+
+describe('the E2E bypass (B3-launch, 05.11.2026)', () => {
+  afterEach(() => {
+    requestHasTestBypass.mockReset()
+    requestHasTestBypass.mockResolvedValue(false)
+    delete process.env[URL_VAR]
+    delete process.env[TOKEN_VAR]
+  })
+
+  it('allows without touching any backend when the request carries the matching x-test-secret', async () => {
+    requestHasTestBypass.mockResolvedValue(true)
+    configureUpstash()
+    const fetchSpy = upstashReplies([0, 0])
+    rpc.mockReset()
+    const decision = await rateLimitByKey({ redis: 'k', postgres: 'login:1.2.3.4' }, 1, 60)
+    expect(decision.allowed).toBe(true)
+    expect(decision.backend).toBe('open')
+    expect(decision.remaining).toBeNull()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('is consulted on the policy entry point too, since it funnels into rateLimitByKey', async () => {
+    requestHasTestBypass.mockResolvedValue(true)
+    const decision = await rateLimit('login', '1.2.3.4')
+    expect(decision.allowed).toBe(true)
+    expect(requestHasTestBypass).toHaveBeenCalledTimes(1)
   })
 })
