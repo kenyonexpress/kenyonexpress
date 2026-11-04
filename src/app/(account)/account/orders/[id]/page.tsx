@@ -13,7 +13,9 @@ import { REVIEWABLE_ORDER_STATUSES } from '@/lib/reviews/eligibility'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { wazeSearchLink } from '@/lib/waze'
 import { refundRequestStatus } from '@/server/actions/refund-requests'
+import { decideCancellation14g } from '@/server/domain/orders/cancellation-14g'
 import { computeCancellationFee } from '@/server/domain/orders/refund'
+import { formatVoucherPin } from '@/server/domain/vouchers/code'
 import { getOrderDetail } from '@/server/queries/orders'
 import { getMyReviewsForItems } from '@/server/queries/reviews'
 import Link from 'next/link'
@@ -40,6 +42,19 @@ export default async function OrderDetailPage({ params }: Props) {
   // the defect-claim case is zero and the form decides which applies from the
   // reason the customer picks.
   const cancellationFeeAgorot = computeCancellationFee(order.totalAgorot, false)
+  // The s.14C decision for a VOLUNTARY cancellation: 14 days from payment,
+  // nothing redeemed, not inside 2 business days of a booked service. The
+  // request form below stays open for defect claims, which this rule does not
+  // bind; `requestRefund` applies the same decision to `changed_mind`.
+  const cancellation = decideCancellation14g({
+    orderStatus: order.status,
+    paidAt: order.paidAt,
+    chargedAgorot: order.totalAgorot,
+    vouchers: order.lines.flatMap((line) => line.vouchers),
+    // No booked-service time is stored anywhere yet (docs/S11-order.md).
+    bookedServiceAt: null,
+    now: new Date(),
+  })
   const existing = await getMyReviewsForItems(order.lines.map((line) => line.id))
   const canReview = (REVIEWABLE_ORDER_STATUSES as readonly string[]).includes(order.status)
   // Prefilled with what was bought and what was paid, so the first WhatsApp
@@ -97,6 +112,38 @@ export default async function OrderDetailPage({ params }: Props) {
               >
                 {t('contact.openChat')}
               </a>
+            </div>
+          </div>
+        )}
+        <div className="account-row" data-testid="order-cancel-14g">
+          <div className="account-row__main">
+            <p className="account-row__meta">{t('cancellation.statutoryLabel')}</p>
+            {cancellation.allowed ? (
+              <p className="account-row__meta">
+                {cancellation.deadline
+                  ? `${t('cancellation.statutoryDeadline')} ${formatDate(cancellation.deadline.toISOString())} · `
+                  : ''}
+                {t('cancellation.feeLabel')} {formatIls(cancellation.feeAgorot)}
+              </p>
+            ) : (
+              <p className="account-row__meta">{cancellation.message}</p>
+            )}
+          </div>
+          {cancellation.allowed && (
+            <div className="account-row__actions">
+              <a className="account-btn" href="#order-cancel" data-testid="order-cancel-cta">
+                {t('cancellation.statutoryCta')}
+              </a>
+            </div>
+          )}
+        </div>
+        {!order.invoice && (
+          <div className="account-row" data-testid="order-invoice-pending">
+            <div className="account-row__main">
+              <p className="account-row__meta">{t('invoice.pending')}</p>
+            </div>
+            <div className="account-row__actions">
+              <span className="account-row__meta">{t('invoice.notIssued')}</span>
             </div>
           </div>
         )}
@@ -192,7 +239,10 @@ export default async function OrderDetailPage({ params }: Props) {
                 {line.supplier && (
                   <p className="account-row__meta">
                     {line.supplier.name}
-                    {line.supplier.city ? ` · ${line.supplier.city}` : ''}
+                    {line.supplier.address ? ` · ${line.supplier.address}` : ''}
+                    {line.supplier.city && !line.supplier.address?.includes(line.supplier.city)
+                      ? ` · ${line.supplier.city}`
+                      : ''}
                     {line.supplier.phone ? ` · ${line.supplier.phone}` : ''}
                     {/*
                       Navigation to the business, only when a street address
@@ -286,6 +336,13 @@ export default async function OrderDetailPage({ params }: Props) {
                             ) : (
                               <p className="coupon-card__code">{voucher.code}</p>
                             )}
+                            {/* The 8-digit pin the business types at its till (S10). */}
+                            {!held && voucher.pin && (
+                              <p className="account-row__meta" data-testid="order-voucher-pin">
+                                {t('orderVoucher.pinLabel')}{' '}
+                                <bdi dir="ltr">{formatVoucherPin(voucher.pin)}</bdi>
+                              </p>
+                            )}
                             <p className="account-row__meta">
                               <span
                                 className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}
@@ -363,15 +420,17 @@ export default async function OrderDetailPage({ params }: Props) {
 
       <OrderHelpForm orderId={id} />
 
-      <RefundRequestForm
-        orderId={id}
-        allowed={refund.allowed}
-        blockedMessage={refund.message}
-        remaining={refund.remaining}
-        requests={refund.requests}
-        chargedAgorot={order.totalAgorot}
-        feeAgorot={cancellationFeeAgorot}
-      />
+      <div id="order-cancel">
+        <RefundRequestForm
+          orderId={id}
+          allowed={refund.allowed}
+          blockedMessage={refund.message}
+          remaining={refund.remaining}
+          requests={refund.requests}
+          chargedAgorot={order.totalAgorot}
+          feeAgorot={cancellationFeeAgorot}
+        />
+      </div>
 
       <p>
         <Link className="account-btn" href="/account/orders">

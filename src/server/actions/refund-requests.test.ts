@@ -316,3 +316,57 @@ describe('refundRequestStatus', () => {
     })
   })
 })
+
+describe('requestRefund under s.14C (S11)', () => {
+  const CHANGED_MIND = {
+    ...VALID_FIELDS,
+    reason_code: 'changed_mind',
+    reason_text: 'התחרטתי ואני רוצה לבטל את העסקה',
+  }
+  const recent = () => new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+
+  it('records a voluntary cancellation inside 14 days with nothing redeemed', async () => {
+    queue('orders.select', ownedOrder({ paid_at: recent() }))
+    queue('order_items.select', { data: [{ id: 'item-1' }], error: null })
+    queue('vouchers.select', { data: [{ status: 'issued', redeemed_at: null }], error: null })
+    queue('refund_requests.insert', { data: null, error: null })
+    const result = await requestRefund({ ok: false }, formData(CHANGED_MIND))
+    expect(result).toMatchObject({ ok: true })
+  })
+
+  it('refuses a voluntary cancellation once a voucher is redeemed', async () => {
+    queue('orders.select', ownedOrder({ paid_at: recent() }))
+    queue('order_items.select', { data: [{ id: 'item-1' }], error: null })
+    queue('vouchers.select', { data: [{ status: 'redeemed', redeemed_at: recent() }], error: null })
+    const result = await requestRefund({ ok: false }, formData(CHANGED_MIND))
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('מומש')
+    expect(calls.some((c) => c.op === 'insert')).toBe(false)
+  })
+
+  it('refuses a voluntary cancellation after 14 days', async () => {
+    const old = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+    queue('orders.select', ownedOrder({ paid_at: old }))
+    queue('order_items.select', { data: [], error: null })
+    const result = await requestRefund({ ok: false }, formData(CHANGED_MIND))
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('14ג')
+  })
+
+  it('refuses rather than passes when the voucher read fails', async () => {
+    queue('orders.select', ownedOrder({ paid_at: recent() }))
+    queue('order_items.select', { data: [{ id: 'item-1' }], error: null })
+    queue('vouchers.select', { data: null, error: { message: 'boom' } })
+    const result = await requestRefund({ ok: false }, formData(CHANGED_MIND))
+    expect(result.ok).toBe(false)
+    expect(calls.some((c) => c.op === 'insert')).toBe(false)
+  })
+
+  it('keeps a defect claim open after 14 days', async () => {
+    const old = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+    queue('orders.select', ownedOrder({ paid_at: old }))
+    queue('refund_requests.insert', { data: null, error: null })
+    const result = await requestRefund({ ok: false }, formData(VALID_FIELDS))
+    expect(result).toMatchObject({ ok: true })
+  })
+})

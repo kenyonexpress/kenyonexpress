@@ -519,7 +519,10 @@
     "feeLabel": "Statutory cancellation fee",
     "refundLabel": "Expected refund",
     "feeRule": "The lower of 5% of the transaction or 100 shekels, under the Consumer Protection Law. The final amount is set when the request is approved.",
-    "fullRefundRule": "In this case the refund is full: 100% of the amount paid, with no cancellation fee."
+    "fullRefundRule": "In this case the refund is full: 100% of the amount paid, with no cancellation fee.",
+    "statutoryLabel": "Cancellation under section 14C",
+    "statutoryDeadline": "Can be cancelled until",
+    "statutoryCta": "Cancel this order"
   },
   "purchaseConfirmation": {
     "subject": "Purchase confirmation",
@@ -735,5 +738,8 @@
   "turnstile": {
     "gateTitle": "A quick security check",
     "gateBody": "Before filling in the form, confirm you are not a robot."
+  },
+  "orderVoucher": {
+    "pinLabel": "Code for the business:"
   }
 }

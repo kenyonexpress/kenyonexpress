@@ -44,6 +44,11 @@ export interface OrderVoucher {
    * present at a counter, a coupon they had promised to somebody else.
    */
   code: string
+  /**
+   * The 8-digit pin the business types at its till (`partner_pin`, S10).
+   * Withheld with the code for a gift on its way to somebody else.
+   */
+  pin: string | null
   status: string
   expiresAt: string | null
   /** Still to collect at the counter, integer agorot. */
@@ -317,7 +322,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       ? admin
           .from('vouchers')
           .select(
-            `id, code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id,
+            `id, code, partner_pin, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id,
              gift_claim_token_hash, gift_claimed_at, gift_sent_at, gift_recipient_name, gift_recipient_email`,
           )
           .in('order_item_id', itemIds)
@@ -326,6 +331,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
           data: [] as {
             id: string
             code: string
+            partner_pin: string | null
             status: string
             expires_at: string | null
             remaining_amount_due_agorot: number | null
@@ -374,6 +380,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       vouchers.push({
         id: coupon.id,
         code: held ? '' : coupon.code,
+        pin: held ? null : (coupon.partner_pin ?? null),
         status: coupon.status,
         expiresAt: coupon.expires_at,
         collectAmountAgorot:

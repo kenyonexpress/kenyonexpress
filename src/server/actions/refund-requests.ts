@@ -5,6 +5,7 @@ import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { decideCancellation14g } from '@/server/domain/orders/cancellation-14g'
 import {
   REFUND_REQUEST_CAP,
   type RefundRequestRow,
@@ -121,6 +122,28 @@ async function runRequestRefund(
   })
   if (!decision.allowed) {
     return { ok: false, error: decision.message, remaining: decision.remaining }
+  }
+
+  // A voluntary cancellation is bound by s.14C (14 days, nothing redeemed);
+  // a defect claim is not, so only `changed_mind` is checked here. The page
+  // shows the same decision before the form opens.
+  if (parsed.data.reason_code === 'changed_mind') {
+    const vouchers = await readOrderVoucherStates(admin, parsed.data.order_id)
+    if (vouchers === null) {
+      return { ok: false, error: 'לא ניתן לטעון את ההזמנה כרגע, נסו שוב' }
+    }
+    const statutory = decideCancellation14g({
+      orderStatus: order.status,
+      paidAt: order.paid_at,
+      chargedAgorot: 0,
+      vouchers,
+      // No booked-service time is stored anywhere yet (docs/S11-order.md).
+      bookedServiceAt: null,
+      now: new Date(),
+    })
+    if (!statutory.allowed) {
+      return { ok: false, error: statutory.message, remaining: decision.remaining }
+    }
   }
 
   const { error: insertError } = await admin.from('refund_requests').insert({
@@ -260,4 +283,33 @@ async function runRefundRequestStatus(orderId: string): Promise<RefundRequestSta
     remaining: decision.remaining,
     requests: rows,
   }
+}
+
+/**
+ * Every voucher state on the order, or null when the read failed. A failed read
+ * must not pass as "nothing redeemed".
+ */
+async function readOrderVoucherStates(
+  admin: ReturnType<typeof createAdminClient>,
+  orderId: string,
+): Promise<Array<{ status: string; usedAt: string | null }> | null> {
+  const { data: items, error: itemsError } = await admin
+    .from('order_items')
+    .select('id')
+    .eq('order_id', orderId)
+  if (itemsError) {
+    log.warn('refund_request.items_read_failed', { orderId, reason: itemsError.message })
+    return null
+  }
+  const ids = (items ?? []).map((row) => row.id)
+  if (ids.length === 0) return []
+  const { data, error } = await admin
+    .from('vouchers')
+    .select('status, redeemed_at')
+    .in('order_item_id', ids)
+  if (error) {
+    log.warn('refund_request.vouchers_read_failed', { orderId, reason: error.message })
+    return null
+  }
+  return (data ?? []).map((row) => ({ status: row.status, usedAt: row.redeemed_at }))
 }
