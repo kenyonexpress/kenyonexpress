@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**S02 - DONE (04.11.2026): ענף הפרודקשן ב-Vercel הוא `closeout/v1-final`.** GET מאשר `link.productionBranch`. commit ריק `c9a3754b8` בנה git production `dpl_DhJJBn82dFLA3HMtWvEuMXPWFzZY`, READY תוך 2 דקות, משויך ל-kenyonexpress.co.il ול-www, ו-/api/health מחזיר 200. מעכשיו כל push לענף הזה הוא דיפלוי לפרודקשן. אסור `vercel --prod` עם upload. הוכחה: `docs/S02-vercel.md`.
+**החלטה שהתקבלה לבד:** ה-API דחה PATCH ל-`/v9/projects` עם `link` (400). השתמשתי ב-`PATCH /v9/projects/{id}/branch` עם `{"branch":...}`, אותו endpoint כמו ב-L02. בילדי ה-preview נכשלים ב-preflight כי משתני Cardcom ו-QR מוגדרים רק ל-production. זה צפוי, ולא נגעתי בזה.
+**הבא: S03** מתור ה-S.
+
 **S01 - DONE (04.11.2026): baseline. HEAD == `design-locked-2026-10-19` == `origin/closeout/v1-final` (337d1a2a4).** install frozen 0; tsc 0; vitest 640/640, 7674 עברו, 12 דולגו; diff --stat מול התג ריק. הוכחה: `docs/S01-baseline.md`.
 **החלטה שהתקבלה לבד:** tsc נכשל ב-316 שגיאות, כולן ב-types שנוצרו ב-`.next` (gitignored) מבילד של עץ אחר. `pnpm next typegen` רענן את `.next/types`; `.next/dev/types` הועבר ל-`.next/dev/types.stale-S01` (לא נמחק). אפס קבצים במעקב שונו.
 **הבא: S02** מתור ה-S.
