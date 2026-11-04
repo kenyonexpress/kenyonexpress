@@ -135,3 +135,23 @@ describe('the live reference', () => {
     }
   })
 })
+
+describe('checkout danger tokens (B3, WCAG AA)', () => {
+  it('declares the danger text colour once, on .checkout-page, at an AA-passing value', () => {
+    // #dc3545 reads 4.14:1 on the #fef2f2 summary tint and axe flagged it
+    // (serious) in the refused state. #b02a37 is 5.94:1 there and 6.5:1 on white.
+    expect(RULES).toMatch(/\.checkout-page\s*\{[^}]*--checkout-danger:\s*#b02a37/)
+  })
+
+  it('paints every error text through the token, never the raw red', () => {
+    for (const selector of [
+      '.checkout-field__error',
+      '.checkout-error',
+      '.checkout-field__required',
+    ]) {
+      const rule = new RegExp(`\\${selector}\\s*\\{[^}]*color:\\s*var\\(--checkout-danger`)
+      expect(RULES, `${selector} is not on --checkout-danger`).toMatch(rule)
+    }
+    expect(RULES).not.toMatch(/color:\s*#dc3545/)
+  })
+})
