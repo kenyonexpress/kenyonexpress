@@ -1,3 +1,4 @@
+המשך מ: M06-c355 DONE (2026-11-04): pnpm build exit 0, 367/367 static pages, 0 supabase timeouts, 30 prerender-cutoff lines only, no drift vs M06-c354; no code change, no forbidden files touched; docs/M06-c355.md, 13f3dce4d
 המשך מ: M05-c355 DONE (2026-11-04): pnpm test exit 0, 879 files / 9722 tests pass, 0 failures, no drift vs M05-c354; no code change, no forbidden files touched; docs/M05-c355.md, 20b0757f3
 המשך מ: M04-c355 DONE (2026-11-04): pnpm type-check tsc --noEmit exit 0, 0 diagnostics, no drift; no code change, no forbidden files touched; docs/M04-c355.md, 8fdb37382
 המשך מ: M17-c354 DONE (2026-11-04): prod www / + /product/barbecue + /product/מלון-5-כוכבים-בטבריה at 380/768/1440: lang=he dir=rtl 12/12 loads, 0 LTR leaks, 0px overflow; static 0 physical-direction hits in 210 files, 5 Latin isolates; latin-field-direction 3/3; no code change, no forbidden files touched; docs/M17-c354.md, 06a26890f
