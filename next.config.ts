@@ -67,6 +67,9 @@ const headersWithPolicy = (
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Next 16.4 warns when this is unset. Unset already meant off; pinning
+  // false keeps today's prefetch behaviour under the design freeze.
+  partialPrefetching: false,
   /**
    * `.mdx` joins the page extensions so blog posts can be files rather than
    * database rows.
