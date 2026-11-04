@@ -19,6 +19,7 @@ import {
   E2E_SUPPLIER_PASSWORD,
   signInWithEmail,
 } from './auth-session'
+import { assertWritableTarget } from './prod-guard'
 
 /**
  * Catalog content is DB-driven and the slugs are Hebrew, so specs discover a
@@ -297,6 +298,7 @@ export async function openCartWithItems(page: Page): Promise<Locator> {
 }
 
 export async function addOpenProductToCart(page: Page): Promise<void> {
+  assertWritableTarget('add to cart')
   allowSlowBackend()
   const before = await headerCartCount(page)
   const addButton = buyButton(page)
@@ -470,6 +472,7 @@ export async function awaitStreamedReveal(page: Page): Promise<void> {
  * discovery budget is taken as empty.
  */
 export async function emptyCart(page: Page): Promise<void> {
+  assertWritableTarget('empty the cart')
   allowSlowBackend()
   // The one read that fills the page is awaited by name, so "no clear button"
   // means an empty cart and not a cart that has not loaded yet.
@@ -596,6 +599,7 @@ export async function submitCheckout(
     phoneVerification?: { email: string; phoneE164: string }
   } = {},
 ): Promise<void> {
+  assertWritableTarget('submit checkout')
   allowSlowBackend()
   await expect(page.getByRole('heading', { level: 1, name: 'קופה' })).toBeVisible({
     timeout: DISCOVERY_TIMEOUT,
@@ -871,6 +875,7 @@ export async function newSignedInContext(
   browser: Browser,
   role: FixtureRole,
 ): Promise<BrowserContext> {
+  assertWritableTarget(`sign in as ${role}`)
   const file = path.join(AUTH_CACHE_DIR, `${role}.json`)
   const fresh =
     fs.existsSync(file) && Date.now() - fs.statSync(file).mtimeMs < AUTH_CACHE_MAX_AGE_MS

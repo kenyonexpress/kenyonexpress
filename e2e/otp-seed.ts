@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type SupabaseClient, createClient } from '@supabase/supabase-js'
+import { assertWritableTarget } from './prod-guard'
 
 /**
  * SEEDS A CHECKOUT PHONE CODE THE SERVER WILL ACCEPT, for the one gate a
@@ -60,6 +61,7 @@ export async function seedCheckoutPhoneOtp(
   phoneE164: string,
   code: string,
 ): Promise<boolean> {
+  assertWritableTarget('seed a checkout OTP row')
   const env = loadEnv()
   const url = env.NEXT_PUBLIC_SUPABASE_URL
   const key = env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY
@@ -116,6 +118,7 @@ const fixtureIds = new Map<string, string>()
  * already per worker (E2E_FORWARDED_FOR_PREFIX).
  */
 export async function resetFixtureRateLimits(email: string): Promise<boolean> {
+  assertWritableTarget('reset fixture rate limits')
   const env = loadEnv()
   const url = env.NEXT_PUBLIC_SUPABASE_URL
   const key = env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY

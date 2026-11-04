@@ -83,6 +83,7 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
     )
     .is('deleted_at', null)
     .is('orders.deleted_at', null)
+    .eq('orders.is_e2e_fixture', false)
     .not('orders.paid_at', 'is', null)
     .gte('orders.paid_at', windowStart(days))
     .limit(MAX_LINES)
@@ -211,10 +212,16 @@ export async function loadRateCounts(days: number): Promise<RateCounts> {
       .from('orders')
       .select('id', { count: 'exact', head: true })
       .is('deleted_at', null)
+      .eq('is_e2e_fixture', false)
       .not('paid_at', 'is', null)
       .gte('paid_at', since)
+  // C202: a voucher on an E2E fixture order is not a sale.
   const vouchers = () =>
-    admin.from('vouchers').select('id', { count: 'exact', head: true }).gte('issued_at', since)
+    admin
+      .from('vouchers')
+      .select('id, orders!inner(is_e2e_fixture)', { count: 'exact', head: true })
+      .eq('orders.is_e2e_fixture', false)
+      .gte('issued_at', since)
 
   const [paid, refunded, issued, redeemed, cancelled, vRefunded] = await Promise.all([
     paidOrders(),
@@ -289,7 +296,8 @@ export async function loadOpsKpis(days: number, now: Date = new Date()): Promise
   const count = (status?: string[]) => {
     let q = admin
       .from('vouchers')
-      .select('id', { count: 'exact', head: true })
+      .select('id, orders!inner(is_e2e_fixture)', { count: 'exact', head: true })
+      .eq('orders.is_e2e_fixture', false)
       .gte('created_at', since)
     if (status) q = q.in('status', status as never)
     return q
@@ -302,7 +310,8 @@ export async function loadOpsKpis(days: number, now: Date = new Date()): Promise
     admin.from('refunds').select('state, granted_agorot').gte('requested_at', since),
     admin
       .from('vouchers')
-      .select('id', { count: 'exact', head: true })
+      .select('id, orders!inner(is_e2e_fixture)', { count: 'exact', head: true })
+      .eq('orders.is_e2e_fixture', false)
       .eq('status', 'issued' as never)
       .gt('expires_at', now.toISOString()),
     admin

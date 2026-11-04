@@ -4,6 +4,11 @@ import { addOpenProductToCart, openCartWithItems, openPurchasableProduct } from 
 /**
  * The guest purchase path, run against the REAL deployment.
  *
+ * C202: NOT RUN ON PRODUCTION ANY MORE. It writes a guest cart row, so
+ * playwright.config.ts leaves it out when E2E_BASE_URL is a production host
+ * (e2e/prod-guard.ts). Aim it at a preview URL; production gets
+ * prod-readonly.spec.ts.
+ *
  * Every other spec in this directory runs against a build on this machine. This
  * one is meant for `E2E_BASE_URL=https://kenyonexpress.vercel.app`, and the
  * difference is the point: it exercises the production catalogue, the

@@ -37,6 +37,7 @@ export default async function DashboardsPage() {
       .from('orders')
       .select('status, total_ils_agorot')
       .is('deleted_at', null)
+      .eq('is_e2e_fixture', false)
       .order('created_at', { ascending: true })
       .order('id', { ascending: true })
       .range(from, from + PAGE - 1)

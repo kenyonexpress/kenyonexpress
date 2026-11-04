@@ -73,6 +73,7 @@ export const NEEDS_DATABASE_SPECS = {
   'guest-upgrade.spec.ts': 'signs in as the fixture customer and reads a seeded order',
   'physical-purchase.spec.ts': 'places an order against the mock terminal',
   'production-smoke.spec.ts': 'runs against a deployed origin, not localhost',
+  'prod-readonly.spec.ts': 'reads a deployed catalogue (aimed at production, C202)',
   'purchase-flow.spec.ts': 'places an order against the mock terminal',
   'search.spec.ts': 'derives each query from a product read out of the live catalogue',
 } as const

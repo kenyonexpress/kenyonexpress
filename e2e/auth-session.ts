@@ -1,4 +1,5 @@
 import { type Page, expect } from '@playwright/test'
+import { assertWritableTarget } from './prod-guard'
 
 /**
  * Auth helpers for paid E2E flows.
@@ -37,6 +38,7 @@ export async function signInWithEmail(
   password: string,
   nextPath?: string,
 ): Promise<void> {
+  assertWritableTarget(`sign in as ${email}`)
   // Fixture accounts only (see resetFixtureRateLimits): their small per-user
   // buckets are shared by every worker and both runs of a 2x pass.
   if (email.endsWith('@test.kenyonexpress.local')) {

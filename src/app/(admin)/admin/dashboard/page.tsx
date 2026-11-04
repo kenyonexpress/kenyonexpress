@@ -43,6 +43,7 @@ export default async function DashboardPage() {
       .from('orders')
       .select('id', { count: 'exact', head: true })
       .is('deleted_at', null)
+      .eq('is_e2e_fixture', false)
       .gte('created_at', todayIso),
     supabase
       .from('payments')

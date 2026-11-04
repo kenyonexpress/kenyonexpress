@@ -61,6 +61,7 @@ async function firstPaidOrder(userId: string): Promise<{ orderId: string; paidAt
     .select('id, paid_at')
     .eq('user_id', userId)
     .is('deleted_at', null)
+    .eq('is_e2e_fixture', false)
     .not('paid_at', 'is', null)
     .order('paid_at', { ascending: true })
     .limit(1)

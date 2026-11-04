@@ -1166,4 +1166,16 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'applied',
     hasPreflight: false,
   },
+  {
+    number: '333',
+    file: '333_orders_e2e_fixture_flag.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
+  {
+    number: '334',
+    file: '334_c202_quarantine_e2e_orders.sql',
+    state: 'applied',
+    hasPreflight: false,
+  },
 ] as const

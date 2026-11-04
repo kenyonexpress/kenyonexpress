@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
+import { READ_ONLY_SPECS, isProductionBaseUrl } from './e2e/prod-guard'
 
 /**
  * Port and web command are env-driven so the same config serves three callers:
@@ -10,6 +11,13 @@ import { defineConfig, devices } from '@playwright/test'
 const PORT = process.env.E2E_PORT ?? '3000'
 const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`
 const WEB_COMMAND = process.env.E2E_WEB_COMMAND ?? 'pnpm dev'
+
+/**
+ * C202: production gets read-only smoke only. Aimed at a production host, the
+ * suite is narrowed to READ_ONLY_SPECS, so a write spec named on the command
+ * line matches nothing. The full suite runs on localhost or a preview URL.
+ */
+const PRODUCTION_TARGET = isProductionBaseUrl(BASE_URL)
 
 /**
  * Every cart write is limited to 120/hour per client IP, and the counter is
@@ -29,6 +37,7 @@ const FORWARDED_FOR = process.env.E2E_FORWARDED_FOR_PREFIX
 
 export default defineConfig({
   testDir: './e2e',
+  ...(PRODUCTION_TARGET ? { testMatch: READ_ONLY_SPECS.map((f) => `**/${f}`) } : {}),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

@@ -1724,6 +1724,7 @@ export type Database = {
           gift_recipient_name: string | null
           gift_send_at: string | null
           id: string
+          is_e2e_fixture: boolean
           invoice_number: string | null
           notes: string | null
           paid_at: string | null
@@ -1754,6 +1755,7 @@ export type Database = {
           gift_recipient_name?: string | null
           gift_send_at?: string | null
           id?: string
+          is_e2e_fixture?: boolean
           invoice_number?: string | null
           notes?: string | null
           paid_at?: string | null
@@ -1784,6 +1786,7 @@ export type Database = {
           gift_recipient_name?: string | null
           gift_send_at?: string | null
           id?: string
+          is_e2e_fixture?: boolean
           invoice_number?: string | null
           notes?: string | null
           paid_at?: string | null

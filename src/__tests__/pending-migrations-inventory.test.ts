@@ -263,6 +263,8 @@ describe('the pending migration inventory', () => {
       '330_demo_deals.sql',
       '331_demo_untraced_images.sql',
       '332_sms_definer_lockdown.sql',
+      '333_orders_e2e_fixture_flag.sql',
+      '334_c202_quarantine_e2e_orders.sql',
     ])
   })
 
