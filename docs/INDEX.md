@@ -102,7 +102,7 @@ one.
 | [DECISIONS-PROVISIONAL.md](DECISIONS-PROVISIONAL.md) | ⚠️ | ‏כל שורה כאן היא הכרעה שנלקחה לבד כי לא הייתה תשובה, וכל אחת מהן |
 | [DECISIONS.md](DECISIONS.md) | 🕯️ | Every structural decision this system rests on, what it was decided instead of, |
 | [ENV-REFERENCE.md](ENV-REFERENCE.md) | ✅ | Every environment variable this system reads: what it does, what breaks without |
-| [MANUAL.md](MANUAL.md) | ✅ | ‏נכתב ‏10.09.2026. כל שורה נמדדה מול פרודקשן באותו יום: רק מה שדורש אדם. |
+| [MANUAL.md](MANUAL.md) | ✅ | נמדד 05.11.2026 (S29): 14 פריטים שרק אופיר יכול לעשות, שורה לפריט, לפי סדר עדיפות. |
 | [MASTER-ARCHITECTURE.md](MASTER-ARCHITECTURE.md) | ⚠️ | מסמך ההכרעות המחייב של KenyonExpress. מהדורה זו מחליפה במלואה את מהדורות |
 | [MONEY-MODEL.md](MONEY-MODEL.md) | ✅ | Integer agorot, the generated columns, and which amounts are allowed to go |
 | [PAYMENT-FLOW.md](PAYMENT-FLOW.md) | ✅ | How money moves through KenyonExpress, from the cart to a settled order line. |
@@ -173,7 +173,7 @@ one.
 | [GROWTH-LAUNCH-MARKETING.md](GROWTH-LAUNCH-MARKETING.md) | ✅ | תאריך: 2026-08-19. |
 | [INCIDENT-PLAYBOOKS.md](INCIDENT-PLAYBOOKS.md) | ✅ | Five named incidents, with steps. Written to be followed by someone who did not |
 | [INFRA-TASKS.md](INFRA-TASKS.md) | ✅ | רשימת משימות תשתית ממוספרות ל-backend של KenyonExpress. |
-| [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md) | ⚠️ | תאריך: 2026-08-19. |
+| [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md) | ✅ | שער PUSH NOW / HOLD נמדד 05.11.2026 (S29). הגוף מ-19.08 היסטורי. |
 | [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) | ⚠️ | תאריך: 2026-08-19. |
 | [LAUNCH-READINESS.md](LAUNCH-READINESS.md) | ✅ | Measured 2026-09-25 on audit/final-audit at d0a21af2a. NOT READY: domain dark, mock charges, cron secret mismatch |
 | [LAUNCH-RUNBOOK.md](LAUNCH-RUNBOOK.md) | ✅ | The order of operations for going live, command by command, with the rollback |
@@ -352,6 +352,7 @@ one.
 | [S26-observability.md](S26-observability.md) | ⚠️ | Queue S26, 04.11.2026: observability. Sentry DSN and release were already wired; one sandbox event delivered with the HEAD SHA as release. checkout_step reached /api/a only, so the four checkout steps now also go to PostHog behind the consent gate; one sandbox event accepted. No Axiom drain exists and AXIOM_TOKEN is sensitive on Vercel, so Axiom is unverified. |
 | [S27-e2e.md](S27-e2e.md) | ✅ | Queue S27, 05.11.2026: five money journeys (guest coupon, physical with address, gift, cancel, redeem) on a Vercel preview, 5/5 twice in a row. Found and fixed: refund_requests absent in production (261 applied), the mock provider failing across serverless instances, a coupon order stamped with the home address, silent Turnstile refusals. |
 | [S28-freeze-proof.md](S28-freeze-proof.md) | ✅ | Queue S28, 05.11.2026: zero diff against design-locked-2026-10-19 on the frozen list (home, header, hero, category, product, footer, globals.css, layout.tsx, page.tsx). 13 existing components changed, all on routes the 04.11 amendment opened (cart, account, supplier apply); none restored. |
+| [S29-launch.md](S29-launch.md) | ✅ | Queue S29, 05.11.2026: LAUNCH-CHECKLIST.md PUSH NOW / HOLD gate measured against production, Vercel and the DB; MANUAL.md rewritten as 14 owner-only items in priority order. Production serves HEAD behind MAINTENANCE_MODE; real Cardcom charging unproven. |
 | [STATE-ARCHIVE.md](STATE-ARCHIVE.md) | 🕯️ | כל מה שהיה ב-STATE.md לפני הגיזום ל-300 שורות (Q06, 25.09.2026), החדש למעלה. STATE.md הוא הנוכחי. |
 | [V01-cart.md](V01-cart.md) | ✅ | Queue V01, 04.11.2026: cart visual. /cart rebuilt as Electro v7's WooCommerce cart table (stacked labelled cards below 768) with coupon and clear-cart in the actions row and a cart_totals box; every cart price in whole shekels; drawer gets a per-line remove. Fixed on the way: the mini-cart opened off-screen (182px overflow at 1440), /cart and the drawer said "empty" while the server cart was loading, and 24/36/22px touch targets. Screenshots at 380/768/1440 in docs/V01/. |
 | [V02-checkout.md](V02-checkout.md) | ✅ | Queue V02, 04.11.2026: checkout visual. /checkout is Electro v7's single page at every width (stepper removed): email first, shipping only for physical carts, sticky order panel from 992, whole shekels, sticky pay bar above the tab bar under 992, error summary with focus on the first wrong field, spinner busy state, single-page Suspense skeleton. 0 overflow and 0 controls under 44px at 380/768/1440. Screenshots in docs/V02/. |

@@ -1,73 +1,61 @@
 # צ'קליסט עלייה לאוויר
 
-<!-- stale-banner:2026-09-01 -->
-> ⛔ **הגוף ההיסטורי מיושן מ-01.09.2026. הרצף המחייב הוא `docs/LAUNCH-RUNBOOK.md`.**
->
-> ‏**שער ה-PUSH NOW / HOLD שמיד למטה נמדד ‏10.09.2026 והוא כן עדכני.**
-> ‏מה שדורש אותך בלבד: `docs/MANUAL.md`.
->
-> ‏נכתב ‏19.08.2026. אינו רצף העלייה לאוויר: הרצף המדויק, פקודה אחר פקודה עם
-> ‏rollback לכל שלב, נמצא במסמך המחייב, וכולל את ניתוח ה-DNS שאין כאן.
-> ‏**שלבים ‏1 עד ‏6 שם כבר בוצעו.**
->
-> ‏למה שנשאר לך: `docs/OWNER-CHECKLIST.md`.
+> **השער שמיד למטה נמדד 05.11.2026 (S29) והוא המחייב.** כל שורה בו נמדדה
+> באותו יום מול פרודקשן, Vercel או הריפו. מה שלא נמדד היום אינו מופיע בו.
+> מה שדורש את אופיר בלבד, שורה לפריט: `docs/MANUAL.md`.
+> הגוף ההיסטורי מתחת לקו (19.08) אינו ראיה. השער של 10.09 הוחלף בזה.
 
+# שער העלייה לאוויר, נמדד 05.11.2026
+
+**המצב במשפט אחד:** פרודקשן מגיש את HEAD של `closeout/v1-final` מאחורי
+דף תחזוקה. הקוד עד הקופה ואישור ההזמנה גמור ונבדק. מה שמפריד בין זה לבין
+מכירה אמיתית הוא סליקה אמיתית מוכחת, ואז כיבוי `MAINTENANCE_MODE`.
+
+## PUSH NOW: ירוק ונמדד היום
+
+| מה | הראיה, 05.11 |
+|---|---|
+| פרודקשן על HEAD | Vercel `kenyonexpress`: ‏`productionBranch=closeout/v1-final`, הפריסה החיה `dpl_Gf56dgrCcWSsGUhPJ96SvWPwPaZT` ‏READY על `65f6c5912` = HEAD. כל push לענף הוא פריסת פרודקשן |
+| DB חי | ‏`/api/health` → ‏200 ‏`{"ok":true,"database":"ok"}` |
+| דומיין | ‏`kenyonexpress.co.il` → ‏308 ל-`www`. ‏`www` עונה מ-Vercel |
+| CSP ו-HSTS | ‏`strict-transport-security: max-age=63072000; includeSubDomains; preload`, ‏CSP עם Turnstile בלבד כ-script חיצוני |
+| מסלולי cron פרוסים | ‏`/api/cron/expiry` ו-`/api/cron/health` → ‏401 בלי bearer, כלומר פרוסים וסגורים. ה-404 של S20 נסגר בפריסה |
+| טסטים | ‏`pnpm test`: ‏687 קבצים עברו (1 דולג), **8166 טסטים עברו**, ‏0 נכשלו |
+| type-check ו-lint | ‏`pnpm type-check` exit 0, ‏`pnpm lint` exit 0 |
+| תלויות | ‏`node scripts/audit-gate.mjs` → "no fixable high or critical advisory". ‏zod מאושר עד 31.12.2026 (S24). ‏vite הוא dev בלבד |
+| מסלולי הכסף | S27: חמישה מסעות (קופון לאורח, מוצר פיזי עם כתובת, מתנה, ביטול 14ג, מימוש אצל ספק) ירוקים פעמיים ברצף על preview, וכל אחד נבדק ב-DB |
+| RLS | S24 ‏`scripts/rls-smoke.mjs`: ‏anon ושלושה לקוחות לא קוראים ולא כותבים שורה של אחר |
+| כסף | אגורות שלמות בכל המסלול (S06, S09, S23). ‏`platform_percent` מצולם ל-`order_items` ונעול אחרי תשלום (S09) |
+| ביטול לפי 14ג | ‏`refund_requests` קיימת בפרודקשן (261, S27), ‏`decideCancellation14g` במסלול ההחזר (S13) |
+| אימייל אישור רכישה | התבנית נשלחה ב-Resend test mode והתקבלה, והדומיין `noreply@kenyonexpress.co.il` מאומת לשליחה (S12) |
+| הקפאת עיצוב | ‏`git diff --stat design-locked-2026-10-19` על הרשימה הקפואה: **0 שורות** (פלט מלא ב-`docs/S29-launch.md`) |
+
+## HOLD: ממתין לגורם חיצוני
+
+| מה | התנאי לשחרור | הראיה, 05.11 |
+|---|---|---|
+| **סליקה אמיתית** | הזמנת ₪1 אמיתית וזיכוי שלה, מול מסוף אמיתי | ‏`CARDCOM_TERMINAL_NUMBER`, ‏`API_NAME`, ‏`API_PASSWORD` ו-`SANDBOX` קיימים בפרודקשן מ-04.10, נוצרו בידי סשן סוכן ולא בידי קארדקום, והם sensitive ואינם קריאים. אין ראיה שהם ערכים אמיתיים. ‏`CARDCOM_USE_MOCK` אינו מוגדר בפרודקשן, וזה הנכון |
+| **כיבוי `MAINTENANCE_MODE`** | אחרי השורה הקודמת | מוגדר מ-25.10. ‏`/` ‏`/checkout` ‏`/sitemap.xml` → ‏503 "האתר בתחזוקה קצרה". זה מעשה העלייה לאוויר עצמו |
+| **מיילים מפרודקשן** | שליחה אמיתית אחת שמצליחה עם המפתח החי | ‏`RESEND_API_KEY` עודכן 06.10, יום אחרי ש-L08 מדד ממנו 401. הערך החדש מעולם לא נבדק בשליחה. ‏74 שורות `dead` ב-`notification_outbox` |
+| **הגבלת קצב מהירה** | ‏`UPSTASH_REDIS_REST_URL` ו-`_TOKEN` | שניהם חסרים בפרודקשן. ההגבלה עובדת דרך ה-fallback של Postgres (S24). לא חוסם מכירה |
+| **R2** | זוג מפתחות תקין, ו-URL ציבורי שהוא באמת R2 | מפתחות R2 נוספו 04.11, אך ‏`cdn.kenyonexpress.co.il` עונה מ-Vercel ‏`DEPLOYMENT_NOT_FOUND` (S04). תמונות נופלות ל-Supabase Storage. לא חוסם מכירה |
+| **רוטציית סודות שדלפו** | החלפה מתואמת | שבעה סודות אמיתיים בהיסטוריה של ריפו ציבורי (S24): ‏CRON_SECRET (Vercel ו-vault באותו צעד), ‏VOUCHER_QR_SECRET (חלון של שני מפתחות), סיסמת ה-protection של Vercel ו-VERCEL_API_TOKEN. וגם `SUPABASE_SECRET_KEY` (CLAUDE.md) |
+| **WhatsApp** | אימות חשבון עסקי ב-Meta | המערכת מחווטת ואינה שולחת |
+| **Axiom** | drain או אינטגרציה ב-Vercel | שלושה scopes החזירו `[]` (S26). ‏Sentry כן מחובר |
+| **שורות קטלוג** | החלטת מפעיל | 90 מוצרים פעילים היום. ‏`supabase/catalogue-known-issues.json` מחזיק את שורות התבנית, הכפילויות והמחירים הסותרים. איזו כפילות אמיתית היא החלטה עסקית |
+
+## פתוח בצד הקוד, לא חיצוני (לתור הבא, לא חוסם סליקה)
+
+| מה | הראיה, 05.11 |
+|---|---|
+| 12 משימות pg_cron של 162 שולחות POST | **258 תגובות ב-24 השעות האחרונות, כולן 405** (`net._http_response`). ה-drain וה-sweep לא רצים. צריך מיגרציה שממירה ל-`net.http_get` |
+| תזכורות תפוגה | ‏`ke-expiry-t7`/`t1` עוד לא רצו (ריצה ראשונה 23:20 UTC). אין שורות ב-`cron.job_run_details` |
+| טבלת `affiliates` חסרה בפרודקשן | עמלות שותפים לא יכולות להשתלם (S23). ה-finalize לא נפגע |
+| הזמנות E2E ב-DB של פרודקשן | 777 הזמנות ב-7 ימים, רובן מריצות E2E. ניקוי הוא מחיקת DB, ולכן ב-MANUAL |
 
 ---
 
-# ‏שער העלייה לאוויר, נמדד ‏10.09.2026
-
-‏**כל שורה כאן נמדדה היום.** מה שלא נמדד היום אינו מופיע. הגוף ההיסטורי של
-המסמך נשאר מתחת, ומה שכתוב בו מ-19.08 אינו ראיה.
-
-## ‏PUSH NOW — ירוק ונמדד
-
-| מה | הראיה, היום |
-|---|---|
-| ‏CSP ו-HSTS | כותרות התגובה של פרודקשן: `max-age=63072000; includeSubDomains; preload`, ‏CSP עם `frame-ancestors 'none'` ו-`object-src 'none'` |
-| תלויות | ‏`pnpm audit` → ‏"No known vulnerabilities found" |
-| סריקת סודות | ‏`gitleaks` ב-`.github/workflows/security.yml` |
-| ‏Turnstile | הווידג'ט ב-`SignupForm` וב-`CheckoutForm`, ו-`verifyTurnstile` בצד השרת ב-`auth.ts`, ‏`contact.ts` ו-`payments/checkout.ts`. מחווט משני הצדדים |
-| הגבלת קצב | ‏`src/lib/rate-limit`, פר-מסלול, עם טסט שמונע דריפט בין הטבלה למימוש |
-| מפסק ל-Meilisearch | קיים ב-`search-server.ts`: נפתח אחרי ‏3 כשלונות, ‏30 שניות, נפילה חזרה ל-ILIKE. רק שלוש הבקשות הראשונות משלמות את ‏2 השניות |
-| קארדקום | ‏timeout ועוד ניסיון אחד, **רק** על כשל תעבורה ורק ב-opt-in. **בכוונה לא מפסק**: ‏POST לחיוב שנפל ב-timeout אולי כן חייב |
-| ‏job_runs | ‏`withJobRun` על כל ‏18 מסלולי ה-cron, נאכף בטסט המלאי |
-| גיבוי ותרגיל שחזור | ‏`db-backup.yml` יומי, ‏`db-restore-drill.yml` רבעוני |
-| ‏PWA | ‏`manifest.ts`, ‏`sw.js` עם ‏install/activate/fetch/push/notificationclick, ‏4 אייקונים, ‏`appleWebApp` ב-layout, ‏`InstallPrompt` עם טסטים |
-| ‏SEO | ‏`sitemap.xml`, ‏`robots.ts`, ‏JSON-LD, ‏301 דרך `seo_redirects`, ‏`feed.xml` ו-`merchant.xml` |
-| אנליטיקס | ‏GA4 ו-PostHog ב-`lib/analytics`, כולל `fbq` לקטלוג Meta |
-| מסע הקנייה | פאסטים, מיון, משאלות, התראות ירידת מחיר (`wishlist-alerts`), ‏`StockScarcity`, ‏`CountdownBanner`, ‏`BenefitBar`, כרטיסי אשראי שמורים, ‏Apple Wallet, אשף ספק, ‏KPI לאדמין |
-| חדש היום | סרגל לשוניות תחתון, סריקת ‏DLQ ל-webhook עם כפתור שחזור באדמין, ושומר שמונע מהמוק להגיש פרודקשן |
-| שערים | ‏6511 טסטים ב-519 קבצים, ‏type-check, ‏lint ו-`pnpm build` ירוקים |
-
-## ‏HOLD — חסום, עם הסיבה המדויקת
-
-| מה | הדגל או התנאי | למה |
-|---|---|---|
-| **גבייה** | שלושת אישורי קארדקום, ואז ‏`CARDCOM_USE_MOCK` כבוי | היום הם חסרים ו-`CARDCOM_USE_MOCK="true"` היה דלוק יחד עם ‏`CHECKOUT_ENABLED="true"`. **נסגר בקוד היום**: על ‏`VERCEL_ENV=production` המוק כבר לא יכול להגיש, ו-checkout מסרב. בלי האישורים אי אפשר לגבות, ועם המוק אפשר היה להזמין בלי לשלם |
-| **כל המיילים** | ‏`RESEND_API_KEY` על הפרויקט `kenyonexpress` | אינו קיים שם. ‏`resend.ts` מתייחס למפתח חסר כאל השבתה מכוונת: אין שגיאה, אין תור מת, ואף לקוח לא מקבל שובר או אישור |
-| **דיווח שגיאות** | ‏`SENTRY_DSN` על הפרויקט החי | אינו קיים שם, ולכן כל אירועי ‏Sentry הם ממחשבים ניידים |
-| **‏8 מתוך ‏18 מסלולי cron** | ‏redeploy | הפריסה החיה ישנה מהריפו. `settlement-reconcile`, ‏`webhook-dlq`, ‏`retention`, ‏`weekly-digest`, ‏`whatsapp`, ‏`price-schedule`, ‏`price-snapshot` ו-`wishlist-alerts` מחזירים ‏404 |
-| שער נאמנות חזותית | עותק של הוורדפרס הישן | ‏`compare.mjs` מסרב ביציאה ‏5: הדומיין מגיש אותנו, והשוואה לעצמנו תיקרא כ-0% |
-| ‏pgTAP | לא קיים | כיסוי ה-RLS הוא ב-TypeScript (`rls-manifest.test.ts`, ‏`rls-write-policies.test.ts`), לא ב-pgTAP. פער אמיתי, לא חוסם כסף |
-| תור מימוש לא מקוון | אין `sync` ב-`sw.js` | ה-service worker נושא ‏install/activate/fetch/push, ואין ‏background sync. סריקה בלי רשת לא תיזכר |
-| ‏42 מיגרציות | אישור מפורש | `migrations/pending/`, לפי `APPLY-ORDER.md` |
-
-## מה שהמשימה ביקשה והמוצר אוסר, ולכן לא נבנה
-
-‏**חיפוש מיידי.** לאתר **אין שדה חיפוש**, וזה חוק מוצר מוחלט שנאכף
-ב-`src/components/layout/no-search-ui.test.ts`. שלושה רכיבי חיפוש נמחקו
-ב-04.09 בדיוק כדי להגיע לזה. ‏`/search` שורד רק כדי שקישור קמפיין עם ‏`?q=`
-ייפתר, והוא `robots: noindex`. **ה-backend של החיפוש דווקא שלם**: יש
-‏`/api/search/suggest` עם ‏typo tolerance, סינונימים בעברית, cache והגבלת קצב,
-ו**אף רכיב לא קורא לו**. הוא ימתין לשם היום שבו החוק ישתנה.
-
-‏**"נצפו לאחרונה".** ‏`SiteFooter.tsx` מתעד שזה ושדה המשאלות היו שאריות
-וורדפרס ו"אינם פיצ'רים כאן". יש היסטוריית **חיפושים** (`user_recent_searches`),
-אין היסטוריית מוצרים.
-
-‏**גלילה אינסופית.** הקטגוריה מעומדת ב-`Pagination.tsx`, ו-SECTIONS 35 מגדיר
-"עימוד ‏50 לעמוד" כדרישה. גלילה אינסופית הייתה סותרת אותה.
+# הגוף ההיסטורי (19.08). אינו ראיה.
 
 ---
 

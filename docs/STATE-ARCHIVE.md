@@ -48480,3 +48480,9 @@ routes"` עם `ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c111.jsonl`: **4/4 PASS** 
 **S22 - DONE (04.11.2026): מתנה במייל.** הזרימה כבר הייתה קיימת (בלוק מתנה בקופה, טוקן claim, ‏`/gift/[token]`), אבל מיגרציה 226 לא הוחלה, ולכן בפרודקשן תאריך המשלוח ועמלת האריזה נזרקו בשקט וכל מתנה יצאה מיד. 226 **הוחלה** אחרי BEGIN/ROLLBACK. חדש: ‏`/gift/<slug מוצר>` באותו segment של ה-claim (טוקן שנמצא = claim, אחרת מוצר). הדף מוסיף את הקופון לעגלה וממלא מראש את בלוק המתנה בקופה דרך עוגיית httpOnly שמוגבלת ל-`/checkout`. נבדק ב-Chromium מקצה לקצה. ‏tsc 0, ‏lint 0, ‏vitest ‏677/678, ‏8073 טסטים, ‏build 0. שער ההקפאה: רק קבצים חדשים. הוכחה: `docs/S22-gift.md`.
 **החלטה שהתקבלה לבד:** segment אחד לשני הדפים, כי קישורי ה-claim שכבר נשלחו הם `/gift/<token>`. אין כפתור "שלח כמתנה" בדף המוצר, כי הוא קפוא. העמודות `gift_send_at`/`gift_scheduled_at` שכבר היו בפרודקשן נשארו בלי שימוש.
 **הבא: S23** מתור ה-S.
+
+## S02 (הועבר מ-STATE.md ב-S29, לשמירה על תקרת 300 שורות)
+
+**S02 - DONE (04.11.2026): ענף הפרודקשן ב-Vercel הוא `closeout/v1-final`.** GET מאשר `link.productionBranch`. commit ריק `c9a3754b8` בנה git production `dpl_DhJJBn82dFLA3HMtWvEuMXPWFzZY`, READY תוך 2 דקות, משויך ל-kenyonexpress.co.il ול-www, ו-/api/health מחזיר 200. מעכשיו כל push לענף הזה הוא דיפלוי לפרודקשן. אסור `vercel --prod` עם upload. הוכחה: `docs/S02-vercel.md`.
+**החלטה שהתקבלה לבד:** ה-API דחה PATCH ל-`/v9/projects` עם `link` (400). השתמשתי ב-`PATCH /v9/projects/{id}/branch` עם `{"branch":...}`, אותו endpoint כמו ב-L02. בילדי ה-preview נכשלים ב-preflight כי משתני Cardcom ו-QR מוגדרים רק ל-production. זה צפוי, ולא נגעתי בזה.
+**הבא: S03** מתור ה-S.
