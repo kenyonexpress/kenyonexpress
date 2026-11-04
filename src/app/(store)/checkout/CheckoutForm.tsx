@@ -5,19 +5,14 @@ import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { trackCheckoutStep } from '@/lib/analytics/checkout-steps'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import type { CartView } from '@/lib/cart/types'
-import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { paymentReturnTarget } from '@/lib/checkout/frame-return-message'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import {
   CHECKOUT_STEPS,
   type CheckoutStep,
-  STEP_TITLES,
   type StepErrors,
   type StepValues,
   classifyCheckoutFailure,
-  isLastStep,
-  nextStep,
-  previousStep,
   validateStep,
 } from '@/lib/checkout/steps'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
@@ -25,7 +20,7 @@ import type { GiftDraft } from '@/lib/gifts/draft'
 import { GIFT_WRAP_FEE_AGOROT, giftDateInputBounds } from '@/lib/gifts/wrap'
 import { t } from '@/lib/i18n/messages'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
-import { shekels } from '@/lib/money-format'
+import { shekelsRounded } from '@/lib/money-format'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'
@@ -168,6 +163,24 @@ export default function CheckoutForm({
 
   const formRef = useRef<HTMLFormElement>(null)
   const googleFormRef = useRef<HTMLFormElement>(null)
+  const payButtonRef = useRef<HTMLButtonElement>(null)
+
+  /**
+   * Whether the real pay button is on screen, which hides the sticky bar.
+   * Starts false so the bar is server-rendered and present from first paint;
+   * the observer corrects it after mount. Without IntersectionObserver (old
+   * WebViews) the bar simply stays, which is the safe side: two ways to pay.
+   */
+  const [payButtonVisible, setPayButtonVisible] = useState(false)
+  useEffect(() => {
+    const button = payButtonRef.current
+    if (!button || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(([entry]) =>
+      setPayButtonVisible(Boolean(entry?.isIntersecting)),
+    )
+    observer.observe(button)
+    return () => observer.disconnect()
+  }, [])
 
   const [paymentChoice, setPaymentChoice] = useState<string>(
     savedCards.find((card) => card.isDefault)?.id ?? savedCards[0]?.id ?? 'new',
@@ -175,7 +188,6 @@ export default function CheckoutForm({
   const usingSavedCard = paymentChoice !== 'new'
   const [zipError, setZipError] = useState<string | null>(null)
 
-  const [step, setStep] = useState<CheckoutStep>('details')
   // Q08: the business-invoice fields show only once the box is ticked, like the
   // gift block. The inputs stay MOUNTED either way (hidden by the wrapper), so
   // a saved name survives an untick-and-retick within the same visit.
@@ -183,6 +195,9 @@ export default function CheckoutForm({
     Boolean(invoiceSettings?.invoiceToBusiness),
   )
   const [stepErrors, setStepErrors] = useState<StepErrors>({})
+  // Bumped on every refused press, so the summary re-announces even when the
+  // same fields are still wrong the second time.
+  const [submitAttempts, setSubmitAttempts] = useState(0)
 
   /**
    * A saved address is submitted by id, so its fields are never rendered. With
@@ -227,9 +242,6 @@ export default function CheckoutForm({
   const addressNotNeeded: CheckoutStep[] = needsAddress ? [] : ['address']
   const stepsWithNothingToFill: CheckoutStep[] = [...savedAddressAnswersFor, ...addressNotNeeded]
 
-  const titleForStep = (entry: CheckoutStep): string =>
-    entry === 'address' && !needsAddress ? t('checkout.steps.extras') : STEP_TITLES[entry]
-
   /** Current values straight off the form, so the gate reads what is really there. */
   const readValues = (): StepValues => {
     const form = formRef.current
@@ -247,40 +259,31 @@ export default function CheckoutForm({
     return validateStep(target, readValues())
   }
 
-  const goNext = () => {
-    const errors = checkStep(step)
-    setStepErrors(errors)
-    if (Object.keys(errors).length > 0) return
-    setStep(nextStep(step))
-  }
-
-  const goBack = () => {
-    setStepErrors({})
-    setStep(previousStep(step))
-  }
+  /**
+   * Every rule, every section, in one pass. Electro's checkout is one page with
+   * no stepper (V02), so there is no "current step" to gate: the press of pay
+   * is the only moment the shopper says "done", and it answers with every
+   * missing field at once rather than one section at a time.
+   */
+  const checkAll = (): StepErrors =>
+    Object.assign({}, ...CHECKOUT_STEPS.map((entry) => checkStep(entry)))
 
   /**
-   * Jumping straight to a step from the indicator is allowed backwards and
-   * only as far forwards as the filled fields justify, so the stepper cannot
-   * be used to skip the address.
+   * Focus the first wrong field in DOM order, which is the order the shopper
+   * reads. Focusing also scrolls it into view, so a phone user who pressed the
+   * sticky pay bar at the bottom lands on the field that stopped them instead
+   * of on an error they cannot see.
    */
-  const goToStep = (target: CheckoutStep) => {
-    const targetIndex = CHECKOUT_STEPS.indexOf(target)
-    if (targetIndex <= CHECKOUT_STEPS.indexOf(step)) {
-      setStepErrors({})
-      setStep(target)
-      return
-    }
-    for (const between of CHECKOUT_STEPS.slice(0, targetIndex)) {
-      const errors = checkStep(between)
-      if (Object.keys(errors).length > 0) {
-        setStepErrors(errors)
-        setStep(between)
+  const focusFirstError = (errors: StepErrors) => {
+    const form = formRef.current
+    if (!form) return
+    for (const element of Array.from(form.elements)) {
+      const name = (element as HTMLInputElement).name
+      if (name && errors[name] && element instanceof HTMLElement) {
+        element.focus()
         return
       }
     }
-    setStepErrors({})
-    setStep(target)
   }
 
   const errorFor = (field: string): string | undefined => stepErrors[field]
@@ -297,9 +300,6 @@ export default function CheckoutForm({
    */
   const errorIdFor = (field: string): string | undefined =>
     stepErrors[field] ? `co-err-${field.replaceAll('_', '-')}` : undefined
-
-  /** Derived from the committed Electro capture, not hardcoded here. */
-  const confirmSections = sectionsFromElectro()
 
   const balanceAtBusiness = cart.balance_due_at_business
   const itemsTotal = sumAgorot(cart.items.map((item) => item.line_total))
@@ -393,18 +393,15 @@ export default function CheckoutForm({
       return
     }
 
-    // Every step, not just the visible one. The fields stay mounted across
-    // steps so the submission is whole, and the flip side of that is that a
-    // shopper who edited step 1 into an invalid state and walked forward would
-    // otherwise reach the card with it. Land them back on the step that broke.
-    for (const candidate of CHECKOUT_STEPS) {
-      const errors = checkStep(candidate)
-      if (Object.keys(errors).length > 0) {
-        event.preventDefault()
-        setStepErrors(errors)
-        setStep(candidate)
-        return
-      }
+    // Every section, whatever the shopper scrolled past. The zip above has its
+    // own blur check, and the rest are the step rules run together.
+    const errors = checkAll()
+    setStepErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      event.preventDefault()
+      setSubmitAttempts((count) => count + 1)
+      focusFirstError(errors)
+      return
     }
 
     trackCheckoutStep('payment_redirect')
@@ -479,45 +476,18 @@ export default function CheckoutForm({
         <input type="hidden" name="next" value="/checkout?resume=1" />
       </form>
 
-      <ol className="checkout-steps" aria-label="שלבי ההזמנה">
-        {CHECKOUT_STEPS.map((entry, index) => {
-          const current = entry === step
-          const done = CHECKOUT_STEPS.indexOf(entry) < CHECKOUT_STEPS.indexOf(step)
-          return (
-            <li
-              key={entry}
-              className="checkout-steps__item"
-              data-state={current ? 'current' : done ? 'done' : 'upcoming'}
-              aria-current={current ? 'step' : undefined}
-            >
-              <button
-                type="button"
-                className="checkout-steps__btn"
-                onClick={() => goToStep(entry)}
-                disabled={busy}
-              >
-                <span className="checkout-steps__index" aria-hidden="true">
-                  {index + 1}
-                </span>
-                <span className="checkout-steps__label">{titleForStep(entry)}</span>
-              </button>
-            </li>
-          )
-        })}
-      </ol>
-
       {/*
-        One form across every step, and no step is unmounted: only hidden. A
-        step rendered conditionally would drop its fields from `FormData`, and
-        the server action would reject an order for missing a name the shopper
-        typed two screens ago.
+        One page, Electro's: the details, the address and the extras in the
+        main column, and the order panel with the payment box and the pay
+        button beside it (below it under 992). There is no stepper; the press
+        of pay validates every section at once (`checkAll`).
       */}
       <form
         action={formAction}
         onSubmit={handleSubmit}
         ref={formRef}
         className="checkout-page__grid"
-        data-step={step}
+        aria-busy={busy || undefined}
         noValidate
       >
         <input type="hidden" name="client_ref" value={clientRef} />
@@ -526,7 +496,24 @@ export default function CheckoutForm({
         {address.id && <input type="hidden" name="address_id" value={address.id} />}
 
         <div className="checkout-col-main">
-          <div className="checkout-step" data-inactive={step !== 'details' ? '' : undefined}>
+          {/*
+            WooCommerce's `ul.woocommerce-error`, which Electro paints above the
+            billing fields when place-order is refused. Keyed on the attempt so
+            a second refused press is announced again, not swallowed as an
+            unchanged live region.
+          */}
+          {Object.keys(stepErrors).length > 0 && (
+            <div
+              key={submitAttempts}
+              className="checkout-error checkout-error--summary"
+              role="alert"
+              data-testid="checkout-error-summary"
+            >
+              {t('checkout.single.errorSummary')}
+            </div>
+          )}
+
+          <div className="checkout-group">
             <section className="checkout-section" aria-label="פרטים אישיים">
               <h2 className="checkout-section__title">
                 <span>פרטים אישיים</span>
@@ -536,6 +523,32 @@ export default function CheckoutForm({
                 <p>{address.full_name}</p>
               ) : (
                 <>
+                  {/* Email first, as in Electro's billing block: it is where
+                      the order and the coupon are sent, and the one field a
+                      guest cannot get wrong without losing what they paid for. */}
+                  <div className="checkout-fields-row checkout-fields-row--single">
+                    <div className="checkout-field">
+                      <label htmlFor="co-email">
+                        כתובת אימייל <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-email"
+                        name="email"
+                        type="email"
+                        defaultValue={prefill.email}
+                        autoComplete="email"
+                        dir="ltr"
+                        aria-invalid={errorFor('email') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('email')}
+                      />
+                      {errorFor('email') && (
+                        <span id="co-err-email" className="checkout-field__error" role="alert">
+                          {errorFor('email')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="checkout-fields-row">
                     <div className="checkout-field">
                       <label htmlFor="co-first-name">
@@ -575,7 +588,7 @@ export default function CheckoutForm({
                     </div>
                   </div>
 
-                  <div className="checkout-fields-row">
+                  <div className="checkout-fields-row checkout-fields-row--single">
                     <div className="checkout-field">
                       <label htmlFor="co-phone">
                         טלפון <span className="checkout-field__required">*</span>
@@ -605,31 +618,6 @@ export default function CheckoutForm({
                         </span>
                       )}
                     </div>
-                    <div />
-                  </div>
-
-                  <div className="checkout-fields-row">
-                    <div className="checkout-field">
-                      <label htmlFor="co-email">
-                        כתובת אימייל <span className="checkout-field__required">*</span>
-                      </label>
-                      <input
-                        id="co-email"
-                        name="email"
-                        type="email"
-                        defaultValue={prefill.email}
-                        autoComplete="email"
-                        dir="ltr"
-                        aria-invalid={errorFor('email') ? 'true' : undefined}
-                        aria-describedby={errorIdFor('email')}
-                      />
-                      {errorFor('email') && (
-                        <span id="co-err-email" className="checkout-field__error" role="alert">
-                          {errorFor('email')}
-                        </span>
-                      )}
-                    </div>
-                    <div />
                   </div>
                 </>
               )}
@@ -719,7 +707,7 @@ export default function CheckoutForm({
             </section>
           </div>
 
-          <div className="checkout-step" data-inactive={step !== 'address' ? '' : undefined}>
+          <div className="checkout-group">
             {/*
               Rendered only for a cart that is actually delivered somewhere.
               The order notes and the gift block below stay either way - see
@@ -937,7 +925,7 @@ export default function CheckoutForm({
                           defaultChecked={Boolean(giftPrefill?.gift_wrap)}
                         />
                         <span>
-                          {t('gift.wrapLabel')} ({shekels(GIFT_WRAP_FEE_AGOROT)})
+                          {t('gift.wrapLabel')} ({shekelsRounded(GIFT_WRAP_FEE_AGOROT)})
                         </span>
                       </label>
 
@@ -955,40 +943,20 @@ export default function CheckoutForm({
               )}
             </section>
           </div>
-
-          {!isLastStep(step) && (
-            <div className="checkout-nav">
-              {step !== 'details' && (
-                <button
-                  type="button"
-                  className="checkout-nav__back"
-                  onClick={goBack}
-                  disabled={busy}
-                >
-                  חזרה
-                </button>
-              )}
-              <button type="button" className="checkout-nav__next" onClick={goNext} disabled={busy}>
-                המשך
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Visible on EVERY step, not just review/confirm. Live's checkout
-            keeps the "ההזמנה שלך" panel on screen beside the billing form the
-            whole way through (refs/live-checkout capture: panel x~120..470 at
-            1440 while the form is filled), and hiding it until review left our
-            second grid column empty on the step the compare gate actually
-            shoots. The step-scoped blocks inside it keep their own hidden
-            flags, so nothing interactive appears early. */}
-        <aside className="checkout-step">
+        {/* The order panel, Electro's `#order_review`: the lines, the totals,
+            the payment box and the place-order button. Sticky beside the form
+            from 992 up, so the total and the button stay in view while the
+            shopper fills a long address; stacked below it on a phone, where
+            the sticky pay bar further down takes over that job. */}
+        <aside className="checkout-col-review">
           <section className="checkout-review" aria-label="ההזמנה שלך">
             <h2 className="checkout-section__title">
               <span>ההזמנה שלך</span>
             </h2>
 
-            <div className="checkout-step" data-inactive={step === 'confirm' ? '' : undefined}>
+            <div>
               <table className="checkout-review__table">
                 <thead>
                   <tr>
@@ -1005,56 +973,47 @@ export default function CheckoutForm({
                         </span>
                         {item.type === 'coupon' && item.balance_due_at_business > 0 && (
                           <span className="checkout-item__meta">
-                            תשלום באתר: {shekels(item.customer_pays_now)} · יתרה בעסק:{' '}
-                            {shekels(item.balance_due_at_business)}
+                            תשלום באתר: {shekelsRounded(item.customer_pays_now)} · יתרה בעסק:{' '}
+                            {shekelsRounded(item.balance_due_at_business)}
                           </span>
                         )}
                       </td>
-                      <td className="checkout-item__total">{shekels(item.customer_pays_now)}</td>
+                      <td className="checkout-item__total">
+                        {shekelsRounded(item.customer_pays_now)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="checkout-review__row">
                     <th scope="row">מחיר</th>
-                    <td>{shekels(itemsTotal)}</td>
+                    <td>{shekelsRounded(itemsTotal)}</td>
                   </tr>
                   {balanceAtBusiness > 0 && (
                     <tr className="checkout-review__row checkout-review__row--muted">
                       <th scope="row">יתרה לתשלום בעסק (בקופון)</th>
-                      <td>{shekels(balanceAtBusiness)}</td>
+                      <td>{shekelsRounded(balanceAtBusiness)}</td>
                     </tr>
                   )}
                   <tr className="checkout-review__row checkout-review__row--total">
                     <th scope="row">סה&quot;כ</th>
-                    <td>{shekels(cart.subtotal)}</td>
+                    <td>{shekelsRounded(cart.subtotal)}</td>
                   </tr>
                 </tfoot>
               </table>
             </div>
 
             <div className="checkout-payment">
-              <div className="checkout-step" data-inactive={step !== 'confirm' ? '' : undefined}>
-                {/*
-                Sourced from refs/electro-checkout-text.json, captured with a
-                real browser against Electro's own checkout. Electro has no
-                stepper, so what it contributes is the CONTENT of this block and
-                its order, not a step of its own. Its body copy is theme filler
-                (Lorem ipsum, a Stripe test card) and is deliberately not shipped.
-              */}
-                <ol className="checkout-confirm__sections">
-                  {confirmSections.map((section) => (
-                    <li key={section.id}>{section.title}</li>
-                  ))}
-                </ol>
-
-                <div className="checkout-payment__method">
-                  <input type="radio" checked readOnly id="co-pay-card" />
-                  <label htmlFor="co-pay-card">תשלום בעזרת כרטיס אשראי</label>
-                </div>
+              <div>
+                {/* The radio inside its label, so the whole 44px row is the
+                    target and not the 13px circle. */}
+                <label className="checkout-payment__method">
+                  <input type="radio" checked readOnly />
+                  <span>תשלום בעזרת כרטיס אשראי</span>
+                </label>
                 <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
 
-                {step !== 'confirm' && savedCards.length > 0 && (
+                {savedCards.length > 0 && (
                   <fieldset className="checkout-cards">
                     <legend className="checkout-cards__legend">אמצעי תשלום</legend>
                     {savedCards.map((card) => (
@@ -1084,10 +1043,10 @@ export default function CheckoutForm({
                   </fieldset>
                 )}
 
-                {step !== 'confirm' && walletBalance > 0 && (
+                {walletBalance > 0 && (
                   <div className="checkout-wallet">
                     <label htmlFor="co-wallet">
-                      שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})
+                      שימוש ביתרת ארנק (זמין: {shekelsRounded(walletBalanceAgorot)})
                     </label>
                     <input
                       id="co-wallet"
@@ -1177,7 +1136,14 @@ export default function CheckoutForm({
                     to solve it sees it at the moment they mean to pay. */}
                 <TurnstileWidget action="checkout" />
 
-                <button type="submit" className="checkout-pay-btn" disabled={busy}>
+                <button
+                  type="submit"
+                  className="checkout-pay-btn"
+                  disabled={busy}
+                  aria-busy={busy || undefined}
+                  ref={payButtonRef}
+                >
+                  {busy && <span className="checkout-spinner" aria-hidden="true" />}
                   {busy
                     ? googlePending
                       ? 'מעביר להתחברות...'
@@ -1186,30 +1152,41 @@ export default function CheckoutForm({
                         : 'מעביר לדף תשלום מאובטח...'
                     : 'שליחת הזמנה'}
                 </button>
-
-                <button
-                  type="button"
-                  className="checkout-nav__back checkout-nav__back--review"
-                  onClick={goBack}
-                  disabled={busy}
-                >
-                  חזרה לעריכת הכתובת
-                </button>
               </div>
-
-              {step === 'review' && (
-                <button
-                  type="button"
-                  className="checkout-nav__next"
-                  onClick={goNext}
-                  disabled={busy}
-                >
-                  המשך לאישור
-                </button>
-              )}
             </div>
           </section>
         </aside>
+
+        {/*
+          The sticky pay bar, under 992 only (checkout-page.css). On a phone
+          the real button sits under the whole form and the order panel, about
+          two screens down; this keeps the total and a way to pay under the
+          thumb the whole time. A second submit of the SAME form, so it runs
+          the same `handleSubmit`: a refused press focuses the first wrong
+          field, which scrolls the shopper to it. Hidden while the real button
+          is on screen, so the two are never seen together. Named apart from
+          "שליחת הזמנה" so a by-name query still finds exactly one button.
+        */}
+        <div
+          className="checkout-sticky-pay"
+          data-hidden={payButtonVisible ? '' : undefined}
+          data-testid="checkout-sticky-pay"
+        >
+          <span className="checkout-sticky-pay__total">
+            <span className="checkout-sticky-pay__label">{t('checkout.single.stickyTotal')}</span>
+            <strong>{shekelsRounded(cart.subtotal)}</strong>
+          </span>
+          <button
+            type="submit"
+            className="checkout-sticky-pay__btn"
+            disabled={busy}
+            aria-busy={busy || undefined}
+            tabIndex={payButtonVisible ? -1 : undefined}
+          >
+            {busy && <span className="checkout-spinner" aria-hidden="true" />}
+            {busy ? t('checkout.single.stickyBusy') : t('checkout.single.stickyPay')}
+          </button>
+        </div>
       </form>
 
       {frame && (

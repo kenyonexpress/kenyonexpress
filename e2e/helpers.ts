@@ -290,8 +290,11 @@ export async function raiseInstallBanner(page: Page): Promise<Locator> {
 }
 
 /**
- * Walks the four-step checkout (src/lib/checkout/steps.ts) from a freshly
- * opened /checkout to the pay button and presses it.
+ * Fills the checkout from a freshly opened /checkout and presses pay.
+ *
+ * V02: the form is Electro's single page at every width, so the loop below
+ * makes one pass and finds no "המשך" to press. It is kept so the helper still
+ * works against an older build that has the stepper.
  *
  * The form became a stepper in the CheckoutForm rewrite and the paid-flow specs
  * still reached for a one-page `accept_terms` box that is now hidden until the

@@ -67,10 +67,6 @@ const NO_SAVED_ADDRESS: CheckoutAddressPrefill = {
   email: '',
 }
 
-function currentStep(container: HTMLElement): string | null {
-  return container.querySelector('form.checkout-page__grid')?.getAttribute('data-step') ?? null
-}
-
 function renderCheckout(needsAddress: boolean) {
   return render(
     <CheckoutForm
@@ -114,19 +110,21 @@ describe('a guest at the pay button', () => {
     fireEvent.submit(form)
     expect(signInWithGoogle).not.toHaveBeenCalled()
     expect(window.sessionStorage.getItem(RESUME_KEY)).toBeNull()
-    // No step bounced the guest back: the submission was let through.
+    // Nothing refused the press: the submission was let through.
     expect(container.querySelectorAll('.checkout-field__error')).toHaveLength(0)
   })
 
-  it('is stopped on the details step without an email', () => {
+  it('is stopped without an email, and sent to the email field', () => {
     const { container } = renderCheckout(false)
     fillDetails(container)
     fireEvent.change(container.querySelector('[name="email"]') as HTMLInputElement, {
       target: { value: '' },
     })
     fireEvent.submit(container.querySelector('form.checkout-page__grid') as HTMLFormElement)
-    expect(currentStep(container)).toBe('details')
     expect(container.querySelector('#co-err-email')).not.toBeNull()
+    // V02: one page, so a refused press moves focus (and the scroll) to the
+    // field that refused it rather than switching to a step.
+    expect(document.activeElement?.getAttribute('name')).toBe('email')
   })
 
   it('still offers the returning customer a sign-in, and keeps what they typed', () => {

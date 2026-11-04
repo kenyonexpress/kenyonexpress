@@ -4,6 +4,9 @@ import { describe, expect, it, vi } from 'vitest'
 /**
  * A RETURNING CUSTOMER WITH A SAVED ADDRESS COULD NOT LEAVE STEP 1.
  *
+ * (V02: the form is one page now and the gate runs on the pay button; the
+ * history below is kept because the rule it pins did not change.)
+ *
  * The form is four steps and the whole thing stays mounted; only visibility
  * changes. `goNext` runs `validateStep` over the live `FormData` before it
  * moves, and the details step requires `first_name`, `last_name`, `phone` and
@@ -107,13 +110,19 @@ const EMPTY_ADDRESS: CheckoutAddressPrefill = {
 }
 
 /**
- * The step the form is actually showing, read the way the CSS reads it.
- * Selected by class, not by tag: the hidden Google sign-in form is rendered
- * first and `querySelector('form')` picks that one up.
+ * Presses pay with the terms ticked, the only thing a saved-address customer
+ * has left to fill. Selected by class, not by tag: the hidden Google sign-in
+ * form is rendered first and `querySelector('form')` picks that one up.
  */
-function currentStep(container: HTMLElement): string | null {
-  return container.querySelector('form.checkout-page__grid')?.getAttribute('data-step') ?? null
+function pressPay(container: HTMLElement, { acceptTerms = true } = {}) {
+  if (acceptTerms) {
+    fireEvent.click(container.querySelector('[name="accept_terms"]') as HTMLInputElement)
+  }
+  fireEvent.submit(container.querySelector('form.checkout-page__grid') as HTMLFormElement)
 }
+
+const summary = (container: HTMLElement) =>
+  container.querySelector('[data-testid="checkout-error-summary"]')
 
 function renderCheckout(address: CheckoutAddressPrefill) {
   return render(
@@ -140,38 +149,30 @@ describe('the checkout step gate on a saved address', () => {
     expect(screen.getByText('דנה כהן')).toBeTruthy()
   })
 
-  it('walks a saved address from the details step to the address step and on', () => {
+  it('lets a saved address through the pay button with nothing else filled', () => {
+    // V02: one page, so the gate is the press of pay and not a "המשך" per
+    // step. The bypass is the same one: the details and address rules are
+    // skipped for a saved address, because neither block renders a field.
     const { container } = renderCheckout(SAVED_ADDRESS)
-    expect(currentStep(container)).toBe('details')
-
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-    expect(currentStep(container)).toBe('address')
-
-    // And the address step, already bypassed before this fix, still is.
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-    expect(currentStep(container)).toBe('review')
+    pressPay(container)
+    expect(summary(container)).toBeNull()
   })
 
   it('shows no field errors while doing it', () => {
-    // This one passed BEFORE the fix too, and that is the finding: the error
-    // slots are rendered inside the same branch as the fields, so the blocked
-    // shopper was not even told why. "המשך" simply did nothing. Kept because a
-    // fix that moved the errors outside the branch would now show four of them
-    // over a summary the shopper cannot edit.
+    // The error slots are rendered inside the same branch as the fields, so a
+    // regression in the bypass would show four of them over a summary the
+    // shopper cannot edit - or, as before the fix, nothing at all.
     const { container } = renderCheckout(SAVED_ADDRESS)
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
+    pressPay(container)
     expect(container.querySelectorAll('.checkout-field__error')).toHaveLength(0)
   })
 
-  it('still stops a guest with an empty form on the details step', () => {
-    // The bypass is keyed on the saved address, not on the step. Without this
-    // the fix would be a hole: anyone could walk to the pay button with no
-    // name, no phone and no address behind it.
+  it('still stops a guest with an empty form', () => {
+    // The bypass is keyed on the saved address. Without this the fix would be
+    // a hole: anyone could pay with no name, no phone and no address.
     const { container } = renderCheckout(EMPTY_ADDRESS)
-    expect(currentStep(container)).toBe('details')
-
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-    expect(currentStep(container)).toBe('details')
+    pressPay(container)
+    expect(summary(container)).not.toBeNull()
     expect(container.querySelectorAll('.checkout-field__error').length).toBeGreaterThan(0)
   })
 })

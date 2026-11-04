@@ -85,9 +85,14 @@ const NO_SAVED_ADDRESS: CheckoutAddressPrefill = {
   email: '',
 }
 
-function currentStep(container: HTMLElement): string | null {
-  return container.querySelector('form.checkout-page__grid')?.getAttribute('data-step') ?? null
+/** The press of pay, with the terms ticked so only the address rules can refuse it. */
+function pressPay(container: HTMLElement) {
+  fireEvent.click(container.querySelector('[name="accept_terms"]') as HTMLInputElement)
+  fireEvent.submit(container.querySelector('form.checkout-page__grid') as HTMLFormElement)
 }
+
+const summary = (container: HTMLElement) =>
+  container.querySelector('[data-testid="checkout-error-summary"]')
 
 function renderCheckout(needsAddress: boolean) {
   return render(
@@ -116,7 +121,7 @@ function fillDetails(container: HTMLElement) {
   set('email', 'buyer@example.com')
 }
 
-describe('a coupon-only cart at the checkout step gate', () => {
+describe('a coupon-only cart at the checkout gate', () => {
   it('renders no address fields at all', () => {
     const { container } = renderCheckout(false)
     for (const name of ['city', 'street', 'street_number', 'zip', 'apartment', 'floor']) {
@@ -124,17 +129,13 @@ describe('a coupon-only cart at the checkout step gate', () => {
     }
   })
 
-  it('walks from details straight through the second step to review', () => {
+  it('pays with the details filled and no address at all', () => {
+    // The press that used to be a dead end for this shopper (V02: one page,
+    // so it is the pay button now and not the second "המשך").
     const { container } = renderCheckout(false)
     fillDetails(container)
-    expect(currentStep(container)).toBe('details')
-
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-    expect(currentStep(container)).toBe('address')
-
-    // The step that used to be a dead end for this shopper.
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-    expect(currentStep(container)).toBe('review')
+    pressPay(container)
+    expect(summary(container)).toBeNull()
     expect(container.querySelectorAll('.checkout-field__error')).toHaveLength(0)
   })
 
@@ -145,15 +146,13 @@ describe('a coupon-only cart at the checkout step gate', () => {
     expect(container.querySelector('[name="gift"]')).not.toBeNull()
   })
 
-  it('names the step in the stepper for what is left in it', () => {
-    // Scoped to the stepper: "מידע נוסף" is also the heading of the section
-    // itself, which is exactly the point - the two now agree.
+  it('shows no shipping section to a coupon-only cart', () => {
+    // V02: Electro's shipping block is for things that ship. "מידע נוסף" is
+    // what is left, and it is the heading of the extras section itself.
     const { container } = renderCheckout(false)
-    const labels = [...container.querySelectorAll('.checkout-steps__label')].map(
-      (el) => el.textContent,
-    )
-    expect(labels).toEqual(['פרטים אישיים', 'מידע נוסף', 'ביקורת הזמנה', 'אישור ותשלום'])
     expect(screen.queryByText('כתובת למשלוח')).toBeNull()
+    expect(screen.getByText('מידע נוסף')).toBeTruthy()
+    expect(container.querySelector('.checkout-steps')).toBeNull()
   })
 
   /**
@@ -164,11 +163,10 @@ describe('a coupon-only cart at the checkout step gate', () => {
   it('still demands an address from a physical cart', () => {
     const { container } = renderCheckout(true)
     fillDetails(container)
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-    expect(currentStep(container)).toBe('address')
-
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
-    expect(currentStep(container)).toBe('address')
-    expect(container.querySelectorAll('.checkout-field__error').length).toBeGreaterThan(0)
+    pressPay(container)
+    expect(summary(container)).not.toBeNull()
+    for (const id of ['#co-err-city', '#co-err-street', '#co-err-street-number']) {
+      expect(container.querySelector(id), id).not.toBeNull()
+    }
   })
 })

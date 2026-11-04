@@ -34,9 +34,9 @@ describe('checkout brand tokens', () => {
     expect(RULES).toMatch(/\.checkout-pay-btn:hover[^{]*\{[^}]*background:\s*#fedd26/)
   })
 
-  it('uses the same yellow for the step and retry controls', () => {
-    expect(RULES).toMatch(/\.checkout-nav__next\s*\{[^}]*background:\s*#fed700/)
-    expect(RULES).toMatch(/\.checkout-nav__next:hover[^{]*\{[^}]*background:\s*#fedd26/)
+  it('uses the same yellow for the sticky pay bar and the retry control', () => {
+    expect(RULES).toMatch(/\.checkout-sticky-pay__btn\s*\{[^}]*background:\s*#fed700/)
+    expect(RULES).toMatch(/\.checkout-sticky-pay__btn:hover[^{]*\{[^}]*background:\s*#fedd26/)
     expect(RULES).toMatch(/\.checkout-error__retry\s*\{[^}]*background:\s*#fed700/)
   })
 })
@@ -50,22 +50,26 @@ describe('checkout geometry', () => {
     expect(RULES).not.toMatch(/\.checkout-page\s*\{[^}]*max-width:\s*1170px/)
   })
 
-  it('sits every step control on the shared 44px touch target', () => {
+  it('sits every secondary pay control on the shared 44px touch target', () => {
     // --cart-touch is declared once, in mini-cart.css, which the root layout
     // loads everywhere. Redeclaring 44px here is how three surfaces end up
     // with three different ideas of a thumb.
-    for (const selector of [
-      '.checkout-nav__next',
-      '.checkout-nav__back',
-      '.checkout-error__retry',
-    ]) {
+    for (const selector of ['.checkout-sticky-pay__btn', '.checkout-error__retry']) {
       const rule = new RegExp(`\\${selector}\\s*\\{[^}]*min-height:\\s*var\\(--cart-touch`)
       expect(RULES, `${selector} is not on --cart-touch`).toMatch(rule)
     }
   })
 
-  it('gives the stepper buttons the same target', () => {
-    expect(RULES).toMatch(/\.checkout-steps__btn\s*\{[^}]*min-height:\s*var\(--cart-touch/)
+  it('has no stepper left to style (V02: Electro checkout is one page)', () => {
+    expect(RULES).not.toMatch(/\.checkout-steps/)
+    expect(RULES).not.toMatch(/\.checkout-nav__/)
+  })
+
+  it('keeps the sticky pay bar under 992 only and above the tab bar', () => {
+    expect(RULES).toMatch(/\.checkout-sticky-pay\s*\{[^}]*display:\s*none/)
+    expect(RULES).toMatch(
+      /@media \(max-width: 991px\)\s*\{\s*\.checkout-sticky-pay\s*\{[^}]*bottom:\s*var\(--reserve-tabbar/,
+    )
   })
 })
 

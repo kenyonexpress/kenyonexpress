@@ -1,4 +1,4 @@
-import { CHECKOUT_STEPS, STEP_TITLES } from '@/lib/checkout/steps'
+import { STEP_TITLES } from '@/lib/checkout/steps'
 
 /**
  * The Suspense fallback for /checkout, at the height of what replaces it.
@@ -33,34 +33,32 @@ export function CheckoutShell() {
     <>
       <div className="checkout-guest-notice" aria-hidden="true" />
 
-      <ol className="checkout-steps" aria-hidden="true">
-        {CHECKOUT_STEPS.map((entry, index) => (
-          <li key={entry} className="checkout-steps__item" data-state="upcoming">
-            {/* A span, not a button: the real row is four controls and this one
-                is scenery. Nothing here is focusable, so there is no control
-                that announces itself before it can do anything. */}
-            <span className="checkout-steps__btn">
-              <span className="checkout-steps__index">{index + 1}</span>
-              <span className="checkout-steps__label">{STEP_TITLES[entry]}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
-
-      <div className="checkout-page__grid" aria-hidden="true">
-        <div className="checkout-col-main">
+      {/* V02: no stepper row. The form below is one page, so the shell is the
+          same two columns it resolves into: the details section, and the order
+          panel beside it from 992 up (below it under 992). */}
+      <div className="checkout-page__grid" aria-busy="true">
+        <div className="checkout-col-main" aria-hidden="true">
           <section className="checkout-section">
             <h2 className="checkout-section__title">
-              <span>{STEP_TITLES[CHECKOUT_STEPS[0]]}</span>
+              <span>{STEP_TITLES.details}</span>
             </h2>
 
-            {/* Three rows of two, which is the personal-details step the page
-                always opens on. Divs rather than disabled inputs: a disabled
-                control is still a control in the document, and this is a grey
-                box that happens to be 45px tall. */}
-            {[0, 1, 2].map((row) => (
-              <div key={row} className="checkout-fields-row">
-                {[0, 1].map((cell) => (
+            {/* Email alone, the name pair, phone alone: the order the form
+                opens in. Divs rather than disabled inputs: a disabled control
+                is still a control in the document, and this is a grey box
+                that happens to be 45px tall. */}
+            {[1, 2, 1].map((cells, row) => (
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: static scenery, never reordered
+                key={row}
+                className={
+                  cells === 1
+                    ? 'checkout-fields-row checkout-fields-row--single'
+                    : 'checkout-fields-row'
+                }
+              >
+                {Array.from({ length: cells }, (_, cell) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static scenery, never reordered
                   <div key={cell} className="checkout-field">
                     <span className="checkout-skeleton__label" />
                     <span className="checkout-skeleton__input" />
@@ -68,10 +66,14 @@ export function CheckoutShell() {
                 ))}
               </div>
             ))}
-
-            <div className="checkout-skeleton__nav" />
           </section>
         </div>
+
+        <aside className="checkout-col-review" aria-hidden="true">
+          <section className="checkout-review">
+            <div className="checkout-skeleton__panel" />
+          </section>
+        </aside>
       </div>
     </>
   )

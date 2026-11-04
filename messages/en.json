@@ -396,9 +396,6 @@
     }
   },
   "checkout": {
-    "steps": {
-      "extras": "Additional details"
-    },
     "guestSave": {
       "prompt": "Want to see this order in an account and keep the address for next time?",
       "button": "Save the order with Google",
@@ -422,6 +419,12 @@
       "privacyNoteLead": "Your personal details are used to complete the purchase and are not passed to unauthorised parties, in accordance with the",
       "privacyNoteLink": "privacy policy",
       "opensNewTab": "opens in a new tab"
+    },
+    "single": {
+      "errorSummary": "The order cannot be sent. Please fix the fields marked in red.",
+      "stickyTotal": "Total to pay",
+      "stickyPay": "Pay",
+      "stickyBusy": "Redirecting to payment..."
     }
   },
   "voucherExpiry": {

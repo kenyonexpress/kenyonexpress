@@ -196,5 +196,8 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * (`push.*`, `pushOptIn.*`). 605 -> 603.
  * 2026-11-04, V01: the Electro cart table was born in the catalog
  * (`cartPage.*`), and two old totals strings moved there with it. 603 -> 601.
+ * 2026-11-04, V02: the checkout lost its stepper and its continue/back
+ * buttons; the error summary and the sticky pay bar were born in the catalog
+ * (`checkout.single.*`). 601 -> 600.
  */
-export const HEBREW_LITERAL_CEILING = 601
+export const HEBREW_LITERAL_CEILING = 600

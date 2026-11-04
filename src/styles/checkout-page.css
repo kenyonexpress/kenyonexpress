@@ -119,7 +119,10 @@
    is the rightmost one, so billing leads and the order panel sits left. */
 @media (min-width: 992px) {
   .checkout-page__grid {
-    grid-template-columns: 665px 466px;
+    /* Electro's col-lg-7 / col-lg-5. The 665/466 pair that stood here was the
+       same ratio measured on a 1165px container; written as fixed widths it
+       left 125px of the 1320 container unused at 1440. */
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     align-items: start;
   }
 }
@@ -170,15 +173,28 @@
   grid-template-columns: 1fr;
 }
 
+/* Two 145px inputs side by side at 380 cut a Hebrew surname mid-word. Electro
+   stacks its billing rows on a phone, so every row is one column here too. */
+@media (max-width: 575px) {
+  .checkout-fields-row {
+    grid-template-columns: 1fr;
+    row-gap: 25px;
+  }
+}
+
 .checkout-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.checkout-field label {
+/* Electro's `.form-row label`: bold, 18px line (refs/GAP-CART-CHECKOUT.md,
+   field-label at 380 and 768: font-weight 700, line-height 18.004px). The
+   checkbox labels below are `.checkout-terms` and stay regular. */
+.checkout-field > label {
   font-size: 14px;
-  line-height: 24px;
+  line-height: 18.004px;
+  font-weight: 700;
   color: #333e48;
 }
 
@@ -222,13 +238,13 @@
 }
 
 /* Skeleton boxes for the Suspense shell. Heights are the ones the real
-   controls already declare above -- label line 24, control 45, nav button 44
-   plus its 8px top margin -- so a change to a field height has one place to
+   controls already declare above -- label line 18, control 45 -- so a change to a field height has one place to
    move and the reservation follows it. See CheckoutShell.tsx for why the shell
    is shaped like the form at all. */
 .checkout-skeleton__label {
   display: block;
-  height: 24px;
+  /* The real label's line (V02: Electro's 18.004px bold label). */
+  height: 18.004px;
 }
 
 .checkout-skeleton__input {
@@ -239,9 +255,10 @@
   background: #fff;
 }
 
-.checkout-skeleton__nav {
-  height: 44px;
-  margin-top: 8px;
+/* The order panel while the cart is read: heading, two lines, total and the
+   64px place-order button come to roughly this on a one-line cart. */
+.checkout-skeleton__panel {
+  min-height: 420px;
 }
 
 /* Order panel: #f5f5f5, radius 10, padding 25/15/15/15, measured 466x893. */
@@ -434,6 +451,14 @@
   cursor: not-allowed;
 }
 
+/* Busy is not refused: the press went through and the page is on its way to
+   Cardcom. Full colour and a progress cursor, so it does not read as greyed
+   out and pressed again. */
+.checkout-pay-btn[aria-busy="true"] {
+  opacity: 1;
+  cursor: progress;
+}
+
 .checkout-cards {
   margin-top: 14px;
   padding: 0;
@@ -614,182 +639,36 @@
   text-align: center;
 }
 
-/* ── Multi step ──────────────────────────────────────────────────────────
-   The step indicator and the controls that move between steps.
+/* ── Single page (V02) ──────────────────────────────────────────────────
+   Electro's checkout is one page at every width, with no stepper: billing,
+   shipping and additional information in the main column, `#order_review`
+   beside it. The wizard that stood here from 992 up is gone, and so is the
+   breakpoint that undid it below 992.
 
    `--cart-touch` (44px) is declared in mini-cart.css, which the root layout
-   loads on every page. It is reused rather than redeclared so the checkout
-   stepper, the cart stepper and the mini cart cannot drift to three different
-   idea of a comfortable thumb target. */
+   loads on every page, and is reused rather than redeclared. */
 
-.checkout-steps {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  max-width: var(--container-page, 1320px);
-  margin: 0 auto 28px;
-  padding: 0 15px;
-  list-style: none;
-  counter-reset: none;
+.checkout-group + .checkout-group {
+  margin-top: 40px;
 }
 
-.checkout-steps__item {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.checkout-steps__btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  min-height: var(--cart-touch, 44px);
-  padding: 10px 12px;
-  background: #f7f7f7;
-  /* Darkened from #7a7a7a for WCAG AA. It painted the step labels at 14px bold
-     on #f7f7f7 for 4.01:1, and the numeral badge on #e4e4e4 for 3.38:1, both
-     under the 4.5 that 14px demands - 14pt BOLD is 18.66px, and these are not
-     that. #616161 is 5.78 and 4.87 on those two surfaces, so one value covers
-     the step row wherever it sits. */
-  color: #616161;
-  font-size: 14px;
-  font-weight: 700;
-  border: none;
-  /* The state line sits on the bottom edge, which is the side the eye tracks
-     along a row of steps. Colour alone would not survive a greyscale print or
-     a shopper who cannot separate yellow from grey, so the numeral badge
-     changes too. */
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.checkout-steps__btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.checkout-steps__index {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  flex: 0 0 26px;
-  border-radius: 50%;
-  background: #e4e4e4;
-  color: #616161;
-  font-size: 13px;
-  line-height: 1;
-}
-
-.checkout-steps__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.checkout-steps__item[data-state="current"] .checkout-steps__btn {
-  background: #fff;
-  color: #333e48;
-  border-bottom-color: #fed700;
-}
-
-.checkout-steps__item[data-state="current"] .checkout-steps__index {
-  background: #fed700;
-  color: #333e48;
-}
-
-.checkout-steps__item[data-state="done"] .checkout-steps__btn {
-  background: #fff;
-  color: #333e48;
-  border-bottom-color: #e4e4e4;
-}
-
-.checkout-steps__item[data-state="done"] .checkout-steps__index {
-  background: #333e48;
-  color: #fff;
-}
-
-/* Under 560px the three labels cannot share a row without truncating to
-   nothing useful, so the numeral carries the step and the label steps out.
-   VISUALLY, AND ONLY VISUALLY. `display: none` took the label out of the
-   accessibility tree too, and the numeral beside it is aria-hidden, so each of
-   the four step buttons was left with no accessible name at all: axe reported
-   `button-name`, critical, four nodes, on the phone and nowhere else. A screen
-   reader announced "button" and nothing more, on the checkout. */
-@media (max-width: 560px) {
-  .checkout-steps__label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .checkout-steps__btn {
-    justify-content: center;
+/* The order panel follows the shopper down a long form from 992 up, so the
+   total and the place-order button stay one glance away. Top offset clears
+   nothing fixed: the header is not sticky on this route. */
+@media (min-width: 992px) {
+  .checkout-col-review {
+    position: sticky;
+    top: 20px;
   }
 }
 
-.checkout-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.checkout-nav__next {
-  min-height: var(--cart-touch, 44px);
-  padding: 12px 38px;
-  margin-inline-start: auto;
-  background: #fed700;
-  color: #333e48;
-  font-size: 15px;
-  font-weight: 700;
-  border: 1px solid #fed700;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.checkout-nav__next:hover:not(:disabled) {
-  background: #fedd26;
-}
-
-.checkout-nav__next:disabled,
-.checkout-nav__back:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.checkout-nav__back {
-  min-height: var(--cart-touch, 44px);
-  padding: 12px 26px;
-  background: transparent;
-  color: #333e48;
-  font-size: 14px;
-  font-weight: 700;
-  border: 1px solid #ddd;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.checkout-nav__back:hover:not(:disabled) {
-  border-color: #333e48;
-}
-
-.checkout-nav__back--review {
-  display: block;
-  width: 100%;
-  margin-top: 12px;
+/* WooCommerce's `ul.woocommerce-error` above the form: a full-width bar with
+   the danger rule on the reading edge. */
+.checkout-error--summary {
+  margin-bottom: 30px;
+  border-inline-start: 3px solid #dc3545;
+  border-radius: 5px;
+  padding: 14px 20px;
 }
 
 .checkout-error__retry {
@@ -818,66 +697,152 @@
   cursor: not-allowed;
 }
 
-/* The fourth step's section list. Electro shows a payment notice, a privacy
-   sentence and a terms tickbox below its order review; this names them so the
-   shopper can see what is left before the money moves. */
-.checkout-confirm__sections {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
-  font-size: 13px;
-  color: #616161;
+/* The busy state on both pay controls: a ring in the button's own ink, beside
+   the text that already says what is happening. Stopped for reduced motion,
+   where the label alone carries it. */
+.checkout-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-inline-end: 10px;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: checkout-spin 0.7s linear infinite;
+  flex: 0 0 auto;
 }
 
-.checkout-confirm__sections li {
-  padding: 4px 12px;
-  background: #f7f7f7;
-  border-radius: 50px;
+@keyframes checkout-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* ===========================================================================
-   BELOW 768 THE WIZARD RENDERS AS LIVE'S SINGLE LONG PAGE.
-   refs/ke_live_computed.json checkout@380 is one continuous document: billing
-   fields y410..1458, "מידע נוסף" + notes 1507..1765, the order panel 1806
-   onward, payment, terms and the submit at y2544 -- no stepper anywhere. The
-   wizard chunks the same fields behind tabs, which left a 380 page ~450px of
-   form against live's 2341 and put our footer where live is mid-form.
-   CSS only: the `hidden` attribute is a UA display hint, so display:block
-   overrides it and every step section paints stacked in wizard DOM order,
-   which is live's order. The logic already supports it -- handleSubmit
-   validates EVERY step before the action fires, so the one visible submit
-   behaves; the per-step continue/back buttons are the only controls hidden.
-   Desktop keeps the wizard untouched.
-   =========================================================================== */
-/* The step gate. `data-inactive` and not the `hidden` attribute, because the
-   attribute cannot be re-shown from here: Tailwind's preflight pins [hidden]
-   with a LAYERED !important, and layered important beats any unlayered
-   important this file could write. The semantics are identical -- display:none
-   removes the step from the accessibility tree and the tab order exactly as
-   hidden did -- and the breakpoint below gets to flip it. */
-.checkout-step[data-inactive] {
+@media (prefers-reduced-motion: reduce) {
+  .checkout-spinner {
+    animation: none;
+  }
+}
+
+/* ── Sticky pay bar, under 992 ──────────────────────────────────────────
+   Fixed to the bottom of the viewport ABOVE the store's tab bar, which owns
+   the very bottom below 768 (`--reserve-tabbar`, z-30, globals.css). z-35 sits
+   it over the tab bar's shadow and under the WhatsApp button (40) and the
+   consent banner (50), which stay on top as they do everywhere. */
+.checkout-sticky-pay {
+  --checkout-sticky-h: 4rem;
   display: none;
 }
 
-/* 991, not 767: live's checkout is the single long column everywhere below
-   Bootstrap's lg -- checkout@768 in the reference is a 2233px single-column
-   entry-content with no stepper -- and 992 is exactly where our own grid
-   (above) goes two-column. The wizard exists only where the two-column layout
-   does. */
 @media (max-width: 991px) {
-  .checkout-steps {
+  .checkout-sticky-pay {
+    position: fixed;
+    inset-inline: 0;
+    bottom: var(--reserve-tabbar, 0rem);
+    z-index: 35;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: var(--checkout-sticky-h);
+    padding: 10px 15px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -4px 12px rgb(0 0 0 / 0.06);
+  }
+
+  .checkout-sticky-pay[data-hidden] {
     display: none;
   }
 
-  .checkout-step[data-inactive] {
-    display: block;
+  /* The page keeps the bar's height free at its foot, so the footer's last
+     line is never under it. */
+  .checkout-page {
+    padding-bottom: calc(3rem + 4rem);
   }
 
-  .checkout-nav__next,
-  .checkout-nav__back {
-    display: none;
+  /* The WhatsApp button floats at the inline end just above the tab bar, which
+     is exactly where the pay button now sits. Lifted over the bar while the
+     bar is showing; it returns when the real pay button scrolls in. */
+  body:has(.checkout-sticky-pay:not([data-hidden])) [data-testid="whatsapp-float"] {
+    bottom: calc(var(--reserve-tabbar, 0rem) + 4rem + 1rem);
   }
+}
+
+.checkout-sticky-pay__total {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: #333e48;
+  line-height: 1.3;
+}
+
+.checkout-sticky-pay__label {
+  font-size: 12px;
+  color: #5c6670;
+}
+
+.checkout-sticky-pay__total strong {
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.checkout-sticky-pay__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cart-touch, 44px);
+  min-width: 150px;
+  padding: 10px 28px;
+  background: #fed700;
+  color: #333e48;
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid #fed700;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.checkout-sticky-pay__btn:hover:not(:disabled) {
+  background: #fedd26;
+}
+
+.checkout-sticky-pay__btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ── Touch targets (V02) ────────────────────────────────────────────────
+   Measured by scripts/v02-checkout-shots.mjs: the breadcrumb link, the guest
+   sign-in link and the consent links were 21 to 24px tall, and the tickbox
+   rows 24. Links in running text grow their HIT AREA with padding and give it
+   back with an equal negative margin, so the line box, and with it the
+   layout, does not move. */
+.checkout-page__breadcrumb a,
+.checkout-guest-notice__link,
+.checkout-terms__link {
+  display: inline-block;
+  padding-block: 12px;
+  margin-block: -12px;
+}
+
+/* "לתקנון" is a 38px-wide word; the same give-back on the inline axis. */
+.checkout-terms__link {
+  padding-inline: 4px;
+  margin-inline: -4px;
+}
+
+.checkout-terms {
+  min-height: var(--cart-touch, 44px);
+  align-items: center;
+}
+
+.checkout-terms input {
+  margin-top: 0;
+}
+
+.checkout-payment__method {
+  min-height: var(--cart-touch, 44px);
 }

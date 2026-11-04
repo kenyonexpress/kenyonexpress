@@ -414,12 +414,14 @@ test.describe('the checkout with a seeded cart', { tag: '@writes' }, () => {
  * routes that were the whole a11y sweep before 2026-08-19: the scope was the
  * bug, and everything inside it was green.
  *
- * It walks with the shopper's own controls rather than setting `step` from the
- * outside, so the gate cannot pass on a state the shopper cannot reach: the
- * "המשך" button refuses a step whose fields do not validate.
+ * V02: the checkout is Electro's single page at every width now, so there is
+ * no wizard to walk. One scan covers every section at once; a second covers
+ * the error state, raised through the same pay button the shopper presses;
+ * a third the filled form with the terms ticked, which is what a shopper
+ * about to pay sees.
  */
-test.describe('the checkout wizard, step by step', { tag: '@writes' }, () => {
-  test('every step of the checkout has no WCAG A/AA violations', async ({ page, viewport }) => {
+test.describe('the single-page checkout', { tag: '@writes' }, () => {
+  test('the checkout has no WCAG A/AA violations, empty, refused and filled', async ({ page }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
     await page.goto('/checkout')
@@ -428,84 +430,45 @@ test.describe('the checkout wizard, step by step', { tag: '@writes' }, () => {
       '/checkout',
     )
 
-    // Below 768 there is no wizard since D25: checkout-page.css stacks every
-    // step section into live's single long page and hides the continue
-    // buttons. One scan therefore covers ALL sections at once -- including
-    // the error state, raised through the same submit the shopper uses.
-    if ((viewport?.width ?? 1280) < 768) {
-      await page.locator('.checkout-pay-btn').click()
-      await expect(
-        page.locator('.checkout-field__error').first(),
-        'submitting the empty single-page checkout raised no error to scan',
-      ).toBeVisible()
-      const single = await scan(page)
-      expect(
-        single.violations.map((v) => v.id),
-        `single-page checkout with validation errors\n  ${describe(single)}`,
-      ).toEqual([])
-      return
-    }
+    const empty = await scan(page)
+    expect(
+      empty.violations.map((v) => v.id),
+      `empty single-page checkout\n  ${describe(empty)}`,
+    ).toEqual([])
 
-    const next = page.locator('.checkout-nav__next').first()
-    const advance = async (to: string) => {
-      await next.click()
-      await expect(
-        page.locator('.checkout-steps__item[aria-current="step"]'),
-        `the wizard would not advance to ${to}`,
-      ).toContainText(to)
-    }
-
-    // THE STATE EVERY SHOPPER WHO MISTYPES SEES, WHICH IS ALSO UNSCANNED.
-    // Pressing "המשך" on an empty step paints four `role="alert"` messages and
-    // marks four inputs `aria-invalid`. A page is not accessible because it is
-    // accessible while empty: red-on-white at 12px is exactly the pairing that
-    // misses AA, and #dc3545 clears it on white by 0.03.
-    await next.click()
+    // THE STATE EVERY SHOPPER WHO MISTYPES SEES. A refused press paints the
+    // summary and a `role="alert"` per field and marks the inputs
+    // `aria-invalid`. Red-on-white at 12px is exactly the pairing that misses
+    // AA, and #dc3545 clears it on white by 0.03.
+    await page.locator('.checkout-pay-btn').click()
     await expect(
       page.locator('.checkout-field__error').first(),
-      'pressing continue on an empty step raised no error to scan',
+      'submitting the empty checkout raised no error to scan',
     ).toBeVisible()
     const invalid = await scan(page)
     expect(
       invalid.violations.map((v) => v.id),
-      `details step with validation errors\n  ${describe(invalid)}`,
+      `checkout with validation errors\n  ${describe(invalid)}`,
     ).toEqual([])
 
     // Values that satisfy `validateDetailsStep`: an Israeli mobile and an
     // address-shaped email are both checked, so placeholders will not do.
+    await page.fill('#co-email', 'qa@example.com')
     await page.fill('#co-first-name', 'אופיר')
     await page.fill('#co-last-name', 'בדיקה')
     await page.fill('#co-phone', '0501234567')
-    await page.fill('#co-email', 'qa@example.com')
-    await advance('כתובת למשלוח')
+    if (await page.locator('#co-city').isVisible()) {
+      await page.fill('#co-city', 'תל אביב')
+      await page.fill('#co-street', 'דיזנגוף')
+      await page.fill('#co-number', '10')
+    }
 
-    const address = await scan(page)
-    expect(
-      address.violations.map((v) => v.id),
-      `address step\n  ${describe(address)}`,
-    ).toEqual([])
-
-    await page.fill('#co-city', 'תל אביב')
-    await page.fill('#co-street', 'דיזנגוף')
-    await page.fill('#co-number', '10')
-    await advance('ביקורת הזמנה')
-
-    const review = await scan(page)
-    expect(
-      review.violations.map((v) => v.id),
-      `review step\n  ${describe(review)}`,
-    ).toEqual([])
-
-    await advance('אישור ותשלום')
-
-    // Scanned but NOT submitted. The terms box is the last gate before the pay
-    // button, and ticking it is what a shopper about to pay sees, so the state
-    // under test is the one with the box checked and the button live.
+    // Scanned but NOT submitted.
     await page.check('input[name="accept_terms"]')
     const confirm = await scan(page)
     expect(
       confirm.violations.map((v) => v.id),
-      `confirm step\n  ${describe(confirm)}`,
+      `filled checkout, terms ticked\n  ${describe(confirm)}`,
     ).toEqual([])
   })
 })

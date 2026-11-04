@@ -104,8 +104,8 @@ describe('the checkout order review', () => {
     renderCheckout()
     // The price is digits-then-sign inside an LTR isolate now, so the regex
     // matches the number and the glyph in render order. See money-format.ts.
-    expect(screen.getByText(/תשלום באתר: .*40\.00.*₪/)).toBeTruthy()
-    expect(screen.getByText(/יתרה בעסק: .*110\.00.*₪/)).toBeTruthy()
+    expect(screen.getByText(/תשלום באתר: .*40.*₪/)).toBeTruthy()
+    expect(screen.getByText(/יתרה בעסק: .*110.*₪/)).toBeTruthy()
     expect(screen.getByText('יתרה לתשלום בעסק (בקופון)')).toBeTruthy()
   })
 
@@ -237,9 +237,58 @@ describe('the checkout confirm step', () => {
     // the PENDING label; the resting one is "שליחת הזמנה". Recorded here so
     // the checklist can be corrected against the code rather than the reverse.
     //
-    // Read off the DOM and not by role: the confirm step is `hidden` until the
-    // shopper reaches it, and an accessibility query rightly refuses to see it.
     const { container } = renderCheckout()
     expect(container.querySelector('.checkout-pay-btn')?.textContent).toBe('שליחת הזמנה')
+    // Exactly one control by that name: the sticky bar is named apart, so a
+    // by-name query in the E2E suite still resolves to one button.
+    expect(screen.getAllByRole('button', { name: 'שליחת הזמנה' })).toHaveLength(1)
+  })
+})
+
+describe('the single-page checkout (V02)', () => {
+  it('has no stepper and no per-step continue buttons', () => {
+    const { container } = renderCheckout()
+    expect(container.querySelector('.checkout-steps')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'המשך' })).toBeNull()
+  })
+
+  it('opens the details with the email, as Electro does', () => {
+    const { container } = renderCheckout({ address: EMPTY_ADDRESS })
+    const names = [...container.querySelectorAll<HTMLInputElement>('.checkout-col-main input')]
+      .map((input) => input.name)
+      .filter((name) => ['email', 'first_name', 'last_name', 'phone'].includes(name))
+    expect(names).toEqual(['email', 'first_name', 'last_name', 'phone'])
+  })
+
+  it('shows the payment box, the terms and the pay button with nothing pressed', () => {
+    const { container } = renderCheckout()
+    expect(container.querySelector('.checkout-payment [hidden]')).toBeNull()
+    expect(screen.getByRole('checkbox', { name: /קראתי ואני מסכים/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'שליחת הזמנה' })).toBeTruthy()
+  })
+
+  it('prices the order panel in whole shekels', () => {
+    const { container } = renderCheckout()
+    const panel = container.querySelector('.checkout-review')?.textContent ?? ''
+    expect(panel).not.toMatch(/\d\.\d\d/)
+  })
+
+  it('carries a sticky pay bar with the total, submitting the same form', () => {
+    const { container } = renderCheckout()
+    const bar = container.querySelector('[data-testid="checkout-sticky-pay"]')
+    expect(bar?.textContent).toMatch(/40/)
+    const button = bar?.querySelector('button')
+    expect(button?.getAttribute('type')).toBe('submit')
+    expect(button?.closest('form')?.classList.contains('checkout-page__grid')).toBe(true)
+  })
+
+  it('answers a refused press with a summary and focus on the first wrong field', () => {
+    const { container } = renderCheckout({ address: EMPTY_ADDRESS })
+    fireEvent.submit(container.querySelector('form.checkout-page__grid') as HTMLFormElement)
+    expect(container.querySelector('[data-testid="checkout-error-summary"]')).not.toBeNull()
+    // Every section is checked at once, the terms included.
+    expect(container.querySelector('#co-err-email')).not.toBeNull()
+    expect(container.querySelector('#co-err-accept-terms')).not.toBeNull()
+    expect(document.activeElement?.getAttribute('name')).toBe('email')
   })
 })
