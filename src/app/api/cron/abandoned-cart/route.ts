@@ -1,6 +1,7 @@
 import { loadCartProductData } from '@/lib/cart/load-products'
 import { buildCartView } from '@/lib/cart/pricing'
 import type { CartStorageItem, CartView } from '@/lib/cart/types'
+import { isDirectAutomaticCustomerEmailAllowed } from '@/lib/email/automatic-email-policy'
 import {
   ABANDONED_CART_MAX_REMINDERS,
   type ReminderNumber,
@@ -69,6 +70,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   // `!secret` closes the route in the absence of a secret rather than opening it.
   if (!bearerMatches(request.headers.get('authorization'), secret ?? '')) {
     return NextResponse.json({ ok: false }, { status: 401 })
+  }
+
+  // S12 (04.11.2026): the purchase confirmation is the only automatic customer
+  // mail. Checked after auth and before any read, so a scheduled run is a
+  // no-op that says why rather than a silent 200.
+  if (!isDirectAutomaticCustomerEmailAllowed('abandoned-cart')) {
+    return NextResponse.json({ ok: true, disabled: 'automatic_email_policy', sent: 0 })
   }
 
   const admin = createAdminClient()

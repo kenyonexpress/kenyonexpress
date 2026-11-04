@@ -56,11 +56,11 @@ describe('an optional kind honours the table', () => {
   it('is on when nothing has been decided', () => {
     // Silence means the customer has never opened the settings page -- which is
     // all of them today, since the table is empty. Treating that as "do not
-    // contact me" would stop every expiry reminder in the system. Checked on
-    // `push` and on `email`: the expiry reminder is the one optional kind the
-    // Q09 list lets reach a customer by mail.
+    // contact me" would stop every expiry reminder in the system. Email is
+    // the exception since S12: the reminder is automatic, so it is push and
+    // in-app only.
     expect(mayNotify('voucher_expiring', 'push', [])).toBe(true)
-    expect(mayNotify('voucher_expiring', 'email', [])).toBe(true)
+    expect(mayNotify('voucher_expiring', 'email', [])).toBe(false)
   })
 
   it('is off when a row says so, per channel', () => {
@@ -80,13 +80,13 @@ describe('an optional kind honours the table', () => {
 describe('owner policy, 25.09.2026 (Q09): customer email only for the named list', () => {
   it('names exactly the outbox kinds a customer may be mailed for', () => {
     // Pinned by name, like REQUIRED_KINDS above. The list is the owner's, not
-    // the code's: purchase confirmation (both payload shapes), the expiry
-    // reminder and the gift coupon. Password reset and the security alert
-    // are direct sends outside the outbox and cannot appear here.
+    // the code's. S12 (04.11.2026): the purchase confirmation, both payload
+    // shapes, is the only automatic mail; the gift coupon goes out because the
+    // buyer pressed send. Password reset and the security alert are direct
+    // sends outside the outbox and cannot appear here.
     expect([...EMAIL_POLICY_EXEMPT_KINDS]).toEqual([
       'order_paid',
       'voucher_issued',
-      'voucher_expiring',
       'voucher_gifted',
     ])
   })

@@ -1,3 +1,8 @@
+import {
+  AUTOMATIC_CUSTOMER_EMAIL_KINDS,
+  REQUESTED_CUSTOMER_EMAIL_KINDS,
+} from '@/lib/email/automatic-email-policy'
+
 /**
  * Which notifications a customer may switch off, and which they may not.
  *
@@ -37,14 +42,12 @@ export type Channel = (typeof CHANNELS)[number]
 /**
  * The channels the settings page renders a switch for.
  *
- * `email` is deliberately absent. Under the Q09 list below the only OPTIONAL
- * kind that can reach a customer by mail is `voucher_expiring`; every other
- * optional kind has `mayNotify` return `false` for email unconditionally, so a
+ * `email` is deliberately absent. Under the S12 list below no OPTIONAL kind
+ * can reach a customer by mail; every optional kind has `mayNotify` return
+ * `false` for email unconditionally, so a
  * stored row for `{kind, 'email', true}` would change nothing, and a switch
  * that looks live but does nothing is exactly the broken-control problem this
- * file's own header names for required kinds. One live switch in a column of
- * dead ones is not worth the column; the expiry reminder is a service mail
- * about a coupon the customer paid for, and it stays on.
+ * file's own header names for required kinds.
  */
 export const CUSTOMER_TOGGLE_CHANNELS = CHANNELS.filter(
   (c): c is Exclude<Channel, 'email'> => c !== 'email',
@@ -72,6 +75,12 @@ export const CUSTOMER_TOGGLE_CHANNELS = CHANNELS.filter(
  *     `server/auth/security-alert-send.ts` call `sendEmail` directly, the way
  *     the magic link always has.
  *
+ * 04.11.2026 (queue item S12) NARROWED IT AGAIN: the purchase confirmation
+ * is the only email sent automatically. `voucher_expiring` left the list,
+ * because a sweep deciding to mail is exactly what "automatic" means. The
+ * list is now built from `lib/email/automatic-email-policy.ts`, which also
+ * switches off the abandoned-cart cron, the one direct-send automatic mail.
+ *
  * Everything else a customer is owed is a web push linking to the order page
  * (`lib/push/templates.ts`) plus the in-app bell. The coupon codes and QR
  * live on the order page; the confirmation mail names the order and links
@@ -83,10 +92,8 @@ export const CUSTOMER_TOGGLE_CHANNELS = CHANNELS.filter(
  * The owner policy answers the second question and answers it first.
  */
 export const EMAIL_POLICY_EXEMPT_KINDS = [
-  'order_paid',
-  'voucher_issued',
-  'voucher_expiring',
-  'voucher_gifted',
+  ...AUTOMATIC_CUSTOMER_EMAIL_KINDS,
+  ...REQUESTED_CUSTOMER_EMAIL_KINDS,
 ] as const
 
 /**

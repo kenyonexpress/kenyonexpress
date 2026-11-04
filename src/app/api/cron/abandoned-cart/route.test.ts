@@ -52,3 +52,31 @@ describe('abandoned-cart cron auth', () => {
     expect(createAdminClient).not.toHaveBeenCalled()
   })
 })
+
+describe('abandoned-cart cron under the S12 automatic-email policy', () => {
+  beforeEach(() => {
+    createAdminClient.mockReset()
+    sendEmail.mockReset()
+    vi.stubEnv('CRON_SECRET', 's3cret')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('sends nothing for an authorised run, and says why', async () => {
+    // The purchase confirmation is the only automatic customer mail. The
+    // real policy module is used here, not a mock: this is the test that
+    // fails if somebody switches the nudge back on.
+    const response = await GET(request('Bearer s3cret'))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      ok: true,
+      disabled: 'automatic_email_policy',
+      sent: 0,
+    })
+    // `createAdminClient` is reached by `withJobRun`'s bookkeeping, not by the
+    // route: the mock returns undefined, so any route read would have thrown.
+    expect(sendEmail).not.toHaveBeenCalled()
+  })
+})

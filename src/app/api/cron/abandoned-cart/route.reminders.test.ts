@@ -92,6 +92,11 @@ const admin = {
 }
 
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => admin }))
+// The delivery machinery is still tested with the S12 policy gate held open;
+// route.test.ts proves the gate itself is closed.
+vi.mock('@/lib/email/automatic-email-policy', () => ({
+  isDirectAutomaticCustomerEmailAllowed: () => true,
+}))
 vi.mock('@/lib/growth/resend', () => ({
   sendEmail: async (input: { subject: string; html: string }) => {
     sends.push({ subject: input.subject, html: input.html })

@@ -1,5 +1,7 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
 import { t } from '@/lib/i18n/messages'
+import { agorot } from '@/lib/money'
+import { shekelsRounded } from '@/lib/money-format'
 import { trackingView } from '@/lib/shipping/carriers'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE } from '@/styles/tokens'
@@ -18,8 +20,9 @@ import { OFF_PAGE } from '@/styles/tokens'
  * drain, and a rename between the two would otherwise rewrite history in an
  * email.
  *
- * Money arrives in agorot in every payload, and only `formatAgorot` turns it
- * into shekels. Nothing here divides by 100.
+ * Money arrives in agorot in every payload, and only `formatAgorot` (or
+ * `shekelsRounded`, for the whole-shekel purchase confirmation) turns it into
+ * shekels. Nothing here divides by 100.
  */
 
 /**
@@ -198,13 +201,12 @@ function hebrewDateTime(iso: unknown): string {
  * the HTML cannot disagree on a number, and `legal-confirmation` tests count
  * them: a seventh line is a failing test, not a longer mail.
  *
- * WHAT THE SELLER LINE DOES NOT CARRY. The business registration number
- * (ח.פ / עוסק) appears nowhere in this repository -- not in the legal content,
- * not in the footer, not in an env var -- and inventing a placeholder in a
- * legal document is worse than the omission. The line names the operator,
- * the address the footer already prints, the support address and the terms
- * URL. Adding the number is one edit to `purchaseConfirmation.sellerName`
- * in `messages/he.json`.
+ * THE SELLER LINE carries the legal name, ח.פ 033798513, the address the
+ * footer prints, the support address and the terms URL. The name and number
+ * are `purchaseConfirmation.sellerName` in `messages/he.json`.
+ *
+ * AMOUNTS ARE WHOLE SHEKELS (S12, 04.11.2026), rounded half-up from integer
+ * agorot by `shekelsRounded`, like every customer-facing price on the site.
  */
 /**
  * The seller line's fixed facts. The name and address are catalogue strings
@@ -271,7 +273,7 @@ function confirmationLines(input: ConfirmationInput, siteUrl: string): Confirmat
     // not matter that the invoice cron may run minutes after this goes out.
     {
       label: t('purchaseConfirmation.labelPaid'),
-      value: `${formatAgorot(input.totalAgorot)} ${t('purchaseConfirmation.paidBy')} ${
+      value: `${shekelsRounded(agorot(input.totalAgorot))} ${t('purchaseConfirmation.paidBy')} ${
         input.orderId
           ? t('purchaseConfirmation.receiptLink')
           : t('purchaseConfirmation.receiptOnPage')
@@ -286,7 +288,7 @@ function confirmationLines(input: ConfirmationInput, siteUrl: string): Confirmat
     },
     {
       label: t('purchaseConfirmation.labelCancellation'),
-      value: `${t('purchaseConfirmation.cancellationRule')} ${t('purchaseConfirmation.feePrefix')} ${t('purchaseConfirmation.feeRule')} ${formatAgorot(CANCELLATION_FEE_AGOROT)}`,
+      value: `${t('purchaseConfirmation.cancellationRule')} ${t('purchaseConfirmation.feePrefix')} ${t('purchaseConfirmation.feeRule')} ${shekelsRounded(agorot(CANCELLATION_FEE_AGOROT))}`,
     },
     {
       label: t('purchaseConfirmation.labelOrderPage'),
