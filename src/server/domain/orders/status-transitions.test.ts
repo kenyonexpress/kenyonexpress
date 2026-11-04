@@ -47,6 +47,12 @@ const MIGRATION_CANDIDATES: Record<string, string[]> = {
     'migrations/pending/166_voucher_transition_guard.sql',
     'supabase/migrations/166_voucher_transition_guard.sql',
   ],
+  // S10, applied 2026-11-04. Replaces 166's function body with issued ->
+  // transferred added; listed after 166 so its IN (...) list is the one read.
+  '254_voucher_validity_pin_transfer.sql': [
+    'migrations/applied/254_voucher_validity_pin_transfer.sql',
+    'migrations/pending/254_voucher_validity_pin_transfer.sql',
+  ],
 }
 
 const MIGRATIONS = Object.entries(MIGRATION_CANDIDATES).map(([name, candidates]) => {
@@ -238,6 +244,7 @@ describe('terminal states', () => {
       'expired',
       'redeemed',
       'refunded',
+      'transferred',
     ])
   })
 

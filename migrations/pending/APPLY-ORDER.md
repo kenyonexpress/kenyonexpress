@@ -1079,3 +1079,27 @@ Applied 04.11 via `supabase db query --linked -f`. Proof, before and after,
 with a rolled-back DO block: `docs/S09-split.md`.
 
 **Reversal:** re-run the pre-253 body quoted in `docs/S09-split.md`.
+
+## 2026-11-04: 254 written AND APPLIED (queue S10)
+
+`254_voucher_validity_pin_transfer.sql`, three parts:
+
+1. `products.coupon_expiry_days`: NULLs set to 90, DEFAULT 90, CHECK IN
+   (30, 60, 90). Nullable on purpose (physical products write NULL).
+2. `vouchers.partner_pin`, its CHECK, its per-supplier unique index and the
+   `fn_vouchers_partner_pin` trigger: live in production before this, absent
+   from the repo, now written down idempotently as they are.
+3. `voucher_status` gains `transferred`; `transferred_at`,
+   `transferred_to_voucher_id`, `transferred_from_voucher_id`; the 166 guard
+   body with `('issued','transferred')`; `transfer_voucher_on_claim()`,
+   SECURITY DEFINER, EXECUTE for service_role only.
+
+Applied 04.11 via `supabase db query --linked -f`, after a BEGIN/ROLLBACK
+rehearsal. One amendment the same session: it first set NOT NULL on
+`coupon_expiry_days`, which would refuse every physical-product save, and
+that was dropped within minutes; the file carries the final DROP NOT NULL.
+Proof: `docs/S10-vouchers.md`.
+
+**Reversal:** drop the RPC, the three columns and `vouchers_transferred_fields`;
+re-run 166's guard body; restore `CHECK (coupon_expiry_days > 0)` and drop the
+default. The enum value stays (cannot be dropped without recreating the type).

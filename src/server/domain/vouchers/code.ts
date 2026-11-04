@@ -60,6 +60,47 @@ export function generateVoucherCode(): string {
   return code
 }
 
+/**
+ * The 8-digit code the customer reads out at the counter (`vouchers.partner_pin`,
+ * CHECK ^[0-9]{8}$, unique per supplier among issued vouchers). The QR carries
+ * the signed payload; this is what a till without a camera types.
+ *
+ * Production has had a trigger filling it since before this repo knew about it
+ * (written down in 254). Generating it here as well means the issuer knows the
+ * pin it wrote, tests can see it, and a collision with the per-supplier unique
+ * index comes back as the same 23505 the issuer already retries.
+ *
+ * Leading zeros are kept: it is a string, `00012345` is a valid pin.
+ */
+export const VOUCHER_PIN_LENGTH = 8
+export const VOUCHER_PIN_PATTERN = /^[0-9]{8}$/
+
+export function isValidVoucherPin(pin: string): boolean {
+  return VOUCHER_PIN_PATTERN.test(pin)
+}
+
+// 250 is the largest multiple of 10 that fits in a byte; bytes 250-255 are
+// dropped so no digit is favoured.
+const PIN_REJECTION_CEILING = 250
+
+export function generateVoucherPin(): string {
+  let pin = ''
+  while (pin.length < VOUCHER_PIN_LENGTH) {
+    const buffer = randomBytes(VOUCHER_PIN_LENGTH)
+    for (let i = 0; i < buffer.length && pin.length < VOUCHER_PIN_LENGTH; i++) {
+      const byte = buffer[i] as number
+      if (byte >= PIN_REJECTION_CEILING) continue
+      pin += String(byte % 10)
+    }
+  }
+  return pin
+}
+
+/** `1234 5678` for display. Never persisted. */
+export function formatVoucherPin(pin: string): string {
+  return `${pin.slice(0, 4)} ${pin.slice(4)}`
+}
+
 export class VoucherCodeCollisionError extends Error {
   constructor(attempts: number) {
     super(`could not generate a unique voucher code after ${attempts} attempts`)

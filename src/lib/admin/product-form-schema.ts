@@ -5,6 +5,7 @@ import {
   REFUND_POLICIES,
   STATUTORY_CANCELLATION_DAYS,
 } from '@/lib/admin/product-terms'
+import { isCouponValidityDays } from '@/lib/vouchers/validity'
 import { z } from 'zod'
 
 function emptyToNull(value: unknown): unknown {
@@ -75,16 +76,14 @@ export const productSchema = z
     coupon_price_ils: z.coerce.number().positive().nullable().optional(),
     offer_valid_until: z.string().nullable().optional(),
     is_coupon_enabled: z.coerce.boolean().default(false),
-    // CONTRADICTIONS C7: coupon validity is a per-product field, 30/60/90 or any
-    // other integer. No default: an unset value used to become a silent 90 days
-    // in finalize, which is a consumer-facing promise nobody made. Required on a
-    // coupon product, meaningless on a physical one.
+    // S10 (replaces CONTRADICTIONS C7): coupon validity is 30, 60 or 90 days,
+    // default 90 (src/lib/vouchers/validity.ts). Empty means the default, which
+    // buildProductMoneyRow writes; meaningless on a physical product.
     coupon_expiry_days: z.preprocess(
       emptyToNull,
       z.coerce
-        .number({ invalid_type_error: 'תוקף קופון בימים נדרש' })
-        .int('תוקף חייב להיות מספר שלם של ימים')
-        .min(1, 'תוקף חייב להיות לפחות יום אחד')
+        .number({ invalid_type_error: 'תוקף קופון: 30, 60 או 90 ימים' })
+        .refine(isCouponValidityDays, 'תוקף קופון: 30, 60 או 90 ימים')
         .nullable()
         .optional(),
     ),
@@ -124,15 +123,6 @@ export const productSchema = z
     seo_keywords: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
-    // A coupon cannot be sold without a validity period (C7). Checked here
-    // rather than in the field schema because it depends on the product type.
-    if ((data.type === 'coupon' || data.is_coupon_enabled) && data.coupon_expiry_days == null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'תוקף קופון בימים נדרש למוצר קופון',
-        path: ['coupon_expiry_days'],
-      })
-    }
     if (
       data.full_price != null &&
       data.kenyon_price != null &&

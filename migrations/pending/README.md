@@ -1,5 +1,15 @@
 # `migrations/pending/`
 
+## 2026-11-04: 254 WRITTEN AND APPLIED - שוברים: תוקף 30/60/90, קוד 8 ספרות, סטטוס transferred
+
+‏`254_voucher_validity_pin_transfer.sql`. ‏S10. **תוקף:** ‏`products.coupon_expiry_days`
+מקבל ‏DEFAULT 90 ו-CHECK ‏IN (30, 60, 90); ‏88 ה-NULL הפכו ל-90. ‏NOT NULL **לא** נקבע
+(מוצר פיזי כותב NULL). **קוד 8 ספרות:** ‏`partner_pin`, הטריגר והאינדקס היו חיים
+בפרודקשן ולא היו בריפו; נכתבו כמו שהם. **‏transferred:** ערך enum חדש, עמודות
+‏`transferred_at` / ‏`transferred_to_voucher_id` / ‏`transferred_from_voucher_id`, ה-guard
+של 166 עם ‏`issued -> transferred`, והפונקציה ‏`transfer_voucher_on_claim` (service_role
+בלבד). הוחלה 04.11; הוכחה ב-`docs/S10-vouchers.md`.
+
 ## 2026-11-04: 253 WRITTEN AND APPLIED - נעילת סכומי הפיצול על שורת הזמנה ששולמה
 
 ‏`253_order_items_split_amount_lock.sql`. ‏S09. **מה כבר היה:** הקופה מעתיקה

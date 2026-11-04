@@ -8,7 +8,13 @@
  * the stored one.
  */
 
-export type VoucherStatus = 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
+export type VoucherStatus =
+  | 'issued'
+  | 'redeemed'
+  | 'expired'
+  | 'cancelled'
+  | 'refunded'
+  | 'transferred'
 
 export const VOUCHER_STATUS_LABELS: Record<VoucherStatus, string> = {
   issued: 'הונפק',
@@ -16,6 +22,7 @@ export const VOUCHER_STATUS_LABELS: Record<VoucherStatus, string> = {
   expired: 'פג תוקף',
   cancelled: 'בוטל',
   refunded: 'הוחזר',
+  transferred: 'הועבר במתנה',
 }
 
 export type BadgeVariant = 'green' | 'yellow' | 'red' | 'gray' | 'blue'
@@ -26,6 +33,7 @@ export const VOUCHER_STATUS_VARIANTS: Record<VoucherStatus, BadgeVariant> = {
   expired: 'red',
   cancelled: 'gray',
   refunded: 'gray',
+  transferred: 'gray',
 }
 
 /**

@@ -85,6 +85,10 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/orders.ts': 1,
   'src/server/actions/payments/refund.ts': 6,
   'src/server/domain/vouchers/issue.ts': 1,
+  // S10: the same advisory code-exists probe as issue.ts. A failed probe reads
+  // as "free", and UNIQUE(code) inside transfer_voucher_on_claim is the real
+  // arbiter: a collision is a 23505 that the caller redraws on.
+  'src/server/domain/vouchers/transfer.ts': 1,
   // 6 -> 5 with 226: the gift-intent read used to destructure `data` alone, so
   // a failed read was indistinguishable from an order that is not a gift. It
   // now inspects `error` to decide whether to retry the narrow select, which

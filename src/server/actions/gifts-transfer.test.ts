@@ -63,7 +63,13 @@ function builder(table: string) {
   return b
 }
 vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: () => ({ from: (table: string) => builder(table) }),
+  createAdminClient: () => ({
+    from: (table: string) => builder(table),
+    rpc: (fn: string, args: unknown) => {
+      calls.push({ table: 'rpc', verb: fn, args: [args] })
+      return Promise.resolve(take(`rpc.${fn}`))
+    },
+  }),
 }))
 
 import { claimGift, loadGiftPreview, revokeVoucherTransfer, transferVoucher } from './gifts'
@@ -344,30 +350,43 @@ describe('audit rows', () => {
 describe('claimGift', () => {
   const TOKEN = 'a'.repeat(43)
 
-  it('moves ownership once, keeps the buyer on gifted_by_user_id, and audits the change of hands', async () => {
+  const NEW_VOUCHER = '223e4567-e89b-12d3-a456-426614174999'
+  const claimable = {
+    id: VOUCHER,
+    user_id: 'owner',
+    supplier_id: 'supplier-1',
+    status: 'issued',
+    expires_at: '2099-01-01T00:00:00Z',
+    gift_claimed_at: null,
+    transferred_to_voucher_id: null,
+  }
+
+  beforeEach(() => {
+    process.env.VOUCHER_QR_SECRET = 'gifts-transfer-test-secret-000000'
+  })
+
+  // S10: ownership moves by re-issue. The buyer's row becomes `transferred`
+  // and the recipient gets a new row, both inside transfer_voucher_on_claim
+  // (254), so nothing here may UPDATE vouchers directly.
+  it('re-issues to the recipient through the RPC and audits the change of hands', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'recipient' } } })
-    answer('vouchers.select', {
-      data: {
-        id: VOUCHER,
-        user_id: 'owner',
-        status: 'issued',
-        expires_at: '2099-01-01T00:00:00Z',
-        gift_claimed_at: null,
-      },
-      error: null,
+    answer('vouchers.select', { data: claimable, error: null })
+    answer('rpc.transfer_voucher_on_claim', { data: NEW_VOUCHER, error: null })
+
+    expect(await claimGift(TOKEN)).toEqual({
+      ok: true,
+      voucherId: NEW_VOUCHER,
+      alreadyMine: false,
     })
-    answer('vouchers.update', { data: { id: VOUCHER }, error: null })
 
-    expect(await claimGift(TOKEN)).toEqual({ ok: true, voucherId: VOUCHER, alreadyMine: false })
-
-    const update = calls.find((c) => c.table === 'vouchers' && c.verb === 'update')
-    expect(update?.args[0]).toMatchObject({ user_id: 'recipient', gifted_by_user_id: 'owner' })
-    const guards = calls
-      .filter((c) => c.table === 'vouchers')
-      .slice(calls.findIndex((c) => c.verb === 'update'))
-      .map((c) => `${c.verb}:${String(c.args[0])}`)
-    expect(guards).toContain('eq:gift_claim_token_hash')
-    expect(guards).toContain('is:gift_claimed_at')
+    expect(calls.some((c) => c.table === 'vouchers' && c.verb === 'update')).toBe(false)
+    const rpc = calls.find((c) => c.table === 'rpc')
+    expect(rpc?.verb).toBe('transfer_voucher_on_claim')
+    expect(rpc?.args[0]).toMatchObject({
+      p_voucher_id: VOUCHER,
+      p_new_user_id: 'recipient',
+      p_partner_pin: expect.stringMatching(/^[0-9]{8}$/),
+    })
 
     const audit = calls.find((c) => c.table === 'audit_log' && c.verb === 'insert')
     expect(audit?.args[0]).toMatchObject({
@@ -375,26 +394,55 @@ describe('claimGift', () => {
       action: 'updated',
       entity_type: 'voucher',
       entity_id: VOUCHER,
-      changes: { user_id: { from: 'owner', to: 'recipient' } },
+      changes: {
+        user_id: { from: 'owner', to: 'recipient' },
+        status: { from: 'issued', to: 'transferred' },
+        transferred_to_voucher_id: { from: null, to: NEW_VOUCHER },
+      },
       metadata: { source: 'gift_claim' },
     })
   })
 
   it('a lost race writes no audit row', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'recipient' } } })
+    answer('vouchers.select', { data: claimable, error: null })
+    answer('rpc.transfer_voucher_on_claim', {
+      data: null,
+      error: { code: 'P0001', message: 'gift_already_claimed' },
+    })
+    expect(await claimGift(TOKEN)).toMatchObject({ ok: false, code: 'CLAIMED' })
+    expect(calls.some((c) => c.table === 'audit_log')).toBe(false)
+  })
+
+  it('the recipient reopening the link lands on their new voucher', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'recipient' } } })
     answer('vouchers.select', {
       data: {
-        id: VOUCHER,
-        user_id: 'owner',
-        status: 'issued',
-        expires_at: '2099-01-01T00:00:00Z',
-        gift_claimed_at: null,
+        ...claimable,
+        status: 'transferred',
+        gift_claimed_at: '2026-11-04T00:00:00Z',
+        transferred_to_voucher_id: NEW_VOUCHER,
       },
       error: null,
     })
-    answer('vouchers.update', { data: null, error: null })
+    answer('vouchers.select', { data: { id: NEW_VOUCHER, user_id: 'recipient' }, error: null })
+    expect(await claimGift(TOKEN)).toEqual({ ok: true, voucherId: NEW_VOUCHER, alreadyMine: true })
+    expect(calls.some((c) => c.table === 'rpc')).toBe(false)
+  })
+
+  it('the buyer opening the claimed link is told it was claimed', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'owner' } } })
+    answer('vouchers.select', {
+      data: {
+        ...claimable,
+        status: 'transferred',
+        gift_claimed_at: '2026-11-04T00:00:00Z',
+        transferred_to_voucher_id: NEW_VOUCHER,
+      },
+      error: null,
+    })
+    answer('vouchers.select', { data: { id: NEW_VOUCHER, user_id: 'recipient' }, error: null })
     expect(await claimGift(TOKEN)).toMatchObject({ ok: false, code: 'CLAIMED' })
-    expect(calls.some((c) => c.table === 'audit_log')).toBe(false)
   })
 
   it('refuses a redeemed coupon, an expired one, and a malformed token, without writing', async () => {

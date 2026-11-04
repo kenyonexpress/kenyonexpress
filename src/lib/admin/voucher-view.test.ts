@@ -127,6 +127,8 @@ describe('VOUCHER_STATUS_LABELS', () => {
       'expired',
       'cancelled',
       'refunded',
+      // Added by 254 on 2026-11-04 (S10).
+      'transferred',
     ])
   })
 })

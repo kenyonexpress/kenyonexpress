@@ -17,6 +17,7 @@ import { trackEvent } from '@/lib/observability/posthog'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveCouponValidityDays } from '@/lib/vouchers/validity'
 import { recordAffiliateConversionForOrder } from '@/server/affiliates/convert'
 import { trackPostHogServerEvent, trackServerEvent } from '@/server/analytics/track'
 import { awardOrderCountBonus } from '@/server/cashback/bonus'
@@ -94,17 +95,14 @@ async function issueVouchersForItem(
   if (!item.product_id || !item.supplier_id) {
     throw new Error(`coupon order item ${item.id} is missing product or supplier`)
   }
-  // CONTRADICTIONS C7: validity is a mandatory per-product field with no
-  // default. This used to fall back to 90 days, which invents a consumer
-  // promise nobody made and, on expiry, decides when we owe the customer their
-  // money back (C6). Refusing here is loud and recoverable: the payment stands,
-  // finalize retries, and an admin sets the field. Guessing is neither.
-  const expiryDays = product.couponExpiryDays
-  if (expiryDays === null || expiryDays === undefined || expiryDays < 1) {
-    throw new Error(
-      `coupon order item ${item.id}: product has no coupon_expiry_days; refusing to issue a voucher with an invented expiry`,
-    )
-  }
+  // S10 (owner, 2026-11-04) replaces CONTRADICTIONS C7: validity is 30, 60 or
+  // 90 days per product and an unset one is 90. C7 refused to issue instead,
+  // which left a paid customer with no voucher on 88 of 126 products. The
+  // default is no longer invented here: it is the column DEFAULT since 254 and
+  // the product page reads the same value. A value outside the three throws,
+  // which is still loud and recoverable: the payment stands and finalize
+  // retries once an admin fixes the product.
+  const expiryDays = resolveCouponValidityDays(product.couponExpiryDays)
   if (item.platform_percent === null || item.platform_percent === undefined) {
     throw new Error(
       `coupon order item ${item.id} has no platform_percent snapshot; refusing to issue`,
@@ -548,11 +546,11 @@ export async function finalizeOrder(input: {
       .map((i) => i.product_id)
       .filter((id): id is string => typeof id === 'string')
     if (productIds.length > 0) {
-      // This one changes the SENTENCE an admin is given. A failed read leaves
-      // `productInfo` empty, the per-item lookup falls back to a null expiry,
-      // and C7 below refuses with "product has no coupon_expiry_days" - telling
-      // an admin to go set a field that is already set, on an order that is
-      // stuck for an entirely different reason.
+      // Since S10 this matters more, not less. A failed read would leave
+      // `productInfo` empty, the per-item lookup would fall back to a null
+      // expiry, and a null is now the 90-day default: a 30-day coupon would be
+      // issued for 90 days with no error anywhere. orFail turns that into a
+      // stuck order with the real reason.
       // No deleted_at filter: expiry terms of an already-paid coupon must be
       // readable even after the product is soft-deleted.
       const products = orFail(

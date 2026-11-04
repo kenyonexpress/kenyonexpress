@@ -29,9 +29,15 @@
  * when 166 was live in production and the table here did not mention vouchers.
  */
 
-export type VoucherState = 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
+export type VoucherState =
+  | 'issued'
+  | 'redeemed'
+  | 'expired'
+  | 'cancelled'
+  | 'refunded'
+  | 'transferred'
 
-export type VoucherEvent = 'REDEEM' | 'EXPIRE' | 'CANCEL' | 'REFUND'
+export type VoucherEvent = 'REDEEM' | 'EXPIRE' | 'CANCEL' | 'REFUND' | 'TRANSFER'
 
 export const VOUCHER_STATES: readonly VoucherState[] = [
   'issued',
@@ -39,9 +45,16 @@ export const VOUCHER_STATES: readonly VoucherState[] = [
   'expired',
   'cancelled',
   'refunded',
+  'transferred',
 ]
 
-export const VOUCHER_EVENTS: readonly VoucherEvent[] = ['REDEEM', 'EXPIRE', 'CANCEL', 'REFUND']
+export const VOUCHER_EVENTS: readonly VoucherEvent[] = [
+  'REDEEM',
+  'EXPIRE',
+  'CANCEL',
+  'REFUND',
+  'TRANSFER',
+]
 
 /** States from which no event is legal. */
 export const TERMINAL_VOUCHER_STATES: readonly VoucherState[] = [
@@ -49,6 +62,7 @@ export const TERMINAL_VOUCHER_STATES: readonly VoucherState[] = [
   'expired',
   'cancelled',
   'refunded',
+  'transferred',
 ]
 
 export type VoucherGuardContext = {
@@ -97,11 +111,21 @@ const TRANSITIONS: Readonly<Record<VoucherState, Partial<Record<VoucherEvent, Tr
     },
     CANCEL: { to: 'cancelled' },
     REFUND: { to: 'refunded' },
+    // A gift claim (254, transfer_voucher_on_claim). The row is retired and the
+    // recipient gets a NEW row with a new code, QR and pin, so whatever the
+    // buyer was mailed at issue stops working at the counter. Refused past
+    // expiry for the same reason the claim is: a dead coupon is not a gift.
+    TRANSFER: {
+      to: 'transferred',
+      guard: (context) =>
+        context.now.getTime() >= context.expiresAt.getTime() ? 'PAST_EXPIRY' : null,
+    },
   },
   redeemed: {},
   expired: {},
   cancelled: {},
   refunded: {},
+  transferred: {},
 }
 
 export type VoucherTransitionErrorCode = 'ILLEGAL_TRANSITION' | VoucherGuardFailure

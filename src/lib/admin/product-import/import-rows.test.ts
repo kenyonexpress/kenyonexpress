@@ -102,12 +102,20 @@ describe('validateImportRow', () => {
     expect(recurring.errors.some((e) => e.includes('סוג מוצר לא מוכר'))).toBe(true)
   })
 
-  it('requires coupon expiry days on a coupon row (C7)', () => {
-    const row = validateImportRow({
+  // S10 replaced C7: an empty validity is the 90-day default; anything outside
+  // 30/60/90 is refused.
+  it('defaults an empty coupon expiry to 90 days and refuses one outside 30/60/90', () => {
+    const empty = validateImportRow({
       line: 2,
       record: { ...goodRecord, type: 'coupon', coupon_price_ils: '50' },
     })
-    expect(row.errors.some((e) => e.includes('תוקף קופון'))).toBe(true)
+    expect(empty.errors.some((e) => e.includes('תוקף קופון'))).toBe(false)
+
+    const odd = validateImportRow({
+      line: 2,
+      record: { ...goodRecord, type: 'coupon', coupon_price_ils: '50', coupon_expiry_days: '45' },
+    })
+    expect(odd.errors.some((e) => e.includes('תוקף קופון'))).toBe(true)
   })
 
   it('derives the coupon discount instead of trusting the file (no quote-vs-charge split)', () => {

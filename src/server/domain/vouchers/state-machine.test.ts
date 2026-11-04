@@ -40,6 +40,7 @@ const LEGAL: Array<{ from: VoucherState; event: VoucherEvent; to: VoucherState }
   { from: 'issued', event: 'EXPIRE', to: 'expired' },
   { from: 'issued', event: 'CANCEL', to: 'cancelled' },
   { from: 'issued', event: 'REFUND', to: 'refunded' },
+  { from: 'issued', event: 'TRANSFER', to: 'transferred' },
 ]
 
 function isLegal(from: VoucherState, event: VoucherEvent): boolean {
@@ -94,7 +95,7 @@ describe('terminal states are dead ends', () => {
   it('only issued is non-terminal', () => {
     expect(isTerminalVoucherState('issued')).toBe(false)
     expect(legalVoucherEvents('issued').sort()).toEqual(
-      ['CANCEL', 'EXPIRE', 'REFUND', 'REDEEM'].sort(),
+      ['CANCEL', 'EXPIRE', 'REFUND', 'REDEEM', 'TRANSFER'].sort(),
     )
   })
 })

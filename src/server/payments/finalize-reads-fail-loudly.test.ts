@@ -284,14 +284,18 @@ describe('the four sentences the alarm used to print', () => {
     expect(issueVoucher).not.toHaveBeenCalled()
   })
 
-  it('still refuses, by C7, when the product genuinely has no expiry', async () => {
+  // S10 replaced C7: an unset validity is the 90-day default, so a product
+  // that genuinely has none still gets its voucher, with 90 days.
+  it('issues with the 90-day default when the product genuinely has no expiry', async () => {
     results.set('products.select', {
       data: [{ id: 'p-1', coupon_expiry_days: null, offer_valid_until: null }],
       error: null,
     })
-    const result = await run()
-    expect(result.ok === false && result.error).toMatch(/coupon_expiry_days/)
-    expect(issueVoucher).not.toHaveBeenCalled()
+    await run()
+    expect(issueVoucher).toHaveBeenCalled()
+    expect((issueVoucher.mock.calls[0] as unknown[] | undefined)?.[1]).toMatchObject({
+      couponExpiryDays: 90,
+    })
   })
 })
 

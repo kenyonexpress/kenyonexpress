@@ -40,7 +40,7 @@ export interface CustomerVoucher {
    * render in its place. Null on an ordinary coupon.
    */
   gift: VoucherGiftState | null
-  status: 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
+  status: 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded' | 'transferred'
   face_value_agorot: number
   coupon_price_agorot: number
   remaining_amount_due_agorot: number

@@ -18,11 +18,20 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkUserRateLimit } from '@/lib/utils/rate-limit'
 import { trackPostHogServerEvent } from '@/server/analytics/track'
+import { transferVoucherOnClaim } from '@/server/domain/vouchers/transfer'
 import { recordGiftAudit } from '@/server/gifts/audit'
 import { revalidatePath } from 'next/cache'
 
 /**
- * Claiming a gifted coupon: the one place `vouchers.user_id` changes hands.
+ * Claiming a gifted coupon: the one place a voucher changes hands.
+ *
+ * SINCE S10 (2026-11-04) OWNERSHIP MOVES BY RE-ISSUE, NOT BY UPDATE. The
+ * buyer's row becomes `transferred` and the recipient gets a new row with a new
+ * code, QR and pin (`transfer_voucher_on_claim`, 254, via
+ * `server/domain/vouchers/transfer.ts`). What the buyer was mailed at issue
+ * stops working at the counter. The rest of this note still holds for the new
+ * row; `gifted_by_user_id` is set on it, and the guards below are inside that
+ * one function's transaction instead of one UPDATE's WHERE.
  *
  * WHAT MOVES AND WHAT DOES NOT
  *
@@ -69,22 +78,47 @@ async function runClaimGift(token: string): Promise<ClaimGiftResult> {
 
   const { data: row } = await admin
     .from('vouchers')
-    .select('id, user_id, status, expires_at, gift_claimed_at')
+    .select(
+      'id, user_id, supplier_id, status, expires_at, gift_claimed_at, transferred_to_voucher_id',
+    )
     .eq('gift_claim_token_hash', hash)
     .maybeSingle()
   const voucher = row as unknown as {
     id: string
     user_id: string
+    supplier_id: string
     status: string
     expires_at: string | null
     gift_claimed_at: string | null
+    transferred_to_voucher_id: string | null
   } | null
 
   if (!voucher) return { ok: false, error: 'קישור המתנה אינו תקין', code: 'NOT_FOUND' }
 
   if (voucher.gift_claimed_at) {
     // Opening your own claimed gift again is not an error, it is a bookmark.
-    if (voucher.user_id === user.id) {
+    // The link points at the retired row; the recipient owns its successor.
+    if (voucher.transferred_to_voucher_id) {
+      const { data: successor, error: successorError } = await admin
+        .from('vouchers')
+        .select('id, user_id')
+        .eq('id', voucher.transferred_to_voucher_id)
+        .maybeSingle()
+      if (successorError) {
+        // A failed read is not "somebody else claimed it". Say so and let the
+        // recipient retry, rather than telling them their own gift is gone.
+        log.error('gifts.claim_successor_read_failed', {
+          voucher_id: voucher.id,
+          err: successorError.message,
+        })
+        return { ok: false, error: 'קבלת המתנה נכשלה, נסו שוב', code: 'NOT_FOUND' }
+      }
+      const next = successor as unknown as { id: string; user_id: string } | null
+      if (next && next.user_id === user.id) {
+        return { ok: true, voucherId: next.id, alreadyMine: true }
+      }
+    } else if (voucher.user_id === user.id) {
+      // Claimed before S10, in place.
       return { ok: true, voucherId: voucher.id, alreadyMine: true }
     }
     return { ok: false, error: 'המתנה כבר נאספה', code: 'CLAIMED' }
@@ -97,26 +131,31 @@ async function runClaimGift(token: string): Promise<ClaimGiftResult> {
     return { ok: false, error: 'תוקף הקופון פג', code: 'UNUSABLE' }
   }
 
-  const { data: claimed, error } = await admin
-    .from('vouchers')
-    .update({
-      user_id: user.id,
-      gifted_by_user_id: voucher.user_id,
-      gift_claimed_at: new Date().toISOString(),
-    } as never)
-    .eq('id', voucher.id)
-    .eq('gift_claim_token_hash', hash)
-    .is('gift_claimed_at', null)
-    .select('id')
-    .maybeSingle()
-
-  if (error) {
-    log.error('gifts.claim_failed', { voucher_id: voucher.id, err: error.message })
-    return { ok: false, error: 'קבלת המתנה נכשלה, נסו שוב', code: 'NOT_FOUND' }
+  if (!voucher.expires_at) {
+    return { ok: false, error: 'לא ניתן לקבל את הקופון הזה', code: 'UNUSABLE' }
   }
-  if (!claimed) {
-    // Lost the race with another claim of the same link.
-    return { ok: false, error: 'המתנה כבר נאספה', code: 'CLAIMED' }
+  const transfer = await transferVoucherOnClaim(admin as never, {
+    voucherId: voucher.id,
+    tokenHash: hash,
+    newUserId: user.id,
+    supplierId: voucher.supplier_id,
+    expiresAt: new Date(voucher.expires_at),
+  })
+
+  if (!transfer.ok) {
+    if (transfer.code === 'CLAIMED') {
+      // Lost the race with another claim of the same link.
+      return { ok: false, error: 'המתנה כבר נאספה', code: 'CLAIMED' }
+    }
+    if (transfer.code === 'NOT_ISSUED' || transfer.code === 'EXPIRED') {
+      return { ok: false, error: 'לא ניתן לקבל את הקופון הזה', code: 'UNUSABLE' }
+    }
+    log.error('gifts.claim_failed', {
+      voucher_id: voucher.id,
+      code: transfer.code,
+      err: transfer.detail,
+    })
+    return { ok: false, error: 'קבלת המתנה נכשלה, נסו שוב', code: 'NOT_FOUND' }
   }
 
   // The one ownership change a voucher ever has, on the record: who paid, who
@@ -125,12 +164,16 @@ async function runClaimGift(token: string): Promise<ClaimGiftResult> {
     actorId: user.id,
     voucherId: voucher.id,
     source: 'gift_claim',
-    changes: { user_id: { from: voucher.user_id, to: user.id } },
+    changes: {
+      user_id: { from: voucher.user_id, to: user.id },
+      status: { from: 'issued', to: 'transferred' },
+      transferred_to_voucher_id: { from: null, to: transfer.voucherId },
+    },
   })
 
-  log.info('gifts.claimed', { voucher_id: voucher.id })
+  log.info('gifts.claimed', { voucher_id: voucher.id, new_voucher_id: transfer.voucherId })
   revalidatePath('/account/coupons')
-  return { ok: true, voucherId: voucher.id, alreadyMine: false }
+  return { ok: true, voucherId: transfer.voucherId, alreadyMine: false }
 }
 
 export async function claimGift(token: string): Promise<ClaimGiftResult> {

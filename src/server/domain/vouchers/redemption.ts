@@ -54,6 +54,10 @@ export function validateVoucherRedemption(input: {
   if (voucher.status === 'redeemed') return 'already_redeemed'
   if (voucher.status === 'cancelled') return 'cancelled'
   if (voucher.status === 'refunded') return 'refunded'
+  // The buyer's row after a gift claim. The recipient holds a new code; this
+  // one is void, and the scanner says so the way it says it for a cancellation
+  // rather than revealing that a gift happened.
+  if (voucher.status === 'transferred') return 'cancelled'
   if (voucher.status === 'expired') return 'expired'
   // Still 'issued' but past the deadline: expired before the sweep ran.
   if (new Date(voucher.expiresAt).getTime() <= now.getTime()) return 'expired'

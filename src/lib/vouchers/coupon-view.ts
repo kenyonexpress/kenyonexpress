@@ -23,7 +23,13 @@ import { shekels } from '@/lib/money-format'
  *      the next run. Both screens must answer from the clock, not the column.
  */
 
-export type CouponStatus = 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
+export type CouponStatus =
+  | 'issued'
+  | 'redeemed'
+  | 'expired'
+  | 'cancelled'
+  | 'refunded'
+  | 'transferred'
 
 export const COUPON_STATUS_LABELS: Record<CouponStatus, string> = {
   issued: 'פעיל',
@@ -31,6 +37,8 @@ export const COUPON_STATUS_LABELS: Record<CouponStatus, string> = {
   expired: 'פג תוקף',
   cancelled: 'בוטל',
   refunded: 'הוחזר',
+  // S10: the buyer's copy after the recipient claimed the gift.
+  transferred: 'הועבר במתנה',
 }
 
 export type CouponTone = 'live' | 'used' | 'lapsed' | 'void'

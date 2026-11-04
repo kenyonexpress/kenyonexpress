@@ -1053,6 +1053,11 @@ describe('the pending migration inventory', () => {
       // a paid line's split AMOUNTS freeze beside its rates. No column, no
       // grant. Proof before and after, rolled back: docs/S09-split.md.
       '253_order_items_split_amount_lock.sql',
+      // S10 (04.11): APPLIED the same day. Coupon validity 30/60/90 default
+      // 90, the live partner_pin (8-digit code) written down, voucher status
+      // `transferred` with the service-role transfer_voucher_on_claim RPC.
+      // Rehearsed and proven with rolled-back blocks: docs/S10-vouchers.md.
+      '254_voucher_validity_pin_transfer.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

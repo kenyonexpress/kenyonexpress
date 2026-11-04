@@ -61,18 +61,26 @@ describe('productSchema: the three modes', () => {
 })
 
 describe('productSchema: coupon rules', () => {
-  it('refuses a coupon with no validity period', () => {
-    expect(errorsAt(base({ type: 'coupon' }), 'coupon_expiry_days')).toContain(
-      'תוקף קופון בימים נדרש למוצר קופון',
-    )
-  })
-
-  it('applies the same rule to a physical product opted into coupons', () => {
-    // is_coupon_enabled sells a coupon off a physical product, so it inherits
-    // the coupon obligations rather than the physical ones.
+  // S10 replaced C7: an empty validity is the 90-day default (written by
+  // buildProductMoneyRow), and only 30, 60 or 90 is accepted.
+  it('accepts a coupon with no validity period, which is the 90-day default', () => {
+    expect(errorsAt(base({ type: 'coupon' }), 'coupon_expiry_days')).toHaveLength(0)
     expect(
       errorsAt(base({ type: 'physical', is_coupon_enabled: true }), 'coupon_expiry_days'),
-    ).toHaveLength(1)
+    ).toHaveLength(0)
+  })
+
+  it('accepts exactly 30, 60 and 90 days', () => {
+    for (const days of [30, 60, 90]) {
+      expect(
+        errorsAt(base({ type: 'coupon', coupon_expiry_days: days }), 'coupon_expiry_days'),
+      ).toHaveLength(0)
+    }
+    for (const days of [1, 14, 45, 120, 365]) {
+      expect(
+        errorsAt(base({ type: 'coupon', coupon_expiry_days: days }), 'coupon_expiry_days'),
+      ).toContain('תוקף קופון: 30, 60 או 90 ימים')
+    }
   })
 
   it('does not demand a validity period from a plain physical product', () => {

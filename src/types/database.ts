@@ -4314,6 +4314,7 @@ export type Database = {
           offer_valid_until: string
           order_id: string
           order_item_id: string
+          partner_pin: string | null
           platform_percent: number
           product_id: string
           qr_key_id: string
@@ -4327,6 +4328,9 @@ export type Database = {
           status: Database['public']['Enums']['voucher_status']
           status_reason: string | null
           supplier_id: string
+          transferred_at: string | null
+          transferred_from_voucher_id: string | null
+          transferred_to_voucher_id: string | null
           updated_at: string
           user_id: string
         }
@@ -4349,6 +4353,7 @@ export type Database = {
           offer_valid_until: string
           order_id: string
           order_item_id: string
+          partner_pin?: string | null
           platform_percent: number
           product_id: string
           qr_key_id?: string
@@ -4362,6 +4367,9 @@ export type Database = {
           status?: Database['public']['Enums']['voucher_status']
           status_reason?: string | null
           supplier_id: string
+          transferred_at?: string | null
+          transferred_from_voucher_id?: string | null
+          transferred_to_voucher_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -4384,6 +4392,7 @@ export type Database = {
           offer_valid_until?: string
           order_id?: string
           order_item_id?: string
+          partner_pin?: string | null
           platform_percent?: number
           product_id?: string
           qr_key_id?: string
@@ -4397,6 +4406,9 @@ export type Database = {
           status?: Database['public']['Enums']['voucher_status']
           status_reason?: string | null
           supplier_id?: string
+          transferred_at?: string | null
+          transferred_from_voucher_id?: string | null
+          transferred_to_voucher_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -5631,7 +5643,13 @@ export type Database = {
         | 'invalid_request'
         | 'unauthorized'
         | 'rate_limited'
-      voucher_status: 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
+      voucher_status:
+        | 'issued'
+        | 'redeemed'
+        | 'expired'
+        | 'cancelled'
+        | 'refunded'
+        | 'transferred'
       wallet_tx_source: 'cashback' | 'referral' | 'manual'
       wallet_tx_type: 'earn' | 'redeem' | 'expire' | 'refund'
     }
@@ -5898,7 +5916,7 @@ export const Constants = {
         'unauthorized',
         'rate_limited',
       ],
-      voucher_status: ['issued', 'redeemed', 'expired', 'cancelled', 'refunded'],
+      voucher_status: ['issued', 'redeemed', 'expired', 'cancelled', 'refunded', 'transferred'],
       wallet_tx_source: ['cashback', 'referral', 'manual'],
       wallet_tx_type: ['earn', 'redeem', 'expire', 'refund'],
     },

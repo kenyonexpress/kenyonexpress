@@ -25,15 +25,22 @@ stateDiagram-v2
     issued --> expired   : expires_at passes\nexpire_vouchers() cron
     issued --> cancelled : owning order cancelled
     issued --> refunded  : refund completed while\nstill unredeemed
+    issued --> transferred : gift claimed\ntransfer_voucher_on_claim() (254)
 
     redeemed  --> [*]
     expired   --> [*]
     cancelled --> [*]
     refunded  --> [*]
+    transferred --> [*]
 ```
 
 `voucher_status` in production is exactly: `issued`, `redeemed`, `expired`,
-`cancelled`, `refunded`.
+`cancelled`, `refunded`, `transferred` (added by 254 on 2026-11-04, S10).
+
+`transferred` is the buyer's row after a gift claim. The recipient holds a new
+`issued` row with a new code, QR and 8-digit `partner_pin`. The two rows point
+at each other through `transferred_to_voucher_id` and
+`transferred_from_voucher_id`. See `docs/S10-vouchers.md`.
 
 > ‏**‏CORRECTED 2026-09-09. The paragraph this replaces said the opposite, and
 > it was the sentence in this file most likely to make somebody write a broken

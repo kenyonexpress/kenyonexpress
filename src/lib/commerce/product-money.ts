@@ -26,6 +26,7 @@
  * from nowhere on others.
  */
 
+import { isCouponValidityDays, resolveCouponValidityDays } from '@/lib/vouchers/validity'
 import { type Agorot, agorot, ilsToAgorot, percentToBasisPoints, percentageOf } from './money'
 
 /**
@@ -337,9 +338,10 @@ export function assertPublishable(input: PublishGateInput): PublishGateResult {
       })
     }
 
-    const days = Number(input.couponExpiryDays)
-    if (!Number.isFinite(days) || !Number.isInteger(days) || days <= 0) {
-      blockers.push({ field: 'coupon_expiry_days', message: 'חייב להגדיר תוקף קופון בימים' })
+    // S10: unset is the 90-day default, so only a value outside 30/60/90
+    // blocks. The database refuses those since 254 anyway.
+    if (input.couponExpiryDays != null && !isCouponValidityDays(Number(input.couponExpiryDays))) {
+      blockers.push({ field: 'coupon_expiry_days', message: 'תוקף קופון: 30, 60 או 90 ימים' })
     }
   }
 
@@ -496,7 +498,15 @@ export function buildProductMoneyWrite(input: {
   // A coupon price left on a product that has been switched to physical would
   // sit in the column unread and resurface if the type were ever flipped back.
   const couponPriceIls = isCoupon ? normalizeIls(input.couponPriceIls) : null
-  const couponExpiryDays = isCoupon ? (input.couponExpiryDays ?? null) : null
+  // S10: a coupon always carries its validity, 90 when the form left it empty.
+  // A physical product carries none.
+  let couponExpiryDays: number | null = null
+  if (isCoupon) {
+    if (input.couponExpiryDays != null && !isCouponValidityDays(Number(input.couponExpiryDays))) {
+      return { ok: false, field: 'coupon_expiry_days', message: 'תוקף קופון: 30, 60 או 90 ימים' }
+    }
+    couponExpiryDays = resolveCouponValidityDays(input.couponExpiryDays)
+  }
 
   // On a coupon the badge is DERIVED from the two prices, never taken from the
   // form. Letting the admin type a saving that disagrees with the billed amount

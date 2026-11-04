@@ -1,6 +1,6 @@
 import { type Agorot, agorot, ilsToAgorot } from '@/lib/commerce/money'
 import type { VoucherRateColumn } from '@/lib/commerce/order-money-columns'
-import { computeVoucherExpiry, generateUniqueVoucherCode } from './code'
+import { computeVoucherExpiry, generateUniqueVoucherCode, generateVoucherPin } from './code'
 import { signVoucherQrPayload } from './qr'
 
 /**
@@ -48,6 +48,8 @@ export interface IssuedVoucherRow {
   code: string
   qr_payload: string
   qr_key_id: string
+  /** 8 digits, the code read out at the counter. See generateVoucherPin. */
+  partner_pin: string
   order_id: string
   order_item_id: string
   product_id: string
@@ -168,6 +170,10 @@ export async function issueVoucher(
       code,
       qr_payload: qrPayload,
       qr_key_id: keyId,
+      // Regenerated with the code on every attempt: a 23505 can be either
+      // UNIQUE(code) or the per-supplier pin index, and both are fixed by
+      // drawing again.
+      partner_pin: generateVoucherPin(),
       order_id: input.orderId,
       order_item_id: input.orderItemId,
       product_id: input.productId,
@@ -192,7 +198,7 @@ export async function issueVoucher(
     const { data, error } = await client.from('vouchers').insert(row).select('id').single()
 
     if (!error && data) return { id: data.id, row }
-    if (error?.code === UNIQUE_VIOLATION) continue // code raced; regenerate
+    if (error?.code === UNIQUE_VIOLATION) continue // code or pin raced; regenerate
     throw new VoucherIssueError(`voucher insert failed: ${JSON.stringify(error)}`)
   }
 

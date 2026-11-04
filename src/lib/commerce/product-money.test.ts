@@ -204,7 +204,7 @@ describe('assertPublishable', () => {
     supplierSplitPercent: 70,
     discountPercent: 90,
     couponPriceIls: 10,
-    couponExpiryDays: 120,
+    couponExpiryDays: 60,
     supplier: completeSupplier,
   }
 
@@ -264,11 +264,19 @@ describe('assertPublishable', () => {
     expect(result.blockers.map((b) => b.field)).toContain('discount_percent')
   })
 
-  it('blocks a coupon with no expiry', () => {
-    const result = assertPublishable({ ...couponBase, couponExpiryDays: null })
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.blockers.map((b) => b.field)).toContain('coupon_expiry_days')
+  // S10 replaced C7: unset is the 90-day default, so only a value outside
+  // 30/60/90 blocks.
+  it('publishes a coupon with no expiry set, which is the 90-day default', () => {
+    expect(assertPublishable({ ...couponBase, couponExpiryDays: null }).ok).toBe(true)
+  })
+
+  it('blocks a coupon whose expiry is not 30, 60 or 90', () => {
+    for (const days of [1, 45, 120, 365]) {
+      const result = assertPublishable({ ...couponBase, couponExpiryDays: days })
+      expect(result.ok).toBe(false)
+      if (result.ok) continue
+      expect(result.blockers.map((b) => b.field)).toContain('coupon_expiry_days')
+    }
   })
 
   it('demands supplier details on a coupon and on a physical alike', () => {
@@ -317,7 +325,6 @@ describe('assertPublishable', () => {
       'platform_percent',
       'discount_percent',
       'coupon_price_ils',
-      'coupon_expiry_days',
       'supplier_id',
     ])
   })

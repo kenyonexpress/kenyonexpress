@@ -203,7 +203,9 @@ export async function RedeemTokenBody({ params }: Props) {
         token={token}
         code={voucher.code}
         codeDisplay={formatCode(voucher.code)}
-        status={voucher.status}
+        // A gifted coupon's retired copy (S10) reads as void at the till, the
+        // same answer validateVoucherRedemption gives, without naming the gift.
+        status={voucher.status === 'transferred' ? 'cancelled' : voucher.status}
         productName={voucher.productName}
         customerName={voucher.customerName}
         faceValue={shekels(agorot(voucher.faceValueAgorot))}

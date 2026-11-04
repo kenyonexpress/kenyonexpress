@@ -30,8 +30,9 @@
   "vouchers.status": {
     "cancelled": [],
     "expired": [],
-    "issued": ["redeemed", "expired", "cancelled", "refunded"],
+    "issued": ["redeemed", "expired", "cancelled", "refunded", "transferred"],
     "redeemed": [],
-    "refunded": []
+    "refunded": [],
+    "transferred": []
   }
 }
