@@ -367,7 +367,60 @@
     "businessInvoiceName": "שם העסק",
     "businessInvoiceRegistrationNumber": "מספר עוסק מורשה / ח.פ.",
     "businessInvoiceSave": "שמירה",
-    "businessInvoiceSaving": "שומר…"
+    "businessInvoiceSaving": "שומר…",
+    "frame": {
+      "home": "עמוד הבית",
+      "crumbAria": "פירורי לחם",
+      "title": "החשבון שלי"
+    },
+    "hello": {
+      "greeting": "שלום {name}",
+      "notYou": "לא {name}?",
+      "signOut": "התנתקות",
+      "intro": "מכאן אפשר לעקוב אחרי ההזמנות, להציג קופונים בבית העסק, לנהל כתובות משלוח ולעדכן את הפרטים והסיסמה."
+    },
+    "dashboard": {
+      "title": "האזור האישי",
+      "subtitle": "סקירה מהירה של החשבון שלך",
+      "walletLabel": "יתרת הארנק",
+      "walletNote": "קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.",
+      "lastOrder": "ההזמנה האחרונה",
+      "lastOrderCta": "לפרטי ההזמנה",
+      "noOrders": "עוד לא ביצעת הזמנות.",
+      "items": "{count} פריטים",
+      "activeCoupons": "קופונים פעילים",
+      "couponsReady": "מוכנים לסריקה בבית העסק",
+      "couponsNone": "אין כרגע קופונים שממתינים למימוש",
+      "couponsCta": "לכל הקופונים",
+      "ordersTotal": "סך ההזמנות",
+      "ordersHistory": "היסטוריית הרכישות שלך",
+      "ordersCta": "לכל ההזמנות"
+    },
+    "ordersPage": {
+      "count": "{count} הזמנות",
+      "colOrder": "הזמנה",
+      "colDate": "תאריך",
+      "colStatus": "סטטוס",
+      "colTotal": "סה״כ",
+      "colActions": "פעולות",
+      "totalFor": "{total} עבור {count} פריטים",
+      "withCoupons": "כולל קופונים",
+      "view": "צפייה",
+      "empty": "עוד לא ביצעת הזמנות.",
+      "browse": "למעבר לחנות"
+    },
+    "walletPage": {
+      "subtitle": "קרדיט פנימי לשימוש באתר",
+      "label": "היתרה שלך",
+      "note": "הארנק משמש לתשלום חלקי או מלא באתר. אין משיכה למזומן ואין העברה למשתמש אחר.",
+      "ledger": "תנועות",
+      "empty": "עדיין אין תנועות בארנק.",
+      "colDate": "תאריך",
+      "colAction": "פעולה",
+      "colAmount": "סכום",
+      "colOrder": "הזמנה",
+      "viewOrder": "לצפייה"
+    }
   },
   "reviews": {
     "sortLabel": "מיון:",

@@ -1,6 +1,6 @@
 /** Shared formatting for the account area. Hebrew locale, ILS, Israel timezone. */
 
-import { type Agorot, agorot, formatAgorot, parseIls } from '@/lib/money'
+import { type Agorot, agorot, formatAgorotWhole, parseIls } from '@/lib/money'
 
 /**
  * Render integer agorot as shekels, through money.ts and nothing else.
@@ -14,9 +14,12 @@ import { type Agorot, agorot, formatAgorot, parseIls } from '@/lib/money'
  * The parameter is branded, so a caller holding shekels cannot reach this
  * function without saying so: it has to go through `ilsColumnToAgorot` first,
  * and that conversion parses the decimal rather than multiplying it.
+ *
+ * WHOLE SHEKELS since V05, the same display rule as the cart and checkout
+ * (V01, V02): the account area was the last screen printing "1,982.00 ₪".
  */
 export function formatIls(value: Agorot): string {
-  return formatAgorot(value)
+  return formatAgorotWhole(value)
 }
 
 /**

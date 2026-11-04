@@ -1,0 +1,497 @@
+/* V05: /account/** as Electro v7's my-account page. Layered over account.css,
+   which keeps the palette and every component class; this file only reshapes
+   the frame and the shared vocabulary so the account area opens the same way
+   /cart, /checkout and /login do (V01, V02, V04):
+
+   - the 42px grey breadcrumb band at 380, transparent from 768
+   - a centred "החשבון שלי" page title
+   - WooCommerce's MyAccount navigation as a side column from 992, and as one
+     horizontally scrolling tab strip below it
+   - each endpoint's h1 as Electro's section heading: a hairline under the
+     title and a yellow bar under the words only
+   - `shop_table` for the orders list and the wallet ledger, which stacks into
+     labelled cards below 768 (WooCommerce's `shop_table_responsive`)
+   - 45px pill inputs, #fed700 buttons, and nothing tappable under 44px */
+
+.account-page {
+  --account-touch: 44px;
+  --account-line: #ddd;
+
+  padding-block: 0 56px;
+  font-size: 14px;
+  line-height: 23.996px;
+}
+
+/* ---- frame -------------------------------------------------------------- */
+
+.account-page__crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -15px;
+  padding: 0 15px;
+  min-height: 42px;
+  background: #f7f6f6;
+}
+
+.account-page__crumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--account-touch);
+}
+
+.account-page__crumb a:hover {
+  color: var(--account-blue);
+}
+
+.account-page__title {
+  margin: 22px 0 28px;
+  font-size: 30px;
+  line-height: 40px;
+  font-weight: 500;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .account-page__crumb {
+    margin: 0;
+    padding: 14px 0 12px;
+    background: transparent;
+  }
+
+  .account-page__title {
+    margin: 0 0 40px;
+    font-size: 39.998px;
+    line-height: 47.9976px;
+  }
+}
+
+/* ---- the two columns ---------------------------------------------------- */
+
+/* Below 992 the nav is a strip above the content, so one column. */
+.account-shell,
+.account-page .account-shell {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 992px) {
+  .account-page .account-shell {
+    grid-template-columns: 270px minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+/* ---- navigation: side column from 992 ----------------------------------- */
+
+.account-nav__link {
+  min-height: var(--account-touch);
+  padding-block: 10px;
+}
+
+@media (min-width: 992px) {
+  .account-nav__link.is-active {
+    background: transparent;
+    box-shadow: inset -3px 0 0 var(--account-yellow);
+  }
+
+  [dir="ltr"] .account-nav__link.is-active {
+    box-shadow: inset 3px 0 0 var(--account-yellow);
+  }
+
+  .account-nav__link:hover {
+    background: #f7f6f6;
+  }
+}
+
+/* ---- navigation: tab strip below 992 ------------------------------------ */
+
+@media (max-width: 991.98px) {
+  .account-side {
+    position: relative;
+  }
+
+  /* The bell row sits beside the identity line instead of above it. */
+  .account-side > .mb-3 {
+    position: absolute;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: 1;
+    margin: 0;
+  }
+
+  .account-side__bell-pending {
+    display: none;
+  }
+
+  .account-nav {
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .account-nav__head {
+    background: transparent;
+    border-bottom: 0;
+    padding: 0 0 8px;
+    padding-inline-end: 56px;
+    min-height: var(--account-touch);
+  }
+
+  .account-nav__name {
+    font-size: 15px;
+  }
+
+  .account-nav__email {
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .account-nav__list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--account-line);
+    margin-inline: -15px;
+    padding-inline: 15px;
+  }
+
+  .account-nav__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .account-nav__list li {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .account-nav__link,
+  .account-nav__list li:last-child .account-nav__link {
+    min-height: 48px;
+    padding: 0 14px;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+
+  .account-nav__link:hover {
+    background: transparent;
+    border-bottom-color: var(--account-line);
+  }
+
+  .account-nav__link.is-active {
+    background: transparent;
+    border-bottom-color: var(--account-yellow);
+  }
+
+  /* The streaming placeholder: identity line plus one 48px strip. */
+  .account-nav--pending {
+    min-height: 104px;
+  }
+}
+
+/* ---- endpoint heading --------------------------------------------------- */
+
+.account-title {
+  position: relative;
+  margin: 0 0 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--account-line);
+  font-size: 22px;
+  line-height: 32px;
+  font-weight: 500;
+}
+
+.account-title::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: -2px;
+  width: 64px;
+  height: 2px;
+  background: var(--account-yellow);
+}
+
+@media (min-width: 768px) {
+  .account-title {
+    font-size: 25px;
+    line-height: 40px;
+  }
+}
+
+.account-subtitle {
+  margin-bottom: 24px;
+}
+
+/* ---- dashboard greeting (WooCommerce's dashboard paragraph) ------------- */
+
+.account-hello {
+  margin: 0 0 24px;
+  font-size: 15px;
+}
+
+.account-hello p,
+.account-hello__line {
+  margin: 0 0 8px;
+}
+
+.account-hello a,
+.account-hello__out {
+  color: var(--account-blue);
+  text-decoration: underline;
+}
+
+.account-hello__out {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--account-touch);
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.account-hello form {
+  display: inline;
+}
+
+/* ---- cards and buttons -------------------------------------------------- */
+
+.account-card {
+  border-color: var(--account-line);
+  padding: 20px;
+}
+
+@media (max-width: 767.98px) {
+  .account-card {
+    padding: 16px;
+  }
+
+  .account-row {
+    flex-wrap: wrap;
+  }
+}
+
+.account-card__title {
+  font-size: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--account-line);
+}
+
+.account-btn {
+  min-height: var(--account-touch);
+  min-width: var(--account-touch);
+  padding: 0 20px;
+  border-radius: 22px;
+  border-color: var(--account-line);
+  font-size: 14px;
+}
+
+.account-btn--primary,
+.account-card .account-btn[type="submit"]:not(.account-btn--danger):not(.account-btn--destroy) {
+  background: var(--account-yellow);
+  border-color: var(--account-yellow);
+  color: var(--account-ink);
+}
+
+.account-btn--primary:hover,
+.account-card
+  .account-btn[type="submit"]:not(.account-btn--danger):not(.account-btn--destroy):hover {
+  filter: none;
+  background: var(--account-ink);
+  border-color: var(--account-ink);
+  color: #fff;
+}
+
+.account-tabs__link {
+  min-height: var(--account-touch);
+  border-radius: 22px;
+}
+
+/* The irreversible card on /account/details: a red hairline and a solid red
+   button, which stays grey until both confirmations are given. */
+.account-card--danger {
+  border-color: #f3b8c3;
+}
+
+.account-card--danger .account-card__title {
+  color: var(--account-red);
+}
+
+.account-card__body {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--account-muted);
+}
+
+.account-card__body p {
+  margin: 0;
+}
+
+.account-btn--destroy,
+.account-btn--destroy:hover {
+  background: var(--account-red);
+  border-color: var(--account-red);
+  color: #fff;
+}
+
+.account-btn--destroy:hover:not([disabled]) {
+  filter: brightness(0.9);
+}
+
+/* A link inside running text is still something a thumb has to hit. */
+.account-content p a:not(.account-btn) {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--account-touch);
+}
+
+/* ---- forms (settings) --------------------------------------------------- */
+
+.account-field__label {
+  font-size: 14px;
+}
+
+.account-field__input {
+  min-height: 45px;
+  padding: 0 18px;
+  border-color: var(--account-line);
+  border-radius: 22px;
+}
+
+.account-field__input:focus-visible {
+  outline: 0;
+  border-color: var(--account-yellow);
+  box-shadow: 0 0 0 1px var(--account-yellow);
+}
+
+.account-field--check {
+  min-height: var(--account-touch);
+}
+
+.account-field--check input {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---- shop_table: orders and wallet -------------------------------------- */
+
+.account-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.account-table th,
+.account-table td {
+  text-align: start;
+  vertical-align: middle;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--account-line);
+}
+
+.account-table thead th {
+  font-weight: 700;
+  background: #f7f6f6;
+  white-space: nowrap;
+}
+
+.account-table__num {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.account-table a:not(.account-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--account-touch);
+  min-width: var(--account-touch);
+  color: var(--account-blue);
+}
+
+.account-table__actions {
+  text-align: end;
+}
+
+.account-table td.account-table__actions {
+  text-align: end;
+}
+
+/* WooCommerce's shop_table_responsive: below 768 every row is a card and every
+   cell prints its column name from data-title, so nothing scrolls sideways. */
+@media (max-width: 767.98px) {
+  .account-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .account-table,
+  .account-table tbody,
+  .account-table tr,
+  .account-table td {
+    display: block;
+  }
+
+  .account-table tr {
+    border: 1px solid var(--account-line);
+    border-radius: 4px;
+    margin-bottom: 12px;
+    padding: 4px 12px;
+  }
+
+  .account-table td,
+  .account-table td.account-table__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    text-align: end;
+  }
+
+  .account-table tr td:last-child {
+    border-bottom: 0;
+  }
+
+  .account-table td[data-title]::before {
+    content: attr(data-title);
+    font-weight: 700;
+    text-align: start;
+  }
+
+  .account-table td.account-table__actions .account-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* The wallet card used to wrap its table in an inline overflow box; the table
+   no longer needs one, and this keeps any long cell inside the card. */
+.account-card .account-table {
+  table-layout: auto;
+  overflow-wrap: anywhere;
+}
+
+/* ---- order detail ------------------------------------------------------- */
+
+.account-content .coupon-card {
+  border-color: var(--account-line);
+}
+
+.account-content a.account-btn,
+.account-content button.account-btn {
+  white-space: normal;
+  text-align: center;
+}

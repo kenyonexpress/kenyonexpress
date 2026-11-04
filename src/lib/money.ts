@@ -107,6 +107,26 @@ export function divRoundHalfUp(numerator: number, denominator: number): number {
   return sign * Math.floor(scaled / (2 * denominator))
 }
 
+// --- display ----------------------------------------------------------------
+
+const ilsWholeFormatter = new Intl.NumberFormat('he-IL', {
+  style: 'currency',
+  currency: 'ILS',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+})
+
+/**
+ * Integer agorot shown as WHOLE shekels, the storefront's display rule (V01:
+ * no decimals). Rounded half-up away from zero with integer arithmetic, so the
+ * formatter only ever receives a whole number of shekels, and the sign is kept
+ * (a negative wallet balance is still negative). Display only: never parse
+ * this back, and never use it where the agorot matter (a receipt, a CSV).
+ */
+export function formatAgorotWhole(value: Agorot): string {
+  return ilsWholeFormatter.format(divRoundHalfUp(value, 100))
+}
+
 /**
  * Apply a basis-point rate to an amount: round_half_up(amount * bp / 10000).
  * This is the single multiply-by-rate primitive used for commission, cashback,

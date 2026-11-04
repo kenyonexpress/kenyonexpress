@@ -19,7 +19,10 @@ import { unreadCount } from '@/server/queries/notifications'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
+import AccountTabsActive from './AccountTabsActive'
 import '@/styles/account.css'
+import '@/styles/account-electro.css'
+import { t } from '@/lib/i18n/messages'
 import { isPrerenderAbort } from '@/lib/observability/prerender-abort'
 
 /**
@@ -136,11 +139,15 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
           <main id="main-content" tabIndex={-1} className="flex-1 w-full focus:outline-none">
             <div className="account-page">
               <div className="account-page__inner">
-                <nav className="account-page__crumb" aria-label="פירורי לחם">
-                  <Link href="/">עמוד הבית</Link>
-                  <span aria-hidden="true"> ‹ </span>
-                  <span>האזור האישי</span>
+                <nav className="account-page__crumb" aria-label={t('account.frame.crumbAria')}>
+                  <Link href="/">{t('account.frame.home')}</Link>
+                  <span aria-hidden="true">›</span>
+                  <span>{t('account.frame.title')}</span>
                 </nav>
+                {/* V05: Electro's centred page title. A <p>, not an h1: every
+                  endpoint below carries its own h1 (the tab's name), which is
+                  the one heading a page should have. */}
+                <p className="account-page__title">{t('account.frame.title')}</p>
 
                 <div className="account-shell">
                   {/* Holds the nav's box, not a spinner: the column is a fixed
@@ -157,6 +164,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                   >
                     <AccountSideNav />
                   </Suspense>
+                  <AccountTabsActive />
                   {/* Every /account page reads rows scoped to the signed-in user,
                     so each one is request-time work. One boundary here covers
                     all ten rather than ten boundaries in ten files. */}

@@ -204,5 +204,9 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * 2026-11-04, V04: /login and /register moved their copy to `auth.loginPage.*`,
  * `auth.registerPage.*` and `auth.aside.*` with the Electro my-account
  * rebuild. 595 -> 592.
+ * 2026-11-04, V05: the account frame, the dashboard, the orders table and the
+ * wallet moved their copy to `account.frame.*`, `account.hello.*`,
+ * `account.dashboard.*`, `account.ordersPage.*` and `account.walletPage.*`
+ * with the Electro my-account rebuild. 592 -> 568.
  */
-export const HEBREW_LITERAL_CEILING = 592
+export const HEBREW_LITERAL_CEILING = 568

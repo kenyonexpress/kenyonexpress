@@ -1,8 +1,7 @@
 'use client'
 
-import { formatIls } from '@/lib/account/format'
 import { t } from '@/lib/i18n/messages'
-import { agorot } from '@/lib/money'
+import { agorot, formatAgorot } from '@/lib/money'
 import { type PayoutRequestState, requestAffiliatePayout } from '@/server/actions/affiliates'
 import { useActionState } from 'react'
 
@@ -40,7 +39,12 @@ export default function AffiliatePayoutForm({ requestableAgorot }: { requestable
       <button type="submit" className="account-btn account-btn--primary" disabled={pending}>
         {pending
           ? t('affiliate.payoutPending')
-          : t('affiliate.payoutButton').replace('{amount}', formatIls(agorot(requestableAgorot)))}
+          : // Exact agorot, not the account's whole-shekel display: this names
+            // the amount the payout will transfer, and 123.50 is not 124.
+            t('affiliate.payoutButton').replace(
+              '{amount}',
+              formatAgorot(agorot(requestableAgorot)),
+            )}
       </button>
     </form>
   )

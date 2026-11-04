@@ -64,22 +64,17 @@ export default function ExportDataSection() {
   }
 
   return (
-    <section className="bg-white border border-border rounded-xl p-5 space-y-4">
-      <h2 className="font-semibold text-heading">{t('account.export.title')}</h2>
-      <div className="text-sm text-muted space-y-2">
+    <section className="account-card">
+      <h2 className="account-card__title">{t('account.export.title')}</h2>
+      <div className="account-card__body">
         <p>{t('account.export.intro')}</p>
         <p>{t('account.export.cardsNote')}</p>
       </div>
-      <button
-        type="button"
-        onClick={download}
-        disabled={pending}
-        className="min-h-11 rounded-xl border border-border px-4 text-sm font-semibold text-heading hover:bg-surface-2 disabled:opacity-60"
-      >
+      <button type="button" onClick={download} disabled={pending} className="account-btn">
         {pending ? t('account.export.pending') : t('account.export.button')}
       </button>
       {error && (
-        <p className="text-sm text-red-700" role="alert">
+        <p className="account-alert account-alert--error" role="alert">
           {error}
         </p>
       )}

@@ -22,9 +22,9 @@ export default function DeleteAccountSection() {
   const armed = understood && typed.trim() === DELETE_CONFIRMATION_PHRASE
 
   return (
-    <section className="bg-white border border-red-200 rounded-xl p-5 space-y-4">
-      <h2 className="font-semibold text-red-700">מחיקת חשבון</h2>
-      <div className="text-sm text-muted space-y-2">
+    <section className="account-card account-card--danger">
+      <h2 className="account-card__title">מחיקת חשבון</h2>
+      <div className="account-card__body">
         <p>
           המחיקה מיידית ובלתי הפיכה: הפרטים האישיים (שם, אימייל, טלפון), הכתובות, כרטיסי האשראי
           השמורים והעגלה יימחקו, וההתחברות תבוטל.
@@ -34,18 +34,17 @@ export default function DeleteAccountSection() {
           ואינה ניתנת לשיוך אליך.
         </p>
       </div>
-      <form action={action} className="space-y-3">
-        <label className="flex items-start gap-2 text-sm text-muted">
+      <form action={action} className="account-form">
+        <label className="account-field account-field--check">
           <input
             type="checkbox"
             checked={understood}
             onChange={(e) => setUnderstood(e.target.checked)}
-            className="mt-1"
           />
           <span>אני מבין/ה שהמחיקה בלתי הפיכה ושלא אוכל להתחבר שוב לחשבון זה</span>
         </label>
-        <div>
-          <label htmlFor="delete-confirm" className="block text-xs font-medium text-muted mb-1">
+        <div className="account-field">
+          <label htmlFor="delete-confirm" className="account-field__label">
             הקלידו למטה: "{DELETE_CONFIRMATION_PHRASE}"
           </label>
           <input
@@ -55,16 +54,16 @@ export default function DeleteAccountSection() {
             onChange={(e) => setTyped(e.target.value)}
             dir="rtl"
             autoComplete="off"
-            className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="account-field__input"
           />
         </div>
         {state && 'error' in state && state.error && (
-          <p className="text-xs text-red-600">{state.error}</p>
+          <p className="account-alert account-alert--error">{state.error}</p>
         )}
         <button
           type="submit"
           disabled={!armed || pending}
-          className="bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+          className="account-btn account-btn--destroy"
         >
           {pending ? 'מוחק...' : 'מחיקת החשבון לצמיתות'}
         </button>

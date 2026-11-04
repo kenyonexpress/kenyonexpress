@@ -367,7 +367,60 @@
     "businessInvoiceName": "Business name",
     "businessInvoiceRegistrationNumber": "Business registration number",
     "businessInvoiceSave": "Save",
-    "businessInvoiceSaving": "Saving…"
+    "businessInvoiceSaving": "Saving…",
+    "frame": {
+      "home": "Home",
+      "crumbAria": "Breadcrumb",
+      "title": "My account"
+    },
+    "hello": {
+      "greeting": "Hello {name}",
+      "notYou": "Not {name}?",
+      "signOut": "Sign out",
+      "intro": "From here you can follow your orders, show coupons at the business, manage shipping addresses and update your details and password."
+    },
+    "dashboard": {
+      "title": "My account",
+      "subtitle": "A quick look at your account",
+      "walletLabel": "Wallet balance",
+      "walletNote": "Store credit for this site only. It cannot be withdrawn.",
+      "lastOrder": "Latest order",
+      "lastOrderCta": "Order details",
+      "noOrders": "You have not placed an order yet.",
+      "items": "{count} items",
+      "activeCoupons": "Active coupons",
+      "couponsReady": "Ready to scan at the business",
+      "couponsNone": "No coupons waiting to be redeemed",
+      "couponsCta": "All coupons",
+      "ordersTotal": "Orders placed",
+      "ordersHistory": "Your purchase history",
+      "ordersCta": "All orders"
+    },
+    "ordersPage": {
+      "count": "{count} orders",
+      "colOrder": "Order",
+      "colDate": "Date",
+      "colStatus": "Status",
+      "colTotal": "Total",
+      "colActions": "Actions",
+      "totalFor": "{total} for {count} items",
+      "withCoupons": "includes coupons",
+      "view": "View",
+      "empty": "You have not placed an order yet.",
+      "browse": "Go to the shop"
+    },
+    "walletPage": {
+      "subtitle": "Store credit for use on this site",
+      "label": "Your balance",
+      "note": "The wallet pays part or all of an order on this site. It cannot be cashed out or transferred.",
+      "ledger": "Transactions",
+      "empty": "No wallet transactions yet.",
+      "colDate": "Date",
+      "colAction": "Action",
+      "colAmount": "Amount",
+      "colOrder": "Order",
+      "viewOrder": "View"
+    }
   },
   "reviews": {
     "sortLabel": "Sort:",
