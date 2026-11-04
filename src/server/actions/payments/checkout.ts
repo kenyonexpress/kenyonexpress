@@ -63,6 +63,7 @@ import { readGuestEmail, saveGuestContact } from '@/server/auth/guest-orders'
 import { snapshotClubTierOnOrder } from '@/server/club/snapshot'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { readBlocklistMatches, readVelocityCounts, scoreOrder } from '@/server/fraud/signals'
+import { planTokenization } from '@/server/payments/adapter'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { isFeatureEnabled } from '@/server/resilience/flags'
@@ -1206,7 +1207,11 @@ async function runBeginCheckout(
       // the saved card that sent us here demands a challenge on every
       // server-to-server charge, and only a token created through the hosted
       // page's challenge can replace it.
-      saveToken: threeDSFallback ? true : input.save_card,
+      saveToken: planTokenization({
+        saveCardOptIn: input.save_card,
+        chargingSavedToken: false,
+        threeDSFallback,
+      }),
       // Both return into the framable stub, never straight into a page that
       // needs a session: Cardcom's navigation into our iframe is cross-site and
       // the Lax session cookie is withheld on it. The stub moves the top window

@@ -92,11 +92,10 @@ function describeEnv(env: EnvCase): string {
 /**
  * What `loadCardcomEnv` says, or `'refuses'` when it will not say anything.
  *
- * Two cells of the matrix have no answer to compare against: production with
- * no terminal number, mock off. `loadCardcomEnv` reaches its `required()` calls
- * and throws, which is correct - a deployment configured that way cannot take a
- * payment at all. It only ever throws on the NON-mock branch, so a refusal is
- * itself the answer "not the mock", and that is what is asserted.
+ * Since S08 no cell of the matrix refuses: production with no terminal number
+ * is the sandbox (mock, checkout closed), not a throw. The loader still throws
+ * on PARTIAL credentials, on the non-mock branch only, so a refusal is still
+ * the answer "not the mock"; the last case below proves that branch exists.
  */
 function loaderSays(env: EnvCase): boolean | 'refuses' {
   try {
@@ -122,10 +121,18 @@ describe('the CSP frame host and the payment provider', () => {
     )
   })
 
-  it('reaches both of the loader answers and its refusal', () => {
+  it('reaches both of the loader answers, and refuses only on partial credentials', () => {
     // Otherwise a change that made `loadCardcomEnv` throw everywhere would turn
     // the case above into a test that only ever asserts `false`.
-    expect(new Set(MATRIX.map(loaderSays))).toEqual(new Set([true, false, 'refuses']))
+    expect(new Set(MATRIX.map(loaderSays))).toEqual(new Set([true, false]))
+    const partial: EnvCase = {
+      ...CREDENTIALS,
+      CARDCOM_API_PASSWORD: undefined,
+      NODE_ENV: 'production',
+      CARDCOM_TERMINAL_NUMBER: '1000',
+    }
+    expect(loaderSays(partial)).toBe('refuses')
+    expect(usesMockPaymentProvider(asProcessEnv(partial))).toBe(false)
   })
 
   it("names 'self' in frame-src exactly when the mock serves", async () => {

@@ -331,6 +331,7 @@ one.
 | [S05-turnstile.md](S05-turnstile.md) | ✅ | Queue S05, 04.11.2026: Turnstile enforced on /login and /signup, and on /suppliers/apply through a signed pass cookie; src/lib/turnstile/verify.ts, 16 new tests. |
 | [S06-cart.md](S06-cart.md) | ✅ | Queue S06, 04.11.2026: cart server audit; max_per_order now enforced (44 live rows ignored it), guest merge no longer deletes the guest cart on a failed write; 30 new tests. |
 | [S07-guest.md](S07-guest.md) | ✅ | Queue S07, 04.11.2026: guest checkout on an anonymous session, email required on the profile, Google linked after payment with order attach on an existing account, address saved for next order; 34 new tests, no migration. |
+| [S08-payment.md](S08-payment.md) | ✅ | Queue S08, 04.11.2026: payment adapter (`src/server/payments/adapter.ts`) with live/sandbox mode from env, never throws; no Cardcom credentials = sandbox with checkout closed on a production build; provider refuses that sandbox server-side; idempotent webhook journal, guarded transitions, tokenization hook; 24 new tests, no migration. |
 | [STATE-ARCHIVE.md](STATE-ARCHIVE.md) | 🕯️ | כל מה שהיה ב-STATE.md לפני הגיזום ל-300 שורות (Q06, 25.09.2026), החדש למעלה. STATE.md הוא הנוכחי. |
 | [UI-PARITY-REPORT.md](UI-PARITY-REPORT.md) | ✅ | Every scripts/compare.mjs run appends a row here automatically -- the gate |
 | [WP-IMPORT-REPORT.md](WP-IMPORT-REPORT.md) | 🕯️ | מקור: data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml (‏5,942,638 בתים) |

@@ -37,6 +37,12 @@ export function getCardcomAccounts(): CardcomAccountRegistry {
  */
 export function getPaymentProvider(accountId?: string | null): PaymentProvider {
   const env = loadCardcomEnv()
+  if (env.sandboxInferredInProduction) {
+    // Sandbox with checkout closed is the state of a production build with no
+    // credentials. The mock approves everything, so nothing server-side may
+    // verify, charge or refund against it there.
+    throw new Error(`Payment provider unavailable: ${env.refusedReason}`)
+  }
   if (env.useMock) return getSharedMockCardcom()
   return new CardcomProvider(getCardcomAccounts().get(accountId))
 }

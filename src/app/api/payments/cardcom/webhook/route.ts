@@ -7,6 +7,7 @@ import { acceptedWebhookSecrets } from '@/lib/payments/env'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { secretEquals } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { journalWebhookEvent } from '@/server/payments/adapter'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
 import type { Json } from '@/types/database'
@@ -26,9 +27,6 @@ function anySecretMatches(provided: string, accepted: readonly string[]): boolea
   }
   return matched
 }
-
-/** Postgres: unique_violation. The only insert failure here that means "replay". */
-const UNIQUE_VIOLATION = '23505'
 
 /**
  * Cardcom webhook (IndicatorUrl). Cardcom does NOT sign its callbacks — there is
@@ -64,14 +62,14 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     : `unparsed:${rawBody.slice(0, 64)}`
 
   // 1. Persist first (dedup on replay)
-  const { error: eventError } = await admin.from('payment_webhook_events').insert({
+  const journal = await journalWebhookEvent(admin, {
     provider: 'cardcom',
     external_event_id: externalEventId,
     signature_valid: secretOk,
     verified_against_api: false,
     payload: payloadJson,
   })
-  if (eventError) {
+  if (journal.kind !== 'new') {
     // A UNIQUE violation is the dedup working: Cardcom delivered this event
     // twice, the second one is a no-op, and 200 is the right answer.
     //
@@ -82,7 +80,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // called, the order stays open, and the row that `webhook-dlq.ts` replays
     // was never written, so nothing knows. A 5xx here is the whole recovery
     // mechanism: Cardcom retries it.
-    if (eventError.code === UNIQUE_VIOLATION) {
+    if (journal.kind === 'replay') {
       await recordPaymentEvent({
         eventType: 'callback_replay',
         stage: 'cardcom_webhook_persist',
@@ -93,7 +91,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     }
     await capturePaymentAlarm('cardcom webhook could not be journalled', {
       stage: 'cardcom_webhook_persist',
-      detail: { code: eventError.code, reason: eventError.message },
+      detail: { code: journal.code, reason: journal.message },
     })
     return NextResponse.json({ ok: false, error: 'event_not_recorded' }, { status: 503 })
   }

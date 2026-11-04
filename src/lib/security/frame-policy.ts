@@ -139,7 +139,9 @@ export function usesMockPaymentProvider(source: NodeJS.ProcessEnv = process.env)
   return (
     source.CARDCOM_USE_MOCK === 'true' ||
     source.NODE_ENV === 'test' ||
-    (!source.CARDCOM_TERMINAL_NUMBER && source.NODE_ENV !== 'production')
+    // S08: no terminal number at all is the sandbox in every NODE_ENV,
+    // production included, exactly as `loadCardcomEnv` decides it.
+    !source.CARDCOM_TERMINAL_NUMBER?.trim()
   )
 }
 

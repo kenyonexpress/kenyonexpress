@@ -36,6 +36,15 @@ export type CardcomEnv = {
    * turned it off on purpose.
    */
   refusedReason: string | null
+  /**
+   * True when the mock was chosen only because a production build has no
+   * Cardcom credentials. `getPaymentProvider` refuses to hand the mock out in
+   * that state: a cron verifying a stranded payment, renewing a subscription
+   * or replaying a dead letter against a provider that approves everything
+   * would close real orders with no charge. Those calls keep failing loudly,
+   * exactly as they did when this loader threw.
+   */
+  sandboxInferredInProduction: boolean
 }
 
 /**
@@ -68,10 +77,27 @@ function required(name: string, value: string | undefined): string {
  * Load Cardcom-related env. When CARDCOM_USE_MOCK=true (tests/dev), secrets may be placeholders.
  */
 export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): CardcomEnv {
-  const useMock =
-    source.CARDCOM_USE_MOCK === 'true' ||
-    source.NODE_ENV === 'test' ||
-    (!source.CARDCOM_TERMINAL_NUMBER && source.NODE_ENV !== 'production')
+  const explicitMock = source.CARDCOM_USE_MOCK === 'true' || source.NODE_ENV === 'test'
+
+  /**
+   * NO CREDENTIALS AT ALL MEANS SANDBOX, NEVER A CRASH (S08).
+   *
+   * A production build with no `CARDCOM_TERMINAL_NUMBER` used to fall through
+   * to `required()` and throw, so every page that touched the provider answered
+   * 500 until somebody set four secrets. The safe state is "no order is
+   * created", not "the site is down", so an unconfigured production build now
+   * runs the sandbox provider with checkout CLOSED (below). Partial credentials
+   * still throw: a terminal with no password is a mistake to be loud about,
+   * not an absence.
+   */
+  const sandboxForMissingCredentials = !source.CARDCOM_TERMINAL_NUMBER?.trim()
+  const useMock = explicitMock || sandboxForMissingCredentials
+
+  // Inferred in a production build, not asked for. The local E2E build sets
+  // CARDCOM_USE_MOCK=true and keeps its checkout; a deployment that merely
+  // forgot its credentials never opens one on a provider that charges nothing.
+  const inferredSandboxInProduction =
+    !explicitMock && sandboxForMissingCredentials && source.NODE_ENV === 'production'
 
   /**
    * THE MOCK PROVIDER MAY NOT SERVE THE PRODUCTION DEPLOYMENT.
@@ -113,13 +139,16 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
   // real card can be charged there.
   const checkoutEnabled =
     !mockOnCustomerFacingDeploy &&
+    !inferredSandboxInProduction &&
     (source.NODE_ENV === 'production'
       ? source.CHECKOUT_ENABLED === 'true'
       : source.CHECKOUT_ENABLED !== 'false')
 
-  const refusedReason = mockOnCustomerFacingDeploy
-    ? 'CARDCOM_USE_MOCK=true on the production deployment: checkout refused so no order can be created without a charge'
-    : null
+  const refusedReason = inferredSandboxInProduction
+    ? 'no Cardcom credentials on a production build: sandbox only, checkout refused so no order can be created without a charge'
+    : mockOnCustomerFacingDeploy
+      ? 'CARDCOM_USE_MOCK=true on the production deployment: checkout refused so no order can be created without a charge'
+      : null
 
   if (useMock) {
     return {
@@ -132,6 +161,7 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
       checkoutEnabled,
       useMock: true,
       refusedReason,
+      sandboxInferredInProduction: inferredSandboxInProduction,
     }
   }
 
@@ -145,5 +175,6 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
     checkoutEnabled,
     useMock: false,
     refusedReason,
+    sandboxInferredInProduction: false,
   }
 }

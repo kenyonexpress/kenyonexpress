@@ -65,6 +65,33 @@ describe('provider selection', () => {
     expect(prod({ CHECKOUT_ENABLED: 'true' }).useMock).toBe(false)
   })
 
+  it('falls back to the sandbox, checkout closed, on a production build with no credentials', () => {
+    const env = loadCardcomEnv({ NODE_ENV: 'production', CHECKOUT_ENABLED: 'true' } as never)
+    expect(env.useMock).toBe(true)
+    expect(env.checkoutEnabled).toBe(false)
+    expect(env.refusedReason).toMatch(/no Cardcom credentials/)
+    expect(env.sandboxInferredInProduction).toBe(true)
+  })
+
+  it('does not mark an explicit or a development sandbox as inferred', () => {
+    expect(dev().sandboxInferredInProduction).toBe(false)
+    expect(
+      loadCardcomEnv({ NODE_ENV: 'production', CARDCOM_USE_MOCK: 'true' } as never)
+        .sandboxInferredInProduction,
+    ).toBe(false)
+    expect(prod().sandboxInferredInProduction).toBe(false)
+  })
+
+  it('keeps an explicit mock production build open (the local E2E build)', () => {
+    const env = loadCardcomEnv({
+      NODE_ENV: 'production',
+      CARDCOM_USE_MOCK: 'true',
+      CHECKOUT_ENABLED: 'true',
+    } as never)
+    expect(env.checkoutEnabled).toBe(true)
+    expect(env.refusedReason).toBeNull()
+  })
+
   it('refuses to start in production with a secret missing', () => {
     expect(() =>
       loadCardcomEnv({
