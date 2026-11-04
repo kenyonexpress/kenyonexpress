@@ -13,7 +13,7 @@ import { z } from 'zod'
  * request, so the same mistake fails the boot instead.
  */
 
-const schema = z
+export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
@@ -44,6 +44,10 @@ const schema = z
     CARDCOM_API_PASSWORD: z.string().optional(),
     CARDCOM_WEBHOOK_SECRET: z.string().optional(),
     CARDCOM_SANDBOX: z.string().optional(),
+    /** Mock payment provider. Refused on Vercel production; see superRefine. */
+    CARDCOM_USE_MOCK: z.string().optional(),
+    /** Injected by Vercel: production | preview | development. */
+    VERCEL_ENV: z.string().optional(),
 
     /**
      * The rate limiter's primary backend. OPTIONAL ON PURPOSE, and not because
@@ -118,6 +122,15 @@ const schema = z
   })
   .superRefine((e, ctx) => {
     const fail = (message: string) => ctx.addIssue({ code: 'custom', message })
+
+    // Before the NODE_ENV and waiver returns on purpose: VERCEL_ENV is set only
+    // by the platform, so neither a NODE_ENV quirk nor ALLOW_INCOMPLETE_ENV can
+    // disarm it. The mock provider "completes" checkouts without charging, so
+    // on production it would release goods unpaid.
+    if (e.VERCEL_ENV === 'production' && e.CARDCOM_USE_MOCK === 'true') {
+      fail('CARDCOM_USE_MOCK must not be true in production')
+    }
+
     if (e.NODE_ENV !== 'production') return
 
     // `next start` on a laptop is ALSO NODE_ENV=production, and that is not a
@@ -213,7 +226,7 @@ function assertNoPublicSecrets(): void {
 
 assertNoPublicSecrets()
 
-const parsed = schema.safeParse(process.env)
+const parsed = envSchema.safeParse(process.env)
 
 if (!parsed.success) {
   const detail = parsed.error.issues.map((i) => `  - ${i.message}`).join('\n')

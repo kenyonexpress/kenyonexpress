@@ -47,6 +47,7 @@ import {
 } from '@/lib/payments'
 import { selectAccountForSuppliers } from '@/lib/payments/accounts'
 import { ensureCheckoutUser } from '@/lib/payments/guest-identity'
+import { isPaymentDisabled } from '@/lib/payments/payment-guard'
 import {
   paymentMoneyWrite,
   readAmountAgorot,
@@ -1306,8 +1307,16 @@ async function runSubmitCheckout(
   formData: FormData,
 ): Promise<CheckoutFormState> {
   // payment_production=false (the default): no live charge is created. The mock
-  // terminal moves no money, so tests and previews still run end to end.
-  if (!loadCardcomEnv().useMock && !(await getSupabaseFlags()).payment_production) {
+  // terminal moves no money, so tests and previews still run end to end, but on
+  // Vercel production a mock checkout would release goods unpaid, so it is
+  // refused there too.
+  if (
+    isPaymentDisabled({
+      useMock: loadCardcomEnv().useMock,
+      paymentProduction: (await getSupabaseFlags()).payment_production === true,
+      vercelEnv: process.env.VERCEL_ENV,
+    })
+  ) {
     return {
       error: 'התשלום באתר טרם נפתח. ההזמנה לא נשלחה ולא בוצע חיוב.',
       code: 'payment_disabled',
