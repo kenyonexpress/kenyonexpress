@@ -32389,3 +32389,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 - המשך מ: M17-c355 DONE (2026-11-04): RTL / + /product/island-of-maldives + /product/עיסוי-מפנק-לגבר-45-דקות-רק-ב108₪ on prod at 380/768/1440, lang=he dir=rtl 12/12 loads, TOTAL LIVE LTR LEAKS 0 both runs, static 0 physical-direction hits in 210 files, 5 Latin isolates ok, latin-field-direction 3/3; no code changed, no forbidden files touched; proof docs/M17-c355.md
 - המשך מ: M18-c355 DONE (2026-11-04): STATE.md 105 lines (rotated by state-log, untouched), claude/STATE.md 45 to 35 lines: 11 c353 resume lines appended to docs/STATE-ARCHIVE.md first, then removed; sorted union of kept + archived == original; docs only, no forbidden files touched; proof docs/M18-c355.md
 - המשך מ: M19-c355 DONE (2026-11-04): prod dpl_DQ12y9iT1vMVV9sCsXt6HcErFDG4 at e4dbf06c6, HEAD 17aaa6165 is 136 commits ahead but docs/STATE only (0 runtime files), no-op, no build/deploy; www home 200 serving that dpl id (770 refs), /api/ready 200; no forbidden files touched; proof docs/M19-c355.md
+
+## Archived 2026-11-04T10:13:10+07:00 after M18-c357 (3 lines from STATE.md)
+
+### 2026-11-04T09:05:34+07:00
+- item: M12-c356
+- RESULT: DONE

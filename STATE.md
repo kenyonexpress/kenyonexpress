@@ -1,7 +1,11 @@
-RESUME FROM: M18-c357
+RESUME FROM: M19-c357
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-04T10:13:10+07:00
+- item: M18-c357
+- RESULT: DONE
 
 ### 2026-11-04T10:12:08+07:00
 - item: M17-c357
@@ -97,9 +101,5 @@ RESUME FROM: M18-c357
 
 ### 2026-11-04T09:06:42+07:00
 - item: M13-c356
-- RESULT: DONE
-
-### 2026-11-04T09:05:34+07:00
-- item: M12-c356
 - RESULT: DONE
 
