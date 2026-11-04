@@ -1,3 +1,4 @@
+המשך מ: M09-c355 DONE (2026-11-04): knip 1 unused devDep (@capacitor/android, false positive), 160 exports / 217 types kept by design, no source drift since c354; tsc=0 lint=0 vitest 879 files / 9722 pass; no code change, no forbidden files touched; docs/M09-c355.md, d9208e60a
 המשך מ: M06-c355 DONE (2026-11-04): pnpm build exit 0, 367/367 static pages, 0 supabase timeouts, 30 prerender-cutoff lines only, no drift vs M06-c354; no code change, no forbidden files touched; docs/M06-c355.md, 13f3dce4d
 המשך מ: M05-c355 DONE (2026-11-04): pnpm test exit 0, 879 files / 9722 tests pass, 0 failures, no drift vs M05-c354; no code change, no forbidden files touched; docs/M05-c355.md, 20b0757f3
 המשך מ: M04-c355 DONE (2026-11-04): pnpm type-check tsc --noEmit exit 0, 0 diagnostics, no drift; no code change, no forbidden files touched; docs/M04-c355.md, 8fdb37382
