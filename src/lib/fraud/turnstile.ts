@@ -94,7 +94,13 @@ export async function verifyTurnstile(
       'error-codes'?: string[]
     }
     if (payload.success === true) return { ok: true, enforced: true }
-    return { ok: false, codes: payload['error-codes'] ?? ['unknown'] }
+    // Logged because the shopper only ever sees one sentence. The codes tell a
+    // bot (`invalid-input-response`) from a site key and secret that do not
+    // belong together (`invalid-input-secret`), which is a config fault: S27
+    // measured a preview refusing every checkout with nothing in the logs.
+    const codes = payload['error-codes'] ?? ['unknown']
+    log.warn('turnstile.refused', { codes: codes.join(',') })
+    return { ok: false, codes }
   } catch (error) {
     // Case 3. Loud, because from here on the form is unprotected and nothing
     // else in the system will say so.
