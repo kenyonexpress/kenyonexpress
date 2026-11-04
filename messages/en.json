@@ -772,5 +772,37 @@
     "cardCheckPending": "Verifying...",
     "cardCheckDone": "Card verified. The ₪1 charge was voided.",
     "cardCheckDoneLast4": "Card verified (ending {last4}). The ₪1 charge was voided."
+  },
+  "otpSignIn": {
+    "openWhatsapp": "Sign in with a WhatsApp code",
+    "openEmail": "Sign in with an email code",
+    "phoneLabel": "Mobile number for a WhatsApp code",
+    "emailLabel": "Email for a sign-in code",
+    "send": "Send code",
+    "sending": "Sending code...",
+    "sentWhatsapp": "We sent a WhatsApp code to ",
+    "sentEmail": "We sent a code to ",
+    "codeLabel": "6-digit code",
+    "verify": "Sign in",
+    "verifying": "Verifying...",
+    "changePhone": "Change phone number",
+    "changeEmail": "Change email address"
+  },
+  "passkeyAfterPurchase": {
+    "label": "Faster sign-in next time",
+    "title": "Next time, no password",
+    "body": "Register a passkey on this device and sign in with your fingerprint or Face ID.",
+    "cta": "Add a passkey",
+    "pending": "Registering...",
+    "dismiss": "Not now",
+    "done": "Saved. Next time sign in with your fingerprint or Face ID.",
+    "alreadyRegistered": "This device is already registered",
+    "failed": "Adding the passkey failed, try again"
+  },
+  "otpEmail": {
+    "subject": "Your KenyonExpress sign-in code: {code}",
+    "lead": "Your sign-in code:",
+    "note": "The code is valid for a short time. If you did not ask to sign in, ignore this message.",
+    "signature": "KenyonExpress"
   }
 }

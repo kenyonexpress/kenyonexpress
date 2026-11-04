@@ -41,6 +41,7 @@
 | `phone-otp-number` | 3 | 1 h | OTP SMS to one number: the measured lockout vector, and the bill |
 | `phone-verify` | 20 | 1 h | OTP code guessing, per IP |
 | `phone-verify-number` | 5 | 1 h | six digits is a million codes; per-number is what bounds the guessing |
+| `otp-verify-email` | 5 | 1 h | six-digit email code; per-address is what bounds the guessing |
 | `passkey-register` | 10 | 1 h | WebAuthn enrolment ceremonies; a real person adds one key, not eleven |
 | `mfa-enrol` | 10 | 1 h | TOTP factor creation, per user; one authenticator, not a pile of abandoned factors |
 | `mfa-verify` | 10 | 15 min | six digits are brute forceable; per-user bound is what actually protects the account |

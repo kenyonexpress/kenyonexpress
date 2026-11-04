@@ -1,4 +1,5 @@
 import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
+import { otpChannel } from '@/lib/auth/whatsapp-cloud'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import LoginForm from './LoginForm'
@@ -48,6 +49,12 @@ async function LoginPageBody({
   // disagree: a NEXT_PUBLIC copy would be inlined at build time and would keep
   // showing the option after the provider was turned off.
   return (
-    <LoginForm next={next} callbackError={error} magic={magic} phoneEnabled={phoneAuthEnabled()} />
+    <LoginForm
+      next={next}
+      callbackError={error}
+      magic={magic}
+      phoneEnabled={phoneAuthEnabled()}
+      otpChannel={otpChannel()}
+    />
   )
 }

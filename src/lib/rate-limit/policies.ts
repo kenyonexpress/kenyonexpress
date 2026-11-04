@@ -71,6 +71,17 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'six digits is a million codes; per-number is what bounds the guessing',
   },
+  /**
+   * The email leg of the S19 code sign-in. Same arithmetic as
+   * `phone-verify-number`: six digits, so the per-ADDRESS bound is the one
+   * that stops a rotating-IP guesser. A separate bucket so a customer who
+   * mistyped an SMS code five times can still finish by email.
+   */
+  'otp-verify-email': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'six-digit email code; per-address is what bounds the guessing',
+  },
   'passkey-register': {
     limit: 10,
     windowSeconds: 3600,

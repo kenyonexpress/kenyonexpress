@@ -24,6 +24,7 @@ import {
   waChatLink,
   waShareLink,
 } from '@/lib/whatsapp'
+import { listPasskeys } from '@/server/actions/passkeys'
 import { reconcileOrderReturn } from '@/server/actions/payments/checkout'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import { isGiftedAway } from '@/server/payments/voucher-email'
@@ -33,6 +34,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import AutoRefresh from './AutoRefresh'
+import PasskeyAfterPurchase from './PasskeyAfterPurchase'
 import SaveWithGoogle from './SaveWithGoogle'
 import '@/styles/checkout-page.css'
 
@@ -214,6 +216,12 @@ async function CheckoutReturnBody({ searchParams }: Props) {
     data: { user: viewer },
   } = await (await createClient()).auth.getUser()
   const isGuest = viewer?.is_anonymous === true
+  // Best-effort, like the account layout's read: a passkey outage must not
+  // cost the customer their order confirmation.
+  const passkeys = viewer && !isGuest ? await listPasskeys().catch(() => null) : null
+  const hasPasskeys = Boolean(
+    passkeys && 'available' in passkeys && passkeys.available && passkeys.passkeys.length > 0,
+  )
 
   return (
     <div className="checkout-page">
@@ -238,7 +246,15 @@ async function CheckoutReturnBody({ searchParams }: Props) {
 
         {(await isFirstPaidOrder(admin, order.id)) ? (
           <>
-            <FirstPurchaseBanner />
+            <FirstPurchaseBanner hasPasskeys={hasPasskeys} />
+            {/*
+              S19: the passkey, offered in place after the first purchase, to a
+              real account only. A guest's anonymous session has no account a
+              credential could open later; SaveWithGoogle above is theirs.
+            */}
+            {viewer && !isGuest && (
+              <PasskeyAfterPurchase userId={viewer.id} hasPasskeys={hasPasskeys} />
+            )}
             {/*
               W14: the install invitation, at the value moment ARCHITECTURE-PWA
               §5.1 names (first paid order). Inline, under the first-purchase

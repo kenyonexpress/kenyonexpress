@@ -3,6 +3,8 @@
 import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import TurnstileRefresh from '@/components/turnstile/TurnstileRefresh'
+import type { OtpChannel } from '@/lib/auth/whatsapp-cloud'
+import { t } from '@/lib/i18n/messages'
 import {
   type AuthState,
   sendMagicLink,
@@ -11,6 +13,7 @@ import {
 } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
+import OtpSignInForm from './OtpSignInForm'
 import PasskeyLoginButton from './PasskeyLoginButton'
 import PhoneOtpForm from './PhoneOtpForm'
 
@@ -32,11 +35,24 @@ interface Props {
    * without a provider, every send returns an error the customer cannot act on.
    */
   phoneEnabled?: boolean
+  /**
+   * S19: where the six-digit sign-in code goes. 'whatsapp' when Meta Cloud API
+   * is configured on the server, 'email' otherwise. Decided by the page from
+   * the env, never in the browser.
+   */
+  otpChannel?: OtpChannel
 }
 
-export default function LoginForm({ next, callbackError, magic, phoneEnabled = false }: Props) {
+export default function LoginForm({
+  next,
+  callbackError,
+  magic,
+  phoneEnabled = false,
+  otpChannel = 'email',
+}: Props) {
   const [showMagic, setShowMagic] = useState(false)
   const [showPhone, setShowPhone] = useState(false)
+  const [showOtp, setShowOtp] = useState(false)
 
   const [emailState, emailAction, emailPending] = useActionState<AuthState, FormData>(
     signInWithEmail,
@@ -111,6 +127,24 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           )}
         </div>
       )}
+
+      {/*
+        S19: the code sign-in. WhatsApp when the server can send one, email
+        otherwise, so the button is never an offer the server cannot keep.
+      */}
+      <div className="mt-3">
+        {!showOtp ? (
+          <button
+            type="button"
+            onClick={() => setShowOtp(true)}
+            className="w-full min-h-touch-min flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            {otpChannel === 'whatsapp' ? t('otpSignIn.openWhatsapp') : t('otpSignIn.openEmail')}
+          </button>
+        ) : (
+          <OtpSignInForm channel={otpChannel} next={next} />
+        )}
+      </div>
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 border-t border-gray-200" />

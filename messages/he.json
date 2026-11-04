@@ -772,5 +772,37 @@
     "cardCheckPending": "מאמתים...",
     "cardCheckDone": "כרטיס אומת. החיוב של ₪1 בוטל.",
     "cardCheckDoneLast4": "כרטיס אומת (מסתיים ב-{last4}). החיוב של ₪1 בוטל."
+  },
+  "otpSignIn": {
+    "openWhatsapp": "כניסה עם קוד ב-WhatsApp",
+    "openEmail": "כניסה עם קוד לאימייל",
+    "phoneLabel": "מספר נייד לקבלת קוד ב-WhatsApp",
+    "emailLabel": "אימייל לקבלת קוד כניסה",
+    "send": "שליחת קוד",
+    "sending": "שולחים קוד...",
+    "sentWhatsapp": "שלחנו קוד ב-WhatsApp אל ",
+    "sentEmail": "שלחנו קוד לאימייל ",
+    "codeLabel": "קוד בן 6 ספרות",
+    "verify": "כניסה",
+    "verifying": "מאמתים...",
+    "changePhone": "שינוי מספר טלפון",
+    "changeEmail": "שינוי כתובת אימייל"
+  },
+  "passkeyAfterPurchase": {
+    "label": "כניסה מהירה בפעם הבאה",
+    "title": "בפעם הבאה, בלי סיסמה",
+    "body": "רושמים מפתח כניסה (Passkey) למכשיר הזה, ונכנסים לחשבון עם טביעת אצבע או Face ID.",
+    "cta": "הוספת מפתח כניסה",
+    "pending": "רושמים...",
+    "dismiss": "לא עכשיו",
+    "done": "נשמר. בפעם הבאה נכנסים עם טביעת אצבע או Face ID.",
+    "alreadyRegistered": "המכשיר הזה כבר רשום בחשבון",
+    "failed": "הוספת המפתח נכשלה, נסו שוב"
+  },
+  "otpEmail": {
+    "subject": "קוד הכניסה שלך לקניון EXPRESS: {code}",
+    "lead": "קוד הכניסה שלך:",
+    "note": "הקוד תקף לזמן קצר. אם לא ביקשתם להיכנס, אפשר להתעלם מההודעה.",
+    "signature": "קניון EXPRESS"
   }
 }
