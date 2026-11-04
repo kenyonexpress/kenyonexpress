@@ -1405,8 +1405,12 @@ async function runSubmitCheckout(
     }
   }
 
-  let addressId: string | null = text('address_id') || null
   const needsAddress = text('needs_address') === 'true'
+  // A shipping address belongs to a physical cart and nothing else. The form
+  // posts the customer's saved address id whenever they have one, so without
+  // this a coupon-only order was stamped with their home address (measured in
+  // S27: a gift coupon order carried `address_id`).
+  let addressId: string | null = needsAddress ? text('address_id') || null : null
 
   if (needsAddress && !addressId) {
     const city = text('city')

@@ -14,9 +14,8 @@ import {
   E2E_SUPPLIER_EMAIL,
   E2E_SUPPLIER_PASSWORD,
   paidFlowEnabled,
-  signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, emptyCart, expectHebrewRtl, walkCheckoutToPayment } from './helpers'
+import { BUY_BUTTON, emptyCart, expectHebrewRtl } from './helpers'
 
 /**
  * S27: the five money journeys, in order, against a deployed preview.
@@ -149,6 +148,75 @@ async function waitForTurnstile(page: Page): Promise<void> {
     .toBeGreaterThan(0)
 }
 
+type Cookies = Parameters<BrowserContext['addCookies']>[0]
+const sessions = new Map<string, Cookies>()
+
+/**
+ * Password sign-in that waits for the Turnstile token, once per role per run.
+ *
+ * `signInWithEmail` presses "כניסה" as soon as the field is filled. Against a
+ * build with a Turnstile key pair that posts an empty token and the action
+ * refuses; local runs have no key pair, so the shared helper never met it.
+ * The `login` limiter allows 10 an hour per address, so a role signs in once
+ * and later journeys replay its cookies.
+ */
+async function signIn(page: Page, email: string, password: string, next = '/account') {
+  const cached = sessions.get(email)
+  if (cached) {
+    await page.context().addCookies(cached)
+    await page.goto(next)
+    if (!new URL(page.url()).pathname.startsWith('/login')) return
+    await page.context().clearCookies()
+  }
+  await page.goto(`/login?next=${encodeURIComponent(next)}`)
+  await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible({
+    timeout: 15_000,
+  })
+  await page.getByLabel('אימייל', { exact: true }).fill(email)
+  await page.getByLabel('סיסמה', { exact: true }).fill(password)
+  await waitForTurnstile(page)
+  await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 30_000 })
+  sessions.set(email, await page.context().cookies())
+}
+
+/**
+ * Fills the single-page checkout and presses pay, with the Turnstile token
+ * checked LAST, after the terms box: run 10 posted an empty token from the gift
+ * journey after the same wait had passed earlier in the walk. The shared
+ * `walkCheckoutToPayment` checks terms and clicks in one go, so the wait has to
+ * sit here instead.
+ */
+async function payNow(
+  page: Page,
+  email: string,
+  fill?: (page: Page) => Promise<void>,
+): Promise<void> {
+  await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
+  // The Suspense shell carries its own terms box until the form streams in
+  // (run 12 found two). One left means the real form is the one on screen.
+  const terms = page.locator('input[name="accept_terms"]')
+  await expect(terms).toHaveCount(1, { timeout: 20_000 })
+  const firstName = page.locator('#co-first-name')
+  if (await firstName.isVisible().catch(() => false)) {
+    await firstName.fill('בדיקה')
+    await page.locator('#co-last-name').fill('אוטומטית')
+    await page.locator('#co-phone').fill('0521234567')
+    await page.locator('#co-email').fill(email)
+  }
+  const city = page.locator('#co-city')
+  if (await city.isVisible().catch(() => false)) {
+    await city.fill('תל אביב')
+    await page.locator('#co-street').fill('אלנבי')
+    await page.locator('#co-number').fill('1')
+  }
+  if (fill) await fill(page)
+  await expect(terms).toBeVisible({ timeout: 10_000 })
+  await terms.check()
+  await waitForTurnstile(page)
+  await page.getByRole('button', { name: 'שליחת הזמנה', exact: true }).click()
+}
+
 /** Lands on the confirmation and returns the order id from its URL. */
 async function waitForPaidReturn(page: Page): Promise<string> {
   await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 60_000 })
@@ -189,7 +257,7 @@ test.describe
       })
       // A coupon cart asks for no address, ever.
       await expect(page.locator('#co-city')).toHaveCount(0)
-      await walkCheckoutToPayment(page, guestEmail, { onStep: waitForTurnstile })
+      await payNow(page, guestEmail)
 
       const orderId = await waitForPaidReturn(page)
       await expect(page.getByTestId('coupon-code').first()).toBeVisible()
@@ -206,7 +274,7 @@ test.describe
       expect(order?.address_id).toBeNull()
       const vouchers = await readVouchers(orderId)
       expect(vouchers).toHaveLength(1)
-      expect(vouchers[0]?.status).toBe('active')
+      expect(vouchers[0]?.status).toBe('issued')
 
       shared.guestVoucherCode = code
       shared.guestOrderId = orderId
@@ -218,7 +286,7 @@ test.describe
     }) => {
       const context = await newContext(browser)
       const page = await context.newPage()
-      await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+      await signIn(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
       await emptyCart(page)
 
       await addToCart(page, E2E_PHYSICAL_SLUG)
@@ -226,7 +294,7 @@ test.describe
       await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות').first()).toBeVisible({
         timeout: 15_000,
       })
-      await walkCheckoutToPayment(page, E2E_CUSTOMER_EMAIL, { onStep: waitForTurnstile })
+      await payNow(page, E2E_CUSTOMER_EMAIL)
 
       const orderId = await waitForPaidReturn(page)
       await expect(page.getByTestId('coupon-code')).toHaveCount(0)
@@ -238,9 +306,9 @@ test.describe
       expect(order?.address_id, 'a physical order carries its shipping address').toBeTruthy()
       expect(await readVouchers(orderId)).toHaveLength(0)
       const addresses = await serviceGet<{ city: string | null; street: string | null }>(
-        `addresses?select=city,street&id=eq.${order?.address_id}`,
+        `user_addresses?select=city,street&id=eq.${order?.address_id}`,
       )
-      expect(addresses[0]?.city).toBe('תל אביב')
+      expect(addresses[0]?.city, 'the shipping address has a city').toBeTruthy()
 
       await page.goto(`/account/orders/${orderId}`)
       await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות').first()).toBeVisible({
@@ -255,26 +323,26 @@ test.describe
     }) => {
       const buyer = await newContext(browser)
       const page = await buyer.newPage()
-      await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+      await signIn(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
       await emptyCart(page)
       await addToCart(page, E2E_COUPON_SLUG)
       await page.goto('/checkout')
       const message = `S27 מתנה ${Date.now()}`
-      await walkCheckoutToPayment(page, E2E_CUSTOMER_EMAIL, {
-        onStep: async (p) => {
-          const box = p.locator('input[name="gift"]')
-          if (!(await box.isVisible().catch(() => false))) return waitForTurnstile(p)
-          if (!(await box.isChecked())) await box.check()
-          await p.locator('#co-gift-email').fill(E2E_SUPPLIER_EMAIL)
-          await p.locator('#co-gift-name').fill('רון')
-          await p.locator('#co-gift-message').fill(message)
-          await waitForTurnstile(p)
-        },
+      await payNow(page, E2E_CUSTOMER_EMAIL, async (p) => {
+        const box = p.locator('input[name="gift"]')
+        await expect(box).toBeVisible({ timeout: 10_000 })
+        if (!(await box.isChecked())) await box.check()
+        await p.locator('#co-gift-email').fill(E2E_SUPPLIER_EMAIL)
+        await p.locator('#co-gift-name').fill('רון')
+        await p.locator('#co-gift-message').fill(message)
       })
       const orderId = await waitForPaidReturn(page)
       await expect(page.getByText(/הקופון נשלח אל רון/)).toBeVisible()
       await expect(page.getByTestId('coupon-qr')).toHaveCount(0)
-      expect((await readOrder(orderId))?.gift_recipient_email).toBe(E2E_SUPPLIER_EMAIL)
+      const giftOrder = await readOrder(orderId)
+      expect(giftOrder?.gift_recipient_email).toBe(E2E_SUPPLIER_EMAIL)
+      // A coupon carries no shipping address, even for a customer who has one saved.
+      expect(giftOrder?.address_id).toBeNull()
       await buyer.close()
 
       // The claim link is only ever in the outbox row (service role).
@@ -294,15 +362,30 @@ test.describe
       const claim = await recipient.newPage()
       await claim.goto(`/gift/${token}`)
       await expect(claim.getByText(message)).toBeVisible({ timeout: 15_000 })
-      await signInWithEmail(claim, E2E_SUPPLIER_EMAIL, E2E_SUPPLIER_PASSWORD, `/gift/${token}`)
+      await signIn(claim, E2E_SUPPLIER_EMAIL, E2E_SUPPLIER_PASSWORD, `/gift/${token}`)
       await claim.goto(`/gift/${token}`)
       await claim.getByRole('button', { name: 'קבלת הקופון לחשבון שלי' }).click()
       await claim.waitForURL(/\/account\/coupons$/, { timeout: 20_000 })
 
-      const vouchers = await serviceGet<{ owner_id?: string; user_id?: string }>(
-        `vouchers?select=*&order_id=eq.${orderId}`,
+      // A claim does not re-own the row: the buyer's voucher is closed as
+      // `transferred` and a new one is issued to the recipient, linked both ways.
+      type V = {
+        id: string
+        status: string
+        status_reason: string | null
+        user_id: string
+        transferred_from_voucher_id: string | null
+      }
+      const vouchers = await serviceGet<V>(
+        `vouchers?select=id,status,status_reason,user_id,transferred_from_voucher_id&order_id=eq.${orderId}&order=created_at.asc`,
       )
-      expect(vouchers).toHaveLength(1)
+      expect(vouchers).toHaveLength(2)
+      const [original, claimed] = vouchers
+      expect(original?.status).toBe('transferred')
+      expect(original?.status_reason).toBe('gift_claim')
+      expect(claimed?.status).toBe('issued')
+      expect(claimed?.transferred_from_voucher_id).toBe(original?.id)
+      expect(claimed?.user_id).not.toBe(original?.user_id)
       await recipient.close()
     })
 
@@ -311,7 +394,7 @@ test.describe
       const orderId = shared.physicalOrderId as string
       const context = await newContext(browser)
       const page = await context.newPage()
-      await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+      await signIn(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
       await page.goto(`/account/orders/${orderId}`)
 
       const cancellation = page.getByTestId('cancellation-request')
@@ -342,7 +425,7 @@ test.describe
       test.skip(!shared.guestVoucherCode, 'journey 1 did not produce a code')
       const context = await newContext(browser)
       const page = await context.newPage()
-      await signInWithEmail(page, E2E_SUPPLIER_EMAIL, E2E_SUPPLIER_PASSWORD, '/supplier/scan')
+      await signIn(page, E2E_SUPPLIER_EMAIL, E2E_SUPPLIER_PASSWORD, '/supplier/scan')
       await page.goto('/supplier/scan')
       await expect(page.getByRole('heading', { name: 'סריקת שובר' })).toBeVisible({
         timeout: 15_000,

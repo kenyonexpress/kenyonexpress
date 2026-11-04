@@ -1088,6 +1088,10 @@ describe('the pending migration inventory', () => {
       // anon and the authenticated write grants revoked. No table altered.
       // Proof: docs/S23-wallet.md.
       '260_wallet_ledger_view_agorot.sql',
+      // S27 (05.11): APPLIED the same day. refund_requests only, section 3 of
+      // 202 verbatim: the customer's s.14C form answered "table missing" in
+      // production. 202 stays pending. Proof: docs/S27-e2e.md.
+      '261_refund_requests.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',
