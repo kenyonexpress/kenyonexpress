@@ -32255,3 +32255,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 - המשך מ: M13-c354 DONE (2026-11-04): /api/health 200 {ok,database:ok,search:not_configured} and /api/ready 200 {database ok, redis ok, meilisearch not_configured, r2 ok, cardcom ok}, no-store + Vercel MISS, 3/3 repeat 200s each, apex 308 to www; health+ready vitest 32/32; read-only, no forbidden files touched; proof docs/M13-c354.md
 - המשך מ: M18-c354 DONE (2026-11-04): STATE.md 105 lines (rotated by state-log, untouched), claude/STATE.md 40 to 29 lines: 12 c352 resume lines appended to docs/STATE-ARCHIVE.md first, then removed; sorted union of kept + archived == original; docs only, no forbidden files touched; proof docs/M18-c354.md
 - המשך מ: M19-c354 DONE (2026-11-04): no-op; prod dpl_DQ12y9iT1vMVV9sCsXt6HcErFDG4 = e4dbf06c6, HEAD 57456f767 is 89 commits ahead but all docs/*.md, claude/, STATE.md (0 runtime files), so no build/deploy; live www serves dpl_DQ12 (770 refs), /api/ready 200; no forbidden files touched; proof docs/M19-c354.md
+
+## Archived 2026-11-04T09:15:25+07:00 after M18-c356 (3 lines from STATE.md)
+
+### 2026-11-04T08:03:36+07:00
+- item: M12-c355
+- RESULT: DONE
