@@ -1,7 +1,11 @@
-RESUME FROM: M10-c356
+RESUME FROM: M11-c356
 # KenyonExpress Autopilot State
 
 ## Item log (newest first; three lines per item, written by scripts/state/state-log.mjs after every RESULT)
+
+### 2026-11-04T09:01:02+07:00
+- item: M10-c356
+- BLOCKED: pending 319 has no parent affiliate tables in prod; 324 would break 23 foreign keys into orders
 
 ### 2026-11-04T08:59:34+07:00
 - item: M09-c356
@@ -97,9 +101,5 @@ RESUME FROM: M10-c356
 
 ### 2026-11-04T07:48:21+07:00
 - item: M05-c355
-- RESULT: DONE
-
-### 2026-11-04T07:46:05+07:00
-- item: M04-c355
 - RESULT: DONE
 
