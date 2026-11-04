@@ -15,10 +15,10 @@ import {
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { isDisposableEmail } from '@/lib/fraud/disposable-email'
-import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { verifyTurnstileForm } from '@/lib/turnstile/verify'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
   loginSchema,
@@ -143,6 +143,12 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   const allowed = await checkRateLimit(`login:${ip}`)
   if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
 
+  // Same placement and reasoning as sign-up below: before the schema and the
+  // per-account limiter, so a bot that cannot solve the challenge spends none
+  // of a real customer's twenty tries an hour.
+  const challenge = await verifyTurnstileForm(formData, ip)
+  if (!challenge.ok) return { error: challenge.error }
+
   const parsed = loginSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -198,8 +204,8 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
   // should not get field-by-field validation feedback to iterate against.
   // Answers "allowed, not enforced" and costs nothing when unconfigured, which
   // is every environment this repo can see today.
-  const challenge = await verifyTurnstile(formData.get('cf-turnstile-response')?.toString(), ip)
-  if (!challenge.ok) return { error: turnstileErrorText() }
+  const challenge = await verifyTurnstileForm(formData, ip)
+  if (!challenge.ok) return { error: challenge.error }
 
   const parsed = signupSchema.safeParse({
     full_name: formData.get('full_name'),

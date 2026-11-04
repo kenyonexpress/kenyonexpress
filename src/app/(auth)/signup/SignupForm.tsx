@@ -2,6 +2,7 @@
 
 import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
+import TurnstileRefresh from '@/components/turnstile/TurnstileRefresh'
 import { type AuthState, signInWithGoogle, signUpWithEmail } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState } from 'react'
@@ -132,6 +133,7 @@ export default function SignupForm({ next }: Props) {
             Google button above is a separate form and carries no challenge:
             Google has already decided that caller is a person. */}
         <TurnstileWidget action="signup" />
+        <TurnstileRefresh resetOn={state} />
 
         <button
           type="submit"

@@ -1,5 +1,6 @@
 'use server'
 
+import { turnstileEnabled, turnstileErrorText } from '@/lib/fraud/turnstile'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { isR2StorageConfigured } from '@/lib/storage/r2-service'
@@ -9,8 +10,17 @@ import { createClient } from '@/lib/supabase/server'
 import { bankSecretPayload, checkBankDetails } from '@/lib/suppliers/bank-account'
 import { checkCompanyId, companyIdMessage } from '@/lib/suppliers/company-id'
 import { CONTRACT_VERSION, contractHash, contractVersionMatches } from '@/lib/suppliers/contract'
+import {
+  TURNSTILE_PASS_COOKIE,
+  TURNSTILE_PASS_TTL_SECONDS,
+  checkTurnstilePass,
+  issueTurnstilePass,
+  verifyTurnstileForm,
+} from '@/lib/turnstile/verify'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 /**
@@ -74,6 +84,15 @@ async function runSubmitApplication(
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'יש להתחבר כדי להגיש בקשה' }
+
+  // The bot challenge, solved in the gate in front of the wizard (see
+  // `lib/turnstile/verify.ts` for why it is not inside this form). Checked
+  // here and not only by the page, because the page deciding to render the
+  // wizard is not the server deciding to accept it. Always true unconfigured.
+  if (turnstileEnabled()) {
+    const pass = (await cookies()).get(TURNSTILE_PASS_COOKIE)?.value
+    if (!checkTurnstilePass(pass, user.id)) return { ok: false, error: turnstileErrorText() }
+  }
 
   if (!(await checkRateLimit(`supplier-apply:${user.id}`, 5, 3600))) {
     return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
@@ -339,5 +358,47 @@ export async function submitSupplierApplication(
 export async function requestDocumentUpload(rawInput: unknown): Promise<UploadTicket> {
   return withActionContext('supplier_onboarding.upload_url', () =>
     runRequestDocumentUpload(rawInput),
+  )
+}
+
+// ──────────────────────────────────────────────
+// Turnstile gate in front of the wizard
+// ──────────────────────────────────────────────
+
+export type ChallengeState = { error?: string }
+
+async function runPassApplyChallenge(
+  _prev: ChallengeState,
+  formData: FormData,
+): Promise<ChallengeState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'יש להתחבר כדי להגיש בקשה' }
+
+  const challenge = await verifyTurnstileForm(formData, await getClientIp())
+  if (!challenge.ok) return { error: challenge.error }
+
+  // Null only when unconfigured, and then the page never renders this gate.
+  const pass = issueTurnstilePass(user.id)
+  if (pass) {
+    ;(await cookies()).set(TURNSTILE_PASS_COOKIE, pass, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/suppliers',
+      maxAge: TURNSTILE_PASS_TTL_SECONDS,
+    })
+  }
+  redirect('/suppliers/apply')
+}
+
+export async function passSupplierApplyChallenge(
+  prev: ChallengeState,
+  formData: FormData,
+): Promise<ChallengeState> {
+  return withActionContext('supplier_onboarding.challenge', () =>
+    runPassApplyChallenge(prev, formData),
   )
 }

@@ -726,5 +726,9 @@
     "badge": "Gift collected",
     "headline": "The gift was collected by {who}",
     "explanation": "The coupon moved to the recipient's account, and the code and QR are shown only there. The order stays here for your records and the invoice."
+  },
+  "turnstile": {
+    "gateTitle": "A quick security check",
+    "gateBody": "Before filling in the form, confirm you are not a robot."
   }
 }

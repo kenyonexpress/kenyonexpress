@@ -155,3 +155,44 @@ describe('sendPhoneOtp channel fallback', () => {
     expect(signInWithOtp).toHaveBeenCalledTimes(2)
   })
 })
+
+describe('signInWithEmail Turnstile', () => {
+  beforeEach(() => {
+    checkRateLimit.mockReset()
+    checkRateLimit.mockResolvedValue(true)
+    getClientIp.mockReset()
+    getClientIp.mockResolvedValue('1.2.3.4')
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+  })
+
+  it('refuses a login with no token, before the per-account limiter is spent', async () => {
+    const result = await signInWithEmail(
+      null,
+      form({ email: 'dani@example.com', password: 'hunter2' }),
+    )
+    expect(result).toEqual({ error: 'אימות האבטחה נכשל. רעננו את העמוד ונסו שוב.' })
+    expect(checkRateLimit).toHaveBeenCalledTimes(1)
+    expect(checkRateLimit).toHaveBeenCalledWith('login:1.2.3.4')
+  })
+
+  it('refuses a login whose token Cloudflare rejects', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ success: false }), { status: 200 })),
+    )
+    const result = await signInWithEmail(
+      null,
+      form({
+        email: 'dani@example.com',
+        password: 'hunter2',
+        'cf-turnstile-response': 'forged',
+      }),
+    )
+    expect(result).toEqual({ error: 'אימות האבטחה נכשל. רעננו את העמוד ונסו שוב.' })
+  })
+})

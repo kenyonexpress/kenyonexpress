@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CONTRACT_TEXT, CONTRACT_VERSION, contractHash } from '@/lib/suppliers/contract'
 
@@ -60,8 +60,23 @@ vi.mock('@/lib/storage/r2-service', () => ({
   createR2SignedUploadUrl: vi.fn(),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+const cookieJar = new Map<string, string>()
+const cookieSet = vi.fn()
+vi.mock('next/headers', () => ({
+  cookies: async () => ({
+    get: (name: string) =>
+      cookieJar.has(name) ? { name, value: cookieJar.get(name) as string } : undefined,
+    set: (...args: unknown[]) => cookieSet(...args),
+  }),
+}))
+vi.mock('next/navigation', () => ({
+  redirect: (to: string) => {
+    throw new Error(`NEXT_REDIRECT ${to}`)
+  },
+}))
 
-import { submitSupplierApplication } from './supplier-onboarding'
+import { TURNSTILE_PASS_COOKIE, issueTurnstilePass } from '@/lib/turnstile/verify'
+import { passSupplierApplyChallenge, submitSupplierApplication } from './supplier-onboarding'
 
 function validForm(overrides: Record<string, string> = {}): FormData {
   const fd = new FormData()
@@ -187,5 +202,71 @@ describe('migration 204, the columns the record depends on', () => {
   it('stores the address as inet and the hash as 64 lowercase hex', () => {
     expect(table).toMatch(/client_ip\s+inet/)
     expect(table).toMatch(/contract_sha256 ~ '\^\[0-9a-f\]\{64\}\$'/)
+  })
+})
+
+describe('submitSupplierApplication, the Turnstile pass', () => {
+  beforeEach(() => {
+    cookieJar.clear()
+    cookieSet.mockReset()
+    applicationInsert.mockReset()
+    acceptanceInsert.mockReset()
+    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    rpc.mockResolvedValue({ data: 'secret-uuid', error: null })
+    acceptanceInsert.mockResolvedValue({ error: null })
+    getClientIp.mockResolvedValue('203.0.113.9')
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+  })
+
+  it('refuses a submit with no pass when configured, and writes nothing', async () => {
+    const result = await submitSupplierApplication({ ok: false }, validForm())
+    expect(result).toEqual({ ok: false, error: 'אימות האבטחה נכשל. רעננו את העמוד ונסו שוב.' })
+    expect(applicationInsert).not.toHaveBeenCalled()
+  })
+
+  it("refuses another user's pass", async () => {
+    cookieJar.set(TURNSTILE_PASS_COOKIE, issueTurnstilePass('user-2') as string)
+    const result = await submitSupplierApplication({ ok: false }, validForm())
+    expect(result.ok).toBe(false)
+    expect(applicationInsert).not.toHaveBeenCalled()
+  })
+
+  it('accepts a live pass for the caller', async () => {
+    cookieJar.set(TURNSTILE_PASS_COOKIE, issueTurnstilePass('user-1') as string)
+    const result = await submitSupplierApplication({ ok: false }, validForm())
+    expect(result.ok).toBe(true)
+    expect(applicationInsert).toHaveBeenCalledTimes(1)
+  })
+
+  it('the gate refuses a missing token and sets no cookie', async () => {
+    const result = await passSupplierApplyChallenge({}, new FormData())
+    expect(result).toEqual({ error: 'אימות האבטחה נכשל. רעננו את העמוד ונסו שוב.' })
+    expect(cookieSet).not.toHaveBeenCalled()
+  })
+
+  it('the gate turns a verified token into a pass bound to the user, then redirects', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ success: true }), { status: 200 })),
+    )
+    const data = new FormData()
+    data.set('cf-turnstile-response', 'good')
+    await expect(passSupplierApplyChallenge({}, data)).rejects.toThrow(
+      'NEXT_REDIRECT /suppliers/apply',
+    )
+    expect(cookieSet).toHaveBeenCalledTimes(1)
+    const [name, value, options] = cookieSet.mock.calls[0] as [
+      string,
+      string,
+      Record<string, unknown>,
+    ]
+    expect(name).toBe(TURNSTILE_PASS_COOKIE)
+    expect(value.startsWith('user-1.')).toBe(true)
+    expect(options).toMatchObject({ httpOnly: true, sameSite: 'lax', path: '/suppliers' })
   })
 })

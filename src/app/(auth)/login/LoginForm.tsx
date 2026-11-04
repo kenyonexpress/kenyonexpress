@@ -1,6 +1,8 @@
 'use client'
 
+import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
+import TurnstileRefresh from '@/components/turnstile/TurnstileRefresh'
 import {
   type AuthState,
   sendMagicLink,
@@ -172,6 +174,12 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             {getError(emailState)}
           </p>
         )}
+
+        {/* The password form only. Google and passkey prove a person by other
+            means, and the magic-link form mounts on demand, after implicit
+            rendering has already scanned the page. */}
+        <TurnstileWidget action="login" />
+        <TurnstileRefresh resetOn={emailState} />
 
         <button
           type="submit"

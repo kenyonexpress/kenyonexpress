@@ -1,7 +1,11 @@
 import SupplierApplyWizard from '@/components/supplier/SupplierApplyWizard'
+import SupplierApplyChallenge from '@/components/turnstile/SupplierApplyChallenge'
+import { turnstileEnabled } from '@/lib/fraud/turnstile'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { CONTRACT_TEXT, CONTRACT_VERSION } from '@/lib/suppliers/contract'
+import { TURNSTILE_PASS_COOKIE, checkTurnstilePass } from '@/lib/turnstile/verify'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
@@ -81,6 +85,12 @@ export default async function SupplierApplyPage() {
   const live =
     existing && ['submitted', 'in_review', 'approved'].includes(existing.status) ? existing : null
 
+  // The bot challenge goes in front of the wizard, not inside it: see
+  // `lib/turnstile/verify.ts`. Never shown when no key pair is configured.
+  const needsChallenge =
+    turnstileEnabled() &&
+    !checkTurnstilePass((await cookies()).get(TURNSTILE_PASS_COOKIE)?.value, user.id)
+
   return (
     <div dir="rtl" className="mx-auto w-full max-w-3xl px-4 py-10">
       <h1 className="text-2xl font-bold text-heading">הצטרפו כעסקים</h1>
@@ -114,7 +124,11 @@ export default async function SupplierApplyPage() {
               הבקשה הקודמת נדחתה: {existing.review_note}. אפשר לתקן ולהגיש שוב.
             </p>
           )}
-          <SupplierApplyWizard contractText={CONTRACT_TEXT} contractVersion={CONTRACT_VERSION} />
+          {needsChallenge ? (
+            <SupplierApplyChallenge />
+          ) : (
+            <SupplierApplyWizard contractText={CONTRACT_TEXT} contractVersion={CONTRACT_VERSION} />
+          )}
         </>
       )}
     </div>
