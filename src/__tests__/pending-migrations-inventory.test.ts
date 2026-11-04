@@ -1074,6 +1074,11 @@ describe('the pending migration inventory', () => {
       // supplier_card_verifications was already taken by a legacy table.
       // Proof, rolled back: docs/S17-supplier.md.
       '257_agreement_acceptances.sql',
+      // S20 (04.11): APPLIED the same day. ke-expiry-t7 / ke-expiry-t1, GET to
+      // /api/cron/expiry through the vault; APP_BASE_URL re-seeded from the
+      // apex to www; the dead push-expiry-reminders job unscheduled.
+      // Proof: docs/S20-expiry.md.
+      '258_expiry_cron_t7_t1.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

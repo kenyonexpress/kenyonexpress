@@ -60,6 +60,7 @@ describe('the scheduled job inventory', () => {
       'price-snapshot',
       'wishlist-alerts',
       'expire-vouchers',
+      'expiry',
       'whatsapp',
       'retention',
       'weekly-digest',

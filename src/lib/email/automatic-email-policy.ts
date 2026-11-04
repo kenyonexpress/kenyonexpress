@@ -29,6 +29,21 @@ export const AUTOMATIC_CUSTOMER_EMAIL_KINDS = ['order_paid', 'voucher_issued'] a
 /** Outbox kinds a customer gets by email because a person explicitly asked for it. */
 export const REQUESTED_CUSTOMER_EMAIL_KINDS = ['voucher_gifted'] as const
 
+/**
+ * Outbox kinds a customer gets by email only after switching it on.
+ *
+ * S20 (04.11.2026): the expiry reminder goes out "push + email per
+ * preference". That does not reopen S12: the sweep still never decides to
+ * mail on its own. The email leg is OFF until the customer turns on the one
+ * switch for it on /account/notifications, and a stored `enabled = true` row
+ * is the customer asking. No row, or `false`, means no mail.
+ */
+export const OPT_IN_CUSTOMER_EMAIL_KINDS = ['voucher_expiring'] as const
+
+export function isOptInCustomerEmailKind(kind: string): boolean {
+  return (OPT_IN_CUSTOMER_EMAIL_KINDS as readonly string[]).includes(kind)
+}
+
 /** May the outbox mail this customer kind at all? */
 export function isCustomerEmailKindAllowed(kind: string): boolean {
   return (

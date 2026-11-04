@@ -73,6 +73,11 @@
       "cron": "15 23 * * *"
     },
     {
+      "name": "expiry",
+      "path": "/api/cron/expiry",
+      "cron": "15 23 * * *"
+    },
+    {
       "name": "whatsapp",
       "path": "/api/cron/whatsapp",
       "cron": "*/5 * * * *"

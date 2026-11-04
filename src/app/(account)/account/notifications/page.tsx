@@ -1,4 +1,5 @@
 import EverythingInAppToggle from '@/components/notifications/EverythingInAppToggle'
+import ExpiryEmailSwitch from '@/components/notifications/ExpiryEmailSwitch'
 import PreferenceSwitches from '@/components/notifications/PreferenceSwitches'
 import PushDevices from '@/components/pwa/PushDevices'
 import PushOptIn from '@/components/pwa/PushOptIn'
@@ -93,6 +94,7 @@ export default async function NotificationsPage() {
       <section className="account-card">
         <h2 className="account-card__title">מה לשלוח לי</h2>
         <PreferenceSwitches rows={preferences} />
+        <ExpiryEmailSwitch rows={preferences} />
       </section>
 
       {/* PushOptIn renders its own account-card with this heading; wrapping it

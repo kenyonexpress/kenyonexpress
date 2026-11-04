@@ -134,6 +134,7 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/anonymize-user-data/route.ts',
       'src/app/api/cron/deals-autopilot/route.ts',
       'src/app/api/cron/expire-vouchers/route.ts',
+      'src/app/api/cron/expiry/route.ts',
       'src/app/api/cron/health/route.ts',
       'src/app/api/cron/invoices/route.ts',
       'src/app/api/cron/notifications/route.ts',

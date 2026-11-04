@@ -804,5 +804,9 @@
     "lead": "Your sign-in code:",
     "note": "The code is valid for a short time. If you did not ask to sign in, ignore this message.",
     "signature": "KenyonExpress"
+  },
+  "expiryEmail": {
+    "label": "Email reminder 7 days and 1 day before a coupon expires",
+    "saveFailed": "Saving failed."
   }
 }

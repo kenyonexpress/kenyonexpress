@@ -101,6 +101,7 @@ file is in a repository.
 9c https://kenyonexpress.vercel.app/api/cron/wishlist-alerts     GET  0 5 * * *     Authorization: Bearer <CRON_SECRET>
 9d https://kenyonexpress.vercel.app/api/cron/price-schedule      GET  */5 * * * *   Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+10b https://kenyonexpress.vercel.app/api/cron/expiry             GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
 13 https://kenyonexpress.vercel.app/api/cron/settlement-reconcile GET  20 4 * * *    Authorization: Bearer <CRON_SECRET>
@@ -143,6 +144,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 9c | 05:00 daily | `0 5 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
 | 9d | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/price-schedule` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
+| 10b | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expiry` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 | 13 | 04:20 daily | `20 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/settlement-reconcile` |
 | 14 | 04:40 daily | `40 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/payout-run` |
@@ -231,6 +233,10 @@ timing changes with the scheduler.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
 - **`expire-vouchers`** marks vouchers past their date as expired.
+- **`expiry`** (S20) enqueues the T-7 / T-1 coupon expiry reminders and
+  delivers them in the same call: push by default, email only for a customer
+  who switched it on. A bare call runs both buckets; production pg_cron calls
+  it twice, `?days=7` and `?days=1` (pending 258). `docs/S20-expiry.md`.
 - **`weekly-digest`** mails the operator the week's numbers (sales totals,
   dead outbox rows, vouchers expiring within 7 days) via Resend directly.
 - **`retention`** ages audit_log IPs older than 365 days to NULL through

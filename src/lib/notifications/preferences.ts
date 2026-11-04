@@ -1,6 +1,7 @@
 import {
   AUTOMATIC_CUSTOMER_EMAIL_KINDS,
   REQUESTED_CUSTOMER_EMAIL_KINDS,
+  isOptInCustomerEmailKind,
 } from '@/lib/email/automatic-email-policy'
 
 /**
@@ -48,6 +49,9 @@ export type Channel = (typeof CHANNELS)[number]
  * stored row for `{kind, 'email', true}` would change nothing, and a switch
  * that looks live but does nothing is exactly the broken-control problem this
  * file's own header names for required kinds.
+ *
+ * The one exception is S20's opt-in expiry mail, which is not in the matrix:
+ * it has its own single switch (`ExpiryEmailSwitch`), off by default.
  */
 export const CUSTOMER_TOGGLE_CHANNELS = CHANNELS.filter(
   (c): c is Exclude<Channel, 'email'> => c !== 'email',
@@ -187,6 +191,14 @@ export interface PreferenceRow {
  * are not addressed to a user.
  */
 export function mayNotify(kind: string, channel: Channel, rows: readonly PreferenceRow[]): boolean {
+  // S20: an opt-in email kind is the one place the default flips. Silence is
+  // NOT consent here, because S12 forbids the sweep from mailing on its own;
+  // only a stored `enabled = true` row, which only the customer's own switch
+  // writes, sends the mail.
+  if (channel === 'email' && isOptInCustomerEmailKind(kind)) {
+    return rows.some((r) => r.kind === kind && r.channel === 'email' && r.enabled)
+  }
+
   // Owner policy, checked first and unconditionally: the email channel exists
   // for a customer kind only if it is on the Q09 list, so for every other
   // kind there is no preference row left to consult.

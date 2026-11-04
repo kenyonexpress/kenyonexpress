@@ -93,9 +93,37 @@ describe('owner policy, 25.09.2026 (Q09): customer email only for the named list
 
   it('blocks email for every required and optional kind that is not on the list', () => {
     for (const kind of [...REQUIRED_KINDS, ...OPTIONAL_KINDS]) {
+      // S20's opt-in kind is off with no row too; its own block below.
       const expected = (EMAIL_POLICY_EXEMPT_KINDS as readonly string[]).includes(kind)
       expect(mayNotify(kind, 'email', []), kind).toBe(expected)
     }
+  })
+
+  it('S20: the expiry reminder is mailed only when the customer switched email on', () => {
+    expect(mayNotify('voucher_expiring', 'email', [])).toBe(false)
+    expect(
+      mayNotify('voucher_expiring', 'email', [
+        { kind: 'voucher_expiring', channel: 'email', enabled: false },
+      ]),
+    ).toBe(false)
+    expect(
+      mayNotify('voucher_expiring', 'email', [
+        { kind: 'voucher_expiring', channel: 'email', enabled: true },
+      ]),
+    ).toBe(true)
+    // An opt-in for another channel is not an opt-in for mail.
+    expect(
+      mayNotify('voucher_expiring', 'email', [
+        { kind: 'voucher_expiring', channel: 'push', enabled: true },
+      ]),
+    ).toBe(false)
+    // Push stays default-on and follows its own switch.
+    expect(mayNotify('voucher_expiring', 'push', [])).toBe(true)
+    expect(
+      mayNotify('voucher_expiring', 'push', [
+        { kind: 'voucher_expiring', channel: 'push', enabled: false },
+      ]),
+    ).toBe(false)
   })
 
   it('cannot be worked around by a preference row saying otherwise', () => {

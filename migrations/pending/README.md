@@ -1,5 +1,13 @@
 # `migrations/pending/`
 
+## 2026-11-04: 258 WRITTEN AND APPLIED - תזכורות תפוגה: שתי משימות pg_cron, T-7 ו-T-1
+
+‏`258_expiry_cron_t7_t1.sql`. ‏S20. ‏`ke-expiry-t7` ‏(23:20 UTC) ו-`ke-expiry-t1` ‏(23:25 UTC),
+‏GET ל-`/api/cron/expiry?days=7|1` עם ‏`CRON_SECRET` מה-vault בזמן ריצה. ‏`APP_BASE_URL`
+הוחלף מה-apex ל-`www` (ה-apex עונה 308, וה-bearer לא שורד את ההפניה). המשימה המתה
+‏`push-expiry-reminders` (‏GUC שלא מוגדר, נתיב שלא קיים) הוסרה. **נמצא:** 162 כן
+הוחלה, וכל 12 המשימות שלה הן POST ועונות 405. הוחלה 04.11; הוכחה ב-`docs/S20-expiry.md`.
+
 ## 2026-11-04: 257 WRITTEN AND APPLIED - הצטרפות ספקים: יומן הסכמות ובדיקת כרטיס ₪1
 
 ‏`257_agreement_acceptances.sql`. ‏S17. ‏`agreement_acceptances`: יומן click-wrap כללי
