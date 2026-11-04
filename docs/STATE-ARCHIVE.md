@@ -32491,3 +32491,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 ### 2026-11-04T09:54:03+07:00
 - item: M09-c357
 - RESULT: DONE
+
+## Archived 2026-11-04T11:07:45+07:00 after M16-c358 (3 lines from STATE.md)
+
+### 2026-11-04T09:56:03+07:00
+- item: M10-c357
+- BLOCKED: 319 needs affiliate tables restored first; 324 breaks 23 foreign keys into orders
