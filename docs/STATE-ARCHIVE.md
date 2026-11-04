@@ -32120,3 +32120,9 @@ NONE. iPhone will ping on LAUNCH-READY or hard block.
 - המשך מ: M11-c353 DONE (2026-11-04): sitemap.xml live 200 (fresh render, age 10s), 120 unique locs, xmllint 0, apex 308 to www then 200; 20/20 sampled locs 200; product slugs 46 = 46 active non-demo in prod DB, newest lastmod = newest updated_at; demo locs 44 to 0 (C198 deployed); 3 e2e fixtures still public; sitemap.test 12/12; read-only, no forbidden files touched; proof docs/M11-c353.md
 - המשך מ: M12-c353 DONE (2026-11-04): robots.txt live 200 text/plain (edge age 227s), no blanket Disallow, 17 disallow lines identical to src/app/robots.ts, home has no noindex header/meta, /redeem noindex in-page, apex 308 to www, sitemap 200; robots.test 9/9; read-only, no forbidden files touched; proof docs/M12-c353.md
 - המשך מ: M19-c353 DONE (2026-11-04): no-op; prod dpl_DQ12y9iT1vMVV9sCsXt6HcErFDG4 at e4dbf06c6, HEAD ca86302ed is 46 commits ahead but 0 runtime files changed (docs/STATE only), so no build/deploy; www 200 serves that dpl id (770 refs), /api/ready 200; proof docs/M19-c353.md; no forbidden files touched
+
+## Archived 2026-11-04T08:23:46+07:00 after M18-c355 (3 lines from STATE.md)
+
+### 2026-11-04T07:04:27+07:00
+- item: M12-c354
+- RESULT: DONE
