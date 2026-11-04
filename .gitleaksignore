@@ -1,0 +1,136 @@
+# gitleaks ignore list, written by S24 (2026-11-04). Read .gitleaks.toml first.
+#
+# WHY THIS FILE EXISTS. .github/workflows/security.yml had `workflow_dispatch:`
+# twice under `on:` from c6e36f049 (2026-09-22) on. Duplicate YAML keys make the
+# workflow invalid, so GitHub failed it in 0 seconds on every push and gitleaks
+# did not run for six weeks. 76 findings landed in that window. Each one was
+# opened and read; the value itself never appears here, only the fingerprint
+# (commit:file:rule:line), which pins one finding and cannot widen.
+#
+# TWO GROUPS, AND THEY ARE NOT THE SAME KIND OF SUPPRESSION.
+#
+# 1. REAL CREDENTIALS IN PUBLIC HISTORY. NOT DEAD. Pasted into docs/ by agent
+#    sessions between 2026-10-17 and 2026-10-25; the files were later deleted,
+#    but the repository is PUBLIC and history is not rewritten here. Suppressed
+#    so the gate can catch the NEXT leak instead of being red forever (a red
+#    gate is how this one went unread for six weeks). Suppression is NOT the
+#    fix: every value below must be rotated. Tracked in docs/S24-security.md.
+
+# VERCEL_API_TOKEN (16-char fragment) (wL4Y...)
+3bc295100f2010b87335a9696ad1c6a5a9df18d8:docs/F61-CONSTRAINTS.md:generic-api-key:68
+# Vercel deployment-protection password (1IND...)
+0793471f5dfeb0bbfaecf2c2159d7343d26ee3b5:docs/C73-RESULT.md:generic-api-key:85
+0793471f5dfeb0bbfaecf2c2159d7343d26ee3b5:docs/C73-VERCEL-DEPLOYMENT-PROTECTION.md:generic-api-key:35
+2b1c76a0386b06df929c6bc975384bf31bafac93:docs/C73-AUTONOMOUS-LIMITATION.md:generic-api-key:41
+d95913450aa391194c4deac87201e0a0292aac1e:docs/C73-VERIFICATION-STATUS.md:generic-api-key:161
+# Vercel deployment-protection OLD_SECRET (e7e9...)
+0793471f5dfeb0bbfaecf2c2159d7343d26ee3b5:docs/C73-VERCEL-DEPLOYMENT-PROTECTION.md:generic-api-key:116
+0793471f5dfeb0bbfaecf2c2159d7343d26ee3b5:docs/C73-VERCEL-DEPLOYMENT-PROTECTION.md:generic-api-key:148
+0793471f5dfeb0bbfaecf2c2159d7343d26ee3b5:docs/C73-VERCEL-DEPLOYMENT-PROTECTION.md:generic-api-key:99
+2b1c76a0386b06df929c6bc975384bf31bafac93:docs/C73-AUTONOMOUS-LIMITATION.md:generic-api-key:48
+d95913450aa391194c4deac87201e0a0292aac1e:docs/C73-VERIFICATION-STATUS.md:generic-api-key:174
+# CRON_SECRET (fEZQ...)
+0ca4a75f3a3e84a21d916a125e67e5f2498e2a23:docs/C70-PRODUCTION-VERIFICATION.md:curl-auth-header:13
+0ca4a75f3a3e84a21d916a125e67e5f2498e2a23:docs/C70-PRODUCTION-VERIFICATION.md:generic-api-key:75
+136339f4e4f1ddbbef1bd770da8b34c643a34532:docs/C70-RESULT.md:curl-auth-header:92
+51a0d0d69f2488c25d11635d4628ce568e46f882:docs/C70-SUCCESS-PROOF.md:curl-auth-header:15
+c3c242e58e9d50865961ad2366d286e7fc1a9acf:docs/C70-VERIFICATION.md:curl-auth-header:18
+c814ad14c972ac0d3193331675bba87292e65393:docs/C70-FINAL-STATUS.md:curl-auth-header:187
+c814ad14c972ac0d3193331675bba87292e65393:docs/C70-FINAL-STATUS.md:curl-auth-header:82
+# CRON_SECRET (64-hex variant) (016a...)
+0ca4a75f3a3e84a21d916a125e67e5f2498e2a23:docs/C70-PRODUCTION-VERIFICATION.md:curl-auth-header:41
+c3c242e58e9d50865961ad2366d286e7fc1a9acf:docs/C70-VERIFICATION.md:curl-auth-header:43
+# VOUCHER_QR_SECRET (qouI...)
+0ca4a75f3a3e84a21d916a125e67e5f2498e2a23:docs/C70-PRODUCTION-VERIFICATION.md:generic-api-key:76
+136339f4e4f1ddbbef1bd770da8b34c643a34532:docs/C70-RESULT.md:generic-api-key:42
+# CRON_SECRET (equals the current .env.local value) (7enz...)
+00501ef39d4d845b122f3827548eff33f95d5d29:docs/CRON-SECRET-FIX.md:curl-auth-header:17
+00501ef39d4d845b122f3827548eff33f95d5d29:docs/CRON-SECRET-FIX.md:curl-auth-header:20
+8976e807ce70462cfdd1ca478bc3f8b183186b34:docs/C54-RESULT.md:curl-auth-header:39
+8976e807ce70462cfdd1ca478bc3f8b183186b34:docs/C54-RESULT.md:curl-auth-header:45
+8976e807ce70462cfdd1ca478bc3f8b183186b34:docs/C54-RESULT.md:curl-auth-header:61
+8976e807ce70462cfdd1ca478bc3f8b183186b34:docs/C54-RESULT.md:curl-auth-header:67
+8976e807ce70462cfdd1ca478bc3f8b183186b34:docs/C54-RESULT.md:generic-api-key:20
+
+# 2. NOT SECRETS. Test fixtures that sign and verify inside the same file
+#    ('test-...', 'secret-...', RFC 6238 vector GEZDGNBV...), placeholders
+#    (YOUR_..., dev-..., wrong-..., old-...), the VAPID PUBLIC key (public by
+#    design), a Supabase sb_publishable key (public by design), a truncated
+#    'sb_secret_...' example, a vault row UUID, the word 'bounce' matched by the
+#    generic rule in STATE.md, and secret-leak-gate.test.mjs, whose whole job is
+#    to contain fake sk_live_ strings for the repository's own scanner.
+
+# STATE.md
+40786be69093a59e7e367dd43545d66c26f32e46:STATE.md:generic-api-key:8
+# docs/C11-RESULT.md
+217a16ded3377c349634007c42ee8589f66c978b:docs/C11-RESULT.md:generic-api-key:190
+# docs/C190-sec.md
+4c710c8b8c23f8c0b1ce2fc3fda1531442da1bb5:docs/C190-sec.md:private-key:44
+# docs/C37-MIGRATION-APPLIED.md
+9efc62a8a129415287791856db4107cd7a978093:docs/C37-MIGRATION-APPLIED.md:curl-auth-header:15
+# docs/C51-SUPABASE-WORK-BLOCKED.md
+be83fd19a2db3b0326f07288eea1dd93e5427486:docs/C51-SUPABASE-WORK-BLOCKED.md:curl-auth-header:104
+# docs/C70-PRODUCTION-VERIFICATION.md
+0ca4a75f3a3e84a21d916a125e67e5f2498e2a23:docs/C70-PRODUCTION-VERIFICATION.md:curl-auth-header:30
+# docs/C70-RESULT.md
+136339f4e4f1ddbbef1bd770da8b34c643a34532:docs/C70-RESULT.md:curl-auth-header:98
+159b4d5953fe9a6b1f8e3fa7b7ed276758b03571:docs/C70-RESULT.md:generic-api-key:34
+159b4d5953fe9a6b1f8e3fa7b7ed276758b03571:docs/C70-RESULT.md:generic-api-key:72
+# docs/C70-SUCCESS-PROOF.md
+51a0d0d69f2488c25d11635d4628ce568e46f882:docs/C70-SUCCESS-PROOF.md:curl-auth-header:35
+# docs/C70-VERIFICATION.md
+c3c242e58e9d50865961ad2366d286e7fc1a9acf:docs/C70-VERIFICATION.md:curl-auth-header:31
+# docs/CDN-OPTIMIZATION.md
+5fafcbeb2b2ce10837e1feb42672b676f2ab7b3e:docs/CDN-OPTIMIZATION.md:curl-auth-header:74
+# docs/DEAL-SEEDING.md
+c37f5bba02d4f7aa6da7bb30c803890f0d925f41:docs/DEAL-SEEDING.md:curl-auth-header:283
+# docs/F55-IMPLEMENTATION.md
+92cf1613afd658419c51fc1ed240863aad8a26bf:docs/F55-IMPLEMENTATION.md:generic-api-key:180
+# scripts/secret-leak-gate.test.mjs
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:105
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:106
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:112
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:113
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:19
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:20
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:24
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:42
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:45
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:63
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:88
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:93
+57714b9899e9da587c96c8e2c6c3c58e652a68ef:scripts/secret-leak-gate.test.mjs:stripe-access-token:94
+# scripts/seed/totp.test.ts
+1f7171e2e0bc942bee995d0d3109b5a5b9b6abe2:scripts/seed/totp.test.ts:generic-api-key:11
+# scripts/test-push-delivery.mjs
+45f8963d704562ceac5e0e466caf1dbb6cfae974:scripts/test-push-delivery.mjs:generic-api-key:34
+# src/app/(store)/developers/page.tsx
+8bc2408fbc794671df9b677491b543ae1bad8bf2:src/app/(store)/developers/page.tsx:curl-auth-header:155
+8bc2408fbc794671df9b677491b543ae1bad8bf2:src/app/(store)/developers/page.tsx:curl-auth-header:208
+b39fdbeb9ea924d84837206fd1d05e064d0b64d3:src/app/(store)/developers/page.tsx:curl-auth-header:141
+b39fdbeb9ea924d84837206fd1d05e064d0b64d3:src/app/(store)/developers/page.tsx:curl-auth-header:188
+# src/app/api/cron/shipments-track/route.test.ts
+899eb50871a4782f35a0b1703c20088c8ac5f66a:src/app/api/cron/shipments-track/route.test.ts:generic-api-key:17
+# src/app/api/supplier/verify-card/route.test.ts
+ea9a6e078db79fc7f12db179edfed03eedd4d554:src/app/api/supplier/verify-card/route.test.ts:generic-api-key:15
+# src/app/api/supplier/vouchers/redeem/route.test.ts
+c6dfb47fad82a10906a9646a896550c3f5499122:src/app/api/supplier/vouchers/redeem/route.test.ts:generic-api-key:145
+# src/app/api/webhooks/cardcom/integration.test.ts
+f0ab90c83aad3537b673130e2367e71bf48ce8e7:src/app/api/webhooks/cardcom/integration.test.ts:generic-api-key:78
+# src/lib/admin/view-as-token.test.ts
+0ce9a4d40aaf8f4803c00a48afa4b3ecd75db01f:src/lib/admin/view-as-token.test.ts:generic-api-key:11
+# src/lib/partner-api/index.test.ts
+b39fdbeb9ea924d84837206fd1d05e064d0b64d3:src/lib/partner-api/index.test.ts:generic-api-key:37
+b39fdbeb9ea924d84837206fd1d05e064d0b64d3:src/lib/partner-api/index.test.ts:generic-api-key:59
+b39fdbeb9ea924d84837206fd1d05e064d0b64d3:src/lib/partner-api/index.test.ts:generic-api-key:65
+# src/lib/voucher-code.test.ts
+1bdf65669a7159916c704b4d11c2c682643f2bf2:src/lib/voucher-code.test.ts:generic-api-key:94
+# src/lib/vouchers/partner-input.test.ts
+c6dfb47fad82a10906a9646a896550c3f5499122:src/lib/vouchers/partner-input.test.ts:generic-api-key:22
+c6dfb47fad82a10906a9646a896550c3f5499122:src/lib/vouchers/partner-input.test.ts:generic-api-key:25
+# src/lib/vouchers/qr-generation.test.ts
+0c80ea41bf69f4eb3734496841a37c23d82664d0:src/lib/vouchers/qr-generation.test.ts:generic-api-key:12
+0c80ea41bf69f4eb3734496841a37c23d82664d0:src/lib/vouchers/qr-generation.test.ts:generic-api-key:212
+0c80ea41bf69f4eb3734496841a37c23d82664d0:src/lib/vouchers/qr-generation.test.ts:generic-api-key:215
+# src/server/actions/admin/products.ts
+eddae1b7b78bdf006bd3645fa6189d4a11fecc9e:src/server/actions/admin/products.ts:generic-api-key:302

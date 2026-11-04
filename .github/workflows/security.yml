@@ -32,7 +32,6 @@ on:
       # Dependabot pushes its own branches and then opens a PR; running both is
       # two identical scans of the same tree.
       - 'dependabot/**'
-  workflow_dispatch:
 
 concurrency:
   group: security-${{ github.ref }}
