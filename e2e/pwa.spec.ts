@@ -14,6 +14,9 @@ test.describe('PWA surface', () => {
     expect(res.status()).toBe(200)
     expect(res.headers()['content-type']).toContain('manifest')
     const m = (await res.json()) as {
+      name: string
+      short_name: string
+      theme_color: string
       lang: string
       dir: string
       display: string
@@ -21,6 +24,11 @@ test.describe('PWA surface', () => {
       icons: { src: string; purpose?: string }[]
       shortcuts: { url: string }[]
     }
+    // S32: the brand name as the logo spells it, a Hebrew launcher label, and
+    // the brand yellow the browser paints the title bar with.
+    expect(m.name).toBe('Kenyon EXPRESS')
+    expect(m.short_name).toMatch(/[\u0590-\u05FF]/)
+    expect(m.theme_color).toBe('#fed700')
     expect(m.lang).toBe('he')
     expect(m.dir).toBe('rtl')
     expect(m.display).toBe('standalone')
@@ -54,11 +62,12 @@ test.describe('PWA surface', () => {
     await page.goto('/')
     await expect(page.locator('link[rel="manifest"]')).toHaveCount(1)
     // Next 16 writes the standard `mobile-web-app-capable`, which iOS 17.4+
-    // honours; older Safari reads the `apple-` prefixed one. Either counts.
+    // honours; older Safari reads only the `apple-` prefixed one, which the
+    // layout adds by hand (W14). Both ship, once each: the old assertion
+    // counted the pair as one and failed on the document it was written for.
+    await expect(page.locator('meta[name="mobile-web-app-capable"][content="yes"]')).toHaveCount(1)
     await expect(
-      page.locator(
-        'meta[name="mobile-web-app-capable"][content="yes"], meta[name="apple-mobile-web-app-capable"][content="yes"]',
-      ),
+      page.locator('meta[name="apple-mobile-web-app-capable"][content="yes"]'),
     ).toHaveCount(1)
     await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveCount(1)
     await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1)

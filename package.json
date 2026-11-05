@@ -45,6 +45,7 @@
     "analyze": "next experimental-analyze",
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
     "pwa:installable": "node scripts/pwa-installability.mjs",
+    "pwa:offline": "node scripts/pwa-offline-check.mjs",
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "sentry:alerts": "node scripts/sentry-alert-rules.mjs",

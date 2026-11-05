@@ -52,8 +52,10 @@ describe('web app manifest', () => {
     expect(m.lang).toBe('he')
     expect(m.dir).toBe('rtl')
     // The launcher label too (W14): a Latin name under the icon on a Hebrew
-    // phone is the one place the site would not be in its own language.
-    expect(m.name).toMatch(/[\u0590-\u05FF]/)
+    // phone is the one place the site would not be in its own language. The
+    // label is `short_name`; `name` is the brand as the logo spells it (S32),
+    // shown beside that logo in the install dialog and on the splash screen.
+    expect(m.name).toBe('Kenyon EXPRESS')
     expect(m.short_name).toMatch(/[\u0590-\u05FF]/)
     expect(m.short_name?.length ?? 99).toBeLessThanOrEqual(12)
   })

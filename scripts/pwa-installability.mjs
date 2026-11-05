@@ -21,7 +21,8 @@
  *   5. The offline fallback document the worker precaches answers 200.
  *   6. iOS: `apple-touch-icon` and `apple-mobile-web-app-capable` on the
  *      document, because iOS reads none of the above.
- *   7. Hebrew: `lang: he`, `dir: rtl`, and a Hebrew `name`.
+ *   7. Hebrew: `lang: he`, `dir: rtl`, and a Hebrew `short_name` (the launcher
+ *      label). `name` is the brand as the logo spells it, `Kenyon EXPRESS`.
  *
  * Usage: LOCAL_BASE=http://localhost:3311 node scripts/pwa-installability.mjs
  * Exit 0 when every check passes, 1 otherwise. Every check is printed either
@@ -111,7 +112,14 @@ async function main() {
         manifest.short_name.length <= 12,
       manifest.short_name,
     )
-    check('manifest name is Hebrew', HEBREW.test(manifest.name ?? ''), manifest.name)
+    // S32: `name` is the brand as the logo spells it; the launcher label,
+    // `short_name`, is the one that has to be Hebrew.
+    check('manifest name is the brand name', manifest.name === 'Kenyon EXPRESS', manifest.name)
+    check(
+      'manifest short_name (the launcher label) is Hebrew',
+      HEBREW.test(manifest.short_name ?? ''),
+      manifest.short_name,
+    )
     check('manifest is lang=he dir=rtl', manifest.lang === 'he' && manifest.dir === 'rtl')
     const scope = manifest.scope ?? '/'
     const startUrl = manifest.start_url ?? ''
