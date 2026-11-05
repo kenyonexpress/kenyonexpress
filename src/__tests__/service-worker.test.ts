@@ -32,6 +32,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const SW_SOURCE = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')
+// The cache prefix is whatever the worker ships; a test pinned to a literal
+// version string fails on every kill-switch bump without finding a defect.
+const SW_VERSION = SW_SOURCE.match(/const VERSION = '([^']+)'/)?.[1] ?? 'unknown'
 
 const ORIGIN = 'https://kenyonexpress.co.il'
 
@@ -311,7 +314,7 @@ describe('images, stale-while-revalidate', () => {
     await route(harness, `${ORIGIN}/_next/image?url=%2Fp.jpg&w=1080&q=75`)
     await settle(harness)
 
-    const cache = await harness.cacheStorage.open('ke-v3-images')
+    const cache = await harness.cacheStorage.open(`${SW_VERSION}-images`)
     expect(cache.entries.size).toBe(2)
   })
 
@@ -321,7 +324,7 @@ describe('images, stale-while-revalidate', () => {
     }
     await settle(harness)
 
-    const cache = await harness.cacheStorage.open('ke-v3-images')
+    const cache = await harness.cacheStorage.open(`${SW_VERSION}-images`)
     expect(cache.entries.size).toBe(60)
     expect([...cache.entries.keys()].some((url) => url.includes('p0.jpg'))).toBe(false)
     expect([...cache.entries.keys()].some((url) => url.includes('p64.jpg'))).toBe(true)
@@ -373,7 +376,7 @@ describe('navigations', () => {
   })
 
   it('falls back to the offline shell for a page it has never seen', async () => {
-    const cache = await harness.cacheStorage.open('ke-v3-static')
+    const cache = await harness.cacheStorage.open(`${SW_VERSION}-static`)
     await cache.put(new Request(`${ORIGIN}/offline`), new Response('offline shell'))
 
     harness.fetchMock.mockRejectedValueOnce(new TypeError('offline'))
@@ -394,13 +397,13 @@ describe('navigations', () => {
     // Unbounded cardinality: every sort and price filter is a distinct URL and
     // none of them is a page anybody revisits offline.
     await route(harness, `${ORIGIN}/products?sort=price&min=50`, { mode: 'navigate' })
-    const cache = await harness.cacheStorage.open('ke-v3-pages')
+    const cache = await harness.cacheStorage.open(`${SW_VERSION}-pages`)
     expect(cache.entries.size).toBe(0)
   })
 
   it('does not cache a page outside the catalogue', async () => {
     await route(harness, `${ORIGIN}/terms`, { mode: 'navigate' })
-    const cache = await harness.cacheStorage.open('ke-v3-pages')
+    const cache = await harness.cacheStorage.open(`${SW_VERSION}-pages`)
     expect(cache.entries.size).toBe(0)
   })
 })
