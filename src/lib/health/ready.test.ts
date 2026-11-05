@@ -67,6 +67,65 @@ describe('toReadyReport', () => {
     expect(ready.checks.redis).toBe('down')
   })
 
+  it('reports search degraded and stays ready when Meilisearch is unset', () => {
+    const ready = toReadyReport(
+      report([
+        ['database', 'ok'],
+        ['rate_limiter', 'ok'],
+        ['search', 'not_configured'],
+        ['storage', 'ok'],
+        ['cardcom', 'ok'],
+      ]),
+    )
+    expect(ready.ok).toBe(true)
+    expect(ready.search).toBe('degraded')
+    expect(ready.checks.meilisearch).toBe('not_configured')
+  })
+
+  it('stays ready when Meilisearch is set but unreachable, and still says it is down', () => {
+    const ready = toReadyReport(
+      report([
+        ['database', 'ok'],
+        ['rate_limiter', 'ok'],
+        ['search', 'down'],
+        ['storage', 'ok'],
+        ['cardcom', 'ok'],
+      ]),
+    )
+    expect(ready.ok).toBe(true)
+    expect(ready.search).toBe('degraded')
+    expect(ready.checks.meilisearch).toBe('down')
+  })
+
+  it('reports search ok only when the engine answered', () => {
+    const ready = toReadyReport(
+      report([
+        ['database', 'ok'],
+        ['rate_limiter', 'ok'],
+        ['search', 'ok'],
+        ['storage', 'ok'],
+        ['cardcom', 'ok'],
+      ]),
+    )
+    expect(ready.ok).toBe(true)
+    expect(ready.search).toBe('ok')
+  })
+
+  it('is not ready when a required dependency is down, whatever search says', () => {
+    for (const required of ['database', 'rate_limiter', 'storage', 'cardcom']) {
+      const ready = toReadyReport(
+        report(
+          ['database', 'rate_limiter', 'search', 'storage', 'cardcom'].map((name) => [
+            name,
+            name === required ? 'down' : 'ok',
+          ]),
+        ),
+      )
+      expect(ready.ok, required).toBe(false)
+      expect(ready.search, required).toBe('ok')
+    }
+  })
+
   it('treats a missing mapped dependency as down rather than silently ok', () => {
     const ready = toReadyReport(report([['database', 'ok']]))
     expect(ready.checks.redis).toBe('down')

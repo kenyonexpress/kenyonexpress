@@ -111,7 +111,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       log.warn('search.outbox_backlog', {
         pending: searchOutbox.pending,
         drained: searchOutbox.done,
-        configured: Boolean(process.env.MEILISEARCH_HOST),
+        configured: Boolean(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY),
       })
     }
   } catch (error) {

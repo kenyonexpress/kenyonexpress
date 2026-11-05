@@ -9,6 +9,9 @@ import { type DependencyStatus, type HealthReport, runHealthChecks } from '@/lib
  * a terminal number, or an upstream error: the route is unauthenticated, so
  * everything it says is public.
  *
+ * `ok` is false, and the route 503s, only when a REQUIRED dependency is down.
+ * Meilisearch is not one; see `OPTIONAL` below.
+ *
  * WHY `redis` IS THE LIMITER AND NOT A SERVER THAT DOES NOT EXIST. The brief
  * names Redis. Rate limiting here is `check_rate_limit` in Postgres, with
  * Upstash as an optional faster backend. Reporting a green Redis of our own
@@ -20,10 +23,34 @@ export const READY_CHECK_NAMES = ['database', 'redis', 'meilisearch', 'r2', 'car
 
 export type ReadyCheckName = (typeof READY_CHECK_NAMES)[number]
 
+/**
+ * `degraded` is the honest word for search without its engine: queries are
+ * answered, by Postgres, without typo tolerance, synonyms or engine facets.
+ * It is neither `ok` nor an outage, so it gets a name of its own instead of
+ * being folded into either.
+ */
+export type SearchCapability = 'ok' | 'degraded'
+
 export type ReadyReport = {
   ok: boolean
+  search: SearchCapability
   checks: Record<ReadyCheckName, DependencyStatus>
 }
+
+/**
+ * The one check that cannot make the deployment unready.
+ *
+ * Meilisearch is optional (lib/env.ts), and when it is unset OR unreachable
+ * `lib/search-server.ts` answers from Postgres behind a circuit breaker. So a
+ * dead engine is a slower search box, and failing readiness over it tells a
+ * load balancer to pull a shop that is taking orders. That is what production
+ * did from 01.10.2026: host and key set, engine not answering, `/api/ready`
+ * 503 on every probe while `/api/search` answered 200.
+ *
+ * Nothing is hidden by this: `checks.meilisearch` still carries the engine's
+ * real status, `down` included, and `search` says what the shopper gets.
+ */
+const OPTIONAL: ReadonlySet<ReadyCheckName> = new Set(['meilisearch'])
 
 const SOURCE: Record<ReadyCheckName, string> = {
   database: 'database',
@@ -42,7 +69,8 @@ export function toReadyReport(report: HealthReport): ReadyReport {
     checks[name] = byName.get(SOURCE[name]) ?? 'down'
   }
   return {
-    ok: Object.values(checks).every((status) => status !== 'down'),
+    ok: READY_CHECK_NAMES.every((name) => OPTIONAL.has(name) || checks[name] !== 'down'),
+    search: checks.meilisearch === 'ok' ? 'ok' : 'degraded',
     checks,
   }
 }

@@ -648,6 +648,10 @@ degrades gracefully until applied. No migration applied, no code change.
     חדש). **נמדד שוב 06.10.2026, M13-c112, שלוש פעמים ברצף**: `/api/health`
     `200`, `/api/ready` עדיין `503` עם `meilisearch:"down"`; `cardcom` עכשיו
     `ok` (L11), `r2` עדיין `not_configured`, `/api/search?q=test` `200`.
+    **06.11.2026, S36**: מנוע מוגדר-ולא-עונה כבר לא מפיל את `/api/ready`.
+    התשובה היא `200` עם `search:"degraded"` ו-`meilisearch:"down"`
+    (`docs/S36-env.md`); נמדד מקומית, לא בפרודקשן, וייכנס לתוקף שם רק
+    בדיפלוי. המנוע עצמו עדיין לא עונה, והסעיף נשאר פתוח.
 17. **`SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN` חסרים ב-Production של
     הפרויקט שמגיש את הדומיין** (נמדד 01.10.2026, M14-c66, `filter_project_envs`
     קריאה-בלבד על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`). קיים

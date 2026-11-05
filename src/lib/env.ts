@@ -54,6 +54,25 @@ const schema = z
     /** Milliseconds. Defaults to 1000 in `lib/rate-limit/upstash.ts`. */
     UPSTASH_REDIS_REST_TIMEOUT_MS: z.string().optional(),
 
+    /**
+     * Meilisearch. OPTIONAL, AND THE SCHEMA DELIBERATELY CHECKS NOTHING ABOUT
+     * THEIR SHAPE. Search has a second engine that is always there: without
+     * these two, `lib/search-server.ts` and the facets route answer from
+     * Postgres, the indexer and the outbox drain are successful no-ops, and
+     * the drift check skips. Slower, no typo tolerance, and a working shop.
+     *
+     * So nothing here may refuse a boot. Not `.url()` either: a host pasted
+     * without its scheme would then take checkout down over a search box. A
+     * malformed or half-set pair is reported once, by `warnOnPartialSearch`
+     * below, and reads as unconfigured to every caller, which all test for
+     * BOTH values.
+     *
+     * Absence is not hidden. `/api/ready` reports `search: "degraded"` with a
+     * 200 whenever the engine is unset or unreachable (lib/health/ready.ts).
+     */
+    MEILISEARCH_HOST: z.string().optional(),
+    MEILISEARCH_API_KEY: z.string().optional(),
+
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
@@ -231,6 +250,34 @@ function assertNoPublicSecrets(): void {
   }
 }
 
+/**
+ * The one thing boot says about search, and it only ever says it.
+ *
+ * Both unset is the documented fallback and is silent. What earns a line is a
+ * pair that looks configured and is not: one value without the other, or a
+ * host `fetch` cannot use. Every reader treats that as "no engine", so the
+ * shop works, and without this line nobody would learn why the engine they
+ * provisioned never answers a query.
+ */
+function warnOnPartialSearch(e: { MEILISEARCH_HOST?: string; MEILISEARCH_API_KEY?: string }): void {
+  const host = e.MEILISEARCH_HOST?.trim()
+  const key = e.MEILISEARCH_API_KEY?.trim()
+  if (!host && !key) return
+  if (!host || !key) {
+    log.warn('env.search_half_configured', {
+      missing: host ? 'MEILISEARCH_API_KEY' : 'MEILISEARCH_HOST',
+      detail: 'Search runs on Postgres until both are set.',
+    })
+    return
+  }
+  if (!/^https?:\/\/\S+$/i.test(host)) {
+    log.warn('env.search_host_malformed', {
+      detail:
+        'MEILISEARCH_HOST is not an http(s) URL. Every engine call will fail over to Postgres.',
+    })
+  }
+}
+
 assertNoPublicSecrets()
 
 const parsed = schema.safeParse(process.env)
@@ -248,6 +295,8 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV ==
       'ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach.',
   })
 }
+
+warnOnPartialSearch(parsed.data)
 
 // After parsing, so a malformed environment fails on its own terms first.
 assertNoCompromisedKeys(isDeployedRuntime())

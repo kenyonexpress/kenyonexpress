@@ -7,7 +7,9 @@ import { NextResponse } from 'next/server'
  *
  * Distinct from `/api/health`, which is liveness plus one database probe.
  * This one answers whether the five named dependencies are reachable or at
- * least honestly unconfigured. 503 only when something is `down`.
+ * least honestly unconfigured. 503 only when a required one is `down`.
+ * Meilisearch is optional: unset or unreachable it reports `search:
+ * "degraded"` beside a 200, because search is then served by Postgres.
  *
  * Never cached, never verbose. A cached ready check is a lie with a timestamp,
  * and a detailed one is a public inventory of the stack.
