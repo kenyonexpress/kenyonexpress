@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { type BrowserContext, type Page, expect } from '@playwright/test'
+import { totpCode } from './totp'
 
 /**
  * Auth helpers for paid E2E flows.
@@ -18,6 +19,13 @@ export const E2E_SUPPLIER_EMAIL =
 export const E2E_SUPPLIER_PASSWORD = process.env.E2E_SUPPLIER_PASSWORD ?? 'E2eSupplier!pass1'
 export const E2E_ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? 'e2e-admin@test.kenyonexpress.local'
 export const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? 'E2eAdmin!pass1'
+/**
+ * G6: `admin` is a forced-MFA role, so the fixture holds a verified TOTP
+ * factor (enrolled once by scripts/e2e/enrol-admin-totp.mjs) and the suite
+ * finishes the challenge with its secret. Unset, an admin sign-in stops on
+ * /admin-mfa and the spec that needed the panel fails there, loudly.
+ */
+export const E2E_ADMIN_TOTP_SECRET = process.env.E2E_ADMIN_TOTP_SECRET ?? ''
 
 /** Fixture products from scripts/seed-test-data.mjs */
 export const E2E_COUPON_SLUG = 'e2e-test-coupon'
@@ -87,7 +95,10 @@ export async function signInWithEmail(
   if (cached) {
     await page.context().addCookies(cached)
     await page.goto(landing)
-    if (!new URL(page.url()).pathname.startsWith('/login')) return
+    if (!new URL(page.url()).pathname.startsWith('/login')) {
+      await proveAdminMfa(page, email)
+      return
+    }
     await page.context().clearCookies()
   }
 
@@ -99,7 +110,47 @@ export async function signInWithEmail(
   await page.getByRole('button', { name: 'כניסה', exact: true }).click()
   // Either the return path or a generic signed-in page; never stay on /login.
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 })
+  await proveAdminMfa(page, email)
   await writeCachedCookies(page, email)
+}
+
+/**
+ * G6: the admin fixture is a forced-MFA role, and a sign-in that lands on
+ * /account is still aal1. Stepping through /admin makes the gate ask, once,
+ * so every admin page a spec visits afterwards is reached at aal2 instead of
+ * being redirected out from under the assertion. Other roles pass straight
+ * through; a landing already on /admin-mfa is answered in place.
+ */
+async function proveAdminMfa(page: Page, email: string): Promise<void> {
+  if (email !== E2E_ADMIN_EMAIL) return
+  const here = new URL(page.url())
+  if (!here.pathname.startsWith('/admin-mfa')) {
+    const back = here.pathname + here.search
+    await page.goto('/admin')
+    await completeMfaChallengeIfAsked(page, email)
+    if (!back.startsWith('/admin') || back.startsWith('/admin-mfa')) await page.goto(back)
+    return
+  }
+  await completeMfaChallengeIfAsked(page, email)
+}
+
+/**
+ * The admin gate (lib/admin/rbac.ts, src/proxy.ts) lands a forced role on
+ * /admin-mfa. With the fixture's secret in the shell the challenge is
+ * answered here, once per run, and the aal2 session is what gets cached.
+ */
+async function completeMfaChallengeIfAsked(page: Page, email: string): Promise<void> {
+  if (!new URL(page.url()).pathname.startsWith('/admin-mfa')) return
+  if (!E2E_ADMIN_TOTP_SECRET || email !== E2E_ADMIN_EMAIL) {
+    throw new Error(
+      `${email} landed on /admin-mfa and no E2E_ADMIN_TOTP_SECRET is set; run scripts/e2e/enrol-admin-totp.mjs`,
+    )
+  }
+  const codeField = page.getByLabel('קוד בן 6 ספרות')
+  await expect(codeField).toBeVisible({ timeout: 10_000 })
+  await codeField.fill(totpCode(E2E_ADMIN_TOTP_SECRET))
+  await page.getByRole('button', { name: 'אימות וכניסה' }).click()
+  await page.waitForURL((url) => !url.pathname.startsWith('/admin-mfa'), { timeout: 20_000 })
 }
 
 /** Clears the browser storage so the next sign-in is a fresh guest session. */

@@ -1,4 +1,5 @@
 import PasskeyManager from '@/components/account/PasskeyManager'
+import TotpManager from '@/components/account/TotpManager'
 import { listPasskeys } from '@/server/actions/passkeys'
 
 export const metadata = { title: 'אבטחה וכניסה' }
@@ -15,6 +16,7 @@ export default async function SecurityPage() {
     <>
       <h1 className="account-title">אבטחה וכניסה</h1>
       <p className="account-subtitle">ניהול הדרכים להתחבר לחשבון שלך</p>
+      <TotpManager />
       {available ? (
         <PasskeyManager initial={initial} />
       ) : (

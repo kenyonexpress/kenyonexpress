@@ -3,6 +3,8 @@
 import {
   type MfaEnrolState,
   type MfaVerifyState,
+  type RedeemBackupState,
+  redeemBackupCode,
   startTotpEnrolment,
   verifyTotpCode,
 } from '@/server/actions/mfa'
@@ -27,6 +29,12 @@ export default function AdminMfaForm({
     verifyTotpCode,
     null,
   )
+
+  const [redeemState, redeemAction, redeemPending] = useActionState<RedeemBackupState, FormData>(
+    redeemBackupCode,
+    null,
+  )
+  const [showRedeem, setShowRedeem] = useState(false)
 
   const enrolError = enrolment && 'error' in enrolment ? enrolment.error : null
   const enrolled = enrolment && 'factorId' in enrolment ? enrolment : null
@@ -110,6 +118,59 @@ export default function AdminMfaForm({
             {verifyPending ? 'מאמת...' : 'אימות וכניסה'}
           </button>
         </form>
+      )}
+
+      {/* G6: the lost-authenticator path. A backup code does not sign in at
+          aal2 (Supabase has no such notion); it removes the lost factor so a
+          new one can be enrolled, which is the only honest recovery. */}
+      {mode === 'challenge' && (
+        <div className="border-t border-gray-100 pt-4">
+          {!showRedeem ? (
+            <button
+              type="button"
+              onClick={() => setShowRedeem(true)}
+              className="text-sm text-gray-600 underline underline-offset-2 hover:text-gray-900"
+            >
+              אין גישה לאפליקציית האימות? שימוש בקוד גיבוי
+            </button>
+          ) : (
+            <form action={redeemAction} className="space-y-3">
+              <p className="text-sm text-gray-600">
+                הזינו אחד מקודי הגיבוי שקיבלתם. הקוד מאפס את אפליקציית האימות, ומיד אחריו תגדירו אחת
+                חדשה. כל קוד תקף לפעם אחת.
+              </p>
+              <div>
+                <label
+                  htmlFor="mfa-backup-code"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  קוד גיבוי
+                </label>
+                <input
+                  id="mfa-backup-code"
+                  name="backup_code"
+                  autoComplete="off"
+                  required
+                  dir="ltr"
+                  placeholder="XXXXX-XXXXX"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-center font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </div>
+              {redeemState?.error && (
+                <div role="alert" className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                  {redeemState.error}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={redeemPending}
+                className="w-full flex items-center justify-center rounded-lg py-2.5 text-sm font-medium border border-gray-900 text-gray-900 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                {redeemPending ? 'מאפס...' : 'איפוס האימות הדו-שלבי עם קוד גיבוי'}
+              </button>
+            </form>
+          )}
+        </div>
       )}
     </div>
   )

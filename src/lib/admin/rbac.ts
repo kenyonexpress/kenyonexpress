@@ -1,4 +1,4 @@
-import { superAdminMfaGate } from '@/lib/admin/mfa-gate'
+import { isMfaForcedRole, staffMfaGate } from '@/lib/admin/mfa-gate'
 import { type AdminSection, canReadSection, canWriteSection } from '@/lib/admin/permissions'
 import { type AppRole, isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
 import { createClient } from '@/lib/supabase/server'
@@ -25,23 +25,20 @@ export async function getSessionWithRole(): Promise<AdminSessionInfo | null> {
   return { userId: user.id, role: profile.role }
 }
 
-// super_admin passes no guard without an MFA-verified session (aal2). Sits in
+// super_admin, admin and content_uploader pass no guard without an
+// MFA-verified session (aal2); G6 widened this from super_admin alone. Sits in
 // every require* below rather than in getSessionWithRole, which callers use
 // for non-redirect decisions. The /admin-mfa page lives OUTSIDE the (admin)
 // layout, so redirecting there cannot re-enter this gate.
-async function enforceSuperAdminMfa(session: AdminSessionInfo): Promise<void> {
-  if (session.role !== 'super_admin') return
+async function enforceStaffMfa(session: AdminSessionInfo): Promise<void> {
+  if (!isMfaForcedRole(session.role)) return
   const supabase = await createClient()
   const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
   // supabase-js types the levels as open strings; anything that is not
   // literally aal2/aal1 collapses to null, which the gate fails closed.
   const level = (value: string | null | undefined) =>
     value === 'aal2' ? 'aal2' : value === 'aal1' ? 'aal1' : null
-  const decision = superAdminMfaGate(
-    session.role,
-    level(data?.currentLevel),
-    level(data?.nextLevel),
-  )
+  const decision = staffMfaGate(session.role, level(data?.currentLevel), level(data?.nextLevel))
   if (decision !== 'ok') {
     redirect(`/admin-mfa?mode=${decision}`)
   }
@@ -53,7 +50,7 @@ export async function requireAdminSession(): Promise<AdminSessionInfo> {
   if (!session || !isAdminRole(session.role)) {
     redirect('/login')
   }
-  await enforceSuperAdminMfa(session)
+  await enforceStaffMfa(session)
   return session
 }
 
@@ -64,7 +61,7 @@ export async function requireStaffSession(): Promise<AdminSessionInfo> {
   if (!session || !isStaffRole(session.role)) {
     redirect('/login')
   }
-  await enforceSuperAdminMfa(session)
+  await enforceStaffMfa(session)
   return session
 }
 
@@ -79,7 +76,7 @@ export async function requireAdminPage(): Promise<AdminSessionInfo> {
   if (!isAdminRole(session.role)) {
     redirect('/admin/products')
   }
-  await enforceSuperAdminMfa(session)
+  await enforceStaffMfa(session)
   return session
 }
 
@@ -91,7 +88,7 @@ export async function requirePanelSession(): Promise<AdminSessionInfo> {
   if (!session || !isPanelRole(session.role)) {
     redirect('/login')
   }
-  await enforceSuperAdminMfa(session)
+  await enforceStaffMfa(session)
   return session
 }
 

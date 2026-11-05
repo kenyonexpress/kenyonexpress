@@ -218,6 +218,28 @@ export async function proxy(request: NextRequest, event?: NextFetchEvent) {
     if (!isPanel) {
       return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
     }
+    // G6: the forced roles (lib/admin/mfa-gate.ts) do not reach the panel at
+    // aal1. The session's assurance level comes from the auth server, not from
+    // anything the request carries. /admin-mfa itself starts with "/admin" and
+    // is where this redirect lands, so it is excluded or the loop never ends.
+    // Every page and action re-checks through enforceStaffMfa; this is the
+    // early, cheap answer for the route, the same optimistic shape as the role
+    // check above.
+    const forced =
+      profile?.role === 'admin' ||
+      profile?.role === 'super_admin' ||
+      profile?.role === 'content_uploader'
+    const panelPath = pathname === '/admin' || pathname.startsWith('/admin/')
+    if (forced && panelPath) {
+      const { data: levels } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if (levels?.currentLevel !== 'aal2') {
+        const mode = levels?.nextLevel === 'aal2' ? 'challenge' : 'enrol'
+        return withRequestId(
+          NextResponse.redirect(new URL(`/admin-mfa?mode=${mode}`, request.url)),
+          requestId,
+        )
+      }
+    }
   }
 
   // A share link's `?ref=` code, written down before the visit goes anywhere.

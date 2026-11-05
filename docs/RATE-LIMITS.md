@@ -46,6 +46,10 @@
 | `mfa-enrol` | 10 | 1 h | TOTP factor creation, per user; one authenticator, not a pile of abandoned factors |
 | `mfa-verify` | 10 | 15 min | six digits are brute forceable; per-user bound is what actually protects the account |
 | `mfa-verify-ip` | 30 | 15 min | the same guesses spread across accounts from one address |
+| `mfa-backup-issue` | 5 | 1 h | G6: a new backup-code set replaces the old one; a person does this once, not in a loop |
+| `mfa-backup-redeem` | 5 | 15 min | G6: ten-character codes are 50 bits, but a redeem resets the factor, so guesses are bounded per user |
+| `mfa-backup-redeem-ip` | 15 | 15 min | G6: the same guesses spread across accounts from one address |
+| `mfa-api` | 60 | 15 min | G6: /api/auth/mfa writes per address, on top of the per-user limits inside each ceremony |
 | `passkey-login` | 30 | 1 h | challenge issuance, per IP; cheap but each one sets a cookie |
 | `passkey-login-finish` | 20 | 1 h | assertion verification plus admin calls; one per real login |
 | `push-subscribe` | 30 | 1 h | service-role upserts to push_subscriptions; a browser re-posts one per page load at most |

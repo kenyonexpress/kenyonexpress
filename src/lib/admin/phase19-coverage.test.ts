@@ -12,9 +12,12 @@ const ROOT = resolve(__dirname, '../../..')
 
 describe('admin 2FA and audit', () => {
   it('enrols TOTP through auth.mfa', () => {
-    const mfa = readFileSync(resolve(ROOT, 'src/server/actions/mfa.ts'), 'utf8')
+    // G6 moved the ceremony into server/mfa/service.ts; the action delegates.
+    const mfa = readFileSync(resolve(ROOT, 'src/server/mfa/service.ts'), 'utf8')
     expect(mfa).toContain("factorType: 'totp'")
     expect(mfa).toContain('mfa.enroll')
+    const action = readFileSync(resolve(ROOT, 'src/server/actions/mfa.ts'), 'utf8')
+    expect(action).toContain("from '@/server/mfa/service'")
   })
 
   it('refuses super_admin at aal1', () => {

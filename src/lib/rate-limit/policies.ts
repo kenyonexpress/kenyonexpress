@@ -102,6 +102,29 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 900,
     reason: 'the same guesses spread across accounts from one address',
   },
+  'mfa-backup-issue': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason:
+      'G6: a new backup-code set replaces the old one; a person does this once, not in a loop',
+  },
+  'mfa-backup-redeem': {
+    limit: 5,
+    windowSeconds: 900,
+    reason:
+      'G6: ten-character codes are 50 bits, but a redeem resets the factor, so guesses are bounded per user',
+  },
+  'mfa-backup-redeem-ip': {
+    limit: 15,
+    windowSeconds: 900,
+    reason: 'G6: the same guesses spread across accounts from one address',
+  },
+  'mfa-api': {
+    limit: 60,
+    windowSeconds: 900,
+    reason:
+      'G6: /api/auth/mfa writes per address, on top of the per-user limits inside each ceremony',
+  },
   'passkey-login': {
     limit: 30,
     windowSeconds: 3600,

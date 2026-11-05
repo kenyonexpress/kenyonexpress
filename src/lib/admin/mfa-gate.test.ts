@@ -1,32 +1,56 @@
-import { superAdminMfaGate } from '@/lib/admin/mfa-gate'
+import {
+  MFA_FORCED_ROLES,
+  isMfaForcedRole,
+  staffMfaGate,
+  superAdminMfaGate,
+} from '@/lib/admin/mfa-gate'
 import type { AppRole } from '@/lib/admin/roles'
 import { describe, expect, it } from 'vitest'
 
-describe('superAdminMfaGate', () => {
-  it.each<AppRole>(['customer', 'vendor', 'content_uploader', 'support', 'read_only', 'admin'])(
+describe('staffMfaGate', () => {
+  it.each<AppRole>(['customer', 'vendor', 'support', 'read_only'])(
     'never gates %s, whatever the session proved',
     (role) => {
-      expect(superAdminMfaGate(role, null, null)).toBe('ok')
-      expect(superAdminMfaGate(role, 'aal1', 'aal1')).toBe('ok')
-      expect(superAdminMfaGate(role, 'aal1', 'aal2')).toBe('ok')
+      expect(staffMfaGate(role, null, null)).toBe('ok')
+      expect(staffMfaGate(role, 'aal1', 'aal1')).toBe('ok')
+      expect(staffMfaGate(role, 'aal1', 'aal2')).toBe('ok')
     },
   )
 
-  it('passes a super_admin whose session already proved aal2', () => {
-    expect(superAdminMfaGate('super_admin', 'aal2', 'aal2')).toBe('ok')
-  })
+  it.each<AppRole>(['super_admin', 'admin', 'content_uploader'])(
+    'passes %s only once the session proved aal2',
+    (role) => {
+      expect(staffMfaGate(role, 'aal2', 'aal2')).toBe('ok')
+    },
+  )
 
-  it('sends a super_admin with a verified factor but an aal1 session to the challenge', () => {
-    expect(superAdminMfaGate('super_admin', 'aal1', 'aal2')).toBe('challenge')
-  })
+  it.each<AppRole>(['super_admin', 'admin', 'content_uploader'])(
+    'sends %s with a verified factor but an aal1 session to the challenge',
+    (role) => {
+      expect(staffMfaGate(role, 'aal1', 'aal2')).toBe('challenge')
+    },
+  )
 
-  it('sends a super_admin with no verified factor to enrolment', () => {
-    expect(superAdminMfaGate('super_admin', 'aal1', 'aal1')).toBe('enrol')
-  })
+  it.each<AppRole>(['super_admin', 'admin', 'content_uploader'])(
+    'sends %s with no verified factor to enrolment',
+    (role) => {
+      expect(staffMfaGate(role, 'aal1', 'aal1')).toBe('enrol')
+      expect(staffMfaGate(role, 'aal1', null)).toBe('enrol')
+    },
+  )
 
   it('fails closed when the levels are unknown', () => {
-    // A failed getAuthenticatorAssuranceLevel call must not wave the one
-    // gated role through.
-    expect(superAdminMfaGate('super_admin', null, null)).toBe('enrol')
+    expect(staffMfaGate('admin', null, null)).toBe('enrol')
+    expect(staffMfaGate('super_admin', null, 'aal2')).toBe('challenge')
+  })
+
+  it('names exactly the three forced roles', () => {
+    expect([...MFA_FORCED_ROLES].sort()).toEqual(['admin', 'content_uploader', 'super_admin'])
+    expect(isMfaForcedRole('support')).toBe(false)
+    expect(isMfaForcedRole(null)).toBe(false)
+  })
+
+  it('keeps the old name as the same function', () => {
+    expect(superAdminMfaGate).toBe(staffMfaGate)
   })
 })

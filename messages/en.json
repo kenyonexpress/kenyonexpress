@@ -977,5 +977,13 @@
     "couponPlaceholder": "Coupon code",
     "applyCoupon": "Apply coupon",
     "loading": "Loading your cart..."
+  },
+  "totp": {
+    "title": "Two-factor authentication (authenticator app)",
+    "qrAlt": "QR code for setting up two-factor authentication",
+    "codeLabel": "Verification code",
+    "loading": "Loading...",
+    "active": "Two-factor authentication is on for this account.",
+    "backupTitle": "Backup codes"
   }
 }

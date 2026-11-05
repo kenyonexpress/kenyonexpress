@@ -79,6 +79,10 @@ function roleA11ySuite(role: string, email: string, password: string, pages: Rou
     let signInError = ''
 
     test.beforeAll(async ({ browser }) => {
+      // G6: the admin sign-in now includes the TOTP challenge (one redirect
+      // through /admin, the ceremony, and the way back), which does not fit
+      // the default 30 s hook budget on this build.
+      test.setTimeout(90_000)
       context = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
       page = await context.newPage()
       try {

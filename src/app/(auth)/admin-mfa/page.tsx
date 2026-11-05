@@ -1,3 +1,4 @@
+import { isMfaForcedRole } from '@/lib/admin/mfa-gate'
 import { getSessionWithRole } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
 }
 
 /**
- * The landing spot of enforceSuperAdminMfa (lib/admin/rbac.ts). Deliberately
+ * The landing spot of enforceStaffMfa (lib/admin/rbac.ts) and of the proxy's aal check. Deliberately
  * OUTSIDE the (admin) group: the layout there calls requirePanelSession,
  * which redirects a non-aal2 super_admin right back here, and a page cannot
  * sit on both sides of that loop.
@@ -49,8 +50,9 @@ export default function AdminMfaPage() {
 async function AdminMfaBody() {
   const session = await getSessionWithRole()
   if (!session) redirect('/login')
-  // Only super_admin is forced through MFA; anyone else has no business here.
-  if (session.role !== 'super_admin') redirect('/admin')
+  // The forced roles (G6: super_admin, admin, content_uploader) belong here;
+  // anyone else has no business on this page.
+  if (!isMfaForcedRole(session.role)) redirect('/admin')
 
   const supabase = await createClient()
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
@@ -63,7 +65,7 @@ async function AdminMfaBody() {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       <h2 className="text-xl font-semibold mb-2">אימות דו-שלבי</h2>
       <p className="text-sm text-gray-500 mb-6">
-        חשבון מנהל-על מחייב אימות דו-שלבי לפני כניסה לפאנל הניהול.
+        חשבון צוות (מנהל, מנהל-על או עורך תוכן) מחייב אימות דו-שלבי לפני כניסה לפאנל הניהול.
       </p>
       <AdminMfaForm
         mode={verifiedTotp ? 'challenge' : 'enrol'}
