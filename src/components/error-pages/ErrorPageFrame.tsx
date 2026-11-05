@@ -23,17 +23,26 @@ export default function ErrorPageFrame({
   text,
   actions,
   children,
+  as: Root = 'main',
 }: {
   code?: string
   title: string
   text: string
   actions: ReactNode
   children?: ReactNode
+  /**
+   * `main` when this frame IS the document (the root 404, the root 500, the
+   * offline page): nothing above it supplies the landmark. `div` when it
+   * renders inside a route group's layout, which already has a <main>; a
+   * second one nested in it is three axe landmark findings on every unknown
+   * product URL (S33, measured 06.11.2026).
+   */
+  as?: 'main' | 'div'
 }) {
   const whatsapp =
     waChatLink(PUBLISHED_STORE_WHATSAPP) ?? `https://wa.me/${PUBLISHED_STORE_WHATSAPP}`
   return (
-    <main dir="rtl" className="ke-error-page">
+    <Root dir="rtl" className="ke-error-page">
       {/* A plain <img>: next/image needs the optimizer route, which is one of
           the things that can be down when this page shows. */}
       <img
@@ -60,6 +69,6 @@ export default function ErrorPageFrame({
           {t('errorPages.supportWhatsApp')}
         </a>
       </p>
-    </main>
+    </Root>
   )
 }

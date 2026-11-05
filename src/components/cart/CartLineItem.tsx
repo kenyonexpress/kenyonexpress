@@ -163,10 +163,10 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
 export function CartEmptyState() {
   return (
     <>
-      <div className="cart-empty">סל הקניות שלך ריק כרגע.</div>
+      <div className="cart-empty">{t('cartPage.empty')}</div>
       <p className="cart-empty__actions">
         <Link href="/products" className="cart-empty__cta">
-          חזור לחנות
+          {t('cartPage.backToShop')}
         </Link>
       </p>
     </>

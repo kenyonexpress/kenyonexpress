@@ -25,6 +25,8 @@ export default function SupplierPublicError({
       body={t('errorBoundary.bodyGeneric')}
       homeHref="/"
       homeLabel={t('errorBoundary.home')}
+      // The one group with no layout of its own: nothing above supplies <main>.
+      landmark
     />
   )
 }

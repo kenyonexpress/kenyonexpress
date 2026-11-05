@@ -43,6 +43,7 @@ export function SegmentErrorBoundary({
   retryLabel = 'נסו שוב',
   homeHref,
   homeLabel,
+  landmark = false,
 }: {
   error: Error & { digest?: string }
   reset: () => void
@@ -54,6 +55,13 @@ export function SegmentErrorBoundary({
   /** Where "somewhere safe" is for THIS area. Never assume the storefront. */
   homeHref: string
   homeLabel: string
+  /**
+   * S33: render a <main>. Off by default, because a group's error.tsx renders
+   * inside that group's layout and every one of them already has a <main>; a
+   * second one nested in it is an axe landmark finding. On only for a group
+   * with no layout of its own, where this boundary is the top of the page.
+   */
+  landmark?: boolean
 }) {
   useEffect(() => {
     // A boundary CATCHES the error, so nothing reaches window.onerror and the
@@ -72,8 +80,9 @@ export function SegmentErrorBoundary({
     console.error(`${boundary} error boundary:`, error.digest ?? '', error)
   }, [error, boundary])
 
+  const Root = landmark ? 'main' : 'div'
   return (
-    <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
+    <Root dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
       <p className="text-5xl" aria-hidden="true">
         ⚠️
       </p>
@@ -104,6 +113,6 @@ export function SegmentErrorBoundary({
           {error.digest}
         </p>
       )}
-    </main>
+    </Root>
   )
 }

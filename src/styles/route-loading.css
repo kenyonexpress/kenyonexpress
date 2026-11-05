@@ -1,0 +1,103 @@
+/* S33 (06.11.2026): the loading state behind every route group's loading.tsx.
+
+   Same rule as error-pages.css: the palette is REDEFINED HERE, never imported
+   from the frozen globals.css or tokens.css. The values are Electro's as the
+   storefront measures them: brand yellow #fed700, heading ink #333e48, body
+   ink #6f6f6f, rule #ddd, bone #f5f5f5.
+
+   It is a ring and three bones, not a per-page skeleton: one component stands
+   in for 157 pages, and a skeleton shaped like the wrong page is a layout
+   shift with extra steps. The box holds 60vh so the footer is not drawn under
+   an empty column and then pushed away (the V08 lesson, see
+   .account-content__pending in account.css). */
+
+.ke-route-loading {
+  --ke-load-primary: #fed700;
+  --ke-load-heading: #333e48;
+  --ke-load-body: #6f6f6f;
+  --ke-load-rule: #ddd;
+  --ke-load-bone: #f5f5f5;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 60vh;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+/* Inside a frame that already holds its own height (the account column, the
+   admin and supplier panels) the box only needs to be tall enough to read. */
+.ke-route-loading--panel {
+  min-height: 320px;
+  padding-block: 2rem;
+}
+
+.ke-route-loading__ring {
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  border: 4px solid var(--ke-load-rule);
+  border-block-start-color: var(--ke-load-primary);
+  animation: ke-route-loading-spin 0.8s linear infinite;
+}
+
+.ke-route-loading__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
+  color: var(--ke-load-heading);
+}
+
+.ke-route-loading__bones {
+  display: grid;
+  gap: 0.6rem;
+  inline-size: min(100%, 28rem);
+  margin-block-start: 0.5rem;
+}
+
+.ke-route-loading__bone {
+  block-size: 12px;
+  border-radius: 50px;
+  background: var(--ke-load-bone);
+  animation: ke-route-loading-pulse 1.4s ease-in-out infinite;
+}
+
+.ke-route-loading__bone:nth-child(1) {
+  inline-size: 60%;
+  margin-inline: auto;
+}
+
+.ke-route-loading__bone:nth-child(2) {
+  inline-size: 90%;
+  margin-inline: auto;
+}
+
+.ke-route-loading__bone:nth-child(3) {
+  inline-size: 75%;
+  margin-inline: auto;
+}
+
+@keyframes ke-route-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ke-route-loading-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Nothing here carries information by moving. With motion reduced the ring is
+   a still yellow arc and the label says the same thing it always did. */
+@media (prefers-reduced-motion: reduce) {
+  .ke-route-loading__ring,
+  .ke-route-loading__bone {
+    animation: none;
+  }
+}

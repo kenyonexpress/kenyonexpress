@@ -1,9 +1,8 @@
-import ErrorPageFrame from '@/components/error-pages/ErrorPageFrame'
-import { t } from '@/lib/i18n/messages'
-import Link from 'next/link'
+import NotFoundPage from '@/components/error-pages/NotFoundPage'
 
 /**
- * The 404 every notFound() in the app lands on.
+ * The 404 for a URL that matches no route, and the fallback for any notFound()
+ * in a segment that has no not-found.tsx of its own.
  *
  * There was no not-found.tsx at all, so a missing product, a mistyped category
  * or a dead promo link rendered Next's built-in English page: left-to-right,
@@ -11,13 +10,12 @@ import Link from 'next/link'
  * page alone calls notFound() on every unknown slug, so this is not a rare
  * corner - it is the page a customer sees whenever a link rots.
  *
- * Deliberately not a dead end. A 404 usually means the visitor wanted something
- * that exists under a different name, so it offers the catalogue and the
- * categories rather than only a way back to the homepage. There is no search
- * UI anywhere on the site, so no search link here either.
- *
  * G7: branded through ErrorPageFrame (logo, Electro palette redefined
  * locally, support by mail and WhatsApp).
+ *
+ * S33: the body moved to NotFoundPage so the route groups can render the same
+ * 404 inside their own layouts without a second <main>. Here it keeps `main`:
+ * for an unmatched URL no group layout renders, and this is the document.
  */
 
 export const metadata = {
@@ -26,24 +24,5 @@ export const metadata = {
 }
 
 export default function NotFound() {
-  return (
-    <ErrorPageFrame
-      code="404"
-      title={t('errorPages.notFoundTitle')}
-      text={t('errorPages.notFoundText')}
-      actions={
-        <>
-          <Link href="/products" className="ke-error-page__btn">
-            {t('errorPages.allProducts')}
-          </Link>
-          <Link href="/products?view=categories" className="ke-error-page__btn--secondary">
-            {t('errorPages.browseCategories')}
-          </Link>
-          <Link href="/" className="ke-error-page__btn--secondary">
-            {t('errorPages.home')}
-          </Link>
-        </>
-      }
-    />
-  )
+  return <NotFoundPage />
 }

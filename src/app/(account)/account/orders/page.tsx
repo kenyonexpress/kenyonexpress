@@ -1,6 +1,8 @@
+import AccountEmptyState from '@/components/account/AccountEmptyState'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { t } from '@/lib/i18n/messages'
 import { getMyOrders } from '@/server/queries/orders'
+import { Package } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'ההזמנות שלי' }
@@ -31,12 +33,14 @@ export default async function OrdersPage() {
 
       {orders.length === 0 ? (
         <section className="account-card">
-          <p className="account-empty">{t('account.ordersPage.empty')}</p>
-          <p className="text-center">
-            <Link className="account-btn account-btn--primary" href="/">
-              {t('account.ordersPage.browse')}
-            </Link>
-          </p>
+          <AccountEmptyState
+            testId="orders-empty"
+            icon={<Package size={28} />}
+            title={t('account.ordersPage.empty')}
+            hint={t('account.ordersPage.emptyHint')}
+            href="/"
+            cta={t('account.ordersPage.browse')}
+          />
         </section>
       ) : (
         <table className="account-table" data-testid="orders-table">

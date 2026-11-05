@@ -1,3 +1,4 @@
+import AccountEmptyState from '@/components/account/AccountEmptyState'
 import { giftHeldCopy } from '@/lib/gifts/held-copy'
 import { t } from '@/lib/i18n/messages'
 import {
@@ -11,6 +12,7 @@ import {
 import { expiryRefundView } from '@/lib/vouchers/expiry-refund'
 import { getVoucherExpiryCredits } from '@/server/queries/expiry'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
+import { Ticket } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -67,7 +69,14 @@ export default async function CouponsPage() {
 
       <section className="account-card">
         {vouchers.length === 0 ? (
-          <p className="account-empty">עדיין לא רכשת קופונים.</p>
+          <AccountEmptyState
+            testId="coupons-empty"
+            icon={<Ticket size={28} />}
+            title={t('account.couponsPage.empty')}
+            hint={t('account.couponsPage.emptyHint')}
+            href="/products"
+            cta={t('account.couponsPage.browse')}
+          />
         ) : (
           vouchers.map((voucher) => {
             const status = couponStatusView(voucher)

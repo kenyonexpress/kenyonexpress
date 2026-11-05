@@ -28,7 +28,7 @@ import { cacheLife, cacheTag } from 'next/cache'
  * invisible here for an hour and nothing reports it. That contract is written
  * out in full in `catalogue-cache.ts`.
  */
-export async function getCouponDeal(id: string) {
+async function readCouponDeal(id: string) {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
@@ -44,6 +44,27 @@ export async function getCouponDeal(id: string) {
     'coupon_deal.read_failed',
     { deal_id: id },
   )
+}
+
+const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * One coupon deal by id, or null when the id names nothing.
+ *
+ * S33: an id that is not a uuid cannot name a deal, and asking the database
+ * anyway is not a miss but an error (22P02, invalid input syntax for type
+ * uuid). Measured 06.11.2026: `/coupons/zzz-nope` answered 500 with the error
+ * page and logged `coupon_deal.read_failed`, for what is a mistyped link.
+ *
+ * The check is HERE, in front of the cached read, and not in the page: the
+ * page's `generateMetadata` makes the same read before the body does, so a
+ * guard in the body alone would still throw one function earlier. Outside the
+ * cached scope on purpose, too: junk ids are an unbounded space, and each one
+ * answered from inside `use cache` would be a cache entry holding null.
+ */
+export async function getCouponDeal(id: string): ReturnType<typeof readCouponDeal> {
+  if (!UUID_SHAPE.test(id)) return null
+  return readCouponDeal(id)
 }
 
 /**

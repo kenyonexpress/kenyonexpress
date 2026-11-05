@@ -502,6 +502,48 @@
   font-size: 14px;
 }
 
+/* S33: the empty state of an account list (orders, coupons). An icon on the
+   brand yellow, the sentence, what will appear here, and the way to the shop.
+   The sentence keeps .account-empty's colour and size and gives up its
+   padding, which the block now owns. */
+.account-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.account-empty-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 64px;
+  block-size: 64px;
+  border-radius: 50%;
+  background: var(--account-yellow);
+  color: var(--account-ink);
+}
+
+.account-empty-state__title {
+  padding: 0;
+  margin: 16px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--account-ink);
+}
+
+.account-empty-state__hint {
+  margin: 4px 0 0;
+  max-inline-size: 32rem;
+  font-size: 14px;
+  color: var(--account-muted);
+}
+
+.account-empty-state__actions {
+  margin: 20px 0 0;
+}
+
 /* Coupons */
 .account-tabs {
   display: flex;

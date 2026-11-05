@@ -1281,3 +1281,4 @@ to an already large session.
 | 2026-10-06 10:10 | category | 380 | 3.72% | PASS | `d0cc3be4f` | live side: frozen capture `refs/electro_shop_380.png`; overall 30.46% (reference blank 10.55%, ours blank 16.19%) |
 | 2026-10-06 10:11 | category | 768 | 2.88% | PASS | `d0cc3be4f-dirty` | live side: frozen capture `refs/electro_shop_768.png`; overall 31.77% (reference blank 9.73%, ours blank 19.16%) |
 | 2026-10-06 10:13 | category | 1440 | 1.71% | PASS | `d0cc3be4f-dirty` | live side: frozen capture `refs/electro_shop_1440.png`; overall 18.33% (reference blank 5.37%, ours blank 11.26%) |
+| 2026-11-05 22:47 | cart | 380 | n/a | REFUSED | `393f54d73-dirty` | live side is unknown |

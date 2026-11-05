@@ -95,12 +95,16 @@ const { loadSupplierStorefront, loadSupplierStorefrontProducts, listSupplierIdsF
 const { sitemapSectionEntries } = await import('./seo/sitemap-data')
 
 const SUPPLIER_ID = '3f6b8c1e-0000-4000-8000-000000000000'
+const DEAL_ID = '7a1d2e3f-0000-4000-8000-000000000000'
 
 /** Every cached reader, with the empty value each is expected to resolve to. */
 const READERS: Array<{ name: string; run: () => Promise<unknown>; empty: unknown }> = [
   { name: 'loadRelatedProducts', run: () => loadRelatedProducts('cat-1', 'p-1'), empty: [] },
   { name: 'getProductSeoBySlug', run: () => getProductSeoBySlug('a-slug'), empty: null },
-  { name: 'getCouponDeal', run: () => getCouponDeal('deal-1'), empty: null },
+  // A well-formed id: since S33 getCouponDeal answers null for anything that is
+  // not a uuid WITHOUT querying, so a made-up id would never reach the read
+  // this suite exists to fail.
+  { name: 'getCouponDeal', run: () => getCouponDeal(DEAL_ID), empty: null },
   { name: 'getActiveCouponDealIds', run: () => getActiveCouponDealIds(), empty: [] },
   { name: 'getFeedProducts', run: () => getFeedProducts(10), empty: [] },
   { name: 'loadProductBySlug', run: () => loadProductBySlug('a-slug'), empty: null },

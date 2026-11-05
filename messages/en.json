@@ -407,7 +407,13 @@
       "withCoupons": "includes coupons",
       "view": "View",
       "empty": "You have not placed an order yet.",
+      "emptyHint": "Every order you place will show up here, with its status and coupons.",
       "browse": "Go to the shop"
+    },
+    "couponsPage": {
+      "empty": "You have not bought any coupons yet.",
+      "emptyHint": "A coupon you buy will show up here with its code and QR to present at the business.",
+      "browse": "All products"
     },
     "walletPage": {
       "subtitle": "Store credit for use on this site",
@@ -976,7 +982,9 @@
     "subtotal": "Subtotal",
     "couponPlaceholder": "Coupon code",
     "applyCoupon": "Apply coupon",
-    "loading": "Loading your cart..."
+    "loading": "Loading your cart...",
+    "empty": "Your cart is currently empty.",
+    "backToShop": "Return to shop"
   },
   "totp": {
     "title": "Two-factor authentication (authenticator app)",
@@ -1003,6 +1011,7 @@
     "cachedTitle": "Pages you visited recently",
     "cachedEmpty": "No pages are saved on this device yet.",
     "cachedCatalogue": "All products",
-    "logoAlt": "Kenyon EXPRESS"
+    "logoAlt": "Kenyon EXPRESS",
+    "loading": "Loading the page…"
   }
 }
