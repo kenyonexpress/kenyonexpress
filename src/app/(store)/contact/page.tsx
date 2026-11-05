@@ -1,10 +1,11 @@
-import ContactTopicPicker from '@/components/contact/ContactTopicPicker'
+import ContactChannelList from '@/components/contact/ContactChannelList'
 import RichText from '@/components/content/RichText'
 import ContactForm from '@/components/storefront/ContactForm'
 import { contactEmail } from '@/lib/contact-address'
 import { topicsFor } from '@/lib/contact/channels'
 import { excerpt } from '@/lib/content/markup'
 import { getBoundContentPage } from '@/lib/content/read'
+import { t } from '@/lib/i18n/messages'
 import { formatIsraeliPhoneDisplay, storeWhatsAppLink, storeWhatsAppNumber } from '@/lib/whatsapp'
 import { listActiveContactChannels } from '@/server/contact/channels'
 import type { Metadata } from 'next'
@@ -40,8 +41,10 @@ export default async function ContactPage() {
   // (when the operator set one) its own number. Table or code defaults.
   const topics = topicsFor(await listActiveContactChannels(), storeNumber)
 
+  // The root is a <div>, not a <main>: the (store) layout already wraps the
+  // page in the document's one <main>, and this page nested a second (S34).
   return (
-    <main className="mx-auto w-full max-w-page px-4 py-10">
+    <div className="mx-auto w-full max-w-page px-4 py-10">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
         <Link href="/" className="hover:text-heading">
           בית
@@ -84,16 +87,22 @@ export default async function ContactPage() {
         </p>
       </header>
 
+      {/* S34: every channel on the page, not one behind a dropdown. The
+          picker stays in the floating sheet, where there is no room for five
+          cards; the reasoning is on ContactChannelList. */}
       {topics.length > 0 && (
-        <section
-          aria-label="וואטסאפ לפי נושא"
-          className="mb-10 max-w-md rounded-2xl border border-black/10 bg-surface p-5"
-        >
-          <ContactTopicPicker topics={topics} surface="contact_page" />
+        <section aria-labelledby="contact-channels-heading" className="mb-10">
+          <h2 id="contact-channels-heading" className="text-xl font-bold text-heading">
+            {t('contact.channelsHeading')}
+          </h2>
+          <p className="mb-4 mt-1 text-sm leading-relaxed text-heading/80">
+            {t('contact.channelsIntro')}
+          </p>
+          <ContactChannelList channels={topics} />
         </section>
       )}
 
       <ContactForm />
-    </main>
+    </div>
   )
 }

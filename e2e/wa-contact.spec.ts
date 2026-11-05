@@ -15,25 +15,27 @@ test.describe('WhatsApp contact system', () => {
   test('/contact offers the five topics and each one deep-links with its own Hebrew opener', async ({
     page,
   }) => {
+    // S34: the page lists the channels as cards; the picker stayed in the
+    // floating sheet (next test). e2e/s34-contact-share.spec.ts reads all five.
     await page.goto('/contact')
-    const picker = page.getByTestId('contact-picker-contact_page')
-    await expect(picker).toBeVisible()
-    const select = picker.locator('select')
-    const options = await select.locator('option').allTextContents()
-    expect(options.length).toBeGreaterThanOrEqual(5)
-    expect(options).toContain('שירות לקוחות')
-    expect(options).toContain('הצטרפות כבית עסק')
+    const list = page.getByTestId('contact-channel-list')
+    await expect(list).toBeVisible()
+    const links = list.getByTestId('contact-channel-link')
+    expect(await links.count()).toBeGreaterThanOrEqual(5)
+    await expect(list).toContainText('שירות לקוחות')
+    await expect(list).toContainText('הצטרפות כבית עסק')
 
-    const link = picker.getByTestId('contact-picker-link')
-    await expect(link).toHaveAttribute('href', WA)
-    const before = decodeURIComponent((await link.getAttribute('href')) ?? '')
-    expect(before).toContain('שירות הלקוחות')
-
-    await select.selectOption('supplier_join')
-    await expect(link).toHaveAttribute('data-channel', 'supplier_join')
-    const after = decodeURIComponent((await link.getAttribute('href')) ?? '')
-    expect(after).toContain('להצטרף לקניון אקספרס')
-    await expect(link).toHaveAttribute('target', '_blank')
+    const service = list.locator('a[data-channel="customer_service"]')
+    await expect(service).toHaveAttribute('href', WA)
+    expect(decodeURIComponent((await service.getAttribute('href')) ?? '')).toContain(
+      'שירות הלקוחות',
+    )
+    const join = list.locator('a[data-channel="supplier_join"]')
+    await expect(join).toHaveAttribute('href', WA)
+    expect(decodeURIComponent((await join.getAttribute('href')) ?? '')).toContain(
+      'להצטרף לקניון אקספרס',
+    )
+    await expect(join).toHaveAttribute('target', '_blank')
   })
 
   test('the floating button opens a topic sheet with the same deep links', async ({

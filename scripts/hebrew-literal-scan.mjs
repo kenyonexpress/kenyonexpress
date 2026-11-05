@@ -208,5 +208,8 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * wallet moved their copy to `account.frame.*`, `account.hello.*`,
  * `account.dashboard.*`, `account.ordersPage.*` and `account.walletPage.*`
  * with the Electro my-account rebuild. 592 -> 568.
+ * 2026-11-06, S34: the /contact channel list was born in the catalog
+ * (`contact.channelsHeading`, `contact.hint*`), and the section's literal
+ * aria-label went with the picker it labelled. 558 -> 557.
  */
-export const HEBREW_LITERAL_CEILING = 558
+export const HEBREW_LITERAL_CEILING = 557

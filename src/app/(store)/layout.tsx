@@ -7,7 +7,6 @@ import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
-import { Toaster } from '@/components/ui/sonner'
 import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import { Suspense } from 'react'
 // cart-page.css is imported by the root layout, one request for the whole
@@ -70,8 +69,11 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         <Suspense fallback={<BottomTabBarView active={null} />}>
           <BottomTabBarActive />
         </Suspense>
+        {/* The toaster is inside DeferredStoreChrome, and only there. A second
+          one mounted here (added with the share row, 9fe2ca441) rendered every
+          toast in this group twice, "link copied" included: measured in S34,
+          two nodes for one toast. */}
         <DeferredStoreChrome />
-        <Toaster position="top-center" dir="rtl" richColors closeButton />
       </WishlistProvider>
     </CartProvider>
   )

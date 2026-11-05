@@ -41,6 +41,7 @@ describe('share and contact surfaces are click-to-chat only', () => {
     expect(files).toContain(join('src/components/shared', 'ProductShareRow.tsx'))
     expect(files).toContain(join('src/components/contact', 'ProductQuestionLink.tsx'))
     expect(files).toContain(join('src/components/contact', 'ContactTopicPicker.tsx'))
+    expect(files).toContain(join('src/components/contact', 'ContactChannelList.tsx'))
     expect(files).toContain(join('src/lib/contact', 'inquiry-links.ts'))
   })
 
