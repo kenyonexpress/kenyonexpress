@@ -9,6 +9,7 @@ import {
   contentSecurityPolicyFor,
   permissionsPolicyFor,
 } from './src/lib/security/frame-policy'
+import { toNextRedirects } from './src/lib/seo/wp-redirects'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
@@ -188,6 +189,12 @@ const nextConfig: NextConfig = {
       // before file routing and would make that page unreachable, which is the
       // trap docs/legal/README.md section 2 describes.
       { source: '/returns', destination: '/refund_returns', permanent: true },
+      // S31. The retired WordPress URLs that moved: 20 paths, generated from
+      // data/legacy/wp-slug-map.json by scripts/build-wp-redirects.mjs. 301 and
+      // not the 308 the aliases above use, and answered here ahead of the
+      // proxy's database lookup so they survive maintenance mode and a
+      // Supabase outage. The reasoning is in src/lib/seo/wp-redirects.ts.
+      ...toNextRedirects(),
     ]
   },
   turbopack: {

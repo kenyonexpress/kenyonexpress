@@ -511,7 +511,13 @@ const sql = toSql(redirects, stamp)
 
 // The timestamp is the one field that legitimately changes on every run, so it
 // is excluded from the drift comparison. Everything else must be reproducible.
-const stable = (text) => text.replace(/2\d{3}-\d{2}-\d{2}T[\d:.]+Z/g, '<stamp>')
+// The SQL header also carries the bare DATE of the run ("measured 2026-10-04"),
+// which the timestamp pattern does not reach: without the second replace,
+// `--check` reported drift on every day except the one the file was written.
+const stable = (text) =>
+  text
+    .replace(/2\d{3}-\d{2}-\d{2}T[\d:.]+Z/g, '<stamp>')
+    .replace(/measured 2\d{3}-\d{2}-\d{2}/g, 'measured <date>')
 const digest = (text) => createHash('sha256').update(stable(text)).digest('hex').slice(0, 12)
 
 if (CHECK) {
