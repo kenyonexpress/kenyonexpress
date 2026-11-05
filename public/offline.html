@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>אין חיבור לאינטרנט | קניון EXPRESS</title>
+<!-- G7 (05.11.2026): the last offline fallback. public/sw.js serves the
+     rendered /offline route when it is cached; this static file is the
+     answer when that document never made it into the cache (first visit
+     cut short, cache evicted). No script, no fetch, no fonts: everything it
+     needs is in this file. Palette is Electro's, repeated here on purpose. -->
+<style>
+  body { margin: 0; background: #fff; color: #333e48; font: 14px/1.7 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  main { max-width: 36rem; margin: 0 auto; padding: 3rem 1rem 4rem; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  img { width: 190px; height: auto; margin-bottom: 1.5rem; }
+  h1 { margin: 1rem 0 0; font-size: 1.5rem; }
+  p { margin: .5rem 0 0; color: #6f6f6f; }
+  a.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 1.5rem; margin-top: 2rem; border-radius: 50px; background: #fed700; color: #333e48; font-weight: 700; text-decoration: none; }
+  a.btn:hover { background: #fedd26; }
+  .support { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid #ddd; width: 100%; color: #6f6f6f; }
+  .support a { color: #333e48; }
+</style>
+</head>
+<body>
+<main>
+  <img src="/images/logo.webp" alt="קניון EXPRESS" width="380" height="100">
+  <h1>אין חיבור לאינטרנט</h1>
+  <p>לא הצלחנו לטעון את העמוד. בדקו את החיבור ונסו שוב. עמודים שכבר ביקרתם בהם זמינים גם בלי חיבור.</p>
+  <a class="btn" href="/">נסו שוב</a>
+  <p class="support">צריכים עזרה? <a href="mailto:support@kenyonexpress.co.il">מייל לתמיכה</a> · <a href="https://wa.me/972524635550">וואטסאפ</a></p>
+</main>
+</body>
+</html>

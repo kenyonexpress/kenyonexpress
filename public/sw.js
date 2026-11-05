@@ -57,11 +57,14 @@
  * worker can be replaced on the next load rather than on the next tab close.
  */
 
-const VERSION = 'ke-v3'
+const VERSION = 'ke-v4'
 const STATIC_CACHE = `${VERSION}-static`
 const PAGES_CACHE = `${VERSION}-pages`
 const IMAGES_CACHE = `${VERSION}-images`
 const OFFLINE_URL = '/offline'
+// G7: the static document behind the rendered one, for a cache that never
+// received /offline (a first visit cut short, an eviction). No script in it.
+const OFFLINE_STATIC_URL = '/offline.html'
 
 // Enough for a browsing session over the catalogue, small enough that the
 // eviction sweep in putBrowsePage stays trivial.
@@ -79,7 +82,7 @@ const IMAGES_LIMIT = 60
 // Kept deliberately tiny. Precaching a route list is how a worker ends up
 // pinning pages that later change; the offline shell is the only document that
 // has to exist before the network fails.
-const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png']
+const PRECACHE = [OFFLINE_URL, OFFLINE_STATIC_URL, '/images/logo.webp', '/icons/icon-192.png']
 
 const BYPASS_PREFIXES = ['/api/', '/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
@@ -264,7 +267,8 @@ self.addEventListener('fetch', (event) => {
           const seen = await pages.match(request)
           if (seen) return seen
           const cache = await caches.open(STATIC_CACHE)
-          const offline = await cache.match(OFFLINE_URL)
+          const offline =
+            (await cache.match(OFFLINE_URL)) ?? (await cache.match(OFFLINE_STATIC_URL))
           return (
             offline ??
             new Response('אין חיבור לאינטרנט', {

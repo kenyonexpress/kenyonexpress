@@ -1,5 +1,7 @@
 'use client'
 
+import ErrorPageFrame from '@/components/error-pages/ErrorPageFrame'
+import { t } from '@/lib/i18n/messages'
 import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { useEffect } from 'react'
@@ -22,6 +24,8 @@ import { useEffect } from 'react'
  * server-side error a caller actually hit; without it a report is "the site
  * broke" and nothing more. It carries no detail of its own, so showing it
  * leaks nothing.
+ *
+ * G7: branded through ErrorPageFrame (logo, local palette, support links).
  */
 
 // Named AppError rather than Error: Next only cares that this file default
@@ -59,36 +63,26 @@ export default function AppError({
   }, [error])
 
   return (
-    <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-      <p className="text-5xl" aria-hidden="true">
-        ⚠️
-      </p>
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">משהו השתבש אצלנו</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
-        התקלה נרשמה אצלנו ואנחנו מטפלים בה. אפשר לנסות לטעון את הדף מחדש.
-      </p>
-
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-        >
-          נסו שוב
-        </button>
-        <Link
-          href="/"
-          className="rounded-xl border border-gray-300 px-6 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          לדף הבית
-        </Link>
-      </div>
-
+    <ErrorPageFrame
+      code="500"
+      title={t('errorPages.errorTitle')}
+      text={t('errorPages.errorText')}
+      actions={
+        <>
+          <button type="button" onClick={reset} className="ke-error-page__btn">
+            {t('errorPages.retry')}
+          </button>
+          <Link href="/" className="ke-error-page__btn--secondary">
+            {t('errorPages.home')}
+          </Link>
+        </>
+      }
+    >
       {error.digest && (
-        <p dir="ltr" className="mt-8 font-mono text-xs text-muted">
+        <p dir="ltr" className="ke-error-page__digest">
           {error.digest}
         </p>
       )}
-    </main>
+    </ErrorPageFrame>
   )
 }

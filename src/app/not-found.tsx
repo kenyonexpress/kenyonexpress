@@ -1,3 +1,5 @@
+import ErrorPageFrame from '@/components/error-pages/ErrorPageFrame'
+import { t } from '@/lib/i18n/messages'
 import Link from 'next/link'
 
 /**
@@ -10,8 +12,12 @@ import Link from 'next/link'
  * corner - it is the page a customer sees whenever a link rots.
  *
  * Deliberately not a dead end. A 404 usually means the visitor wanted something
- * that exists under a different name, so it offers search and the catalog
- * rather than only a way back to the homepage.
+ * that exists under a different name, so it offers the catalogue and the
+ * categories rather than only a way back to the homepage. There is no search
+ * UI anywhere on the site, so no search link here either.
+ *
+ * G7: branded through ErrorPageFrame (logo, Electro palette redefined
+ * locally, support by mail and WhatsApp).
  */
 
 export const metadata = {
@@ -21,40 +27,23 @@ export const metadata = {
 
 export default function NotFound() {
   return (
-    <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-      <p className="text-6xl font-black text-brand-primary" aria-hidden="true">
-        404
-      </p>
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">הדף שחיפשתם לא נמצא</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
-        ייתכן שהקישור ישן, שהמוצר כבר לא במלאי, או שנפלה שגיאת הקלדה בכתובת.
-      </p>
-
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/products"
-          className="rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-        >
-          לכל המוצרים
-        </Link>
-        {/* Was a "חיפוש באתר" link to /search. The standing project rule is
-            that there is no search UI anywhere, and after the D3 sweep took the
-            field out of the header this 404 was the last entry point to it left
-            in the storefront. The categories page is the honest destination for
-            "I could not find the thing I wanted". */}
-        <Link
-          href="/products?view=categories"
-          className="rounded-xl border border-border px-6 py-3 text-sm font-bold text-heading transition-colors hover:bg-surface-hover"
-        >
-          עיון בקטגוריות
-        </Link>
-        <Link
-          href="/"
-          className="rounded-xl px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:text-gray-900"
-        >
-          לדף הבית
-        </Link>
-      </div>
-    </main>
+    <ErrorPageFrame
+      code="404"
+      title={t('errorPages.notFoundTitle')}
+      text={t('errorPages.notFoundText')}
+      actions={
+        <>
+          <Link href="/products" className="ke-error-page__btn">
+            {t('errorPages.allProducts')}
+          </Link>
+          <Link href="/products?view=categories" className="ke-error-page__btn--secondary">
+            {t('errorPages.browseCategories')}
+          </Link>
+          <Link href="/" className="ke-error-page__btn--secondary">
+            {t('errorPages.home')}
+          </Link>
+        </>
+      }
+    />
   )
 }

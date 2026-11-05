@@ -985,5 +985,24 @@
     "loading": "Loading...",
     "active": "Two-factor authentication is on for this account.",
     "backupTitle": "Backup codes"
+  },
+  "errorPages": {
+    "notFoundTitle": "The page you were looking for was not found",
+    "notFoundText": "The link may be old, the product may be sold out, or the address has a typo.",
+    "allProducts": "All products",
+    "browseCategories": "Browse categories",
+    "home": "Home page",
+    "errorTitle": "Something went wrong on our side",
+    "errorText": "The error was recorded and we are on it. You can try loading the page again.",
+    "retry": "Try again",
+    "supportLead": "Need help? We are here:",
+    "supportEmail": "Email support",
+    "supportWhatsApp": "WhatsApp",
+    "offlineTitle": "No internet connection",
+    "offlineText": "We could not load the page. Check your connection and try again. Pages you already visited are available offline.",
+    "cachedTitle": "Pages you visited recently",
+    "cachedEmpty": "No pages are saved on this device yet.",
+    "cachedCatalogue": "All products",
+    "logoAlt": "Kenyon EXPRESS"
   }
 }

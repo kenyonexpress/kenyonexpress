@@ -1,4 +1,6 @@
-import Link from 'next/link'
+import ErrorPageFrame from '@/components/error-pages/ErrorPageFrame'
+import OfflineCachedPages from '@/components/error-pages/OfflineCachedPages'
+import { t } from '@/lib/i18n/messages'
 
 export const metadata = {
   title: 'אין חיבור',
@@ -18,9 +20,11 @@ export const metadata = {
 /**
  * The document public/sw.js serves when a navigation fails with no network.
  *
- * It must be fully static and must not read anything: it is rendered from the
+ * It must be fully static and must not fetch anything: it is rendered from the
  * cache, on a device that by definition cannot reach the server, so any data
- * fetch here would simply be the same failure one level deeper.
+ * fetch here would simply be the same failure one level deeper. What it CAN
+ * read is the worker's own page cache, and G7 lists the browse pages found
+ * there (OfflineCachedPages), so the last viewed products stay one tap away.
  *
  * The retry is a plain link and not a button with an onClick handler, so it
  * works before hydration -- which matters more here than anywhere else on the
@@ -29,27 +33,16 @@ export const metadata = {
  */
 export default function OfflinePage() {
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-6 text-center">
-      <div
-        aria-hidden="true"
-        className="flex size-16 items-center justify-center rounded-2xl bg-brand-primary font-extrabold text-2xl text-heading"
-      >
-        ⚡
-      </div>
-
-      <h1 className="mt-5 font-bold text-2xl text-heading">אין חיבור לאינטרנט</h1>
-
-      <p className="mt-2 text-gray-500 text-sm leading-relaxed">
-        לא הצלחנו לטעון את העמוד. בדקו את החיבור ונסו שוב. עמודים שכבר ביקרתם בהם עשויים להיטען גם
-        ללא חיבור.
-      </p>
-
-      <Link
-        href="/"
-        className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-brand-primary px-6 font-bold text-heading text-sm transition-opacity hover:opacity-90"
-      >
-        נסו שוב
-      </Link>
-    </div>
+    <ErrorPageFrame
+      title={t('errorPages.offlineTitle')}
+      text={t('errorPages.offlineText')}
+      actions={
+        <a href="/" className="ke-error-page__btn">
+          {t('errorPages.retry')}
+        </a>
+      }
+    >
+      <OfflineCachedPages />
+    </ErrorPageFrame>
   )
 }
