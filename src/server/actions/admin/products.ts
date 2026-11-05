@@ -32,7 +32,7 @@ import { requireStaffSession } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
 import { cashbackEnabledFor } from '@/lib/cashback/product'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
-import { OPEN_WEEKEND_TAG } from '@/lib/catalogue/filter-chips'
+import { freeShippingConflict, freeShippingConstraintError } from '@/lib/catalogue/filter-chips'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
@@ -110,16 +110,12 @@ async function runUpsertProduct(
     // One text input, comma separated. Split here rather than in the form so
     // the server decides what a tag is: trimmed, non-empty, and deduped, so
     // "מבצע, מבצע" is one tag and a trailing comma is not an empty one.
-    // The weekend checkbox is the same column: it adds or removes the one
-    // marker tag the storefront chip filters on, and never touches the rest.
     tags: [
       ...new Set(
         String(formData.get('tags') ?? '')
           .split(',')
           .map((t) => t.trim())
-          .filter(Boolean)
-          .filter((t) => t !== OPEN_WEEKEND_TAG)
-          .concat(formData.get('open_weekend') === 'true' ? [OPEN_WEEKEND_TAG] : []),
+          .filter(Boolean),
       ),
     ],
     warranty_months: formData.get('warranty_months') || null,
@@ -142,6 +138,8 @@ async function runUpsertProduct(
     original_price_source: formData.get('original_price_source') || null,
     original_price_source_url: formData.get('original_price_source_url') || null,
     cashback_percent: formData.get('cashback_percent') || null,
+    open_weekend: formData.get('open_weekend') === 'true',
+    free_shipping: formData.get('free_shipping') === 'true',
     shipping_price_ils: formData.get('shipping_price_ils') || null,
     supplier_transfer_days: formData.get('supplier_transfer_days') || null,
     payout_cadence: formData.get('payout_cadence') || null,
@@ -269,6 +267,18 @@ async function runUpsertProduct(
    * show them would overwrite an admin's stored values with defaults.
    */
   const terms = productTermsFromForm(extras)
+
+  // The free-shipping chip is a statement to a customer, so a product cannot
+  // carry it beside a shipping price or without shipping at all. The content
+  // uploader's form has no price box and sends no terms, so the stored price
+  // is unknown here (null); the table's CHECK (262) refuses that row and
+  // `freeShippingConstraintError` words the refusal.
+  const shippingConflict = freeShippingConflict({
+    freeShipping: extras.free_shipping === true,
+    requiresShipping: parsed.data.requires_shipping,
+    shippingPriceAgorot: hidePricing ? null : terms.shippingPriceAgorot,
+  })
+  if (shippingConflict) return { error: shippingConflict }
   const sourceAtDefault =
     extras.original_price_source == null && extras.original_price_source_url == null
   const optionalGroups: OptionalColumnGroup[] = [
@@ -318,6 +328,9 @@ async function runUpsertProduct(
   const city = extras.city == null ? null : (cityByName(extras.city)?.name ?? extras.city)
   const directExtras = {
     city,
+    // The two chip flags (262). Content, like `city`: both roles see the boxes.
+    open_weekend: extras.open_weekend === true,
+    free_shipping: extras.free_shipping === true,
     // The switch is derived from the rate on every save (lib/cashback/product.ts):
     // the form shows the rate only, and checkout pays nothing while it is off.
     ...(hidePricing
@@ -448,6 +461,7 @@ async function runUpsertProduct(
     if (error) {
       return {
         error:
+          freeShippingConstraintError(error.message) ??
           whatsappSchemaError(error.message) ??
           recurringSchemaError(error.message) ??
           error.message,
@@ -482,6 +496,7 @@ async function runUpsertProduct(
     if (error || !data) {
       return {
         error:
+          freeShippingConstraintError(error?.message) ??
           whatsappSchemaError(error?.message) ??
           recurringSchemaError(error?.message) ??
           error?.message ??

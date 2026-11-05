@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
-  OPEN_WEEKEND_TAG,
+  FREE_SHIPPING_HAS_PRICE,
+  FREE_SHIPPING_NEEDS_SHIPPING,
   applyChipFilters,
   chipFiltersFromParams,
   chipLinkParams,
+  freeShippingConflict,
+  freeShippingConstraintError,
   hasActiveChip,
-  isMissingShippingColumn,
   newestChipHref,
   parseOpen,
   parseShipping,
@@ -71,11 +73,7 @@ describe('applyChipFilters', () => {
   const fake = () => {
     const calls: unknown[][] = []
     const q = {
-      contains(column: string, value: string[]) {
-        calls.push(['contains', column, value])
-        return q
-      },
-      eq(column: string, value: boolean | number) {
+      eq(column: string, value: boolean) {
         calls.push(['eq', column, value])
         return q
       },
@@ -85,45 +83,79 @@ describe('applyChipFilters', () => {
 
   it('adds nothing when no chip is on', () => {
     const { q, calls } = fake()
-    applyChipFilters(q, {}, true)
+    applyChipFilters(q, {})
     expect(calls).toEqual([])
   })
 
-  it('filters the weekend chip on the marker tag, a column production has', () => {
+  it('filters the weekend chip on products.open_weekend', () => {
     const { q, calls } = fake()
-    applyChipFilters(q, { openWeekend: true }, true)
-    expect(calls).toEqual([['contains', 'tags', [OPEN_WEEKEND_TAG]]])
+    applyChipFilters(q, { openWeekend: true })
+    expect(calls).toEqual([['eq', 'open_weekend', true]])
   })
 
-  it('names shipping_price_agorot only when told the database has it', () => {
-    const with243 = fake()
-    applyChipFilters(with243.q, { freeShipping: true }, true)
-    expect(with243.calls).toEqual([
-      ['eq', 'requires_shipping', true],
-      ['eq', 'shipping_price_agorot', 0],
+  it('filters the shipping chip on products.free_shipping and no stand-in column', () => {
+    const { q, calls } = fake()
+    applyChipFilters(q, { freeShipping: true })
+    expect(calls).toEqual([['eq', 'free_shipping', true]])
+  })
+
+  it('adds both when both chips are on', () => {
+    const { q, calls } = fake()
+    applyChipFilters(q, { openWeekend: true, freeShipping: true })
+    expect(calls).toEqual([
+      ['eq', 'open_weekend', true],
+      ['eq', 'free_shipping', true],
     ])
-    const without = fake()
-    applyChipFilters(without.q, { freeShipping: true }, false)
-    expect(without.calls).toEqual([['eq', 'requires_shipping', true]])
   })
 })
 
-describe('isMissingShippingColumn', () => {
-  it('recognises only the undefined-column error for that column', () => {
+describe('freeShippingConflict', () => {
+  it('has nothing to say about a product that is not marked free shipping', () => {
     expect(
-      isMissingShippingColumn({
-        code: '42703',
-        message: 'column products.shipping_price_agorot does not exist',
+      freeShippingConflict({
+        freeShipping: false,
+        requiresShipping: false,
+        shippingPriceAgorot: 2500,
       }),
-    ).toBe(true)
-    // Another missing column is a different bug and must not be retried past.
-    expect(isMissingShippingColumn({ code: '42703', message: 'column tags does not exist' })).toBe(
-      false,
-    )
-    expect(isMissingShippingColumn({ code: 'PGRST301', message: 'shipping_price_agorot' })).toBe(
-      false,
-    )
-    expect(isMissingShippingColumn(null)).toBe(false)
+    ).toBeNull()
+  })
+
+  it('refuses free shipping on a product that does not ship', () => {
+    expect(
+      freeShippingConflict({ freeShipping: true, requiresShipping: false, shippingPriceAgorot: 0 }),
+    ).toBe(FREE_SHIPPING_NEEDS_SHIPPING)
+  })
+
+  it('refuses free shipping beside a shipping price, one agora included', () => {
+    expect(
+      freeShippingConflict({ freeShipping: true, requiresShipping: true, shippingPriceAgorot: 1 }),
+    ).toBe(FREE_SHIPPING_HAS_PRICE)
+  })
+
+  it('accepts a shipped product at a zero or unknown price', () => {
+    expect(
+      freeShippingConflict({ freeShipping: true, requiresShipping: true, shippingPriceAgorot: 0 }),
+    ).toBeNull()
+    expect(
+      freeShippingConflict({
+        freeShipping: true,
+        requiresShipping: true,
+        shippingPriceAgorot: null,
+      }),
+    ).toBeNull()
+  })
+})
+
+describe('freeShippingConstraintError', () => {
+  it('words the table constraint and leaves every other error alone', () => {
+    expect(
+      freeShippingConstraintError(
+        'new row for relation "products" violates check constraint "products_free_shipping_consistent"',
+      ),
+    ).toBe(FREE_SHIPPING_HAS_PRICE)
+    expect(freeShippingConstraintError('duplicate key value violates unique constraint')).toBeNull()
+    expect(freeShippingConstraintError(null)).toBeNull()
+    expect(freeShippingConstraintError(undefined)).toBeNull()
   })
 })
 

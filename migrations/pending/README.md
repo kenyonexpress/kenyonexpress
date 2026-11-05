@@ -1,5 +1,16 @@
 # `migrations/pending/`
 
+## 2026-11-06: 262 WRITTEN AND APPLIED - שני הדגלים של שבבי הסינון (open_weekend, free_shipping)
+
+‏`262_product_chip_flags.sql`. ‏S35. שתי עמודות ב-`products`: ‏`open_weekend` ו-`free_shipping`
+‏(boolean, ‏NOT NULL, ברירת מחדל false). עד עכשיו השבב "פתוח בסופ״ש" סינן על תג `open-weekend` בתוך
+‏`tags`, והשבב "משלוח חינם" על `requires_shipping` עם `shipping_price_agorot = 0`. מעכשיו כל אחד מהם
+הוא תיבת סימון בטופס המוצר באדמין. ההעברה נעשית פעם אחת, רק כשהעמודה נוצרת: התג הופך לעמודה ויוצא
+מ-`tags` (‏0 שורות בפרודקשן), ו-14 השורות שהשבב הציג עד היום סומנו (‏11 פעילות, אותה רשימה בדיוק לפני
+ואחרי). ‏CHECK חדש, `products_free_shipping_consistent`, מסרב לשורה שמסומנת משלוח חינם ויש לה מחיר
+משלוח או שאינה דורשת משלוח. בלי אינדקס (‏132 שורות), בלי שינוי RLS. נבדקה ב-BEGIN/ROLLBACK ואז הוחלה
+בטרנזקציה אחת. הוכחה ב-`docs/S35-chips.md`.
+
 ## 2026-11-05: 261 WRITTEN AND APPLIED - בקשות ביטול (refund_requests)
 
 ‏`261_refund_requests.sql`. ‏S27. הטבלה לא הייתה קיימת בפרודקשן (‏PGRST205), ולכן טופס הביטול לפי ‏14ג

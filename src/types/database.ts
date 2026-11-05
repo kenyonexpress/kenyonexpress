@@ -2347,6 +2347,7 @@ export type Database = {
           deleted_at: string | null
           description_he: string | null
           discount_percent: number | null
+          free_shipping: boolean
           full_price: number | null
           full_price_agorot: number | null
           height_cm: number | null
@@ -2368,6 +2369,7 @@ export type Database = {
           name_en: string | null
           name_he: string
           offer_valid_until: string | null
+          open_weekend: boolean
           platform_percent: number | null
           price_ils: number
           price_ils_agorot: number | null
@@ -2431,6 +2433,7 @@ export type Database = {
           deleted_at?: string | null
           description_he?: string | null
           discount_percent?: number | null
+          free_shipping?: boolean
           full_price?: number | null
           full_price_agorot?: number | null
           height_cm?: number | null
@@ -2452,6 +2455,7 @@ export type Database = {
           name_en?: string | null
           name_he: string
           offer_valid_until?: string | null
+          open_weekend?: boolean
           platform_percent?: number | null
           price_ils: number
           price_ils_agorot?: number | null
@@ -2515,6 +2519,7 @@ export type Database = {
           deleted_at?: string | null
           description_he?: string | null
           discount_percent?: number | null
+          free_shipping?: boolean
           full_price?: number | null
           full_price_agorot?: number | null
           height_cm?: number | null
@@ -2536,6 +2541,7 @@ export type Database = {
           name_en?: string | null
           name_he?: string
           offer_valid_until?: string | null
+          open_weekend?: boolean
           platform_percent?: number | null
           price_ils?: number
           price_ils_agorot?: number | null

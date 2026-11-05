@@ -1092,6 +1092,13 @@ describe('the pending migration inventory', () => {
       // 202 verbatim: the customer's s.14C form answered "table missing" in
       // production. 202 stays pending. Proof: docs/S27-e2e.md.
       '261_refund_requests.sql',
+      // S35 (06.11): APPLIED the same day. products.open_weekend and
+      // products.free_shipping (boolean NOT NULL DEFAULT false), the columns
+      // behind the two storefront filter chips, plus the CHECK that refuses
+      // free shipping beside a shipping price. Backfilled once from the
+      // stand-ins the chips used before (0 weekend tags, 14 zero-price rows).
+      // Proof: docs/S35-chips.md.
+      '262_product_chip_flags.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

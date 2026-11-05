@@ -1,42 +1,41 @@
 /**
- * The five filter chips under the category row: open on the weekend, free
- * shipping, near me, under 99, newest.
+ * The filter chips under the category row: open on the weekend, free shipping,
+ * under 99, newest.
  *
  * Pure. The URL tokens, the parsers that read them back, the href that toggles
  * one, and the filter each one adds to a PostgREST query. No React and no
  * Supabase client, so the chips row, both archive pages and the query share
  * one definition and the tests need no database.
  *
- * WHAT EACH CHIP FILTERS ON, AND WHY IT IS A COLUMN PRODUCTION HAS
+ * WHAT EACH CHIP FILTERS ON
  *
- * `products.tags text[]` and `products.requires_shipping boolean` exist on the
- * hosted project today (src/types/database.ts is generated from it). A chip
- * that named a column from a pending migration would be Postgres 42703, which
- * fails the WHOLE select and empties the grid - the failure category-page.ts
- * already documents for `latitude`/`longitude`.
+ * `products.open_weekend` and `products.free_shipping`, two booleans (NOT NULL
+ * DEFAULT false) from `migrations/pending/262_product_chip_flags.sql`, applied
+ * to production on 2026-11-06 (S35). The operator ticks each in the admin
+ * product form, so a product is in a chip only because somebody said so.
  *
- * - Open on the weekend is a tag, `open-weekend`, set from a checkbox in the
- *   admin product form. Business hours are free text (`suppliers.opening_hours`
- *   in pending 232) and cannot be filtered; a marker the operator sets on
- *   purpose can. The marker is a tag rather than a new boolean column because
- *   the column would sit in `migrations/pending/` behind an approval, and until
- *   then the chip would be a 42703 on every click.
+ * Until 262 the chips filtered on stand-ins: a marker tag inside
+ * `products.tags` for the weekend, and `requires_shipping` with a zero
+ * `shipping_price_agorot` for shipping. 262 carried both over once (the tag
+ * became the column and left `tags`; the rows the shipping chip listed were
+ * ticked), so the chips list the same products on both sides of the change.
  *
- * - Free shipping is a physical product (`requires_shipping = true`) whose
- *   `shipping_price_agorot` is 0. That column arrives with pending 243 and
- *   defaults to 0, which is also what checkout charges today for everything
- *   (243's own header says so). So the query names it only while the database
- *   has it: `isMissingShippingColumn` recognises the 42703 and the caller
- *   retries with `requires_shipping` alone, which on a pre-243 database is the
- *   same set of rows.
+ * - Open on the weekend is the operator's statement that the business takes
+ *   customers on Friday and Saturday. Business hours are free text
+ *   (`suppliers.opening_hours`, pending 232) and cannot be filtered.
  *
- * - Near me is not a filter here at all: it is the `?near=lat,lng` sort that
- *   `parseNear`/`sortByDistance` already implement, asked for on click and
- *   never on mount. See `use-near-me.ts`.
+ * - Free shipping is the operator's statement that the product ships free.
+ *   The table refuses a row that says so while recording a shipping price or
+ *   while not shipping at all (`products_free_shipping_consistent`), and
+ *   `freeShippingConflict` is the same rule for the admin action, in Hebrew.
+ *
+ * There is no location chip in the row. `?near=lat,lng` is still a sort the
+ * archive pages honour (`parseNear`/`sortByDistance`); nothing in the row
+ * writes it.
  */
 
-/** The marker tag the admin form writes for a business open on Friday and Saturday. */
-export const OPEN_WEEKEND_TAG = 'open-weekend'
+export const OPEN_WEEKEND_COLUMN = 'open_weekend'
+export const FREE_SHIPPING_COLUMN = 'free_shipping'
 
 export const OPEN_PARAM = 'open'
 export const SHIPPING_PARAM = 'shipping'
@@ -105,42 +104,51 @@ export function toggleChipHref(
 
 /** The subset of the PostgREST builder the chip filters use. */
 export interface ChipFilterable<Q> {
-  contains(column: string, value: string[]): Q
-  eq(column: string, value: boolean | number): Q
+  eq(column: string, value: boolean): Q
 }
 
-/**
- * Adds the active chips to a query. `withShippingColumn` is whether to name
- * `shipping_price_agorot`; the caller passes false on the retry after a 42703.
- */
-export function applyChipFilters<Q extends ChipFilterable<Q>>(
-  query: Q,
-  filters: ChipFilters,
-  withShippingColumn: boolean,
-): Q {
+/** Adds the active chips to a query: one boolean column each. */
+export function applyChipFilters<Q extends ChipFilterable<Q>>(query: Q, filters: ChipFilters): Q {
   let q = query
-  if (filters.openWeekend) q = q.contains('tags', [OPEN_WEEKEND_TAG])
-  if (filters.freeShipping) {
-    q = q.eq('requires_shipping', true)
-    if (withShippingColumn) q = q.eq('shipping_price_agorot', 0)
-  }
+  if (filters.openWeekend) q = q.eq(OPEN_WEEKEND_COLUMN, true)
+  if (filters.freeShipping) q = q.eq(FREE_SHIPPING_COLUMN, true)
   return q
 }
 
-/** Postgres: undefined_column. */
-const UNDEFINED_COLUMN = '42703'
+/** The name of the table constraint that refuses a contradictory free-shipping row. */
+export const FREE_SHIPPING_CONSTRAINT = 'products_free_shipping_consistent'
+
+export const FREE_SHIPPING_NEEDS_SHIPPING =
+  'משלוח חינם אפשרי רק למוצר שדורש משלוח פיזי. סמנו "דורש משלוח פיזי" או הסירו את הסימון ממשלוח חינם.'
+export const FREE_SHIPPING_HAS_PRICE =
+  'מוצר שמסומן כמשלוח חינם לא יכול לשאת מחיר משלוח. אפסו את מחיר המשלוח או הסירו את הסימון ממשלוח חינם.'
 
 /**
- * True when the failure is exactly "this database has no shipping_price_agorot
- * yet" (pending 243), which is the one error the free-shipping chip may retry
- * past. Any other failure is a real one and stays a failure.
+ * Why a product may not be saved as free shipping, or null when it may. The
+ * same rule as `products_free_shipping_consistent`, checked before the write
+ * so the admin reads a sentence and not a constraint name.
+ *
+ * `shippingPriceAgorot` is integer agorot, or null when the caller does not
+ * know the stored price (the content uploader's form has no price box). Null
+ * is not treated as a conflict here; the table still refuses the row, and
+ * `freeShippingConstraintError` words that refusal.
  */
-export function isMissingShippingColumn(
-  error: { code?: string; message?: string } | null | undefined,
-): boolean {
-  if (!error) return false
-  if (error.code !== UNDEFINED_COLUMN) return false
-  return (error.message ?? '').includes('shipping_price_agorot')
+export function freeShippingConflict(input: {
+  freeShipping: boolean
+  requiresShipping: boolean
+  shippingPriceAgorot: number | null
+}): string | null {
+  if (!input.freeShipping) return null
+  if (!input.requiresShipping) return FREE_SHIPPING_NEEDS_SHIPPING
+  if (input.shippingPriceAgorot != null && input.shippingPriceAgorot > 0) {
+    return FREE_SHIPPING_HAS_PRICE
+  }
+  return null
+}
+
+/** The table's refusal of a contradictory row, as a sentence. Null for any other error. */
+export function freeShippingConstraintError(message: string | null | undefined): string | null {
+  return (message ?? '').includes(FREE_SHIPPING_CONSTRAINT) ? FREE_SHIPPING_HAS_PRICE : null
 }
 
 export function hasActiveChip(filters: ChipFilters): boolean {

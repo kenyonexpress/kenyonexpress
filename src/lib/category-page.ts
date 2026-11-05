@@ -1,17 +1,12 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
-import {
-  type ChipFilters,
-  applyChipFilters,
-  isMissingShippingColumn,
-} from '@/lib/catalogue/filter-chips'
+import { type ChipFilters, applyChipFilters } from '@/lib/catalogue/filter-chips'
 import type { CategoryNode } from '@/lib/category-tree'
 import { enabledProductTypes } from '@/lib/commerce/phases'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
-import { log } from '@/lib/observability/log'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -382,28 +377,6 @@ async function newestProductIds(
   return (data ?? []).map((row) => row.id)
 }
 
-/**
- * Runs the archive query, and runs it once more without naming
- * `shipping_price_agorot` when the database answers 42703 for it.
- *
- * Only the free-shipping chip names that column (pending 243). On a database
- * without it the first attempt fails the whole select, and the retry filters
- * on `requires_shipping` alone - the identical row set while every product
- * ships free, which 243's header says is what checkout charges today. A
- * migrated database costs one call; an unmigrated one costs two and stays
- * correct. Any other error, and the first result is returned to `orFail`.
- */
-async function runWithShippingFallback<
-  R extends { error: { code?: string; message?: string } | null },
->(build: (withShippingColumn: boolean) => PromiseLike<R>, chips: ChipFilters): Promise<R> {
-  const first = await build(Boolean(chips.freeShipping))
-  if (!chips.freeShipping || !isMissingShippingColumn(first.error)) return first
-  log.warn('catalogue.shipping_column_missing', {
-    hint: 'apply migrations/pending/243_product_terms.sql; the free-shipping chip filters on requires_shipping alone until then',
-  })
-  return build(false)
-}
-
 export async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
@@ -437,13 +410,12 @@ export async function getCategoryProducts(opts: {
   const supabase = createPublicClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
-  // Both reads that the builder below needs, resolved once, so the retry after
-  // a missing shipping column rebuilds the query without a second round trip.
+  // Both reads that the builder below needs, resolved before it.
   const newestIds =
     collection?.kind === 'newest' ? await newestProductIds(supabase, collection.limit) : []
   const sellable = await enabledProductTypes()
 
-  const build = (withShippingColumn: boolean) => {
+  const build = () => {
     let query = supabase
       .from('products')
       .select(
@@ -483,7 +455,7 @@ export async function getCategoryProducts(opts: {
       query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
     }
 
-    query = applyChipFilters(query, chips, withShippingColumn)
+    query = applyChipFilters(query, chips)
 
     switch (sort) {
       case 'price_asc':
@@ -522,11 +494,10 @@ export async function getCategoryProducts(opts: {
     return query.range(from, from + CATEGORY_PAGE_SIZE - 1)
   }
 
-  const { data, count } = orFailWithCount(
-    await runWithShippingFallback(build, chips),
-    'catalogue.category_products_failed',
-    { category_id: opts.categoryId, page },
-  )
+  const { data, count } = orFailWithCount(await build(), 'catalogue.category_products_failed', {
+    category_id: opts.categoryId,
+    page,
+  })
   const items = (data ?? []).map((row) =>
     normalizeCategoryJoin(row as CategoryProductRow, category),
   )
@@ -588,7 +559,7 @@ export async function getShopProducts(opts: {
   const from = (page - 1) * SHOP_PAGE_SIZE
   const sellable = await enabledProductTypes()
 
-  const build = (withShippingColumn: boolean) => {
+  const build = () => {
     let query = supabase
       .from('products')
       .select(
@@ -615,7 +586,7 @@ export async function getShopProducts(opts: {
       query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
     }
 
-    query = applyChipFilters(query, chips, withShippingColumn)
+    query = applyChipFilters(query, chips)
 
     switch (sort) {
       case 'price_asc':
@@ -636,11 +607,10 @@ export async function getShopProducts(opts: {
     return query.range(from, from + SHOP_PAGE_SIZE - 1)
   }
 
-  const { data, count } = orFailWithCount(
-    await runWithShippingFallback(build, chips),
-    'catalogue.shop_products_failed',
-    { page, sort },
-  )
+  const { data, count } = orFailWithCount(await build(), 'catalogue.shop_products_failed', {
+    page,
+    sort,
+  })
   const items = (data ?? []).map((row) => {
     const r = row as CategoryProductRow
     const joined = r.categories

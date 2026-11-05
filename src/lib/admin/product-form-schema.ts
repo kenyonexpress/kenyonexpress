@@ -249,6 +249,12 @@ export const productExtrasSchema = z
         .nullable()
         .optional(),
     ),
+    // The two storefront chip flags (262, applied 2026-11-06). Checkboxes: the
+    // action passes a real boolean, and reads an absent key as unticked. They
+    // live here and not on `productSchema` for the reason in the header: the
+    // CSV import spreads that schema's output into its insert.
+    open_weekend: z.boolean().optional(),
+    free_shipping: z.boolean().optional(),
     // Shekels in the form, agorot in the column (`shipping_price_agorot`, 243).
     // Form-only name, like recurring_amount_ils, converted once through money.ts.
     shipping_price_ils: z.preprocess(

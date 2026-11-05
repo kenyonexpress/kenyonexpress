@@ -1,3 +1,4 @@
+import CatalogueFilterChips from '@/components/catalogue/CatalogueFilterChips'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryChips from '@/components/category/CategoryChips'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
@@ -6,7 +7,6 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
-import FilterChips from '@/components/category/FilterChips'
 import Pagination from '@/components/category/Pagination'
 import {
   type ChipFilters,
@@ -227,7 +227,7 @@ async function ShopChips() {
 /** Reads the URL, so it streams into its own hole under the static category row. */
 async function ShopFilterChips({ searchParams }: Props) {
   const { linkParams, chips } = await shopArgs(searchParams)
-  return <FilterChips pathname="/products" params={linkParams} filters={chips} />
+  return <CatalogueFilterChips pathname="/products" params={linkParams} filters={chips} />
 }
 
 async function ShopSidebar({ searchParams }: Props) {
