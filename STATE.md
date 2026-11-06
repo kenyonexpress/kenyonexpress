@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M14-c366 - DONE (06.11.2026): תג ה-release של Sentry תואם ל-HEAD. בלי שינוי קוד.** בסיס HEAD `9ec92c46a`, ‏16:39-16:42 ‎+07. הדיפלוי שמאחורי `www` ‏(`dpl_DeZL4EHwHvhG9tKoX5tU2whFBoGU`) הוא `9ec92c46a` = HEAD = origin, וה-chunk החי בצד הלקוח נושא `release:"9ec92c46a..."` (22 מתוך 22 chunks ענו 200, ה-SHA הוא רצף ה-hex היחיד באורך 40). שרת ו-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA`; ‏`SENTRY_RELEASE` לא מוגדר. קריאה ראשונה ב-16:39:55, בזמן ה-build של HEAD, עוד ראתה את הדיפלוי הקודם (`c0a68f316`); ב-16:40:31 ה-alias עבר. זהה ל-M14-c365. 7 בדיקות התצורה ירוקות, בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M14-c366.md`.
+**עדיין פתוח, אצל אופיר (BACKLOG #21):** ב-Sentry עצמו אין ישות release ואין source maps, כי `SENTRY_AUTH_TOKEN` ב-build עונה 401. נדרש טוקן חדש ב-Vercel Production עם `project:releases` ו-`org:read`.
+**לא נבדק:** ה-API של Sentry (אין טוקן תקף במכונה); ערך ה-release בשרת וב-edge נקרא מהתצורה ומהסביבה, לא מאירוע שנשלח; ‏`pnpm test` המלא ו-type-check לא הורצו שוב (`src` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
+
 **M13-c366 - DONE (06.11.2026): ‏`/api/health` ו-`/api/ready` מחזירים 200 עם תלויות אמיתיות, בפרודקשן ומקומית. בלי שינוי קוד.** בסיס HEAD `c0a68f316`, ‏09:35 UTC. פרודקשן (`www`, ‏fra1): ‏8 מתוך 8 קריאות GET ענו 200 `application/json` עם `no-store`. מקומית (`pnpm build` ואז `next start` מול Supabase של פרודקשן): 200 בתצורה הרגילה, 200 תחת `MAINTENANCE_MODE=1`, ‏200 עם `meilisearch: not_configured`; מפתח service-role שנדחה נותן 503 JSON בשני הנתיבים. זהה ל-M13-c365. 31 בדיקות ירוקות, בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M13-c366.md`.
 **עדיין פתוח, להחלטת בעלים:** Meilisearch בפרודקשן `down` (`search: "degraded"`, החיפוש מוגש מ-Postgres; משימת תשתית). ה-apex עונה 308, לכן מוניטור צריך להצביע על `www` (BACKLOG #23).
 **לא נבדק:** `pnpm test` המלא, ‏`tsc` כשלב נפרד ושאר `pnpm lint` (`src` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה. בהרצת הביקורת השלילית קריאת `/api/ready` הראשונה לקחה 3.3 שניות; הסיבה לא נבדקה.
