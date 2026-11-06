@@ -1,7 +1,10 @@
-RESUME FROM: M06-c372
+RESUME FROM: M07-c372
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M07-c372 - DONE (07.11.2026): אין TODO/FIXME חדש, ואין מה לפתור בקוד.** ב-HEAD `8329e23e8` = `origin/closeout/v1-final` הסריקה מצאה את אותם שני סמני `TODO(cardcom)` ב-`src/lib/payments/cardcom.ts` (שורות 254 ו-319, ‏blame ‏24.07 ו-07.08, בני 106 ו-92 יום). שניהם כבר ב-`docs/BACKLOG.md` סעיף 6 וב-issues ‏#41 ו-#42, ששניהם עדיין פתוחים, וממתינים לטרמינל Cardcom חי. `final-audit.mjs`: ‏0 סמנים לא-מתועדים מתוך 2. מאז M07-c371 (`fdbc37ec0`) לא השתנה דבר מחוץ ל-`docs/`, ‏`README.md` ו-`STATE.md`. בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M07-c372.md`.
+**לא נבדק:** נכונות שדות ה-refund וה-credit-note מול טרמינל Cardcom חי (זה החסם עצמו); ‏`pnpm test` ו-`pnpm build` לא הורצו שוב (ירוקים ב-M05-c372 וב-M06-c372, אותו עץ `src/`); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
 
 **M06-c372 - DONE (07.11.2026): ‏`pnpm build` ירוק ב-HEAD `072b81e33`, אין סטייה לתקן.** exit 0 בניסיון הראשון: 417 דפים סטטיים ב-30.7 שניות, קומפילציה 5.1 שניות, TypeScript 3.5 שניות, 49.1 שניות כולל (Next.js 16.4.5, ‏Turbopack). טבלת הנתיבים זהה ל-M06-c371 (289 שורות נתיבים, 82 נתיבי `/product/[slug]` שנבנו מראש). ‏`db.query_slow` ‏41 (72 ב-c371), ‏`supabase.timeout` ‏0, ‏`db.query_failed` ‏0; שאר רעש הלוג (Sentry 401, ‏RLS על `reviews`, מיגרציות שלא הוחלו) זהה בספירה ל-c371. מאז M06-c371 (`094dd86fd`) לא השתנה שום קובץ תחת `src/`, ‏`tests/`, ‏`e2e/`, ‏`package.json`, ‏`pnpm-lock.yaml`, ‏`next.config.ts` או `tsconfig.json`. הבנייה לא שינתה אף קובץ במעקב. אין שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M06-c372.md`.
 **לא נבדק:** ‏`pnpm test:e2e`; ה-build של Vercel לקומיט הזה; ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
