@@ -40,10 +40,6 @@ export function demoCatalogId(kind: 'supplier' | 'product', index: number): stri
   return `${DEMO_ID_PREFIX}${prefix}${String(index).padStart(11, '0')}`
 }
 
-export function isDemoCatalogId(id: string): boolean {
-  return id.startsWith(DEMO_ID_PREFIX)
-}
-
 export function isDemoSlug(slug: string): boolean {
   return slug.startsWith(DEMO_SLUG_PREFIX)
 }

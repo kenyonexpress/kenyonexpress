@@ -196,22 +196,4 @@ export function decodeBlurhash(hash, width, height) {
   return out
 }
 
-/** The DC component of a hash, as an sRGB hex string. Useful for asserting. */
-export function decodeDC(hash) {
-  const decode83 = (str) => [...str].reduce((acc, char) => acc * 83 + BASE83.indexOf(char), 0)
-  const value = decode83(hash.slice(2, 6))
-  const to = (v) => Math.round((v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055) * 255)
-  const srgbToLinear = (v) => {
-    const x = v / 255
-    return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4
-  }
-  const r = (value >> 16) & 255
-  const g = (value >> 8) & 255
-  const b = value & 255
-  // Round-trips through linear the same way the encoder did.
-  return `#${[to(srgbToLinear(r)), to(srgbToLinear(g)), to(srgbToLinear(b))]
-    .map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0'))
-    .join('')}`
-}
-
 export const BASE83_ALPHABET = BASE83

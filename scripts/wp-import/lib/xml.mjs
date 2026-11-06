@@ -175,11 +175,6 @@ export function childText(node, name) {
   return value === '' ? '' : value
 }
 
-/** Text of every child with this name. */
-export function childTexts(node, name) {
-  return (node?.child?.[name] ?? []).map((n) => n.text)
-}
-
 /**
  * Stream `<item>` elements out of a WXR file without holding it in memory.
  *
