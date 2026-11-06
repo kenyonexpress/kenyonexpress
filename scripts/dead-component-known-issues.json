@@ -1,5 +1,5 @@
 {
-  "$what": "Every component under src/components that NOTHING in src/, apps/ or e2e/ imports, as of 2026-09-10. 20 of 191, after home/Footer.tsx was deleted on 2026-09-23 (OWNER DECISIONS v2: dead code carrying a customer-facing tel: link, contradicting the no-phone policy).",
+  "$what": "Every component under src/components that NOTHING in src/, apps/ or e2e/ imports, as of 2026-09-10. 20 of 191, after home/Footer.tsx was deleted on 2026-09-23 (OWNER DECISIONS v2: dead code carrying a customer-facing tel: link, contradicting the no-phone policy). 15 as of 2026-11-06 (M09-c362): ui/dropdown-menu.tsx, ui/form.tsx and ui/select.tsx were deleted with their three dependencies, and ui/button.tsx and ui/textarea.tsx were struck because src/app/dev/components/page.tsx imports them.",
   "$why": "A component with no importer is the most common defect shape in this project's history: a finished feature nobody wired up. Nothing counted them until this file existed. Demanding zero would have made the gate red on arrival, and the fix for a dead component is deletion, which is not a gate's call to force here -- three of these are re-export shims another path still uses, five are library surface, and two are cited by name in scripts/rtl-logical-scan.mjs and in other files' comments.",
   "$rules": "findUnimportedComponents in scripts/final-audit-lib.mjs. The gate: scripts/final-audit.mjs, tenth and eleventh rows.",
   "$how_to_shrink_this": "Wire it up or delete it, then strike the line. The gate FAILS on an entry that is now imported or gone, so this list cannot keep names of things already resolved. It is a ratchet: the 22nd dead component is refused.",
@@ -64,26 +64,6 @@
     "src/components/storefront/BlogPostHeader.tsx": {
       "group": "unwired feature",
       "detail": "Emits the blog post JSON-LD as well as the header, so the structured data goes with it."
-    },
-    "src/components/ui/button.tsx": {
-      "group": "shadcn primitive",
-      "detail": "Installed library surface. The site's buttons are styled directly against the token layer."
-    },
-    "src/components/ui/dropdown-menu.tsx": {
-      "group": "shadcn primitive",
-      "detail": "Also named in scripts/rtl-logical-scan.mjs's LTR island list, which is a second reference that breaks if the file goes."
-    },
-    "src/components/ui/form.tsx": {
-      "group": "shadcn primitive",
-      "detail": "react-hook-form bindings. This project's forms are server actions with useActionState."
-    },
-    "src/components/ui/select.tsx": {
-      "group": "shadcn primitive",
-      "detail": "Installed library surface."
-    },
-    "src/components/ui/textarea.tsx": {
-      "group": "shadcn primitive",
-      "detail": "Installed library surface."
     }
   }
 }

@@ -1,6 +1,6 @@
 import { DEFAULT_LOCALE, type LocaleCode, intlTag } from '@/lib/i18n/locales'
 import type { Agorot } from '@/lib/money'
-import { shekels, shekelsPlain } from '@/lib/money-format'
+import { shekels } from '@/lib/money-format'
 
 /**
  * Dates, numbers and money, formatted in one place.
@@ -57,7 +57,7 @@ export type { LocaleCode }
 export const SITE_TIME_ZONE = 'Asia/Jerusalem'
 
 /** Money. See the header: agorot in, and never reformatted here. */
-export { shekels as formatCurrency, shekelsPlain as formatCurrencyPlain }
+export { shekels as formatCurrency }
 export type { Agorot }
 
 /**

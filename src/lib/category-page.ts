@@ -194,27 +194,6 @@ export async function getCategoryParent(
   return data
 }
 
-export async function getCategoryChildren(
-  categoryId: string,
-): Promise<{ id: string; slug: string; name_he: string }[]> {
-  'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
-  const data = orFail(
-    await orderedByMenu(
-      supabase
-        .from('categories')
-        .select('id, slug, name_he')
-        .eq('parent_id', categoryId)
-        .eq('is_active', true),
-    ),
-    'catalogue.category_children_failed',
-    { category_id: categoryId },
-  )
-  return data ?? []
-}
-
 function normalizeCategoryJoin(
   row: CategoryProductRow,
   fallback: { name_he: string; slug: string },

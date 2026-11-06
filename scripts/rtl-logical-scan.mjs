@@ -68,28 +68,6 @@ export const REVIEWED = new Map([
     ]),
   ],
   [
-    'src/components/ui/dropdown-menu.tsx',
-    new Map([
-      [
-        'left-2',
-        'The check indicator well in the shadcn menu primitive, sized to match the ' +
-          'item padding it sits inside. Physical and paired with a physical padding.',
-      ],
-    ]),
-  ],
-  [
-    'src/components/ui/select.tsx',
-    new Map([
-      [
-        'left-2',
-        'The same check-indicator well as dropdown-menu.tsx, from the same shadcn ' +
-          'primitive, pinned to the item box rather than to a text flow. Both files are ' +
-          'vendored upstream code; converting them would diverge this copy from the ' +
-          'source it is re-synced against.',
-      ],
-    ]),
-  ],
-  [
     'src/components/a11y/SkipLink.tsx',
     new Map([
       [

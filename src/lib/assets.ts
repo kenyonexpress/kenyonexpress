@@ -38,8 +38,3 @@ export const HERO_CATEGORY_BANNERS = {
 
 /** @deprecated use HERO_CATEGORY_BANNERS */
 export const CATEGORIES = HERO_CATEGORY_BANNERS
-
-export const HERO_ICONS = {
-  logo: '/images/hero/icons/Kenyonexpress-190x50-1.png',
-  payment: '/images/hero/icons/patment-icon.webp',
-} as const
