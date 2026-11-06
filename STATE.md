@@ -3,6 +3,9 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M05-c369 - DONE (06.11.2026): ‏`pnpm test` ירוק, אין סטייה לתקן.** `vitest run` (Vitest 4.1.11) יוצא 0 ב-HEAD `8463e27b5` = `origin/closeout/v1-final`: ‏704 קבצים עברו ו-1 דולג, 8303 בדיקות עברו ו-13 דולגו מתוך 8316, אותו סך כמו ב-M05-c368. מאז M05-c368 (`4a7ddd1c4`) לא השתנה שום קובץ תחת `src/`, ‏`tests/` ו-`e2e/`, וגם לא `package.json`, ‏`pnpm-lock.yaml`, ‏`vitest.config.ts` ו-`vitest.setup.ts`. ‏`pnpm test` ו-`pnpm lint` ירוקים גם אחרי הרישום. אין שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M05-c369.md`.
+**לא נבדק:** ‏`pnpm build` ו-`pnpm test:e2e` (ה-build שייך ל-M06); 13 הבדיקות והקובץ שדולגו לא נבחנו אחת אחת; ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
+
 **M04-c369 - DONE (06.11.2026): ‏`pnpm type-check` נקי, אין סטייה לתקן.** `tsc --noEmit` יוצא 0 ב-HEAD `0614551c2`, גם עם מטמון ה-incremental וגם בבדיקה קרה (`--incremental false`, ‏15.4 שניות), TypeScript 5.9.3. מאז M04-c368 (`4a7ddd1c4`) לא השתנה שום קובץ תחת `src/`, וגם לא `tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml`. ‏`pnpm lint` ו-`ci-docs-inventory.test.ts` ירוקים לפני הרישום ואחריו. אין שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M04-c369.md`.
 **לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (שייכים ל-M05 ול-M06); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
 
