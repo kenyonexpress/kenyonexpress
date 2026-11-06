@@ -3,6 +3,9 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M05-c365 - DONE (06.11.2026): ‏`pnpm test` ירוק, אין סטייה לתקן.** `vitest run` ב-HEAD `8bcc38474`: ‏704 קבצים עברו ואחד דולג, 8303 בדיקות עברו ו-13 דולגו מתוך 8316, אותו סך כמו ב-M05-c364. מאז M05-c364 (`ee3de0ea9`) לא השתנה שום קובץ תחת `src/`, ‏`tests/` ו-`e2e/`, וגם לא `package.json` ו-`pnpm-lock.yaml`. בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M05-c365.md`.
+**לא נבדק:** ‏`pnpm build` ו-`pnpm test:e2e` (שייכים ל-M06 ולפריטים אחרים); 13 הבדיקות והקובץ שדולגו לא נבחנו אחת אחת; ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
+
 **M04-c365 - DONE (06.11.2026): ‏`pnpm type-check` נקי, אין סטייה לתקן.** `tsc --noEmit` יוצא 0 ב-HEAD `1627fc47e`, גם עם מטמון ה-incremental וגם בבדיקה קרה (`--incremental false`). מאז M04-c364 (`f0ad49c49`) לא השתנה שום קובץ תחת `src/`, וגם לא `tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml`. גם `pnpm lint` ו-`ci-docs-inventory.test.ts` ירוקים לפני כל שינוי. בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M04-c365.md`.
 **לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (שייכים ל-M05 ול-M06); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
 
