@@ -1,7 +1,10 @@
-RESUME FROM: M19-c374
+RESUME FROM: M04-c375
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M04-c375 - DONE (07.11.2026): ‏`pnpm type-check` נקי ב-HEAD `ce8a56d1e`, אין סטיית טיפוסים, בלי שינוי קוד.** ‏`tsc --noEmit` יוצא 0 גם עם המטמון וגם קר (`--incremental false`, 0 שורות `error TS`; TypeScript 5.9.3, ‏Node v25.9.0). מאז M04-c374 (`72ebea774`, 15 קומיטים של רישומי תור בלבד) לא השתנה דבר תחת `src/`, ‏`tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml`; הקומיט האחרון ב-`src/` הוא עדיין `00c34c066` (M09-c363). בניגוד ל-M04-c374, לא נמצאה סטייה שאינה טיפוסים: `lint:docs` ירוק (566 מסמכים) ו-`ci-docs-inventory` ‏6 מ-6 לפני הפריט. ספירת המסמכים ב-README עודכנה ל-567. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M04-c375.md`.
+**לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (שייכים ל-M05 ו-M06); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה. ‏`STATE.md.bak` ו-`android/` הלא-מעוקבים לא נגעו.
 
 **M19-c374 - DONE (07.11.2026): ‏קידום פרודקשן no-op, www מגיש את HEAD דרך git auto-deploy.** בתחילת הפריט `vercel ls --prod` הראה פריסה בת 23 שניות עדיין Building (`dpl_AsRK7qPtKCiAUb4kBuiNz9sYqbDx`, `kenyonexpress-783g764w7`), מקור git, commit `ae68ae0ac` = HEAD = origin (M18-c374); www הגיש באותו רגע את `a4c1acbff` (M17-c374), הבדל markdown בלבד. לא הורץ `vercel deploy`: פריסת CLI של אותו commit רק הייתה מתחרה בבנייה הרצה. `pnpm build` מקומי: exit 0, Compiled successfully in 4.5s, 241 נתיבים (אזהרת sentry source-map 401 מקומית וידועה, לא מכשילה). קריאה שנייה ל-API ראתה READY/PROMOTED 70.2 שניות אחרי היצירה עם alias של www; ‏`/v4/aliases/www.kenyonexpress.co.il` ו-`/v13/deployments` נושאים את אותו `dpl_`. ‏`/` 200 HIT, ‏`/api/ready` 200 (search degraded, meilisearch down, BACKLOG), ‏`/api/health` 200. בדיקת ההקפאה ריקה. ספירת המסמכים ב-README עודכנה ל-566. הוכחה: `docs/M19-c374.md`.
 
