@@ -1,7 +1,9 @@
-RESUME FROM: M18-c374
+RESUME FROM: M19-c374
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M19-c374 - DONE (07.11.2026): ‏קידום פרודקשן no-op, www מגיש את HEAD דרך git auto-deploy.** בתחילת הפריט `vercel ls --prod` הראה פריסה בת 23 שניות עדיין Building (`dpl_AsRK7qPtKCiAUb4kBuiNz9sYqbDx`, `kenyonexpress-783g764w7`), מקור git, commit `ae68ae0ac` = HEAD = origin (M18-c374); www הגיש באותו רגע את `a4c1acbff` (M17-c374), הבדל markdown בלבד. לא הורץ `vercel deploy`: פריסת CLI של אותו commit רק הייתה מתחרה בבנייה הרצה. `pnpm build` מקומי: exit 0, Compiled successfully in 4.5s, 241 נתיבים (אזהרת sentry source-map 401 מקומית וידועה, לא מכשילה). קריאה שנייה ל-API ראתה READY/PROMOTED 70.2 שניות אחרי היצירה עם alias של www; ‏`/v4/aliases/www.kenyonexpress.co.il` ו-`/v13/deployments` נושאים את אותו `dpl_`. ‏`/` 200 HIT, ‏`/api/ready` 200 (search degraded, meilisearch down, BACKLOG), ‏`/api/health` 200. בדיקת ההקפאה ריקה. ספירת המסמכים ב-README עודכנה ל-566. הוכחה: `docs/M19-c374.md`.
 
 **M18-c374 - DONE (07.11.2026): ‏STATE.md נגזם מ-273 שורות ל-231, מחזור c373 עבר לארכיון.** הקובץ התחיל ב-273 שורות (65,865 בייט), 27 שורות מתחת לתקרת 300; M18-c373 השאיר אותו ב-229, ו-M19-c373 ועשרת רישומי c374 הוסיפו 44. בלי שינוי קוד. מחזור c373 (M19-c373, M18-c373, M17-c373, M15-c373..M04-c373, 46 שורות; M16-c373 כבר היה בארכיון מ-M18-c373) הועבר מילה במילה לראש `docs/STATE-ARCHIVE.md` תחת כותרת משלו, ובמקומו שורת מצביע אחת ליד המצביעים הקודמים. הרישום של M16-c374, שישב בטעות בתוך בלוק c373, הוזז למקומו בין M17-c374 ל-M15-c374 בלי שינוי בתוכן. שום דבר לא נמחק: כל שורה לא-ריקה מהקובץ הישן נמצאת בקובץ החדש או בארכיון, חוץ משורת `RESUME FROM` שעודכנה ל-M18-c374. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-565. הוכחה: `docs/M18-c374.md`.
 **לא נבדק:** ‏`pnpm test` המלא, ‏`type-check` ו-build (השינוי ב-markdown בלבד; רצו רק `lint:docs` ושתי חבילות הבדיקה שקוראות את `docs/`); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה. ‏`STATE.md.bak` ו-`android/` הלא-מעוקבים לא נגעו.
