@@ -1099,6 +1099,11 @@ describe('the pending migration inventory', () => {
       // stand-ins the chips used before (0 weekend tags, 14 zero-price rows).
       // Proof: docs/S35-chips.md.
       '262_product_chip_flags.sql',
+      // S38 (06.11): APPLIED the same day. public.site_health plus two pg_cron
+      // jobs: a pg_net GET of APP_BASE_URL/api/ready every five minutes, judged
+      // a minute later; the third consecutive failure sends "hey SITE down" to
+      // ntfy once per outage, recovery sends nothing. Proof: docs/S38-monitor.md.
+      '263_site_health_monitor.sql',
       'preflight_162.sql',
       'preflight_184.sql',
       'preflight_250.sql',

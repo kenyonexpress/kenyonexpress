@@ -1,5 +1,16 @@
 # `migrations/pending/`
 
+## 2026-11-06: 263 WRITTEN AND APPLIED - ניטור זמינות מתוך המסד (site_health)
+
+‏`263_site_health_monitor.sql`. ‏S38. טבלה אחת, `public.site_health`, שתי פונקציות ושני ג'ובים של pg_cron.
+‏`ke-site-health-probe` (כל 5 דקות) שולח דרך pg_net בקשת GET ל-`APP_BASE_URL/api/ready` ורושם שורה;
+‏`ke-site-health-resolve` (דקה אחריו) קורא את התשובה מ-`net._http_response`, כי pg_net עונה רק אחרי
+ה-commit. כישלון הוא כל תשובה שאינה 200, כולל timeout ובקשה שלא נענתה תוך 120 שניות. בכישלון השלישי
+ברצף נשלחת הודעה אחת, "hey SITE down", לנושא `kenyon-ofir-limit` ב-ntfy, פעם אחת לכל תקלה; בהתאוששות
+לא נשלח דבר. RLS דלוק בלי policy, בלי הרשאות ל-anon ול-authenticated, והפונקציות SECURITY INVOKER.
+שורות נמחקות אחרי 30 יום. אין סוד בקובץ, הכתובת נקראת מה-vault בזמן ריצה. נבדקה בטרנזקציה שבוטלה
+(כל תרחישי ההתראה) ואז הוחלה. הוכחה ב-`docs/S38-monitor.md`.
+
 ## 2026-11-06: 262 WRITTEN AND APPLIED - שני הדגלים של שבבי הסינון (open_weekend, free_shipping)
 
 ‏`262_product_chip_flags.sql`. ‏S35. שתי עמודות ב-`products`: ‏`open_weekend` ו-`free_shipping`
