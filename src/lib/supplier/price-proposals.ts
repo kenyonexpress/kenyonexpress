@@ -15,17 +15,6 @@ export const MAX_PROPOSAL_NOTE_LENGTH = 1000
 
 export type ProposalStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn'
 
-export const PROPOSAL_STATUSES: readonly ProposalStatus[] = [
-  'pending',
-  'approved',
-  'rejected',
-  'withdrawn',
-] as const
-
-export function isProposalStatus(raw: unknown): raw is ProposalStatus {
-  return typeof raw === 'string' && (PROPOSAL_STATUSES as readonly string[]).includes(raw)
-}
-
 export type ProposalValidation = { ok: true; agorot: Agorot } | { ok: false; error: string }
 
 /**

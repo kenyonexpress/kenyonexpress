@@ -115,12 +115,6 @@ function lineProgress(line: TimelineLine): number {
   return 2 // paid and packed-or-packing; `placed`/`confirmed` are order-level
 }
 
-function earliest(values: readonly (string | null)[]): string | null {
-  const present = values.filter((v): v is string => typeof v === 'string' && v.length > 0)
-  if (present.length === 0) return null
-  return present.reduce((min, v) => (v < min ? v : min))
-}
-
 function latest(values: readonly (string | null)[]): string | null {
   const present = values.filter((v): v is string => typeof v === 'string' && v.length > 0)
   if (present.length === 0) return null
@@ -208,13 +202,4 @@ export function buildOrderTimeline(input: TimelineInput): OrderTimeline {
     currentStep: STEP_ORDER[Math.min(progress, lastIndex)] as TimelineStepId,
     physicalLines: physical.length,
   }
-}
-
-/**
- * The first moment the order was in motion, for the delivery estimate's anchor.
- * Exported because the estimate module must not re-derive "when was this paid"
- * from a different rule than the timeline shows.
- */
-export function timelineAnchor(input: TimelineInput): string | null {
-  return input.orderPaidAt ?? earliest([input.orderCreatedAt])
 }

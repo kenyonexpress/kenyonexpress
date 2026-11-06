@@ -25,8 +25,3 @@ export const KNOWN_SETTLEMENT_ISSUES: readonly string[] = Object.keys(file.known
 
 /** When the floor above was last measured against production. */
 export const SETTLEMENT_ISSUES_MEASURED_AT = file.$measured_at
-
-/** The human-facing note for one id, for a report that has to explain itself. */
-export function knownIssueDetail(id: string): string | null {
-  return file.known[id]?.detail ?? null
-}

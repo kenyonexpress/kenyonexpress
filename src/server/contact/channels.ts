@@ -122,10 +122,6 @@ export async function listActiveContactChannels(): Promise<ContactChannel[]> {
   return activeChannels((await storefrontSnapshot()).channels)
 }
 
-export async function listPageContactConfigs(): Promise<PageContactConfig[]> {
-  return (await storefrontSnapshot()).configs
-}
-
 export async function findContactChannel(key: ContactChannelKey): Promise<ContactChannel | null> {
   return (await storefrontSnapshot()).channels.find((c) => c.key === key && c.active) ?? null
 }

@@ -211,5 +211,8 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * 2026-11-06, S34: the /contact channel list was born in the catalog
  * (`contact.channelsHeading`, `contact.hint*`), and the section's literal
  * aria-label went with the picker it labelled. 558 -> 557.
+ * 2026-11-06, M09-c363: the unimported `components/store/` homepage sections
+ * (`CategoryNav`, `CategoryProductSection`, `DealsSection`) were deleted, and
+ * their literals went with them. 557 -> 543.
  */
-export const HEBREW_LITERAL_CEILING = 557
+export const HEBREW_LITERAL_CEILING = 543
