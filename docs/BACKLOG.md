@@ -548,6 +548,10 @@ degrades gracefully until applied. No migration applied, no code change.
    `google_reviews_url`, אחרי 232 ואחרי 242). **M10-c112 (06.10): נוספו 249, 250,
    251, 252** (23 קבצים; כל אחד בלתי תלוי באחרים לפי `APPLY-ORDER.md`, 250 דורש
    קודם את `preflight_250.sql` ותיקון ה-vault). אחרי ההחלה: `pnpm db:types` ו-commit.
+   **בדיקה חוזרת M10-c362 (06.11.2026):** 29 מתוך 73 קבצים חיים, אותם 44 לא הוחלו. האתר חי מאז
+   06.11, ו-218 עדיין לא הוחל: שמירת הפרטים ב-`/account/details` נכשלת לכל לקוח (42703).
+   להחיל את 218 כפריט נפרד, אחרי חזרה ב-BEGIN/ROLLBACK, ואחריו את 217. אין לתקן את הפונקציה
+   בלי צמצום ה-GRANT שבאותו קובץ. הוכחה: `docs/M10-c362.md`.
 6. **Cardcom אמיתי.** לבדוק את הערכים של `CARDCOM_API_KEY`/`CLIENT_ID`/
    `MERCHANT_ID` הקיימים בשם ב-Vercel, לקבוע `CARDCOM_USE_MOCK=false` ו-
    `CHECKOUT_ENABLED=true`, לפרוס מחדש (ה-CSP נאפה בזמן build, לא בזמן
