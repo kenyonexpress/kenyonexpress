@@ -1,7 +1,10 @@
-RESUME FROM: M13-c374
+RESUME FROM: M14-c374
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M14-c374 - DONE (07.11.2026): תג ה-release של Sentry תואם ל-HEAD בכל הסביבות. בלי שינוי קוד.** בסיס HEAD `ff4da142d`, ‏05:14-05:16 +07 (22:14-22:16 UTC ב-06.11). ‏HEAD, הענף ב-origin והדיפלוי שמאחורי ה-alias של פרודקשן (`dpl_2gc2tDsPpEjc4Lah3BvJZ48ztKMo`) הם אותו קומיט `ff4da142da7d43c699e140c57e1ab0ae9139161d`, וה-chunk החי של הלקוח (`0-uyoo7_9a7k3.js`, ‏22 מתוך 22 chunks נמשכו) נושא `release:"ff4da142d..."`. שרת ו-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA` (אין `SENTRY_RELEASE`). קריאה ראשונה בזמן ה-build (05:14:24) עדיין ראתה את הדיפלוי הקודם `8eaccb9d5`; ‏HEAD נהיה Ready ב-05:15:04. לוג ה-build: ‏`releases new ff4da142d...` פעם אחת, ‏401 שלוש פעמים (BACKLOG #21, טוקן חדש של אופיר). ‏`sentry-build-config.test.ts`: ‏7 מתוך 7. בדיקת ההקפאה ריקה מול התג. זהה ל-M14-c373. ספירת המסמכים ב-README עודכנה ל-561. הוכחה: `docs/M14-c374.md`.
+**לא נבדק:** ה-API של Sentry עצמו (אין טוקן תקף במכונה; ה-401 בבנייה כבר עונה); ‏`pnpm test`/`type-check`/`build` לא הורצו (`src/` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
 
 **M13-c374 - DONE (07.11.2026): ‏`/api/health` ו-`/api/ready` מחזירים 200 מול תלויות אמיתיות, בלי שינוי קוד.** ב-HEAD `8eaccb9d5` = `origin/closeout/v1-final`, קריאה בלבד, 22:11 UTC ב-06.11. זהה ל-M13-c373: קוד המסלולים זהה בית מול בית; בפרודקשן (`www`, ‏fra1) 8 מתוך 8 GET מחזירים 200 `application/json` עם `no-store`, ‏1.06 עד 1.86 שניות מקצה לקצה (`latency_ms` 185); ‏apex 308, ‏HEAD 200, ‏POST 405. מקומית `next start` על הבנייה הקיימת (`KGzxddiV4M-xzd9n5Slg`) מול ה-Supabase של הפרודקשן: 4 מתוך 4 200, ‏`meilisearch: down` ו-`search: degraded` כמו קודם, 0 שגיאות בלוג. ספירת המסמכים ב-README עודכנה ל-560. 27/27 בדיקות health/ready ו-137/137 בדיקות observability ירוקות, בדיקת ההקפאה ריקה. הוכחה: `docs/M13-c374.md`.
 **לא נבדק:** וריאנטים של maintenance-mode / ‏`not_configured` / service-role מבוטל לא הורצו שוב (קוד זהה מאז M13-c372, מכוסה בבדיקות היחידה); ‏`pnpm test`/`type-check`/`lint`/`build` לא הורצו (`src/` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה. ‏Meilisearch בפרודקשן עדיין down, של אופיר; ‏#23 (apex מול www) עדיין פתוח.
