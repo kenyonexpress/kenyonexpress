@@ -48,7 +48,7 @@ pnpm dev                     # http://localhost:3000
 | `pnpm format` / `pnpm check` | ‏biome, בכתיבה. ‏`lint` הוא אותו כלי בקריאה בלבד |
 | `pnpm typecheck:changed` / `pnpm lint:changed` | אותן בדיקות על הקבצים שהשתנו. זה מה ש-`.husky/pre-commit` מריץ |
 | `pnpm audit:hardcoded` | מרגנרט את הפנקס `docs/hardcoded-audit.md`. **‏`gate:hardcoded` הוא השער; זה מזיז את קו הבסיס שלו**, ולכן לא מריצים אותו כדי "לתקן" ממצא |
-| `pnpm audit:catalogue` | ‏25 הממצאים בקטלוג החי מול הרצפה ב-`supabase/catalogue-known-issues.json` |
+| `pnpm audit:catalogue` | ‏94 הממצאים בקטלוג החי מול הרצפה ב-`supabase/catalogue-known-issues.json` |
 | `pnpm seed` / `pnpm seed:lifecycle` | זורע קטלוג ומחזור חיים של הזמנה. ‏`:sql` מדפיס את ה-SQL במקום להריץ, ‏`:clean-sql` מדפיס את הניקוי. **הזריעה מסרבת לרוץ מול פרודקשן** (`scripts/seed-target-guard.mjs`) |
 | `pnpm report:bundle` / `pnpm analyze` | גודל החבילה. הראשון דוח, השני ה-analyzer של ‏Next |
 | `pnpm check:email-dns` | ‏SPF ‏/ ‏DKIM ‏/ ‏DMARC של הדומיין שממנו נשלח דואר |
@@ -69,7 +69,7 @@ pnpm dev                     # http://localhost:3000
 | `migrations/pending/` | מיגרציות שנכתבו וטרם הוחלו. סדר והתניות ב-`APPLY-ORDER.md` |
 | `supabase/migrations/` | ההיסטוריה. **אינה מתארת את פרודקשן** — הטיפוסים שנוצרים כן |
 | `scripts/` | שערים, סקריפטים תפעוליים וכלי מדידה |
-| `docs/` | ‏360 מסמכים. נקודת הכניסה: `docs/INDEX.md`, ש-`pnpm lint:docs` מוודא שהוא מונה את כולם |
+| `docs/` | ‏361 מסמכים. נקודת הכניסה: `docs/INDEX.md`, ש-`pnpm lint:docs` מוודא שהוא מונה את כולם |
 | `e2e/`, `tests/`, `load/` | ‏Playwright, ‏Vitest, ‏k6 |
 
 ## חוקים שיעלו לך ביוקר אם תפספס אותם
