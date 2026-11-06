@@ -3,6 +3,9 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M04-c368 - DONE (06.11.2026): ‏`pnpm type-check` נקי, אין סטייה לתקן.** `tsc --noEmit` יוצא 0 ב-HEAD `e5c396d18`, גם עם מטמון ה-incremental וגם בבדיקה קרה (`--incremental false`). מאז M04-c367 (`33d7f414c`) לא השתנה שום קובץ תחת `src/`, וגם לא `tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml`. גם `pnpm lint` ו-`ci-docs-inventory.test.ts` ירוקים לפני כל שינוי. בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M04-c368.md`.
+**לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (שייכים ל-M05 ול-M06); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
+
 **M19-c367 - DONE (06.11.2026): קידום לפרודקשן, no-op. פרודקשן כבר מגיש את HEAD.** ‏11:49-11:51 UTC, קריאה בלבד, בלי שינוי קוד. ה-deployment שמאחורי `www` הוא `dpl_GCve8PLE9ZD5yELST5mKB6uWqHrS`, שנבנה ב-git auto-deploy של Vercel מ-`db909d1ca` (M18-c367) = HEAD = `origin/closeout/v1-final`. בתחילת הפריט הוא היה בן 27 שניות ועדיין `Building`, וה-`Ready` האחרון היה מ-`d178a427d`, קומיט אחד אחורה (הפרש של markdown בלבד). הפריט חיכה: ה-build הגיע ל-`READY` / `PROMOTED` עם ה-alias של `www` ושל ה-apex 66 שניות אחרי שנוצר, בלי התערבות. לכן `pnpm build` ו-`vercel deploy --prod` לא הורצו; דיפלוי מה-CLI של אותו קומיט רק היה מתחרה בו. ‏`/api/ready` עונה 200 עם `search: "degraded"` (Meilisearch `down`, כמו ב-M13-c367), ‏`/api/health` 200, ‏`/` 200, וב-HTML של `/` מופיע רק מזהה ה-deployment החדש (1198 פעמים). אותה תוצאה כמו ב-M19-c366. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M19-c367.md`.
 **לא נבדק:** איזה deployment הגיש `www` ברגע שהפריט התחיל (הבקשה הראשונה ל-`www` נשלחה אחרי שה-build היה `READY`); ‏`pnpm build` מקומי (ההוכחה שה-HEAD נבנה היא ה-build של Vercel לאותו קומיט); ה-deployment שייבנה מהקומיט שמתעד את הפריט הזה (markdown בלבד); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
 
