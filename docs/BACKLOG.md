@@ -552,6 +552,9 @@ degrades gracefully until applied. No migration applied, no code change.
    06.11, ו-218 עדיין לא הוחל: שמירת הפרטים ב-`/account/details` נכשלת לכל לקוח (42703).
    להחיל את 218 כפריט נפרד, אחרי חזרה ב-BEGIN/ROLLBACK, ואחריו את 217. אין לתקן את הפונקציה
    בלי צמצום ה-GRANT שבאותו קובץ. הוכחה: `docs/M10-c362.md`.
+   **בדיקה חוזרת M10-c363 (06.11.2026):** בלי שינוי. 29 מתוך 73 חיים, אותם 44 לא הוחלו, ו-218 עדיין
+   לא חי. זה המחזור השלישי ברצף עם אותו חוסם; פריט ההחלה של 218 עדיין לא נכנס לתור.
+   הוכחה: `docs/M10-c363.md`.
 6. **Cardcom אמיתי.** לבדוק את הערכים של `CARDCOM_API_KEY`/`CLIENT_ID`/
    `MERCHANT_ID` הקיימים בשם ב-Vercel, לקבוע `CARDCOM_USE_MOCK=false` ו-
    `CHECKOUT_ENABLED=true`, לפרוס מחדש (ה-CSP נאפה בזמן build, לא בזמן
