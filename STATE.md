@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M13-c364 - DONE (06.11.2026): ‏`/api/health` ו-`/api/ready` עונים 200 עם תלויות אמיתיות, בפרודקשן ומקומית. בלי שינוי מאז M13-c363.** בסיס HEAD `584ff54f0`, קריאה בלבד, בלי שינוי קוד; ‏`src/` לא השתנה מאז M13-c363. בפרודקשן (`www`, ‏`fra1`) שמונה מתוך שמונה GET ענו 200 `application/json` עם `no-store`, ו-`x-matched-path` מראה שה-route עצמו ענה. מקומית (`pnpm build` exit 0, ‏`next start` מול ה-Supabase של פרודקשן): 200 בתצורה הרגילה, 200 עם `MAINTENANCE_MODE=1` (כש-`/` ו-`/api/search` עונים 503), ו-200 עם `meilisearch: not_configured`. בקרה שלילית: מפתח service-role שגוי נותן 503 JSON בשני הנתיבים, בלי דליפת שגיאה. ‏31 בדיקות health/maintenance עוברות. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M13-c364.md`.
+**עדיין פתוח, לטיפול אופיר (תשתית):** Meilisearch בפרודקשן `down`, ולכן `search: "degraded"` והחיפוש רץ על Postgres בלי סובלנות לשגיאות הקלדה. ה-apex עונה 308, אז מוניטור צריך להצביע על `www` (BACKLOG #23).
+**לא נבדק:** ‏`pnpm test` המלא ו-`type-check` (אין שינוי ב-`src/`); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה. שלוש הקריאות המדודות ל-`/api/ready` בפרודקשן לקחו 2.5 עד 3.8 שניות מקצה לקצה (בתוך ה-handler של `/api/health` ‏65ms); לא נמדד איפה הזמן הלך.
+
 **M12-c364 - DONE (06.11.2026): ‏`robots.txt` בטוח לפרודקשן. בלי שינוי קוד.** בסיס HEAD `6f87bac50`. ‏`www` מגיש 200 `text/plain` עם `Allow: /` ו-19 שורות `Disallow`, בלי `Disallow: /` גורף. הגוף זהה בייט-בבייט ל-M12-c363 (אותו md5, ‏477 בייט), זהה ל-Googlebot, ל-bingbot ול-GPTBot, והרשימה החיה זהה ל-`src/app/robots.ts`. אף אחת מ-162 כתובות ה-sitemap לא נופלת תחת `Disallow`. דף הבית ו-`/products` בלי noindex; ‏15 הכתובות שנבדקו עונות כמו במחזור הקודם. 81 בדיקות ה-robots ירוקות. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M12-c364.md`.
 **נשאר, החלטת בעלים (BACKLOG #23):** שורות `Host:` ו-`Sitemap:` נוקבות ב-apex, וה-apex עונה 308 ל-`www`.
 **לא נבדק:** Search Console (אין גישה מכאן); ‏`pnpm test` המלא, type-check ו-build לא הורצו שוב (`src` לא השתנה); noindex נבדק ב-15 כתובות בלבד, והסריקה המלאה היא זו של M12-c361; ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
