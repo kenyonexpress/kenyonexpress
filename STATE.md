@@ -3,6 +3,11 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M15-c362 - DONE (06.11.2026): אין שגיאות console ב-`/` ובחמישה דפי מוצר, ב-380 וב-1440, נמדד על האתר החי.** בריצה הראשונה היו 92 רשומות שגיאה ו-46 תמונות שבורות ב-12 טעינות, כולן `/_next/image` שעונה 400. הסיבה: 40 מוצרים פעילים מצביעים ב-`products.images` על 52 קבצי `/images/cdn/wp/*.webp` שקיימים רק ב-`main` ‏(`f28bbc0a6`) ולא הגיעו ל-`closeout/v1-final`. 52 הקבצים שוחזרו מ-`origin/main` ‏(2.56MB, ‏`f9a0234e6`); בריצה השנייה, על `dpl_13QNLJDsVFZTGFoWweT84iDesCG4`: ‏0 שגיאות, 0 תמונות שבורות, וכל 52 הקבצים עונים 200. בלי שינוי תחת `src/`. הוכחה: `docs/M15-c362.md`.
+**תוקן בדרך:** `f9a0234e6` האדים את `pnpm test` (1 מתוך 8316): 39 רשומות `image-file-missing` ב-`supabase/catalogue-known-issues.json` הפסיקו לירות כשהקבצים חזרו לדיסק. הן נמחקו (94 ל-55); `pnpm test` ו-`pnpm lint` ירוקים. ריצה שלישית על פרודקשן לפני הסגירה: 0 שגיאות.
+**תיקון לרישום קודם:** M15-c361 סיווג 404 אחד על `/_next/image` כ"מקומי בלבד" בגלל loader מותאם. בענף הזה אין loader מותאם; זה היה אחד מ-52 הקבצים החסרים.
+**נרשם, לא תוקן:** 16 אזהרות (לא שגיאות) של Chromium על preload שלא נוצל, 12 על chunk של CSS ו-4 על `/images/logo.webp`. ה-preload של הלוגו יושב ב-`src/app/layout.tsx`, שקפוא.
+
 **M14-c362 - DONE (06.11.2026): ה-release של Sentry תואם ל-HEAD בכל שלושת ה-runtimes.** HEAD, ‏`origin/closeout/v1-final` וה-deployment שמאחורי `www` ‏(`dpl_BheVBLhESd9LRpXJFsKAZ2wkGAqt`) הם אותו commit, ‏`29a09d12a`. ה-chunk החי של הלקוח נושא `release:"29a09d12…"`; שרת ו-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA` כי אין `SENTRY_RELEASE` בפרודקשן (נקרא מהקונפיג ומהסביבה, לא נצפה באירוע שנשלח). בלי שינוי קוד. הוכחה: `docs/M14-c362.md`.
 **נשאר לאופיר (BACKLOG #21, בלי שינוי):** `SENTRY_AUTH_TOKEN` ב-Vercel Production עדיין עונה 401 בזמן build, ולכן ב-Sentry אין ישות release ואין source maps, וה-stack traces מפרודקשן נשארים ממוזערים. צריך טוקן חדש עם `project:releases` ו-`org:read`.
 **תוקן בדרך:** M12-c362 ו-M13-c362 נכנסו בלי שורות ב-`docs/INDEX.md` ובלי עדכון הספירה ב-README, ולכן `pnpm lint` ו-`pnpm test` היו אדומים ב-HEAD. נוספו שלוש השורות והספירה עודכנה ל-369; שניהם ירוקים.

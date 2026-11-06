@@ -1,9 +1,9 @@
 {
   "$what": "Every catalogue-safety finding that is TRUE OF PRODUCTION TODAY, so a new one is visible against a known floor.",
-  "$why": "S41 (2026-11-06) applied the operator's decisions to the 25 findings of 2026-09-10: 21 are gone and 4 still fire because no decision covered them. The snapshot had not been re-measured since 2026-09-10 and did not contain the demo catalogue, the launch seed or the E2E fixtures; re-measuring it brought 90 findings on those rows into view. They were already true of production, and they are listed here rather than hidden. docs/S41-catalog.md.",
+  "$why": "S41 (2026-11-06) applied the operator's decisions to the 25 findings of 2026-09-10: 21 are gone and 4 still fire because no decision covered them. The snapshot had not been re-measured since 2026-09-10 and did not contain the demo catalogue, the launch seed or the E2E fixtures; re-measuring it brought 90 findings on those rows into view. They were already true of production, and they are listed here rather than hidden. docs/S41-catalog.md. M15-c362 (2026-11-06) restored the 52 /images/cdn/wp files those rows point at from main (f9a0234e6), so the 39 image-file-missing findings on the demo catalogue stopped firing and were deleted: 94 to 55. docs/M15-c362.md.",
   "$groups": {
     "carried from 2026-09-10, no operator decision covers them": 4,
-    "demo catalogue (slug demo-*, is_demo=true): slug marker and image paths under /images/cdn/wp that nothing serves": 83,
+    "demo catalogue (slug demo-*, is_demo=true): slug marker": 44,
     "G4 launch seed (slug launch-*): remote image URL the disk rule cannot check": 3,
     "E2E fixtures (slug e2e-test-*)": 4
   },
@@ -11,146 +11,6 @@
   "$how_to_shrink_this": "Fix the row in the admin, re-measure with `node scripts/catalogue-safety.mjs --sql` through MCP, then delete the entry. The test fails if an entry no longer fires, so the list cannot quietly keep names of things that were already fixed.",
   "$measured_at": "2026-11-06",
   "known": {
-    "image-file-missing:0a30ee4c-3090-fdd8-c754-189856c41b22": {
-      "product": "PlayStation 5 Slim עם בקר",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/ec/ec183e8130928d10a96883cbf9eab892f584bd39ba94d2d491565178e30ab69c.webp is referenced and not on disk"
-    },
-    "image-file-missing:0cb2f226-be3e-1b8a-5ace-62ca92eb341e": {
-      "product": "סט מצעים זוגי 100% כותנה סאטן",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/98/980cd1de8b6f81b77f4c967a0e13576e66614185ec712f71f7e27ffab052fef0.webp is referenced and not on disk"
-    },
-    "image-file-missing:14a27192-dfe6-aca1-2882-ccbfc1230437": {
-      "product": "עגלת תינוק משולבת קלה",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/52/52b589d15f9e40ebc618847f19a3cafad518b027c0dd16aa021886fd9c1b95c1.webp is referenced and not on disk"
-    },
-    "image-file-missing:20cd21cb-3740-3d51-519f-1e1398f7bbb6": {
-      "product": "מנורת רצפה LED מתכווננת",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/59/59bd765f952f90b3f7702eae1a2fcdf2f1057e1bb03f771afcd7545ddb02b157.webp is referenced and not on disk"
-    },
-    "image-file-missing:2be745c5-adc8-af49-80b9-481a0b497b27": {
-      "product": "טיפול פנים מעמיק 75 דקות",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/12/1230321af4ea202b8f94c93a35fdc9ac91af440f638e4efd417278ab67b8bf65.webp is referenced and not on disk"
-    },
-    "image-file-missing:3319ae61-2103-35e8-7282-c0cc35f521ed": {
-      "product": "אוזניות Beats Solo 4 אלחוטיות",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/dc/dce0983828157af219df8764e9e608c8c7a24b9568fbcc4c1471a36d1fd1624b.webp is referenced and not on disk"
-    },
-    "image-file-missing:42ddb787-9a80-c7cb-ff4b-11ff4b9ac9d7": {
-      "product": "ארוחת בוקר זוגית בבית קפה",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/56/5688bde2216ddc0ac957319a84c54c019fa2f081033ee448f4c758ddd039f199.webp is referenced and not on disk"
-    },
-    "image-file-missing:49ab57a2-59ec-e290-ec1f-34d32f89beae": {
-      "product": "טיסה הלוך-חזור לאתונה",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/ac/ac93cb7f91a4557eddd7ed3b04a00247119b1065f4249321b491c60259f65f1f.webp is referenced and not on disk"
-    },
-    "image-file-missing:4c029e16-a6e6-3745-f189-1e297ccb66cd": {
-      "product": "סט 10 סירים ומחבתות נון-סטיק",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/f3/f38fa54c46dac9f79c0a2a2c38c32855b27599aaa7c93805d1d1540d76b6714f.webp is referenced and not on disk"
-    },
-    "image-file-missing:4d9f032e-121a-1a97-c91c-550574c40948": {
-      "product": "תיק עור לנשיאת מחשב נייד",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/0c/0c8b6a56763ff7bee2401c63715e11fb10d639d982d9dd8026aeb219b13df92d.webp is referenced and not on disk"
-    },
-    "image-file-missing:5177714a-b605-8b3d-f7c4-33cf8907348d": {
-      "product": "רחפן צילום 4K עם גימבל",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/9b/9b9d8d1265b3fcf2bffd440387b71ffda6f16d24414486083a17fd7da8bc0d99.webp is referenced and not on disk"
-    },
-    "image-file-missing:53e3094d-269c-2f42-5ea7-3a74ac5a4a81": {
-      "product": "טיול מאורגן לדובאי 5 ימים",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/89/8975f4062ab81da1cf2f6a6c48f955a0e9b3b82119355d66d7b0513361f42e8d.webp is referenced and not on disk"
-    },
-    "image-file-missing:54a54f8e-4050-6e5c-7213-166bf3d73bee": {
-      "product": "רמקול בלוטות׳ נייד עמיד במים",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/c1/c1b4c29ff15820b9772ed9f2165a54f2a3e408667b36cb3f3823d51be8d38239.webp is referenced and not on disk"
-    },
-    "image-file-missing:5b3f6f09-3be7-df72-02e8-9d49265f1ebf": {
-      "product": "מגש גלידה איטלקית למשפחה",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/d0/d0fb58ab4e9d3bd03de1c3ac39f6b2b806e235e81e01e96d39821bffeb7e82e3.webp is referenced and not on disk"
-    },
-    "image-file-missing:6069df7d-3e34-18bf-8dcf-5d2367f60ded": {
-      "product": "לילה זוגי במלון 5 כוכבים באילת",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/09/09a48c49c51ff41d6d84166d32d913be8fea622d7ad690081afedbd8c6c68803.webp is referenced and not on disk"
-    },
-    "image-file-missing:6a82f557-ba32-ac43-dbf1-38ab7fda4ad9": {
-      "product": "חיתולי פמפרס מידה 4, מארז חודשי",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/a0/a0061f847991410b8664dd370816c3b975c1598809dc433a1fa9d13fc697d1e0.webp is referenced and not on disk"
-    },
-    "image-file-missing:70c5fb6f-d7a6-92b1-5098-492146796c31": {
-      "product": "חבילת נופש למלדיביים 7 לילות",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/48/488b903a3dcae27e689a6a8d0ead3b90761da981f5e664c33c8950720e98a588.webp is referenced and not on disk"
-    },
-    "image-file-missing:74663cf1-ad6f-3cfc-b3de-5c5ba8637c53": {
-      "product": "מטען אלחוטי מהיר 15W",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/2b/2bab025521fe251aa12a784ec935a6b2cb430bfd401a20bf6f7b253d3602e01e.webp is referenced and not on disk"
-    },
-    "image-file-missing:7b669ee3-7dc9-6d12-6b95-3c14ce88b6bc": {
-      "product": "מחשב נייד 15.6 אינץ׳ Core i7 עם 16GB",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/9c/9c169daa0f7bbd566a219ac47678da8dd91bc115b63b51563f607dd17171a09e.webp is referenced and not on disk"
-    },
-    "image-file-missing:7dcf11e1-e88c-97e0-b260-43d6e143a66d": {
-      "product": "ארוחת סטייק ויין לזוג",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/f6/f6a863098a4b7a34206355775e2da817f5dec8146236d18139cfa5c6c1093a1f.webp is referenced and not on disk"
-    },
-    "image-file-missing:804313bf-05a8-5717-80a9-617bd5d386ba": {
-      "product": "iPhone 15 128GB יבואן רשמי",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/b4/b437c030ccb5b3b26c342b3f3b40a7f3125f20e362aec15e1962edbea94abd23.webp is referenced and not on disk"
-    },
-    "image-file-missing:86f084c6-cb92-3317-c0d1-ce69423f3321": {
-      "product": "שעון חכם עם GPS ומד דופק",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/1b/1b153d5acd1dbd555ccc3ed12817686474f9f3de281d1ba9e987c5c19b998ea5.webp is referenced and not on disk"
-    },
-    "image-file-missing:8ce25944-6d05-e2d2-6ed2-5c62de2fabfe": {
-      "product": "כרטיס כניסה לפארק מים",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/80/80ec48d0798c1c9cc3b9484ed15ae553e987b25670aa08db3d0b8ae0c25f7c62.webp is referenced and not on disk"
-    },
-    "image-file-missing:902cfc1f-4479-eb8a-6d5f-d9a7066ce3a6": {
-      "product": "טאבלט Xiaomi Pad 6 עם 128GB",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/6f/6fa32e33720687714c3b56fa95ec5a90d3a9e25a648468f92cfd12fbbcaea265.webp is referenced and not on disk"
-    },
-    "image-file-missing:9272d6d9-f452-1731-a716-b0a71853f226": {
-      "product": "סוללה ניידת 20000mAh עם טעינה מהירה",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/2b/2bab025521fe251aa12a784ec935a6b2cb430bfd401a20bf6f7b253d3602e01e.webp is referenced and not on disk"
-    },
-    "image-file-missing:99e37ee8-1f17-1b8b-b65b-81ac65f40336": {
-      "product": "לילה בצימר עם בריכה פרטית בגליל",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/6f/6f25d9aedfafdae76d78a3fb0cbcc5ce797b93ff07d7925d68876b11d2421eb3.webp is referenced and not on disk"
-    },
-    "image-file-missing:9c30e753-0625-4643-4d77-86a3e8641cc9": {
-      "product": "שובר 200 ₪ למעדנייה",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/6d/6d7d385e7f0ba452edbf27745e0ba52186bebc50243ba2b5e341eaf146b71b06.webp is referenced and not on disk"
-    },
-    "image-file-missing:9f12d0d6-4171-644e-1756-7b29844d9a96": {
-      "product": "עיסוי שוודי 60 דקות",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/ae/aeebab5ec8c2fb752c147870aa79b4ab09055246fe77ff5fffaeb03d269edb77.webp is referenced and not on disk"
-    },
-    "image-file-missing:a210a4ec-dfb2-fb4f-c5f8-3e6d0ecae4ae": {
-      "product": "כרטיסייה 10 כניסות לחדר כושר",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/81/814df595758efcf75893b6ba42084aa4bd06ad44286fc3b71a1b47352ce5084c.webp is referenced and not on disk"
-    },
-    "image-file-missing:a8b0efc7-cdbd-0030-2580-11eb57596f28": {
-      "product": "ערב קוקטיילים זוגי בבר",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/a0/a0a8443281a1839547abf7eb0390d113fcd9b22429c315d0f5f4a0bb53313bc2.webp is referenced and not on disk"
-    },
-    "image-file-missing:acec8edf-3864-de45-63c1-6a7cdd325659": {
-      "product": "יום ספא זוגי עם עיסוי וארוחה",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/73/73ea91a59b63711ec93611bb0ea8506c0c88501c5ad93137dbbd9d2dcbbe7c5f.webp is referenced and not on disk"
-    },
-    "image-file-missing:cea3b47f-e4ed-d9de-d44c-0605cc6d08a5": {
-      "product": "מארז מתנה פרימיום לחג",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/59/59665f8782b592c00f1ea9ef82ad0be61436711361b09a545281da8bc0926b58.webp is referenced and not on disk"
-    },
-    "image-file-missing:cfb5f066-541e-e31c-794a-631432eb160b": {
-      "product": "ארוחת שף זוגית בגריל בשרים",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/18/189b3644e4c755de008807d0f8e3afb0675186c30542594d2e3d21e6d42b9004.webp is referenced and not on disk"
-    },
-    "image-file-missing:d56a48c1-fd44-c0e2-8580-118b18dad10b": {
-      "product": "סדנת טעימות יין וגבינות ליחיד",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/7d/7d1796ccb1360ffdbcf57d450750100d65af32c13d91ec50e636ee714de3653e.webp is referenced and not on disk"
-    },
-    "image-file-missing:dc2f90b4-b555-5001-cf91-d6fac6691bb2": {
-      "product": "עוזרת אישית וירטואלית, 10 שעות",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/18/18b7723a08e71a1bce4c72da8de7f86a503ffea7b0bcd3cabd01a2d39c6511a4.webp is referenced and not on disk"
-    },
     "image-file-missing:de30de30-0000-4000-8000-300000000002": {
       "product": "ארוחת זוגית איטלקית - תל אביב",
       "detail": "[G4 launch seed, is_demo=true] the image is a Supabase Storage URL that G4 probed 200; the disk rule reads any first_image as a path under public/, so this is the rule's limit and not a broken image: https://ixvwfbuvfxxsjiywhbbb.supabase.co/storage/v1/object/public/product-images/launch-seed/launch-italian-dinner-tlv/w1024.webp is referenced and not on disk"
@@ -162,22 +22,6 @@
     "image-file-missing:de30de30-0000-4000-8000-300000000004": {
       "product": "לינה בצימר צפון - 2 לילות",
       "detail": "[G4 launch seed, is_demo=true] the image is a Supabase Storage URL that G4 probed 200; the disk rule reads any first_image as a path under public/, so this is the rule's limit and not a broken image: https://ixvwfbuvfxxsjiywhbbb.supabase.co/storage/v1/object/public/product-images/launch-seed/launch-north-cabin-2-nights/w1440.webp is referenced and not on disk"
-    },
-    "image-file-missing:e231a1a1-4bb5-5fb4-f304-b486b6f11915": {
-      "product": "Samsung Galaxy S23 256GB",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/c8/c8653c246ae19e3993a2f96f8dd5344f00db52e1cb486055b661b97b86699898.webp is referenced and not on disk"
-    },
-    "image-file-missing:e6adfa6a-f80b-2537-a385-7d70b44eb9ae": {
-      "product": "סדרת 6 טיפולי הסרת שיער בלייזר",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/b9/b9f6f3ef96bcbb741a8f400f0b42a1205977291224d60cdc30c2688b885dda02.webp is referenced and not on disk"
-    },
-    "image-file-missing:f32c157b-56fc-bf24-5f62-328b652c4f2b": {
-      "product": "תספורת גברים ועיצוב זקן",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/38/38f8f20e26a729c49f970545c163d13d1a7b39c1628a453b01e6a1ef6192f993.webp is referenced and not on disk"
-    },
-    "image-file-missing:ff5ee446-7ba3-1ee7-c853-4fb1d5428bd1": {
-      "product": "סט קוביות בנייה 500 חלקים",
-      "detail": "[demo catalogue, is_demo=true, seeded 2026-11-02] /images/cdn/wp/d9/d90ece71043afa10e4a2c7e50ad8ad131389280ca845b1f55ddb3bf294d61539.webp is referenced and not on disk"
     },
     "no-image:8198e729-3513-435e-8d51-b0d94f0cc32a": {
       "product": "מזקקת וויסקי - סיור מופלא במזקקת ויסקי מובילה",
