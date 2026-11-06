@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M13-c362 - DONE (06.11.2026): `/api/health` ו-`/api/ready` מחזירים 200 עם תלויות אמיתיות, בפרודקשן ומקומית.** באתר החי שש קריאות מתוך שש ענו 200 `application/json` עם `no-store`, וזו הפעם הראשונה ש-`/api/ready` עונה שם 200 (ב-M13-c361 הוא קיבל את דף התחזוקה). מקומית, אחרי `pnpm build`, מול אותו Supabase: 200 בשלושה מצבים, כולל `MAINTENANCE_MODE=1`. בקרה שלילית: מפתח service-role שהפרויקט דוחה נותן 503 JSON בשני הנתיבים, כך שה-200 נמדד ולא קבוע. בלי שינוי קוד. הוכחה: `docs/M13-c362.md`.
+**נרשם, לא תוקן:** Meilisearch בפרודקשן `down`, ולכן `search: "degraded"`: החיפוש מוגש מ-Postgres, בלי סובלנות לשגיאות הקלדה. המוכנות נשארת 200 בכוונה. החזרת המנוע היא משימת תשתית לאופיר.
+**לתשומת לב למי שמגדיר ניטור:** לכוון ל-`www` (ה-apex עונה 308), ועם timeout של 5 שניות לפחות ל-`/api/ready`.
+
 **M12-c362 - DONE (06.11.2026): `robots.txt` בטוח לפרודקשן, נמדד על האתר החי.** `www.kenyonexpress.co.il/robots.txt` מחזיר 200 `text/plain` עם `Allow: /` ו-19 שורות `Disallow`, זהות ל-`src/app/robots.ts` ב-HEAD, כך ששלושת הנתיבים שנוספו ב-M12-c361 (`/newsletter/`, `/partner/`, `/dev/`) כבר באוויר. אותו קובץ מוגש ל-Googlebot, bingbot ו-GPTBot. אף אחת מ-162 הכתובות במפה החיה לא נופלת תחת `Disallow`, ודף הבית ו-`/products` בלי noindex. בלי שינוי קוד. הוכחה: `docs/M12-c362.md`.
 **נרשם, לא תוקן:** `/debug/sentry` ו-`/debug/sentry/render` עונים 200 כשהשער כבוי. זה `notFound()` שרץ בתוך Suspense אחרי שהסטטוס כבר נשלח: הגוף הוא דף ה-404, Next מוסיף `noindex`, והנתיב חסום ב-`robots.txt`. `/api/debug/sentry` עונה 404 אמיתי.
 **נשאר לאופיר (BACKLOG #23, בלי שינוי):** שורות `Host:` ו-`Sitemap:` נוקבות ב-apex, שעונה 308 ל-`www`.
