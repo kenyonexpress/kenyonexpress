@@ -1,7 +1,11 @@
-RESUME FROM: M13-c371
+RESUME FROM: M14-c371
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M14-c371 - DONE (07.11.2026): תג ה-release של Sentry תואם ל-HEAD בכל הסביבות. בלי שינוי קוד.** בסיס HEAD `f835166115`, ‏00:34-00:37 +07 (17:34-17:37 UTC ב-06.11). ‏HEAD, הענף ב-origin והדיפלוי שמאחורי `www` (`dpl_2MHvoJwFNZUMxQ6ms6UeocFSMjQG`) הם אותו קומיט, וה-chunk החי של הלקוח (`1lc8w_ck09ksu.js`, ‏22 מתוך 22 chunks נמשכו) נושא `release:"f835166115..."`, ריצת ה-hex היחידה באורך 40. השרת וה-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA` (אין `SENTRY_RELEASE` ב-Vercel). קריאה ראשונה, בזמן שה-build של HEAD הסתיים, עוד ראתה את הדיפלוי הקודם (`10f1de0a5`); זה חלון ה-build שאחרי כל push. לוג ה-build מריץ `releases new f835166115...` פעם אחת. אותה תוצאה כמו ב-M14-c370. 7 בדיקות התצורה ירוקות, בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M14-c371.md`.
+**עדיין פתוח, של אופיר (BACKLOG #21):** ב-Sentry עצמו אין אובייקט release ואין source maps, כי `SENTRY_AUTH_TOKEN` ב-build (בן 51 יום) עונה 401. צריך טוקן חדש עם `project:releases` ו-`org:read` ב-Vercel Production.
+**לא נבדק:** ה-API של Sentry (אין טוקן תקף במכונה); ערך ה-release בשרת וב-edge נקרא מהתצורה ומה-env ולא מאירוע שנשלח; ‏`pnpm test` המלא ו-type-check לא הורצו שוב (`src` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
 
 **M13-c371 - DONE (07.11.2026): ‏`/api/health` ו-`/api/ready` מחזירים 200 עם תלויות אמיתיות, בלי שינוי קוד.** ב-HEAD `10f1de0a5` = `origin/closeout/v1-final`, ‏17:31 UTC ב-06.11. ארבעת קובצי המקור של הנתיבים זהים בייט מול בייט למה ש-M13-c370 אימת. פרודקשן (`www`, ‏fra1): ‏8 מתוך 8 קריאות GET החזירו 200 `application/json` עם `no-store`, בזמן כולל של 1.09 עד 1.27 שניות (הפיזור הצר ביותר בארבעת המחזורים האחרונים). מקומית (`pnpm build` ואז `next start` מול ה-Supabase של פרודקשן): 200 בתצורה הרגילה, 200 תחת `MAINTENANCE_MODE=1`, ‏200 עם `meilisearch: not_configured`. בקרה שלילית: מפתח service-role שהפרויקט דוחה מחזיר 503 JSON בשני הנתיבים, בלי לחשוף את שגיאת המקור. 31 מתוך 31 בדיקות עוברות. הוכחה: `docs/M13-c371.md`.
 **עדיין פתוח, להחלטת בעלים:** Meilisearch בפרודקשן `down` (`search: "degraded"`), החיפוש מוגש מ-Postgres בלי סבילות לשגיאות הקלדה ובלי מילים נרדפות; זו משימת תשתית. הדומיין הראשי בלי `www` עונה 308, לכן מוניטור צריך להצביע על `www` (BACKLOG #23).
