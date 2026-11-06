@@ -1,7 +1,11 @@
-RESUME FROM: M13-c372
+RESUME FROM: M14-c372
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M14-c372 - DONE (07.11.2026): תג ה-release של Sentry תואם ל-HEAD בכל הסביבות. בלי שינוי קוד.** בסיס HEAD `5f757e7fd`, ‏02:13-02:16 +07 (19:13-19:16 UTC ב-06.11). ‏HEAD, הענף ב-origin והדיפלוי שמאחורי ה-alias של פרודקשן (`dpl_FS6QLiFEMmRNq6Mm1JFTZN1yJMTV`) הם אותו קומיט `5f757e7fd10bbcb8057a3599d3d689448999ad08`, וה-chunk החי של הלקוח (`3_xrlt2mnu1r-.js`, ‏22 מתוך 22 chunks נמשכו) נושא `release:"5f757e7fd..."`. שרת ו-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA` (אין `SENTRY_RELEASE`). קריאה ראשונה בזמן ה-build (02:14:09) עדיין ראתה את הדיפלוי הקודם `953d645da`; ‏HEAD נהיה Ready ב-02:15:02. לוג ה-build: ‏`releases new 5f757e7fd...` פעם אחת. ‏`sentry-build-config.test.ts`: ‏7 מתוך 7. בדיקת ההקפאה ריקה מול התג. זהה ל-M14-c371. הוכחה: `docs/M14-c372.md`.
+**עדיין פתוח, של אופיר (BACKLOG #21):** ב-Sentry עצמו אין אובייקט release ואין source maps, כי `SENTRY_AUTH_TOKEN` ב-build (בן 51 יום) עונה 401 שלוש פעמים. צריך טוקן חדש עם `project:releases` ו-`org:read` ב-Vercel Production.
+**לא נבדק:** ה-API של Sentry (אין טוקן תקף במכונה); ערך ה-release בשרת וב-edge נקרא מהתצורה ומה-env ולא מאירוע שנשלח; ‏`pnpm test` המלא ו-type-check לא הורצו שוב (`src` לא השתנה); ‏`compare.mjs` לא הורץ (אף דף לא השתנה).
 
 **M13-c372 - DONE (07.11.2026): ‏`/api/health` ו-`/api/ready` מחזירים 200 מול תלויות אמיתיות, בלי שינוי קוד.** ב-HEAD `953d645da` = `origin/closeout/v1-final`, ‏19:10 UTC ב-06.11. פרודקשן (`www`, ‏fra1): ‏8 מתוך 8 GET מחזירים 200 `application/json` עם `no-store`, ‏1.05 עד 1.39 שניות מקצה לקצה; ‏apex מחזיר 308, ‏HEAD 200, ‏POST 405. מקומית (`pnpm build` יצא 0, ‏`next start` מול ה-Supabase של פרודקשן): 200 כמו שמוגדר, 200 תחת `MAINTENANCE_MODE=1` (החנות ו-`/api/search` מקבלות 503), 200 עם `meilisearch: not_configured`; מפתח service-role דחוי נותן 503 JSON בשני המסלולים בלי לדלוף שגיאה. ‏31 מתוך 31 בדיקות עוברות. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M13-c372.md`.
 **עדיין פתוח:** ‏Meilisearch בפרודקשן `down` (`search: "degraded"`, תשתית, לבעלים); ‏#23 (apex מול www). ניסיון ראשון שנפסל (הסקריפט לא תפס את גוף ה-ready) כלל קריאת `/api/health` מקומית של 5.27 שניות שעדיין החזירה 200, מחזור שביעי ברצף עם קריאה מקומית איטית אחת לפחות, סיבה לא נקבעה. **לא הורץ:** חבילת הבדיקות המלאה, ‏`compare.mjs` (אף דף לא השתנה).
