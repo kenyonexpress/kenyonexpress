@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M14-c367 - DONE (06.11.2026): תג ה-release של Sentry תואם ל-HEAD בכל הסביבות. בלי שינוי קוד.** בסיס HEAD `5fd6d9e26`, ‏18:07-18:10 +07. ‏HEAD, הענף ב-origin והדיפלוי שמאחורי `www` (`dpl_FHKsKBZRdVhqrfQtum5yLfdG6e3M`) הם אותו קומיט, וה-chunk החי של הלקוח נושא `release:"5fd6d9e26..."`. השרת וה-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA` (אין `SENTRY_RELEASE` ב-Vercel). קריאה ראשונה, בזמן שה-build של HEAD רץ, עוד ראתה את הדיפלוי הקודם (`69bd37726`); זה חלון ה-build שאחרי כל push. אותה תוצאה כמו ב-M14-c366. 7 בדיקות התצורה ירוקות, בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M14-c367.md`.
+**עדיין פתוח, של אופיר (BACKLOG #21):** ב-Sentry עצמו אין אובייקט release ואין source maps, כי `SENTRY_AUTH_TOKEN` ב-build עונה 401. צריך טוקן חדש עם `project:releases` ו-`org:read` ב-Vercel Production.
+**לא נבדק:** ה-API של Sentry (אין טוקן תקף במכונה); ערך ה-release בשרת וב-edge נקרא מהתצורה ומה-env ולא מאירוע שנשלח; ‏`pnpm test` המלא ו-type-check לא הורצו שוב (`src` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
+
 **M13-c367 - DONE (06.11.2026): ‏`/api/health` ו-`/api/ready` מחזירים 200 עם תלויות אמיתיות, בפרודקשן ומקומית. בלי שינוי קוד.** בסיס HEAD `69bd37726`, ‏11:04 UTC. פרודקשן (`www`, ‏fra1): ‏8 מתוך 8 קריאות GET ענו 200 `application/json` עם `no-store`. מקומית (`pnpm build` ואז `next start` מול Supabase של פרודקשן): 200 בתצורה הרגילה, 200 תחת `MAINTENANCE_MODE=1`, ‏200 עם `meilisearch: not_configured`; מפתח service-role שנדחה נותן 503 JSON בשני הנתיבים. אותה תוצאה כמו ב-M13-c366. 31 בדיקות ירוקות, בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M13-c367.md`.
 **עדיין פתוח, להחלטת בעלים:** Meilisearch בפרודקשן `down` (`search: "degraded"`, החיפוש מוגש מ-Postgres; משימת תשתית). ה-apex עונה 308, לכן מוניטור צריך להצביע על `www` (BACKLOG #23).
 **לא נבדק:** `pnpm test` המלא, ‏`tsc` כשלב נפרד ושאר `pnpm lint` (`src` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה. קריאת `/api/health` מקומית אחת לקחה 1.9 שניות ורשמה `db.query_slow`, וקריאת `/api/ready` אחת בפרודקשן לקחה 2.0 שניות; הסיבה לא נבדקה.
