@@ -3,6 +3,10 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M14-c362 - DONE (06.11.2026): ה-release של Sentry תואם ל-HEAD בכל שלושת ה-runtimes.** HEAD, ‏`origin/closeout/v1-final` וה-deployment שמאחורי `www` ‏(`dpl_BheVBLhESd9LRpXJFsKAZ2wkGAqt`) הם אותו commit, ‏`29a09d12a`. ה-chunk החי של הלקוח נושא `release:"29a09d12…"`; שרת ו-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA` כי אין `SENTRY_RELEASE` בפרודקשן (נקרא מהקונפיג ומהסביבה, לא נצפה באירוע שנשלח). בלי שינוי קוד. הוכחה: `docs/M14-c362.md`.
+**נשאר לאופיר (BACKLOG #21, בלי שינוי):** `SENTRY_AUTH_TOKEN` ב-Vercel Production עדיין עונה 401 בזמן build, ולכן ב-Sentry אין ישות release ואין source maps, וה-stack traces מפרודקשן נשארים ממוזערים. צריך טוקן חדש עם `project:releases` ו-`org:read`.
+**תוקן בדרך:** M12-c362 ו-M13-c362 נכנסו בלי שורות ב-`docs/INDEX.md` ובלי עדכון הספירה ב-README, ולכן `pnpm lint` ו-`pnpm test` היו אדומים ב-HEAD. נוספו שלוש השורות והספירה עודכנה ל-369; שניהם ירוקים.
+
 **M13-c362 - DONE (06.11.2026): `/api/health` ו-`/api/ready` מחזירים 200 עם תלויות אמיתיות, בפרודקשן ומקומית.** באתר החי שש קריאות מתוך שש ענו 200 `application/json` עם `no-store`, וזו הפעם הראשונה ש-`/api/ready` עונה שם 200 (ב-M13-c361 הוא קיבל את דף התחזוקה). מקומית, אחרי `pnpm build`, מול אותו Supabase: 200 בשלושה מצבים, כולל `MAINTENANCE_MODE=1`. בקרה שלילית: מפתח service-role שהפרויקט דוחה נותן 503 JSON בשני הנתיבים, כך שה-200 נמדד ולא קבוע. בלי שינוי קוד. הוכחה: `docs/M13-c362.md`.
 **נרשם, לא תוקן:** Meilisearch בפרודקשן `down`, ולכן `search: "degraded"`: החיפוש מוגש מ-Postgres, בלי סובלנות לשגיאות הקלדה. המוכנות נשארת 200 בכוונה. החזרת המנוע היא משימת תשתית לאופיר.
 **לתשומת לב למי שמגדיר ניטור:** לכוון ל-`www` (ה-apex עונה 308), ועם timeout של 5 שניות לפחות ל-`/api/ready`.
