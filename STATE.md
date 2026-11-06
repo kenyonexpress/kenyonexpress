@@ -1,7 +1,10 @@
-RESUME FROM: M19-c371
+RESUME FROM: M04-c372
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M04-c372 - DONE (07.11.2026): ‏`pnpm type-check` נקי ב-HEAD `47afeaa02`, אין סטיית טיפוסים לתקן.** ‏`tsc --noEmit` יוצא 0 עם מטמון וגם קר (`--incremental false`), TypeScript 5.9.3, ‏Node v25.9.0. מאז M04-c371 (`4ebac1729`) לא השתנה שום קובץ תחת `src/`, ‏`tsconfig.json`, ‏`package.json` או `pnpm-lock.yaml`; כל הקומיטים שביניהם הם רישומי תור. ‏`pnpm lint` (כולל `docs-index-gate`, 518 ל-519 מסמכים) ו-`ci-docs-inventory.test.ts` ירוקים לפני ואחרי הרישום. אין שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M04-c372.md`.
+**לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (שייכים ל-M05 ו-M06); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
 
 **M19-c371 - DONE (07.11.2026): קידום לפרודקשן, no-op. ‏`www` כבר מגיש את HEAD.** ה-deployment שמאחורי `www.kenyonexpress.co.il` הוא `dpl_FaqwcMKjFXeWBmqa2Z2Cnr1zWaEj`, שנבנה ב-git auto-deploy מ-`2f797cdba` (M18-c371) = HEAD = `origin/closeout/v1-final`. כשהפריט התחיל הוא היה בן 20 שניות ועדיין `Building`; בקריאת ה-API הראשונה (כ-90 שניות אחרי תחילת הפריט) הוא כבר היה `READY` / `PROMOTED` עם ה-alias של `www` ושל ה-apex, ‏67.0 שניות אחרי שנוצר (18:13:11 עד 18:14:18 UTC), בלי התערבות ובלי לולאת המתנה. לא הורצו `pnpm build` ולא `vercel deploy --prod`: אין קומיט חדש יותר, ו-deploy מה-CLI של אותו קומיט רק היה מתחרה ב-build הזה. ‏`/api/ready` עונה 200 עם `search: "degraded"` (‏`meilisearch: down`; ‏database, ‏redis, ‏r2 ו-cardcom ‏`ok`), ‏`/api/health` ‏200, ‏`/` ‏200 וה-HTML שלו מזכיר רק את ה-deployment הזה (1198 הפניות, 0 לאחר). ההבדל מה-deployment הקודם (`2c588b37c`, ‏M17-c371) הוא markdown בלבד. אותה תוצאה כמו M19-c370. אין שינוי קוד. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M19-c371.md`.
 **לא נבדק:** איזה deployment הגיש `www` ברגע שהפריט התחיל (קריאת ה-alias הראשונה הייתה אחרי ה-`READY`); ‏`pnpm build` מקומי (הראיה ש-HEAD נבנה היא ה-build של Vercel לאותו קומיט); ה-deployment שייבנה מהקומיט שמתעד את הפריט הזה (markdown בלבד); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה.
