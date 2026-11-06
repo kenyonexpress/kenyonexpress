@@ -3,6 +3,9 @@ Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפו
 
 ## המשך מ:
 
+**M04-c363 - DONE (06.11.2026): ‏`pnpm type-check` נקי, אין סטייה לתקן.** `tsc --noEmit` יוצא 0 ב-HEAD `f66e16bd3`. גם `pnpm lint` ו-`ci-docs-inventory.test.ts`, שני השערים שנסחפו ב-M04-c362, ירוקים לפני כל שינוי. בלי שינוי קוד. הוכחה: `docs/M04-c363.md`.
+**לא נבדק:** `pnpm test` המלא ו-`pnpm build`.
+
 **M19-c362 - DONE (06.11.2026): קידום לפרודקשן, no-op.** `www.kenyonexpress.co.il` מגיש את `dpl_HMymwoHhF4MPZkfnFv1WcWZnC2TD`, שנבנה ב-git auto-deploy מ-`9d42d9e9e`, שהוא HEAD של `origin/closeout/v1-final`. בתחילת הפריט ה-deployment הזה עוד היה ב-`Building` וה-alias הצביע על הקודם (`b450e06bc`); כשתי דקות אחר כך הוא הגיע ל-`READY` וקיבל את ה-alias בלי התערבות. לכן `pnpm build` ו-`vercel deploy --prod` לא הורצו. `/api/ready` עונה 200 עם `search: "degraded"` ‏(Meilisearch עדיין `down`, כמו ב-M13-c362), ‏`/api/health` ו-`/` עונים 200. בלי שינוי קוד. הוכחה: `docs/M19-c362.md`.
 **לא נבדק:** ה-deployment שייבנה מה-commit שרושם את הפריט הזה (מסמכים בלבד).
 
