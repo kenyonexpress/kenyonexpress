@@ -869,6 +869,9 @@ degrades gracefully until applied. No migration applied, no code change.
     נאפה בזמן build), או (ב) להפוך את ה-apex לדומיין הראשי ואת `www` להפניה.
     (ב) שומרת את ה-canonical הקיים ואת `APP_BASE_URL` שב-vault (סעיף 2 למעלה) נכונים
     בלי שינוי; (א) מחייבת גם את תיקון ה-vault של סעיף 2. מקור: STATE.md M11-c110.
+    **בדיקה חוזרת M11-c362 (06.11.2026):** האתר חי, והמצב בתוקף: 162 מתוך 162 ה-`<loc>`,
+    כתובת ה-sitemap שב-`robots.txt` וה-canonical של דף הבית עוברים 308 אחד מה-apex ל-`www`.
+    הכול מגיע ל-200, אז זה לא חוסם סריקה. הוכחה: `docs/M11-c362.md`.
 24. **המגירה הסגורה במובייל נגישה ל-Tab ולקורא מסך** (נמדד 06.10.2026, M17-c110,
     `src/components/layout/MobileDrawer.tsx`). כשהיא סגורה הפאנל רק מוזז
     `translate-x-full` אל מחוץ למסך: `role="dialog" aria-modal="true"`, בלי `inert`
