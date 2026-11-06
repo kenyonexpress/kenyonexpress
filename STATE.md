@@ -1,7 +1,9 @@
-RESUME FROM: M12-c373
+RESUME FROM: M13-c373
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M13-c373 - DONE (07.11.2026): ‏`/api/health` ו-`/api/ready` מחזירים 200 מול תלויות אמיתיות, בלי שינוי קוד.** ב-HEAD `e4d9ed616` = `origin/closeout/v1-final`, קריאה בלבד, 20:41 UTC ב-06.11. קוד המסלולים זהה בייט מול בייט ל-M13-c372. פרודקשן (`www`, ‏fra1): ‏8 מתוך 8 GET מחזירים 200 `application/json` עם `no-store`, ‏1.07 עד 2.38 שניות מקצה לקצה (`latency_ms` 655); ‏apex מחזיר 308, ‏HEAD 200, ‏POST 405. מקומית (`next start` על ה-build הקיים `510uhwh7O2T_NFImhT6WI`, מול ה-Supabase של פרודקשן): ‏4 מתוך 4 מחזירים 200, ‏`meilisearch: down` ו-`search: degraded` כמו קודם, 0 שגיאות בלוג. ‏27 מתוך 27 בדיקות health/ready ו-137 מתוך 137 בדיקות observability עוברות. בדיקת ההקפאה ריקה מול התג. Meilisearch בפרודקשן עדיין `down` (לאופיר). הוכחה: `docs/M13-c373.md`.
 
 **M12-c373 - DONE (07.11.2026): ‏`robots.txt` בטוח בפרודקשן, בלי שינוי קוד.** ב-HEAD `c643cb9eb` = `origin/closeout/v1-final`, קריאה בלבד, 20:39 UTC ב-06.11. ‏`www` מגיש 200 `text/plain` עם `Allow: /` ו-19 שורות `Disallow`, בלי `Disallow: /` גורף. הגוף זהה בייט מול בייט ל-M12-c372 עד M12-c369 (אותו md5 ואותו sha256, ‏477 בייט), וזהה ל-Googlebot, ‏bingbot ו-GPTBot. הרשימה החיה זהה ל-`src/app/robots.ts` (19 מתוך 19). אף אחת מ-162 כתובות ה-sitemap החי לא נופלת תחת `Disallow`. 15 הדפים שנבדקו (חנות, אזורים מוגנים, דפי טוקן) מחזירים אותם קודים, הפניות ו-meta robots כמו ב-M12-c372. ‏`robots.test.ts` ו-`sitemap-robots-agree.test.ts`: ‏81 מתוך 81 עוברים. בדיקת ההקפאה ריקה מול התג. הוכחה: `docs/M12-c373.md`.
 **לא נבדק:** ‏Search Console עצמו (אין גישה); ‏`pnpm test` המלא ו-`pnpm build` לא הורצו (`src/` לא השתנה); ‏`compare.mjs` לא הורץ כי אף דף לא השתנה. ‏#23 (apex מול www) עדיין פתוח לבעלים.
