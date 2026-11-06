@@ -1,7 +1,11 @@
-RESUME FROM: M13-c373
+RESUME FROM: M14-c373
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M14-c373 - DONE (07.11.2026): תג ה-release של Sentry תואם ל-HEAD בכל הסביבות. בלי שינוי קוד.** בסיס HEAD `7e26e6921`, ‏03:44-03:46 +07 (20:44-20:46 UTC ב-06.11). ‏HEAD, הענף ב-origin והדיפלוי שמאחורי ה-alias של פרודקשן (`dpl_GXE5rDyDi5BhBjWEfmLnuz5KeZcf`) הם אותו קומיט `7e26e6921a4b355db4c33b85a5e8caea7bf186e6`, וה-chunk החי של הלקוח (`3-4sf8ltclm19.js`, ‏22 מתוך 22 chunks נמשכו) נושא `release:"7e26e6921..."`. שרת ו-edge נופלים ל-`VERCEL_GIT_COMMIT_SHA` (אין `SENTRY_RELEASE`). קריאה ראשונה בזמן ה-build (03:44:18) עדיין ראתה את הדיפלוי הקודם `e4d9ed616`; ‏HEAD נהיה Ready ב-03:44:44. לוג ה-build: ‏`releases new 7e26e6921...` פעם אחת. ‏`sentry-build-config.test.ts`: ‏7 מתוך 7. בדיקת ההקפאה ריקה מול התג. זהה ל-M14-c372. נוספו ל-`docs/INDEX.md` גם השורה של M13-c373 שחסרה (השער נפל עליה ב-HEAD) וגם של M14-c373. הוכחה: `docs/M14-c373.md`.
+**עדיין פתוח, של אופיר (BACKLOG #21):** ב-Sentry עצמו אין אובייקט release ואין source maps, כי `SENTRY_AUTH_TOKEN` ב-build (בן 51 יום) עונה 401 שלוש פעמים. צריך טוקן חדש עם `project:releases` ו-`org:read` ב-Vercel Production.
+**לא נבדק:** ה-API של Sentry (אין טוקן תקף במכונה); ערך ה-release בשרת וב-edge נקרא מהתצורה ומה-env ולא מאירוע שנשלח; ‏`pnpm test` המלא ו-type-check לא הורצו שוב (`src` לא השתנה); ‏`compare.mjs` לא הורץ (אף דף לא השתנה).
 
 **M13-c373 - DONE (07.11.2026): ‏`/api/health` ו-`/api/ready` מחזירים 200 מול תלויות אמיתיות, בלי שינוי קוד.** ב-HEAD `e4d9ed616` = `origin/closeout/v1-final`, קריאה בלבד, 20:41 UTC ב-06.11. קוד המסלולים זהה בייט מול בייט ל-M13-c372. פרודקשן (`www`, ‏fra1): ‏8 מתוך 8 GET מחזירים 200 `application/json` עם `no-store`, ‏1.07 עד 2.38 שניות מקצה לקצה (`latency_ms` 655); ‏apex מחזיר 308, ‏HEAD 200, ‏POST 405. מקומית (`next start` על ה-build הקיים `510uhwh7O2T_NFImhT6WI`, מול ה-Supabase של פרודקשן): ‏4 מתוך 4 מחזירים 200, ‏`meilisearch: down` ו-`search: degraded` כמו קודם, 0 שגיאות בלוג. ‏27 מתוך 27 בדיקות health/ready ו-137 מתוך 137 בדיקות observability עוברות. בדיקת ההקפאה ריקה מול התג. Meilisearch בפרודקשן עדיין `down` (לאופיר). הוכחה: `docs/M13-c373.md`.
 
