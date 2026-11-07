@@ -1,7 +1,10 @@
-RESUME FROM: M04-c380
+RESUME FROM: M05-c380
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M05-c380 - DONE (07.11.2026): ‏`pnpm test` ירוק, אין סטייה, בלי שינוי קוד.** בסיס HEAD `de51f537f` = `origin/closeout/v1-final`, ‏15:24-15:26 ‎+07 (08:24-08:26 UTC). ‏`vitest run` (Vitest 4.1.11, ‏Node v25.9.0) ‏exit 0: ‏704 קבצי בדיקה עברו + 1 דולג (705), ‏8303 בדיקות עברו + 13 דולגו (8316), אותו סך כמו M05-c379. מאז M05-c379 (`f866b2439`) 15 קומיטים, כולם רישומי תור; ‏`src/`, ‏`tests/`, ‏`e2e/`, ‏`package.json`, ‏`pnpm-lock.yaml`, ‏`vitest.config.ts` ו-`vitest.setup.ts` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (647 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-648. הוכחה: `docs/M05-c380.md`.
+**לא נבדק:** ‏`pnpm build` ו-`pnpm test:e2e` (פריטים אחרים בתור); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M04-c380 - DONE (07.11.2026): ‏`pnpm type-check` נקי, אין סטיית טיפוסים, בלי שינוי קוד.** בסיס HEAD `fbaff6dd3` = `origin/closeout/v1-final`, ‏15:20-15:30 ‎+07 (08:20-08:30 UTC). ‏`tsc --noEmit` ‏exit 0 עם מטמון וגם קר (`--incremental false`, ‏0 שורות `error TS`), ‏TypeScript 5.9.3, ‏Node v25.9.0. מאז M04-c379 (`fb14466d1`) 15 קומיטים, כולם רישומי תור של מחזור c379; ‏`src/`, ‏`tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (646 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-647. הוכחה: `docs/M04-c380.md`.
 **לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (פריטי M05 ו-M06); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
