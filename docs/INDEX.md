@@ -840,3 +840,4 @@ listed here because the index is where people look, and checked by
 | [legal/COUNSEL-REVIEW.md](legal/COUNSEL-REVIEW.md) | ✅ | ארבעת המסמכים ב-/legal/ נכתבו לפי הדין הישראלי ולפי אופן פעולת המערכת |
 | [legal/README.md](legal/README.md) | ✅ | מסמך תפעולי: מה נבנה, איפה זה יושב, למה בכתובות האלה, ומה נשאר לעשות |
 
+| [M12-c380.md](M12-c380.md) | ✅ | Queue M12-c380, 07.11.2026: robots.txt production-safe, re-verified from origin (edge MISS). The live file on www is the exact rendering of robots.ts at HEAD (19 disallows in order, Allow: /, index-only Sitemap line, no X-Robots-Tag), byte-identical to M12-c369/c370/c379 (477 bytes); same body for Googlebot, bingbot, GPTBot; 0 of 162 sitemap URLs under a Disallow; 15 probed pages unchanged. No code change. Sitemap/Host lines are on the apex host, which 308s to www (BACKLOG #23, owner). |
