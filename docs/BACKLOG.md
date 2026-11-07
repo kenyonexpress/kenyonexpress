@@ -960,6 +960,8 @@ degrades gracefully until applied. No migration applied, no code change.
     הוכחה: `docs/M11-c375.md`.
     **בדיקה חוזרת M11-c376 (07.11.2026):** בלי שינוי. אותם 162 מתוך 162, כולם 200 דרך 308 אחד.
     הוכחה: `docs/M11-c376.md`.
+    **בדיקה חוזרת M11-c377 (07.11.2026):** בלי שינוי. אותם 162 מתוך 162, כולם 200 דרך 308 אחד.
+    הוכחה: `docs/M11-c377.md`.
 24. **המגירה הסגורה במובייל נגישה ל-Tab ולקורא מסך** (נמדד 06.10.2026, M17-c110,
     `src/components/layout/MobileDrawer.tsx`). כשהיא סגורה הפאנל רק מוזז
     `translate-x-full` אל מחוץ למסך: `role="dialog" aria-modal="true"`, בלי `inert`
