@@ -1,7 +1,10 @@
-RESUME FROM: M19-c378
+RESUME FROM: M04-c379
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M04-c379 - DONE (07.11.2026): ‏`pnpm type-check` נקי, אין סטיית טיפוסים, בלי שינוי קוד.** בסיס HEAD `84434374a` = `origin/closeout/v1-final`, ‏13:46-13:50 ‎+07 (06:46-06:50 UTC). ‏`tsc --noEmit` ‏exit 0 עם מטמון וגם קר (`--incremental false`, ‏0 שורות `error TS`), ‏TypeScript 5.9.3, ‏Node v25.9.0. מאז M04-c378 (`2fc9ac1ef`) 16 קומיטים, כולם רישומי תור של מחזור c378; ‏`src/`, ‏`tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (630 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-631. הוכחה: `docs/M04-c379.md`.
+**לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (פריטי M05 ו-M06); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M19-c378 - DONE (07.11.2026): קידום לפרודקשן, no-op; ‏`www` מגיש את HEAD דרך ה-auto-deploy של git.** בתחילת הפריט (06:43 UTC, ‏13:43 ‎+07) ‏`vercel ls --prod` הראה דיפלוי פרודקשן בן 21 שניות עדיין ב-`Building`: ‏`dpl_8AsWYEDBgQpAxj1qiBZDsx3kxP1T`, ‏`source: git`, ‏`githubCommitSha: 891841807` = ה-commit של M18-c378 = HEAD מקומי = `origin/closeout/v1-final`. הדיפלוי ה-READY הקודם (`dpl_7GSAsqp97Sc7U7HBbsuUe9y1kYnM`, ‏`215a5048d`, ‏M17-c378) נבדל ממנו ב-markdown בלבד (5 קבצים, ‏+165 / ‎-51), ולכן `vercel deploy --prod` לא הורץ ו-`pnpm build` לא נדרש כשער. דגימה כשתי דקות אחרי היצירה: ‏READY / PROMOTED, ‏69.2 שניות מיצירה ל-ready, ה-alias של `www` הוצמד ב-06:44:22 UTC. רשומת ה-alias ורשומת הדיפלוי נושאות אותו `dpl_`. ‏`/` ‏200 (PRERENDER, ‏fra1), ‏`/api/ready` ‏200 עם `search: degraded` ‏(meilisearch down, של אופיר, BACKLOG), ‏`/api/health` ‏200. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-630. הוכחה: `docs/M19-c378.md`.
 **לא נבדק:** ‏`pnpm build` מקומי (השער חל רק כש-HEAD חדש מהדיפלוי, והוא לא היה); הדיפלוי שה-commit של הפריט הזה יפעיל (markdown בלבד); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
