@@ -1,7 +1,10 @@
-RESUME FROM: M19-c381
-Updated: 2026-11-07 (M19-c381, Fable 5.1 autopilot loop on `closeout/v1-final`)
+RESUME FROM: M04-c382
+Updated: 2026-11-07 (M04-c382, Fable 5.1 autopilot loop on `closeout/v1-final`)
 
 ## המשך מ:
+
+**M04-c382 - DONE (07.11.2026): ‏`pnpm type-check` נקי, אין סטיית טיפוסים, בלי שינוי קוד.** בסיס HEAD `54f7f7e05` = `origin/closeout/v1-final`, ‏18:40-18:47 ‎+07 (11:40-11:47 UTC). ‏`tsc --noEmit` ‏exit 0 עם מטמון וגם קר (`--incremental false`, ‏0 שורות `error TS`), ‏TypeScript 5.9.3, ‏Node v25.9.0. מאז M04-c381 (`25e1346fc`) 15 קומיטים, כולם רישומי תור של מחזור c381; ‏`src/`, ‏`tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (678 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-679. הוכחה: `docs/M04-c382.md`.
+**לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (שייכים ל-M05 ו-M06). ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M19-c381 - DONE (07.11.2026): ‏קידום פרודקשן no-op, ‏www מגיש את HEAD דרך הפריסה האוטומטית מ-git.** כשהפריט התחיל, `vercel ls --prod` הראה פריסת פרודקשן בת 24 שניות עדיין ב-Building: ‏`dpl_BnfrmMJJVzeHKneuSH9vDdTPkBY9` (`kenyonexpress-py6un5a2b`), ‏`source: git`, ‏commit ‏`b45996529` = HEAD = ‏`origin/closeout/v1-final` (קומיט M18-c381, הפריסה נוצרה 10.5 שניות אחריו). הפריסה ה-READY שלפניה (`a455989e4`, ‏M17-c381) נבדלת ב-markdown בלבד (5 קבצים, ‎+169/-51). שום דבר לא חדש יותר מהפריסה שכבר נבנתה, לכן `vercel deploy --prod` לא הורץ ו-`pnpm build` לא נדרש כשער. הפריסה הגיעה ל-READY/PROMOTED ‏70.9 שניות אחרי היצירה (11:42:16Z), עם ה-aliases ‏www.kenyonexpress.co.il, ‏kenyonexpress.co.il ו-kenyonexpress.vercel.app. אימות: ‏`/` 200, ‏`/api/ready` 200 (‏search degraded, ‏meilisearch down, ללא שינוי מאז M13-c373), ‏`/api/health` 200; רשומת ה-alias, רשומת הפריסה ויעד הפרודקשן של הפרויקט נושאים אותו `dpl_`. בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-678. הוכחה: `docs/M19-c381.md`.
 **לא נבדק:** ‏`pnpm build` מקומי (השער חל רק כש-HEAD חדש מהפריסה, והוא לא היה), הפריסה שהקומיט של הפריט הזה יפעיל (markdown בלבד), ‏`compare.mjs` (אף דף לא השתנה).
