@@ -972,6 +972,8 @@ degrades gracefully until applied. No migration applied, no code change.
     הוכחה: `docs/M11-c377.md`.
     **בדיקה חוזרת M11-c378 (07.11.2026):** בלי שינוי. אותם 162 מתוך 162, כולם 200 דרך 308 אחד, בלי נפילות רשת.
     הוכחה: `docs/M11-c378.md`.
+    **בדיקה חוזרת M11-c379 (07.11.2026):** בלי שינוי. אותם 162 מתוך 162, כולם 200 דרך 308 אחד; שתי נפילות רשת במק המודד, 200 בחזרה.
+    הוכחה: `docs/M11-c379.md`.
 24. **המגירה הסגורה במובייל נגישה ל-Tab ולקורא מסך** (נמדד 06.10.2026, M17-c110,
     `src/components/layout/MobileDrawer.tsx`). כשהיא סגורה הפאנל רק מוזז
     `translate-x-full` אל מחוץ למסך: `role="dialog" aria-modal="true"`, בלי `inert`
