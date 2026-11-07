@@ -1,7 +1,10 @@
-RESUME FROM: M19-c376
+RESUME FROM: M04-c377
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M04-c377 - DONE (07.11.2026): ‏type-check נקי, אין סטייה.** `tsc --noEmit` יוצא 0 ב-HEAD `dacfb4299`, גם קר (`--incremental false`, 0 שורות `error TS`). מאז M04-c376 (`89dffd54a`, 16 קומיטים, כולם markdown) לא השתנה דבר תחת `src/`, ‏`tsconfig.json`, ‏`package.json` או `pnpm-lock.yaml`; הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066` (M09-c363). ‏`lint:docs` ירוק לפני הפריט (598 מסמכים), ספירת README תאמה. בדיקת ההקפאה ריקה מול התג. בלי שינוי קוד. ספירת המסמכים ב-README עודכנה ל-599. הוכחה: `docs/M04-c377.md`.
+**לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (M05, ‏M06); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M19-c376 - DONE (07.11.2026): ‏קידום פרודקשן no-op, www מגיש את HEAD דרך git auto-deploy.** בתחילת הפריט `vercel ls --prod` הראה פריסה בת 19 שניות עדיין Building (`dpl_GerpYqmpKTHUHHpWUfF75wjHWt6U`, `kenyonexpress-j18gzjc5e`), מקור git, commit `5c506b5c1` = HEAD = origin (M18-c376); www הגיש באותו רגע את `b8c29d05d` (M17-c376), הבדל markdown בלבד (5 קבצים). לא הורץ `vercel deploy`: פריסת CLI של אותו commit רק הייתה מתחרה בבנייה הרצה. `pnpm build` מקומי: exit 0, Compiled successfully in 4.6s, 417 דפים סטטיים, 287 שורות בטבלת הנתיבים (אזהרת sentry source-map 401 מקומית וידועה, לא מכשילה). סקר ל-API ראה READY/PROMOTED 67.9 שניות אחרי היצירה עם alias של www; ‏`/v4/aliases/www.kenyonexpress.co.il` ו-`/v13/deployments` נושאים את אותו `dpl_`. ‏`/` 200 PRERENDER, ‏`/api/ready` 200 (search degraded, meilisearch down, BACKLOG), ‏`/api/health` 200. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-598. הוכחה: `docs/M19-c376.md`.
 **לא נבדק:** הפריסה שה-commit של הפריט הזה יפעיל (markdown בלבד); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
