@@ -1,7 +1,10 @@
-RESUME FROM: M18-c381
-Updated: 2026-11-07 (M18-c381, Fable 5.1 autopilot loop on `closeout/v1-final`)
+RESUME FROM: M19-c381
+Updated: 2026-11-07 (M19-c381, Fable 5.1 autopilot loop on `closeout/v1-final`)
 
 ## המשך מ:
+
+**M19-c381 - DONE (07.11.2026): ‏קידום פרודקשן no-op, ‏www מגיש את HEAD דרך הפריסה האוטומטית מ-git.** כשהפריט התחיל, `vercel ls --prod` הראה פריסת פרודקשן בת 24 שניות עדיין ב-Building: ‏`dpl_BnfrmMJJVzeHKneuSH9vDdTPkBY9` (`kenyonexpress-py6un5a2b`), ‏`source: git`, ‏commit ‏`b45996529` = HEAD = ‏`origin/closeout/v1-final` (קומיט M18-c381, הפריסה נוצרה 10.5 שניות אחריו). הפריסה ה-READY שלפניה (`a455989e4`, ‏M17-c381) נבדלת ב-markdown בלבד (5 קבצים, ‎+169/-51). שום דבר לא חדש יותר מהפריסה שכבר נבנתה, לכן `vercel deploy --prod` לא הורץ ו-`pnpm build` לא נדרש כשער. הפריסה הגיעה ל-READY/PROMOTED ‏70.9 שניות אחרי היצירה (11:42:16Z), עם ה-aliases ‏www.kenyonexpress.co.il, ‏kenyonexpress.co.il ו-kenyonexpress.vercel.app. אימות: ‏`/` 200, ‏`/api/ready` 200 (‏search degraded, ‏meilisearch down, ללא שינוי מאז M13-c373), ‏`/api/health` 200; רשומת ה-alias, רשומת הפריסה ויעד הפרודקשן של הפרויקט נושאים אותו `dpl_`. בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-678. הוכחה: `docs/M19-c381.md`.
+**לא נבדק:** ‏`pnpm build` מקומי (השער חל רק כש-HEAD חדש מהפריסה, והוא לא היה), הפריסה שהקומיט של הפריט הזה יפעיל (markdown בלבד), ‏`compare.mjs` (אף דף לא השתנה).
 
 **M18-c381 - DONE (07.11.2026): ‏STATE.md נגזם מ-288 שורות ל-244, מחזור c380 עבר לארכיון.** הקובץ התחיל ב-288 שורות (77,243 בייט), 12 שורות מתחת לתקרת 300; M18-c380 השאיר אותו ב-242, ו-M19-c380 ו-14 רשומות c381 (M04 עד M17 בלי M18) הוסיפו 46 שורות. מחזור c380 (M19-c380, ‏M18-c380, ‏M17-c380 עד M04-c380, ‏33 שורות לא-ריקות, 48 עם הרווחים) הועבר מילה במילה לראש `docs/STATE-ARCHIVE.md` תחת כותרת משלו, ושורת מצביע אחת נשארה במקומו ליד המצביעים הקודמים. שום דבר לא נמחק. נשארו ב-STATE.md: מחזור c381 (M17 עד M04, ‏M10 חסום), ‏S30, ‏S41 ו-S40 החסומים, המצביעים לארכיון, טבלת התור, החוסמים הפתוחים והרשימה הידנית. שורות 1 ו-2 (`RESUME FROM`, ‏`Updated`) עודכנו ל-M18-c381. ‏markdown בלבד, בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-677. הוכחה: `docs/M18-c381.md`.
 **לא נבדק:** ‏`pnpm test` המלא, ‏`type-check` ו-build (השינוי ב-markdown בלבד; רצו `lint:docs` ושתי חבילות הבדיקה שקוראות את README, ‏docs ו-STATE). ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
