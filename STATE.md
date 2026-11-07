@@ -1,7 +1,10 @@
-RESUME FROM: M09-c382
-Updated: 2026-11-07 (M09-c382, Fable 5.1 autopilot loop on `closeout/v1-final`)
+RESUME FROM: M10-c382
+Updated: 2026-11-07 (M10-c382, Fable 5.1 autopilot loop on `closeout/v1-final`)
 
 ## המשך מ:
+
+**M10-c382 - BLOCKED 218-not-applied-site-live (07.11.2026): סריקה עשרים ושתיים של `migrations/pending/` מול הייצור, בלי שינוי.** בסיס HEAD `3d7b502ea` = `origin/closeout/v1-final`, ‏19:13-19:14 ‎+07 (12:13-12:14 UTC), קריאה בלבד דרך `~/ke-goals/db.sh`. זהה ל-M10-c381: 73 קבצים, 456 אובייקטים, 29 חיים ואותם 44 לא הוחלו; `summary.txt` זהה (0 שורות diff), ‏`q.sql` זהה בית מול בית, 17 משימות cron ‏`ke-*`, ‏237 שורות ledger. 218 עדיין לא חי: `enforce_profile_privilege_columns` קורא `NEW.supplier_id` ואין עמודה כזו ב-`profiles`, אז כל שמירה ב-`/account/details` נופלת ב-42703; ‏`authenticated` עדיין מחזיק UPDATE על כל הטבלה. אין משתמשים/הזמנות/עדכוני פרופיל חדשים מאז ההשקה. האתר חי (200, ‏`/api/ready` ok, ‏meilisearch down כידוע). לא הוחל דבר: החלת 218 דורשת פריט תור משלה עם חזרה ב-BEGIN/ROLLBACK, והוא עדיין לא נכנס לתור (זה המחזור ה-22 ברצף). ‏ntfy ‏`hey BLOCKED M10-c382 218-not-applied-site-live` נשלח (`isqMiSMgfUtp`). ספירת המסמכים ב-README עודכנה ל-685. ‏`lint`/`type-check`/2 בדיקות inventory ירוקים, בדיקת ההקפאה ריקה. הוכחה: `docs/M10-c382.md`.
+**לא נבדק:** שחזור הכשל בפועל (דורש טרנזקציה שמתחזה ללקוח בייצור, הפריט קריאה בלבד); ‏`pnpm test` המלא ו-build (`src` לא השתנה, ירוקים ב-M05/M06-c382); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M09-c382 - DONE (07.11.2026): הסרת תלויות וייצוא מת, אין מה להסיר, בלי שינוי קוד.** בסיס HEAD `a96d7ece2` = `origin/closeout/v1-final`, ‏19:08-19:14 ‎+07 (12:08-12:14 UTC). דוח knip 5.88.1 (714 שורות) זהה בייט-לבייט לדוח c381: ‏187 קבצים לא מיובאים, ‏`postgres` ו-`lighthouse` (שניהם בשימוש ב-`scripts/`), ‏144 קבצי ייצוא עם 265 שמות, ‏365 טיפוסים, ‏6 כפולים. ‏38 הייצואים ששמם מופיע רק בהגדרה הם אותם 1 + 37 שנשמרו מאז M09-c364 (Cardcom, idempotency/DLQ, נתיב כסף, פעולות אדמין לא מחווטות), נגזרו מחדש והושוו (`diff` ריק). מאז M09-c381 (`a9287ea6e`) לא השתנה דבר מחוץ ל-docs/README/STATE; הקומיט האחרון ב-`src/` ו-`package.json` עדיין `00c34c066`. markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-684. הוכחה: `docs/M09-c382.md`.
 **לא נבדק:** ‏365 הטיפוסים ו-227 השמות הרב-הפניות לא נקראו אחד-אחד (רשימות זהות ל-c381). ‏grep ייבוא לכל 61 החבילות לא הורץ מחדש (`package.json` לא השתנה מאז c368). ‏`pnpm test` ו-`build` לא הורצו מחדש (ירוקים ב-M05/M06-c382). ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
