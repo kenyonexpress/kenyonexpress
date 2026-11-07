@@ -1,7 +1,10 @@
-RESUME FROM: M19-c379
+RESUME FROM: M04-c380
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M04-c380 - DONE (07.11.2026): ‏`pnpm type-check` נקי, אין סטיית טיפוסים, בלי שינוי קוד.** בסיס HEAD `fbaff6dd3` = `origin/closeout/v1-final`, ‏15:20-15:30 ‎+07 (08:20-08:30 UTC). ‏`tsc --noEmit` ‏exit 0 עם מטמון וגם קר (`--incremental false`, ‏0 שורות `error TS`), ‏TypeScript 5.9.3, ‏Node v25.9.0. מאז M04-c379 (`fb14466d1`) 15 קומיטים, כולם רישומי תור של מחזור c379; ‏`src/`, ‏`tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (646 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-647. הוכחה: `docs/M04-c380.md`.
+**לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (פריטי M05 ו-M06); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M19-c379 - DONE (07.11.2026): ‏קידום פרודקשן no-op, ‏www מגיש את HEAD דרך הפריסה האוטומטית מ-git.** כשהפריט התחיל, `vercel ls --prod` הראה פריסת פרודקשן בת 22 שניות עדיין ב-Building: ‏`dpl_79miAhmP2J22GLfq9W3mowzgvri7` (`kenyonexpress-ncdoef071`), ‏`source: git`, ‏commit ‏`e8e383624` = HEAD = ‏`origin/closeout/v1-final` (קומיט M18-c379). הפריסה ה-READY שלפניה (`d0a5e9e8f`, ‏M17-c379) נבדלת ב-markdown בלבד (5 קבצים). שום דבר לא חדש יותר מהפריסה שכבר נבנתה, לכן `vercel deploy --prod` לא הורץ ו-`pnpm build` לא נדרש כשער. הפריסה הגיעה ל-READY/PROMOTED ‏72.6 שניות אחרי היצירה, עם ה-aliases ‏www.kenyonexpress.co.il, ‏kenyonexpress.co.il ו-kenyonexpress.vercel.app. אימות: ‏`/` 200, ‏`/api/ready` 200 (‏search degraded, ‏meilisearch down, ללא שינוי מאז M13-c373), ‏`/api/health` 200; רשומת ה-alias ורשומת הפריסה נושאות אותו `dpl_`. בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-646. הוכחה: `docs/M19-c379.md`.
 **לא נבדק:** ‏`pnpm build` מקומי (השער חל רק כש-HEAD חדש מהפריסה, והוא לא היה), הפריסה שהקומיט של הפריט הזה יפעיל (markdown בלבד), ‏`compare.mjs` (אף דף לא השתנה).
