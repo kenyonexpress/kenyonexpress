@@ -644,6 +644,7 @@ degrades gracefully until applied. No migration applied, no code change.
    **נבדק שוב M07-c379, 07.11.2026 (HEAD `16cecc5e5`):** אותם שני סמנים בלבד (blame: 24.07 ו-07.08), אפס חדשים בכל העץ המחויב; `final-audit.mjs` 0 לא-מתועדים מתוך 2; ‏#41 ו-#42 עדיין פתוחים. `docs/M07-c379.md`.
    **נבדק שוב M07-c380, 07.11.2026 (HEAD `629b2bd10`):** אותם שני סמנים בלבד (blame: 24.07 ו-07.08), אפס חדשים בכל העץ המחויב; `final-audit.mjs` 0 לא-מתועדים מתוך 2; ‏#41 ו-#42 עדיין פתוחים. `docs/M07-c380.md`.
    **נבדק שוב M07-c381, 07.11.2026 (HEAD `a71fefceb`):** אותם שני סמנים בלבד (blame: 24.07 ו-07.08), אפס חדשים בכל העץ המחויב; `final-audit.mjs` 0 לא-מתועדים מתוך 2; ‏#41 ו-#42 עדיין פתוחים. `docs/M07-c381.md`.
+   **נבדק שוב M07-c382, 07.11.2026 (HEAD `cd625ceca`):** אותם שני סמנים בלבד (blame: 24.07 ו-07.08), אפס חדשים בכל העץ המחויב; `final-audit.mjs` 0 לא-מתועדים מתוך 2; ‏#41 ו-#42 עדיין פתוחים. `docs/M07-c382.md`.
    **נמדד שוב ב-05.10.2026, L11, קריאה בלבד:** `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` ו-`CARDCOM_SANDBOX` קיימים
    ב-Production כ-`sensitive` (אינם ניתנים לקריאה בשום API/CLI), נוצרו
