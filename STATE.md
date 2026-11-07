@@ -1,7 +1,10 @@
-RESUME FROM: M04-c382
-Updated: 2026-11-07 (M04-c382, Fable 5.1 autopilot loop on `closeout/v1-final`)
+RESUME FROM: M05-c382
+Updated: 2026-11-07 (M05-c382, Fable 5.1 autopilot loop on `closeout/v1-final`)
 
 ## המשך מ:
+
+**M05-c382 - DONE (07.11.2026): ‏`pnpm test` ירוק, אין סטייה, בלי שינוי קוד.** בסיס HEAD `3c0f992ab` = `origin/closeout/v1-final`, ‏18:47-18:49 ‎+07 (11:47-11:49 UTC). ‏`vitest run` ‏exit 0: ‏704 קבצים עברו + 1 דולג (705), ‏8303 בדיקות עברו + 13 דולגו (8316), ‏66.25 שניות, ‏Vitest 4.1.11, ‏Node v25.9.0; אותו סך כמו M05-c381. מאז M05-c381 (`964fdb422`) 15 קומיטים, כולם רישומי תור; ‏`src/`, ‏`tests/`, ‏`e2e/`, ‏`package.json`, ‏`pnpm-lock.yaml`, ‏`vitest.config.ts` ו-`vitest.setup.ts` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (679 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-680. הוכחה: `docs/M05-c382.md`.
+**לא נבדק:** ‏`pnpm build` ו-`test:e2e` (שייכים ל-M06 ולפריטים אחרים). 13 הבדיקות שדולגו לא נבחנו אחת אחת. ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M04-c382 - DONE (07.11.2026): ‏`pnpm type-check` נקי, אין סטיית טיפוסים, בלי שינוי קוד.** בסיס HEAD `54f7f7e05` = `origin/closeout/v1-final`, ‏18:40-18:47 ‎+07 (11:40-11:47 UTC). ‏`tsc --noEmit` ‏exit 0 עם מטמון וגם קר (`--incremental false`, ‏0 שורות `error TS`), ‏TypeScript 5.9.3, ‏Node v25.9.0. מאז M04-c381 (`25e1346fc`) 15 קומיטים, כולם רישומי תור של מחזור c381; ‏`src/`, ‏`tsconfig.json`, ‏`package.json` ו-`pnpm-lock.yaml` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (678 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-679. הוכחה: `docs/M04-c382.md`.
 **לא נבדק:** ‏`pnpm test` המלא ו-`pnpm build` (שייכים ל-M05 ו-M06). ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
