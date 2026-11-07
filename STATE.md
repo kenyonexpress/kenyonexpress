@@ -1,7 +1,10 @@
-RESUME FROM: M05-c381
-Updated: 2026-11-07 (M05-c381, Fable 5.1 autopilot loop on `closeout/v1-final`)
+RESUME FROM: M06-c381
+Updated: 2026-11-07 (M06-c381, Fable 5.1 autopilot loop on `closeout/v1-final`)
 
 ## המשך מ:
+
+**M06-c381 - DONE (07.11.2026): ‏`pnpm build` ירוק, אין סטייה, בלי שינוי קוד.** בסיס HEAD `964fdb422` = `origin/closeout/v1-final`, ‏17:03-17:04 ‎+07 (10:03-10:04 UTC). ‏exit 0 בניסיון הראשון: ‏417 דפים סטטיים ב-52 שניות (44 ב-c380), קומפילציה 4.7 שניות, TypeScript 3.5 שניות, 71.7 שניות סך הכל (Next.js 16.4.5, ‏Turbopack, ‏Node v25.9.0). טבלת הנתיבים זהה שורה-שורה ל-c380 (289 שורות). ‏0 ‏`supabase.timeout`, ‏0 ‏`db.query_failed`, ‏144 ‏`db.query_slow` (154 ב-c380; חציון 2.50 שניות, מקסימום 8.5, שניהם גבוהים מ-c380, ומכאן יצירת הדפים האיטית יותר). שאר רעש הלוג זהה בספירה ל-c380 (RLS על `reviews` 164+164, ‏Sentry 401 פעם אחת, מיגרציות לא מוחלות). מאז M06-c380 (`d2871778a`) 16 קומיטים, כולם רישומי תור; ‏`src/`, ‏`tests/`, ‏`e2e/`, ‏`package.json`, ‏`pnpm-lock.yaml`, ‏`next.config.ts` ו-`tsconfig.json` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). הבנייה לא שינתה אף קובץ במעקב. markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-665. הוכחה: `docs/M06-c381.md`.
+**לא נבדק:** ‏`pnpm test:e2e`; ‏ה-build של Vercel לקומיט הזה; תוכן הדפים שנבנו; ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M05-c381 - DONE (07.11.2026): ‏`pnpm test` ירוק, אין סטייה, בלי שינוי קוד.** בסיס HEAD `25e1346fc` = `origin/closeout/v1-final`, ‏17:00-17:03 ‎+07 (10:00-10:03 UTC). ‏`vitest run` (Vitest 4.1.11, ‏Node v25.9.0) ‏exit 0: ‏704 קבצי בדיקה עברו + 1 דולג (705), ‏8303 בדיקות עברו + 13 דולגו (8316), אותו סך כמו M05-c380. מאז M05-c380 (`d2871778a`) 15 קומיטים, כולם רישומי תור; ‏`src/`, ‏`tests/`, ‏`e2e/`, ‏`package.json`, ‏`pnpm-lock.yaml`, ‏`vitest.config.ts` ו-`vitest.setup.ts` לא השתנו (הקומיט האחרון שנגע ב-`src/` עדיין `00c34c066`, ‏M09-c363). ‏`lint:docs` ירוק לפני הפריט (663 מסמכים). markdown בלבד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-664. הוכחה: `docs/M05-c381.md`.
 **לא נבדק:** ‏`pnpm build` ו-`pnpm test:e2e` (M06 ל-build). ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
