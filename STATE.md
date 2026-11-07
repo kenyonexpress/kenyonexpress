@@ -1,7 +1,10 @@
-RESUME FROM: M18-c375
+RESUME FROM: M19-c375
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M19-c375 - DONE (07.11.2026): ‏קידום פרודקשן no-op, www מגיש את HEAD דרך git auto-deploy.** בתחילת הפריט `vercel ls --prod` הראה פריסה בת 19 שניות עדיין Building (`dpl_BJrvY7fNyi49N2eH1Kp6T4v43tbG`, `kenyonexpress-7omxdqvcs`), מקור git, commit `a51324595` = HEAD = origin (M18-c375); www הגיש באותו רגע את `8858d3ea1` (M17-c375), הבדל markdown בלבד (5 קבצים). לא הורץ `vercel deploy`: פריסת CLI של אותו commit רק הייתה מתחרה בבנייה הרצה. `pnpm build` מקומי: exit 0, Compiled successfully in 5.7s, 417 דפים סטטיים, 244 שורות בטבלת הנתיבים (אזהרת sentry source-map 401 מקומית וידועה, לא מכשילה). סקר ל-API ראה READY/PROMOTED 73.1 שניות אחרי היצירה עם alias של www; ‏`/v4/aliases/www.kenyonexpress.co.il` ו-`/v13/deployments` נושאים את אותו `dpl_`. ‏`/` 200 PRERENDER, ‏`/api/ready` 200 (search degraded, meilisearch down, BACKLOG), ‏`/api/health` 200. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-582. הוכחה: `docs/M19-c375.md`.
+**לא נבדק:** הפריסה שה-commit של הפריט הזה יפעיל (markdown בלבד); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M18-c375 - DONE (07.11.2026): ‏STATE.md נגזם מ-276 שורות ל-232, מחזור c374 עבר לארכיון.** הקובץ התחיל ב-276 שורות (68,696 בייט), 24 שורות מתחת לתקרת 300; M18-c374 השאיר אותו ב-231, ו-M19-c374 ועשרת רישומי c375 (M04..M17) הוסיפו 45. בלי שינוי קוד. מחזור c374 (M19-c374, M18-c374, M17-c374..M04-c374, 46 שורות לא-ריקות ו-48 כולל מפרידים) הועבר מילה במילה לראש `docs/STATE-ARCHIVE.md` תחת כותרת משלו, ובמקומו שורת מצביע אחת ליד המצביעים הקודמים. שום דבר לא נמחק: כל שורה לא-ריקה מהקובץ הישן נמצאת בקובץ החדש או בארכיון, חוץ משורת `RESUME FROM` שעודכנה ל-M18-c375. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-581. הוכחה: `docs/M18-c375.md`.
 **לא נבדק:** ‏`pnpm test` המלא, ‏`type-check` ו-build (השינוי ב-markdown בלבד; רצו `lint:docs` ושתי חבילות הבדיקה שקוראות את README, ‏docs ו-STATE). ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
