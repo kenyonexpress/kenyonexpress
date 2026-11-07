@@ -1,7 +1,10 @@
-RESUME FROM: M18-c376
+RESUME FROM: M19-c376
 Updated: 2026-10-19 (סשן אחר, `kenyonexpress-c5`, לפי הוראה מפורשת של אופיר בצ'אט, לא לולאת האוטופיילוט של `audit/final-audit`; פריט M08-c113 DONE: ח.פ 033798513 בשורת המוכר, PR #89 ממתין למיזוג אופיר)
 
 ## המשך מ:
+
+**M19-c376 - DONE (07.11.2026): ‏קידום פרודקשן no-op, www מגיש את HEAD דרך git auto-deploy.** בתחילת הפריט `vercel ls --prod` הראה פריסה בת 19 שניות עדיין Building (`dpl_GerpYqmpKTHUHHpWUfF75wjHWt6U`, `kenyonexpress-j18gzjc5e`), מקור git, commit `5c506b5c1` = HEAD = origin (M18-c376); www הגיש באותו רגע את `b8c29d05d` (M17-c376), הבדל markdown בלבד (5 קבצים). לא הורץ `vercel deploy`: פריסת CLI של אותו commit רק הייתה מתחרה בבנייה הרצה. `pnpm build` מקומי: exit 0, Compiled successfully in 4.6s, 417 דפים סטטיים, 287 שורות בטבלת הנתיבים (אזהרת sentry source-map 401 מקומית וידועה, לא מכשילה). סקר ל-API ראה READY/PROMOTED 67.9 שניות אחרי היצירה עם alias של www; ‏`/v4/aliases/www.kenyonexpress.co.il` ו-`/v13/deployments` נושאים את אותו `dpl_`. ‏`/` 200 PRERENDER, ‏`/api/ready` 200 (search degraded, meilisearch down, BACKLOG), ‏`/api/health` 200. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-598. הוכחה: `docs/M19-c376.md`.
+**לא נבדק:** הפריסה שה-commit של הפריט הזה יפעיל (markdown בלבד); ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
 
 **M18-c376 - DONE (07.11.2026): ‏STATE.md נגזם מ-279 שורות ל-235, מחזור c375 עבר לארכיון.** הקובץ התחיל ב-279 שורות (70,482 בייט), 21 שורות מתחת לתקרת 300; M18-c375 השאיר אותו ב-232, ו-M19-c375 ו-14 רשומות c376 (M04 עד M17) הוסיפו 47 שורות. מחזור c375 (M19-c375, ‏M18-c375, ‏M17-c375 עד M04-c375, ‏33 שורות לא-ריקות, 48 עם הרווחים) הועבר מילה במילה לראש `docs/STATE-ARCHIVE.md` תחת כותרת משלו, ושורת מצביע אחת נשארה במקומו ליד המצביעים הקודמים. שום דבר לא נמחק. נשארו ב-STATE.md: מחזור c376 (M18 עד M04), ‏S30, ‏S41 ו-S40 החסומים, המצביעים לארכיון, טבלת התור, החוסמים הפתוחים והרשימה הידנית. שורה 1 (`RESUME FROM`) עודכנה ל-M18-c376. ‏markdown בלבד, בלי שינוי קוד. בדיקת ההקפאה ריקה מול התג. ספירת המסמכים ב-README עודכנה ל-597. הוכחה: `docs/M18-c376.md`.
 **לא נבדק:** ‏`pnpm test` המלא, ‏`type-check` ו-build (השינוי ב-markdown בלבד; רצו `lint:docs` ושתי חבילות הבדיקה שקוראות את README, ‏docs ו-STATE). ‏`compare.mjs` לא הורץ: אף דף לא השתנה.
